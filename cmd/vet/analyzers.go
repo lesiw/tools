@@ -1,6 +1,8 @@
 package main
 
 import (
+	"slices"
+
 	errname "github.com/Antonboom/errname/pkg/analyzer"
 	"golang.org/x/tools/go/analysis"
 	"golang.org/x/tools/go/analysis/passes/appends"
@@ -25,6 +27,7 @@ import (
 	"golang.org/x/tools/go/analysis/passes/ifaceassert"
 	"golang.org/x/tools/go/analysis/passes/loopclosure"
 	"golang.org/x/tools/go/analysis/passes/lostcancel"
+	"golang.org/x/tools/go/analysis/passes/modernize"
 	"golang.org/x/tools/go/analysis/passes/nilfunc"
 	"golang.org/x/tools/go/analysis/passes/nilness"
 	"golang.org/x/tools/go/analysis/passes/printf"
@@ -54,7 +57,6 @@ import (
 	"lesiw.io/plscheck/fillreturns"
 	"lesiw.io/plscheck/infertypeargs"
 	"lesiw.io/plscheck/maprange"
-	"lesiw.io/plscheck/modernize"
 	"lesiw.io/plscheck/nonewvars"
 	"lesiw.io/plscheck/noresultvalues"
 	"lesiw.io/plscheck/recursiveiter"
@@ -68,7 +70,9 @@ import (
 	"lesiw.io/tidytypes"
 )
 
-var analyzers = []*analysis.Analyzer{
+var analyzers = slices.Concat(suite, modernize.Suite)
+
+var suite = []*analysis.Analyzer{
 	appends.Analyzer,
 	asmdecl.Analyzer,
 	assign.Analyzer,
@@ -99,7 +103,6 @@ var analyzers = []*analysis.Analyzer{
 	loopclosure.Analyzer,
 	lostcancel.Analyzer,
 	maprange.Analyzer,
-	modernize.Analyzer,
 	nilfunc.Analyzer,
 	nilness.Analyzer,
 	nonewvars.Analyzer,

@@ -19,8 +19,8 @@ go get -tool lesiw.io/tools/cmd/clerk
 
 Vet checks Go packages with the golang.org/x/tools analysis
 passes plus analyzers for error handling, line length, deprecated
-APIs, and code modernization. Diagnostics may be suppressed with
-//ignore directives as supported by
+APIs, unused declarations, and code modernization. Diagnostics
+may be suppressed with //ignore directives as supported by
 [lesiw.io/checker](https://pkg.go.dev/lesiw.io/checker).
 
 Run it by its full package path — the short name would refer to
@@ -30,7 +30,11 @@ the Go distribution's own vet tool:
 go tool lesiw.io/tools/cmd/vet ./...
 ```
 
-Results are cached by the go build cache.
+The -fix flag applies the suite's suggested fixes:
+
+```sh
+go tool lesiw.io/tools/cmd/vet -fix ./...
+```
 
 ## cmd/clerk
 
