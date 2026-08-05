@@ -13,7 +13,8 @@ func TestRun(t *testing.T) {
 				if err := run([]string{fileset}); err != nil {
 					t.Fatal(err)
 				}
-				for _, name := range []string{".editorconfig", "clerk.sum"} {
+				files := []string{".editorconfig", "go.fmt", "clerk.sum"}
+				for _, name := range files {
 					if _, err := os.Stat(name); err != nil {
 						t.Errorf("missing %s: %v", name, err)
 					}
