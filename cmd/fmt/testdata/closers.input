@@ -1,0 +1,15 @@
+package p
+
+type group struct{}
+
+func (group) Go(func()) {}
+
+func watch(f func()) func() { return f }
+
+func f(g group) {
+	g.Go(watch(func() {
+		println(1)
+	},
+	),
+	)
+}

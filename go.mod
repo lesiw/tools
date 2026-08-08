@@ -14,7 +14,7 @@ require (
 	lesiw.io/checker v0.16.0
 	lesiw.io/clerk v0.2.1-0.20260726115654-97532659cfda
 	lesiw.io/errcheck v1.0.0
-	lesiw.io/linelen v0.4.0
+	lesiw.io/linelen v0.6.0
 	lesiw.io/plscheck v0.20.0
 	lesiw.io/tidytypes v0.2.0
 )

@@ -1,0 +1,6 @@
+package p
+
+func f() {
+	someVariable := 1 // this trailing comment pushes the line well past the column limit
+	_ = someVariable
+}

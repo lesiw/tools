@@ -1,0 +1,11 @@
+package p
+
+func f(target string, pos, end int, text string) {
+	edits = apply(x, []Edit{{
+		Position:    pos,
+		End:         end,
+		Replacement: text,
+	}})
+	spans = collect([]Span{{Start: pos, Stop: end}})
+	pair = build([]Entry{{Key: "k", Value: "v"}})
+}

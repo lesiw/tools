@@ -1,0 +1,10 @@
+package p
+
+func g(a, b, c string) {}
+
+func f() {
+	g(
+		"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		`x, y and z`, "ddddddddddddddddddddddddddddddd",
+	)
+}

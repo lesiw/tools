@@ -1,0 +1,17 @@
+--- a/nodes.go
++++ b/nodes.go
+@@ -1983,7 +1983,13 @@
+ 			}
+ 			// start a new section if the next declaration is a function
+ 			// that spans multiple lines (see also issue #19544)
+-			p.linebreak(p.lineFor(d.Pos()), min, ignore, tok == token.FUNC && p.numLines(d) > 1)
++			//
++			// The span ends at the declaration's last content byte
++			// rather than one past it: a line boundary set in the gap
++			// after a declaration, which is how a blank line is asked
++			// for, must not read as the declaration spanning a second
++			// line and end the alignment section early.
++			p.linebreak(p.lineFor(d.Pos()), min, ignore, tok == token.FUNC && (!d.Pos().IsValid() || !d.End().IsValid() || p.lineFor(d.Pos()) != p.lineFor(d.End()-1)))
+ 		}
+ 		p.decl(d)
+ 	}

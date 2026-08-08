@@ -1,0 +1,50 @@
+package p
+
+// gather is a wrapped function signature.
+func gather(
+	first *Alpha, second *Beta,
+	third map[string]*Gamma, fourth map[string][]int,
+) {
+	_ = first
+}
+
+func (r *record) submit(
+	pos, end int,
+	msg string,
+) {
+	_ = pos
+}
+
+func withComment(
+	a int, // the first one
+	b int,
+) {
+	_ = a
+}
+
+type Iface interface {
+	Do(
+		ctx Ctx,
+		name string,
+	) error
+}
+
+func lit() {
+	f := func(
+		a int,
+		b int,
+	) int {
+		return a + b
+	}
+	_ = f
+}
+
+func longLit() {
+	g := func(
+		first *Alpha, second *Beta,
+		third map[string]*Gamma,
+	) int {
+		return 0
+	}
+	_ = g
+}

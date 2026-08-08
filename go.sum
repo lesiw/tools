@@ -20,8 +20,8 @@ lesiw.io/clerk v0.2.1-0.20260726115654-97532659cfda h1:AlGDaZf1c1wOpgqTPIttQkl0d
 lesiw.io/clerk v0.2.1-0.20260726115654-97532659cfda/go.mod h1:fbDRF6mt0lfmNdL6k08EM+ejXn76GnTq8K4vQXrlfNs=
 lesiw.io/errcheck v1.0.0 h1:jVwNVL8YfjXY3xCJ7byHn+s8MwlvxqsuDjV4406Euo8=
 lesiw.io/errcheck v1.0.0/go.mod h1:iKZxbcdSpC2cYZ+Pyp/7fEbsvgEHdEqECi0Yb/GkA2g=
-lesiw.io/linelen v0.4.0 h1:HWLgU/X1eTmsNis7If3qrHEXWW4jV8h3v5mNeQkDpxM=
-lesiw.io/linelen v0.4.0/go.mod h1:Oyp09GYRlPE4kimw2daGyhPhGpL32/U8TNaIu7ucwTY=
+lesiw.io/linelen v0.6.0 h1:nw8MpsO5Vejzj8oTjVWjqRw4/QROYZPPDcPoJqfOOsc=
+lesiw.io/linelen v0.6.0/go.mod h1:K/P+BjDR3ekWpUpwyWaht9EeDinM3giAoC7WquqwamY=
 lesiw.io/plscheck v0.20.0 h1:vhTXPTr8n1HsTvEWOky0ya1ZI0bfNNGNInxUeEtozmc=
 lesiw.io/plscheck v0.20.0/go.mod h1:ETr4dgHsxf0ZUmsdZtnklIiF39TjNdBThJLa5ClxZQg=
 lesiw.io/tidytypes v0.2.0 h1:U/MI+Cwm5ShPEBEnKuVHtyU7o46gW4zPUojBUhd+/YM=

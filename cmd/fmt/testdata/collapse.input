@@ -1,0 +1,20 @@
+package p
+
+import (
+	"fmt"
+)
+
+const (
+	x = 1
+)
+
+func f() { fmt.Println(x) }
+
+const (
+	// maxRetries bounds the reconnect loop.
+	maxRetries = 5
+)
+
+var (
+	debug = false // toggled in tests
+)

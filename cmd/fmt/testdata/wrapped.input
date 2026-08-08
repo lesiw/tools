@@ -1,0 +1,13 @@
+package p
+
+func g(a, b int) int { return a + b }
+
+func f(x, y int) int {
+	total := g(
+		x,
+		y,
+	)
+	return total +
+		x +
+		y
+}

@@ -1,0 +1,18 @@
+package p
+
+// Do performs the operation. This paragraph is deliberately written across
+// several source lines so that reflowing has something to pack.
+//
+// Steps:
+//  1. first step
+//  2. second step
+//
+// Options:
+// - alpha
+// - beta
+//
+// Example:
+//
+//	x := Do()
+//	_ = x
+func Do() int { return 0 }

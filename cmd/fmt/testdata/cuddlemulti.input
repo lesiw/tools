@@ -1,0 +1,32 @@
+package p
+
+func f(a, b, c, d int, v string) []Edit {
+	return []Edit{
+		{
+			Pos: a,
+			End: b,
+		},
+		{
+			Pos:     c,
+			End:     d,
+			NewText: v,
+		},
+	}
+}
+
+func g(a, b int) []Edit {
+	return []Edit{
+		{Pos: a},
+		{Pos: b},
+	}
+}
+
+func h(a int, v string) []Edit {
+	return []Edit{
+		{Pos: a},
+		{
+			Pos:     a,
+			NewText: v,
+		},
+	}
+}

@@ -1,0 +1,14 @@
+package p
+
+type Config struct {
+	Name       string
+	Address    string
+	Port       int
+	Retries    int
+	Deadlines  int
+}
+
+func f() {
+	c := Config{Name: "a-fairly-long-name", Address: "0.0.0.0", Port: 8080, Retries: 3}
+	_ = c
+}

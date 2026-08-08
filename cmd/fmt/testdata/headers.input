@@ -1,0 +1,14 @@
+package p
+
+func f(a, b bool) int { return 1 }
+
+func g(a, b bool) {
+	if a &&
+		b {
+		f(a, b)
+	}
+	for i := 0; i < f(a,
+		b); i++ {
+		f(a, b)
+	}
+}

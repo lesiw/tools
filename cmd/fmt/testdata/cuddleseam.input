@@ -1,0 +1,29 @@
+package p
+
+func parseMarkers() {
+	tests := []struct {
+		input         string
+		wantContents map[string]struct{}
+		wantOK        bool
+	}{
+		{"//expand", map[string]struct{}{"all": {}}, false},
+		{"//expand:all", map[string]struct{}{"all": {}}, false},
+		{"//expand:test1", map[string]struct{}{"test1": {}}, false},
+		{"//expand:test1,test2", map[string]struct{}{
+			"test1": {}, "test2": {},
+		}, false},
+		{"//expand:all // This is a comment",
+			map[string]struct{}{"all": {}}, false},
+		{"//expand:test1 // Explanatory comment",
+			map[string]struct{}{"test1": {}}, false},
+		{"//expand:test1,test2 // Multiple fragments",
+			map[string]struct{}{"test1": {}, "test2": {}}, false},
+		{"// not expand", nil, false},
+		{"//other", nil, false},
+		{"// This is a comment. //expand:all",
+			map[string]struct{}{"all": {}}, true},
+		{"// This is a comment. //expand:all // And another comment.",
+			map[string]struct{}{"all": {}}, true},
+	}
+	_ = tests
+}
