@@ -43,7 +43,9 @@ func run() error {
 }
 
 // formatSrc applies the layout rules to one Go source file: parse once,
-// reshape the tree and its line table, render once.
+// reshape the tree and its line table, render once. A generated file
+// passes through unchanged, the way the vet bundle's driver skips
+// generated files: its layout belongs to its generator.
 func formatSrc(src []byte, reflow bool) ([]byte, error) {
 	fset := token.NewFileSet()
 	file, err := parser.ParseFile(fset, "stdin.go", src,
@@ -51,6 +53,9 @@ func formatSrc(src []byte, reflow bool) ([]byte, error) {
 	)
 	if err != nil {
 		return nil, err
+	}
+	if ast.IsGenerated(file) {
+		return src, nil
 	}
 	layout(fset, fset.File(file.Pos()), file, reflow)
 	printed, err := printNode(fset, file)

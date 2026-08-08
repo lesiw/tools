@@ -251,6 +251,15 @@ func TestSinglePass(t *testing.T) {
 				if err != nil {
 					t.Fatalf("does not parse: %v", err)
 				}
+				if ast.IsGenerated(file) {
+					out := formatted(t, path, reflow, false)
+					if !bytes.Equal(out, src) {
+						t.Errorf("generated file did not pass through:\n%s",
+							firstDiff(src, out),
+						)
+					}
+					return
+				}
 				layout(fset, fset.File(file.Pos()), file, reflow)
 				once, err := printNode(fset, file)
 				if err != nil {
