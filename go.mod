@@ -5,6 +5,7 @@ go 1.25.0
 tool (
 	golang.org/x/tools/cmd/goimports
 	lesiw.io/tools/cmd/clerk
+	lesiw.io/tools/cmd/fmt
 	lesiw.io/tools/cmd/vet
 )
 
@@ -12,7 +13,7 @@ require (
 	github.com/Antonboom/errname v1.1.2
 	golang.org/x/tools v0.48.0
 	lesiw.io/checker v0.16.0
-	lesiw.io/clerk v0.2.1-0.20260726115654-97532659cfda
+	lesiw.io/clerk v0.3.0
 	lesiw.io/errcheck v1.0.0
 	lesiw.io/linelen v0.6.0
 	lesiw.io/plscheck v0.20.0
