@@ -53,11 +53,14 @@ func TestGolden(t *testing.T) {
 	}
 }
 
-// TestGoldenWidth holds every golden to the width limit through
-// linelen itself, so the carve-out for declaration signatures applies
-// the way the analyzer applies it. A line of tabs is short in bytes and
-// long on screen, and every packing decision is made in columns; this
-// catches any that slips back into counting bytes.
+// TestGoldenWidth holds every golden to its input's overlong count
+// through linelen itself, so the carve-out for declaration signatures
+// applies the way the analyzer applies it. A golden may inherit an
+// overlong line, such as a trailing comment the formatter leaves for
+// linelen to report, but formatting may never add one. A line of tabs
+// is short in bytes and long on screen, and every packing decision is
+// made in columns; this catches any that slips back into counting
+// bytes.
 func TestGoldenWidth(t *testing.T) {
 	goldens, err := filepath.Glob("testdata/*.golden")
 	if err != nil {
@@ -71,15 +74,21 @@ func TestGoldenWidth(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		fset := token.NewFileSet()
-		file, err := parser.ParseFile(fset, path, src, parser.ParseComments)
+		input := strings.TrimSuffix(path, ".golden") + ".input"
+		in, err := os.ReadFile(input)
+		if err != nil {
+			t.Fatal(err)
+		}
+		before, err := overlong(input, in)
+		if err != nil {
+			t.Fatalf("%s: %v", input, err)
+		}
+		after, err := overlong(path, src)
 		if err != nil {
 			t.Fatalf("%s: %v", path, err)
 		}
-		for _, l := range cfg.Check(fset, file, src) {
-			t.Errorf("%s:%d is %d columns, over the %d limit",
-				path, l.N, l.Width, cfg.Len,
-			)
+		if after > before {
+			t.Errorf("%s: overlong lines %d -> %d", path, before, after)
 		}
 	}
 }

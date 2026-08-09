@@ -21,8 +21,38 @@ var printerCfg = printer.Config{
 	Tabwidth: 8,
 }
 
-// width returns the visual width of line.
-func width(line []byte) int { return cfg.Width(line) }
+// width returns the visual width of line's code. A trailing line
+// comment does not count: a line that only a comment makes overlong
+// is not the formatter's to reshape, and linelen still reports it.
+func width(line []byte) int {
+	return cfg.Width(uncommented(line))
+}
+
+// uncommented returns line up to its trailing line comment, with
+// trailing whitespace removed. String, rune, and raw string literals
+// are respected: a // inside one is content, not a comment.
+func uncommented(line []byte) []byte {
+	var quote byte
+	for i := 0; i < len(line); i++ {
+		switch c := line[i]; {
+		case quote == '"' || quote == '\'':
+			if c == '\\' {
+				i++
+			} else if c == quote {
+				quote = 0
+			}
+		case quote == '`':
+			if c == '`' {
+				quote = 0
+			}
+		case c == '"' || c == '\'' || c == '`':
+			quote = c
+		case c == '/' && i+1 < len(line) && line[i+1] == '/':
+			return bytes.TrimRight(line[:i], " \t")
+		}
+	}
+	return line
+}
 
 // printNode renders n with the shared printer configuration.
 func printNode(fset *token.FileSet, n ast.Node) (string, error) {

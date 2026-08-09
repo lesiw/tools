@@ -63,7 +63,10 @@ func liftOverlongComments(tokFile *token.File, file *ast.File, snap *snapshot) {
 			continue // block comments can wrap; skip
 		}
 		slash := tokFile.Line(first.Slash)
-		if snap.width(slash) <= cfg.Len {
+		// The full width, comment included: this is the one rule
+		// that reshapes for comment overlength, so it cannot use the
+		// comment-blind measurement the default rules share.
+		if cfg.Width(snap.text(slash)) <= cfg.Len {
 			continue
 		}
 		codePos, ok := earliestOnLine[slash]

@@ -17,7 +17,9 @@ import (
 )
 
 var reflow = flag.Bool(
-	"reflow", false, "reflow doc comments to fill line width",
+	"reflow", false,
+	"reshape comments: lift overlong trailing comments and reflow "+
+		"doc comments",
 )
 
 func main() {
@@ -73,6 +75,9 @@ func layout(fset *token.FileSet, tokFile *token.File, file *ast.File, reflow boo
 	snap := func() *snapshot { return takeSnapshot(fset, tokFile, file) }
 	collapseSignatures(tokFile, file)
 	expandOneLineBodies(fset, tokFile, file, snap())
+	if reflow {
+		liftOverlongComments(tokFile, file, snap())
+	}
 	methodSpacing(tokFile, file)
 	mergePairedClosers(tokFile, file)
 	collapseSingleDecls(tokFile, file)
@@ -81,7 +86,6 @@ func layout(fset *token.FileSet, tokFile *token.File, file *ast.File, reflow boo
 	expandDelimited(fset, tokFile, file, snap())
 	alignClosers(fset, tokFile, file, snap())
 	collapseWrappedLines(tokFile, file, snap())
-	liftOverlongComments(tokFile, file, snap())
 	collapseHeaders(tokFile, file, snap())
 	commentSpacing(tokFile, file)
 	splitSeams(tokFile, file, snap())
