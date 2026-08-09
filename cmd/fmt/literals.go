@@ -108,11 +108,9 @@ func planLiterals(fset *token.FileSet, tokFile *token.File, file *ast.File, snap
 		if len(lit.Elts) == 0 {
 			return true
 		}
-		var (
-			ln     = snap.line(lit.Lbrace)
-			indent = snap.indent(lit.Lbrace)
-			lineW  = snap.width(ln) - outdent[ln]
-		)
+		ln := snap.line(lit.Lbrace)
+		indent := snap.indent(lit.Lbrace)
+		lineW := snap.width(ln) - outdent[ln]
 		if p, ok := innermost(placed, lit.Lbrace); ok {
 			indent, lineW = p.indent, p.width()
 		}
@@ -420,11 +418,11 @@ func anyMultiLine(tokFile *token.File, lits []*ast.CompositeLit) bool {
 // planMultiLineSplits decides the braces and elements of a literal that
 // already spans lines.
 func planMultiLineSplits(tokFile *token.File, snap *snapshot, outdent map[int]int, plan *litPlan) {
-	lineWidth := func(ln int) int { return snap.width(ln) - outdent[ln] }
-	lit := plan.lit
 	var (
-		last    = lit.Elts[len(lit.Elts)-1]
-		cuddled = tokFile.Line(lit.Lbrace)+1 == tokFile.Line(lit.Rbrace)
+		lineWidth = func(ln int) int { return snap.width(ln) - outdent[ln] }
+		lit       = plan.lit
+		last      = lit.Elts[len(lit.Elts)-1]
+		cuddled   = tokFile.Line(lit.Lbrace)+1 == tokFile.Line(lit.Rbrace)
 
 		// A literal wrapped tight around its elements — opener on the
 		// first element's line, closer on the last one's — reads as
@@ -440,11 +438,9 @@ func planMultiLineSplits(tokFile *token.File, snap *snapshot, outdent map[int]in
 		plan.splitClose = hasFieldValuesOnLine(lit, lit.Rbrace, tokFile)
 	}
 
-	var (
-		overlong  = make(map[int]struct{})
-		openLine  = tokFile.Line(lit.Lbrace)
-		closeLine = tokFile.Line(lit.Rbrace)
-	)
+	overlong := make(map[int]struct{})
+	openLine := tokFile.Line(lit.Lbrace)
+	closeLine := tokFile.Line(lit.Rbrace)
 	for ln := openLine + 1; ln < closeLine; ln++ {
 		if lineWidth(ln) > cfg.Len {
 			overlong[ln] = struct{}{}

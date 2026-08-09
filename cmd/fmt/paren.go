@@ -213,9 +213,12 @@ func (d delimited) delimiters() (open, close byte) {
 // unambiguously on that line, leaving the text after the closer to be
 // measured where the snapshot found it.
 func (d delimited) tail(line string) (string, bool) {
-	open, close := d.delimiters()
-	extent := string(open) + strings.Join(d.items, ", ") + string(close)
-	i := strings.Index(line, extent)
+	var (
+		open, close = d.delimiters()
+		joined      = strings.Join(d.items, ", ")
+		extent      = string(open) + joined + string(close)
+		i           = strings.Index(line, extent)
+	)
 	if i < 0 || strings.Contains(line[i+1:], extent) {
 		return "", false
 	}
@@ -277,12 +280,10 @@ func expandDelimited(fset *token.FileSet, tokFile *token.File, file *ast.File, s
 		if d.funcType {
 			continue
 		}
-		var (
-			indent  []byte
-			line    string
-			region  = snap.lineEnd(d.close)
-			oneLine = snap.line(d.open) == snap.line(d.close)
-		)
+		var indent []byte
+		var line string
+		region := snap.lineEnd(d.close)
+		oneLine := snap.line(d.open) == snap.line(d.close)
 		if p, ok := innermost(placed, d.open); ok {
 			if p.width() <= cfg.Len {
 				continue
@@ -313,10 +314,8 @@ func expandDelimited(fset *token.FileSet, tokFile *token.File, file *ast.File, s
 			})
 		}
 		inner := append(slices.Clone(indent), '\t')
-		var (
-			starts = packLines(d.items, width(inner))
-			prev   = d.open
-		)
+		starts := packLines(d.items, width(inner))
+		prev := d.open
 		for i, start := range starts {
 			breakBefore(tokFile, snap, prev, d.itemPos[start])
 			prev = d.itemPos[start]
@@ -337,11 +336,7 @@ func expandDelimited(fset *token.FileSet, tokFile *token.File, file *ast.File, s
 }
 
 // innermost returns the narrowest placement holding pos.
-func innermost(placed []placement, pos token.Pos) (placement, bool) {
-	var (
-		out   placement
-		found bool
-	)
+func innermost(placed []placement, pos token.Pos) (out placement, found bool) {
 	for _, p := range placed {
 		if pos < p.lo || pos > p.hi {
 			continue
@@ -384,10 +379,8 @@ func packLines(items []string, indentWidth int) []int {
 	if len(items) == 0 {
 		return nil
 	}
-	var (
-		starts    = []int{0}
-		lineWidth = indentWidth
-	)
+	starts := []int{0}
+	lineWidth := indentWidth
 	// Every packed line ends in a comma, so it counts against the
 	// limit the same as any other column.
 	limit := cfg.Len - len(",")

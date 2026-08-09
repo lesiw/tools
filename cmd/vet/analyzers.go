@@ -50,8 +50,13 @@ import (
 	"golang.org/x/tools/go/analysis/passes/unusedwrite"
 	"golang.org/x/tools/go/analysis/passes/waitgroup"
 
+	"lesiw.io/boolset"
+	"lesiw.io/ctxguard"
+	"lesiw.io/ctxname"
 	"lesiw.io/errcheck/errcheck"
+	"lesiw.io/errfmt"
 	"lesiw.io/linelen"
+	"lesiw.io/linewrap"
 	"lesiw.io/plscheck/deprecated"
 	"lesiw.io/plscheck/embeddirective"
 	"lesiw.io/plscheck/fillreturns"
@@ -67,72 +72,88 @@ import (
 	"lesiw.io/plscheck/unusedparams"
 	"lesiw.io/plscheck/unusedvariable"
 	"lesiw.io/plscheck/yield"
+	"lesiw.io/singlefield"
+	"lesiw.io/strictvar"
+	"lesiw.io/testcmp"
+	"lesiw.io/testhelpers"
 	"lesiw.io/tidytypes"
+	"lesiw.io/timeafter"
 )
 
-var analyzers = slices.Concat(suite, modernize.Suite)
-
-var suite = []*analysis.Analyzer{
-	appends.Analyzer,
-	asmdecl.Analyzer,
-	assign.Analyzer,
-	atomic.Analyzer,
-	atomicalign.Analyzer,
-	bools.Analyzer,
-	buildtag.Analyzer,
-	cgocall.Analyzer,
-	composite.Analyzer,
-	copylock.Analyzer,
-	deepequalerrors.Analyzer,
-	defers.Analyzer,
-	deprecated.Analyzer,
-	directive.Analyzer,
-	embeddirective.Analyzer,
-	errcheck.Analyzer,
-	errname.New(),
-	errorsas.Analyzer,
-	fillreturns.Analyzer,
-	framepointer.Analyzer,
-	gofix.Analyzer,
-	hostport.Analyzer,
-	httpmux.Analyzer,
-	httpresponse.Analyzer,
-	ifaceassert.Analyzer,
-	infertypeargs.Analyzer,
-	linelen.Analyzer,
-	loopclosure.Analyzer,
-	lostcancel.Analyzer,
-	maprange.Analyzer,
-	nilfunc.Analyzer,
-	nilness.Analyzer,
-	nonewvars.Analyzer,
-	noresultvalues.Analyzer,
-	printf.Analyzer,
-	recursiveiter.Analyzer,
-	reflectvaluecompare.Analyzer,
-	shift.Analyzer,
-	sigchanyzer.Analyzer,
-	simplifycompositelit.Analyzer,
-	simplifyrange.Analyzer,
-	simplifyslice.Analyzer,
-	slog.Analyzer,
-	sortslice.Analyzer,
-	stdmethods.Analyzer,
-	stdversion.Analyzer,
-	stringintconv.Analyzer,
-	structtag.Analyzer,
-	testinggoroutine.Analyzer,
-	tests.Analyzer,
-	tidytypes.Analyzer,
-	timeformat.Analyzer,
-	unmarshal.Analyzer,
-	unreachable.Analyzer,
-	unsafeptr.Analyzer,
-	unusedfunc.Analyzer,
-	unusedparams.Analyzer,
-	unusedresult.Analyzer,
-	unusedvariable.Analyzer,
-	unusedwrite.Analyzer,
-	waitgroup.Analyzer,
-	yield.Analyzer,
-}
+var (
+	analyzers = slices.Concat(suite, modernize.Suite)
+	suite     = []*analysis.Analyzer{
+		appends.Analyzer,
+		asmdecl.Analyzer,
+		assign.Analyzer,
+		atomic.Analyzer,
+		atomicalign.Analyzer,
+		bools.Analyzer,
+		boolset.Analyzer,
+		buildtag.Analyzer,
+		cgocall.Analyzer,
+		composite.Analyzer,
+		copylock.Analyzer,
+		ctxguard.Analyzer,
+		ctxname.Analyzer,
+		deepequalerrors.Analyzer,
+		defers.Analyzer,
+		deprecated.Analyzer,
+		directive.Analyzer,
+		embeddirective.Analyzer,
+		errcheck.Analyzer,
+		errfmt.Analyzer,
+		errname.New(),
+		errorsas.Analyzer,
+		fillreturns.Analyzer,
+		framepointer.Analyzer,
+		gofix.Analyzer,
+		hostport.Analyzer,
+		httpmux.Analyzer,
+		httpresponse.Analyzer,
+		ifaceassert.Analyzer,
+		infertypeargs.Analyzer,
+		linelen.Analyzer,
+		linewrap.Analyzer,
+		loopclosure.Analyzer,
+		lostcancel.Analyzer,
+		maprange.Analyzer,
+		nilfunc.Analyzer,
+		nilness.Analyzer,
+		nonewvars.Analyzer,
+		noresultvalues.Analyzer,
+		printf.Analyzer,
+		recursiveiter.Analyzer,
+		reflectvaluecompare.Analyzer,
+		shift.Analyzer,
+		sigchanyzer.Analyzer,
+		simplifycompositelit.Analyzer,
+		simplifyrange.Analyzer,
+		simplifyslice.Analyzer,
+		singlefield.Analyzer,
+		slog.Analyzer,
+		sortslice.Analyzer,
+		stdmethods.Analyzer,
+		stdversion.Analyzer,
+		strictvar.Analyzer,
+		stringintconv.Analyzer,
+		structtag.Analyzer,
+		testcmp.Analyzer,
+		testhelpers.Analyzer,
+		testinggoroutine.Analyzer,
+		tests.Analyzer,
+		tidytypes.Analyzer,
+		timeafter.Analyzer,
+		timeformat.Analyzer,
+		unmarshal.Analyzer,
+		unreachable.Analyzer,
+		unsafeptr.Analyzer,
+		unusedfunc.Analyzer,
+		unusedparams.Analyzer,
+		unusedresult.Analyzer,
+		unusedvariable.Analyzer,
+		unusedwrite.Analyzer,
+		waitgroup.Analyzer,
+		yield.Analyzer,
+	}
+)

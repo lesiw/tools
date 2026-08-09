@@ -33,10 +33,8 @@ func expandOneLineBodies(fset *token.FileSet, tokFile *token.File, file *ast.Fil
 		if tokFile.Line(body.Lbrace) != tokFile.Line(body.Rbrace) {
 			return true
 		}
-		var (
-			indent = snap.indent(body.Lbrace)
-			line   = string(snap.text(snap.line(body.Lbrace)))
-		)
+		indent := snap.indent(body.Lbrace)
+		line := string(snap.text(snap.line(body.Lbrace)))
 		if p, ok := innermost(placed, body.Lbrace); ok {
 			indent, line = p.indent, p.text
 		}

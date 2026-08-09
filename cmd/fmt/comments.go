@@ -73,10 +73,8 @@ func liftOverlongComments(tokFile *token.File, file *ast.File, snap *snapshot) {
 		if !ok || codePos >= first.Slash {
 			continue // nothing before the comment on this line
 		}
-		var (
-			codeOff      = tokFile.Offset(codePos)
-			lineStartOff = tokFile.Offset(tokFile.LineStart(slash))
-		)
+		codeOff := tokFile.Offset(codePos)
+		lineStartOff := tokFile.Offset(tokFile.LineStart(slash))
 		if codeOff <= lineStartOff {
 			continue // code is at column 1; no indent to carve the lift into
 		}
@@ -265,9 +263,8 @@ func reflowComments(fset *token.FileSet, tokFile *token.File, file *ast.File, sn
 // isDirective reports whether a comment body is a compiler or linter
 // directive rather than prose.
 func isDirective(body string) bool {
-	for _, prefix := range []string{
-		"go:", "nolint", "export ", "+build", "line ",
-	} {
+	prefixes := []string{"go:", "nolint", "export ", "+build", "line "}
+	for _, prefix := range prefixes {
 		if strings.HasPrefix(body, prefix) {
 			return true
 		}
@@ -288,20 +285,16 @@ func reflowGroup(tokFile *token.File, doc *ast.CommentGroup, snap *snapshot) {
 	if textWidth < 1 {
 		return
 	}
-	var (
-		newList []*ast.Comment
-		i       int
-	)
+	var newList []*ast.Comment
+	var i int
 	for i < len(doc.List) {
 		if !isProseBody(stripCommentPrefix(doc.List[i].Text)) {
 			newList = append(newList, doc.List[i])
 			i++
 			continue
 		}
-		var (
-			words []string
-			start = i
-		)
+		var words []string
+		start := i
 		for i < len(doc.List) {
 			body := stripCommentPrefix(doc.List[i].Text)
 			if !isProseBody(body) {
@@ -310,10 +303,8 @@ func reflowGroup(tokFile *token.File, doc *ast.CommentGroup, snap *snapshot) {
 			words = append(words, strings.Fields(body)...)
 			i++
 		}
-		var (
-			origs   = doc.List[start:i]
-			wrapped = wrapWordsToLines(words, textWidth)
-		)
+		origs := doc.List[start:i]
+		wrapped := wrapWordsToLines(words, textWidth)
 		if !allProse(wrapped) {
 			newList = append(newList, origs...)
 			continue
@@ -339,8 +330,10 @@ func reflowGroup(tokFile *token.File, doc *ast.CommentGroup, snap *snapshot) {
 // original comment's own bytes. It returns nil when there is no room for
 // the extra lines, leaving the run to be kept as it was.
 func reflowSlashes(tokFile *token.File, origs []*ast.Comment, m int) []token.Pos {
-	n := len(origs)
-	out := make([]token.Pos, 0, m)
+	var (
+		n   = len(origs)
+		out = make([]token.Pos, 0, m)
+	)
 	for k := 0; k < m && k < n; k++ {
 		out = append(out, origs[k].Slash)
 	}
@@ -431,10 +424,8 @@ func wrapWordsToLines(words []string, width int) (lines []string) {
 	if len(words) == 0 {
 		return nil
 	}
-	var (
-		line      = words[0]
-		lineWidth = utf8.RuneCountInString(words[0])
-	)
+	line := words[0]
+	lineWidth := utf8.RuneCountInString(words[0])
 	for _, w := range words[1:] {
 		wWidth := utf8.RuneCountInString(w)
 		if lineWidth+1+wWidth > width {

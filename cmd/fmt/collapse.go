@@ -13,33 +13,33 @@ func collapseWrappedLines(tokFile *token.File, file *ast.File, snap *snapshot) {
 		sigs    = funcSignatures(file)
 		headers = headerSpans(file)
 		lits    = multiLineLits(tokFile, file)
+		fits    = func(pos, end token.Pos) bool {
+			if tokFile.Line(pos) == tokFile.Line(end) {
+				return false
+			}
+			if inHeader(headers, pos) {
+				// A header is single-line-or-nothing and
+				// collapseHeaders owns it.
+				return false
+			}
+			// A nested multi-line composite literal was intentionally
+			// expanded for readability; a // comment inside the span
+			// forces a line break the width check cannot see.
+			if nestedInLit(lits, pos) || lineCommentWithin(file, pos, end) {
+				return false
+			}
+			// The wrap inside a declared signature is the author's
+			// chosen layout.
+			if inFuncSignature(sigs, pos) {
+				return false
+			}
+			if spansDeclGroup(file, pos, end) {
+				return false
+			}
+			w, ok := snap.mergedWidth(pos, end)
+			return ok && w <= cfg.Len
+		}
 	)
-	fits := func(pos, end token.Pos) bool {
-		if tokFile.Line(pos) == tokFile.Line(end) {
-			return false
-		}
-		if inHeader(headers, pos) {
-			// A header is single-line-or-nothing and
-			// collapseHeaders owns it.
-			return false
-		}
-		// A nested multi-line composite literal was intentionally
-		// expanded for readability; a // comment inside the span
-		// forces a line break the width check cannot see.
-		if nestedInLit(lits, pos) || lineCommentWithin(file, pos, end) {
-			return false
-		}
-		// The wrap inside a declared signature is the author's
-		// chosen layout.
-		if inFuncSignature(sigs, pos) {
-			return false
-		}
-		if spansDeclGroup(file, pos, end) {
-			return false
-		}
-		w, ok := snap.mergedWidth(pos, end)
-		return ok && w <= cfg.Len
-	}
 	ast.Inspect(file, func(n ast.Node) bool {
 		bin, ok := n.(*ast.BinaryExpr)
 		if !ok {
@@ -108,10 +108,8 @@ func mergePairedClosers(tokFile *token.File, file *ast.File) {
 		if inFuncSignature(sigs, call.Pos()) {
 			return true
 		}
-		var (
-			innerClose token.Pos
-			lastArg    = call.Args[len(call.Args)-1]
-		)
+		var innerClose token.Pos
+		lastArg := call.Args[len(call.Args)-1]
 		switch a := lastArg.(type) {
 		case *ast.FuncLit:
 			innerClose = a.Body.Rbrace

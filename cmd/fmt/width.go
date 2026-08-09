@@ -84,12 +84,14 @@ type snapshot struct {
 // no lines, which reports every line as empty and every span as
 // unmeasurable, so callers leave the layout alone.
 func takeSnapshot(fset *token.FileSet, tokFile *token.File, file *ast.File) *snapshot {
-	snap := &snapshot{
-		starts: slices.Clone(tokFile.Lines()),
-		base:   tokFile.Base(),
-		end:    tokFile.Base() + tokFile.Size(),
-	}
-	var buf bytes.Buffer
+	var (
+		snap = &snapshot{
+			starts: slices.Clone(tokFile.Lines()),
+			base:   tokFile.Base(),
+			end:    tokFile.Base() + tokFile.Size(),
+		}
+		buf bytes.Buffer
+	)
 	if err := printerCfg.Fprint(&buf, fset, file); err != nil {
 		return snap
 	}
@@ -159,7 +161,7 @@ func extractIndent(line []byte) []byte {
 // the blank go/printer writes at each seam — the shape MergeLine plus
 // go/printer produces. It reports false for a span the snapshot cannot
 // measure, which callers read as "leave this alone".
-func (s *snapshot) mergedWidth(start, end token.Pos) (int, bool) {
+func (s *snapshot) mergedWidth(start, end token.Pos) (total int, ok bool) {
 	if !start.IsValid() || !end.IsValid() || start > end {
 		return 0, false
 	}
@@ -167,10 +169,7 @@ func (s *snapshot) mergedWidth(start, end token.Pos) (int, bool) {
 	if lo < 1 || hi > len(s.lines) {
 		return 0, false
 	}
-	var (
-		total int
-		prev  []byte
-	)
+	var prev []byte
 	for ln := lo; ln <= hi; ln++ {
 		seg := s.text(ln)
 		if ln > lo {

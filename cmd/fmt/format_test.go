@@ -378,9 +378,11 @@ func dumpNode(out *[]string, path string, v reflect.Value) {
 		}
 		*out = append(*out, path+"::"+v.Type().String())
 		for i := range v.NumField() {
-			f := v.Type().Field(i)
-			skip := f.Name == "Comments" || f.Name == "Doc" ||
-				f.Name == "Comment" || f.PkgPath != ""
+			var (
+				f    = v.Type().Field(i)
+				skip = f.Name == "Comments" || f.Name == "Doc" ||
+					f.Name == "Comment" || f.PkgPath != ""
+			)
 			if skip {
 				continue
 			}
