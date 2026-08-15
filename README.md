@@ -18,8 +18,8 @@ go get -tool lesiw.io/tools/cmd/clerk
 ## cmd/vet
 
 Vet checks Go packages with the golang.org/x/tools analysis
-passes plus analyzers for error handling, line length, deprecated
-APIs, unused declarations, and code modernization. Diagnostics
+passes plus analyzers for error handling, line length, testing
+practice, declaration style, and code modernization. Diagnostics
 may be suppressed with //ignore directives as supported by
 [lesiw.io/checker](https://pkg.go.dev/lesiw.io/checker).
 

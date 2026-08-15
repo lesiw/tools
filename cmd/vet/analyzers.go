@@ -57,21 +57,6 @@ import (
 	"lesiw.io/errfmt"
 	"lesiw.io/linelen"
 	"lesiw.io/linewrap"
-	"lesiw.io/plscheck/deprecated"
-	"lesiw.io/plscheck/embeddirective"
-	"lesiw.io/plscheck/fillreturns"
-	"lesiw.io/plscheck/infertypeargs"
-	"lesiw.io/plscheck/maprange"
-	"lesiw.io/plscheck/nonewvars"
-	"lesiw.io/plscheck/noresultvalues"
-	"lesiw.io/plscheck/recursiveiter"
-	"lesiw.io/plscheck/simplifycompositelit"
-	"lesiw.io/plscheck/simplifyrange"
-	"lesiw.io/plscheck/simplifyslice"
-	"lesiw.io/plscheck/unusedfunc"
-	"lesiw.io/plscheck/unusedparams"
-	"lesiw.io/plscheck/unusedvariable"
-	"lesiw.io/plscheck/yield"
 	"lesiw.io/singlefield"
 	"lesiw.io/strictvar"
 	"lesiw.io/testcmp"
@@ -98,38 +83,27 @@ var (
 		ctxname.Analyzer,
 		deepequalerrors.Analyzer,
 		defers.Analyzer,
-		deprecated.Analyzer,
 		directive.Analyzer,
-		embeddirective.Analyzer,
 		errcheck.Analyzer,
 		errfmt.Analyzer,
 		errname.New(),
 		errorsas.Analyzer,
-		fillreturns.Analyzer,
 		framepointer.Analyzer,
 		gofix.Analyzer,
 		hostport.Analyzer,
 		httpmux.Analyzer,
 		httpresponse.Analyzer,
 		ifaceassert.Analyzer,
-		infertypeargs.Analyzer,
 		linelen.Analyzer,
 		linewrap.Analyzer,
 		loopclosure.Analyzer,
 		lostcancel.Analyzer,
-		maprange.Analyzer,
 		nilfunc.Analyzer,
 		nilness.Analyzer,
-		nonewvars.Analyzer,
-		noresultvalues.Analyzer,
 		printf.Analyzer,
-		recursiveiter.Analyzer,
 		reflectvaluecompare.Analyzer,
 		shift.Analyzer,
 		sigchanyzer.Analyzer,
-		simplifycompositelit.Analyzer,
-		simplifyrange.Analyzer,
-		simplifyslice.Analyzer,
 		singlefield.Analyzer,
 		slog.Analyzer,
 		sortslice.Analyzer,
@@ -148,12 +122,8 @@ var (
 		unmarshal.Analyzer,
 		unreachable.Analyzer,
 		unsafeptr.Analyzer,
-		unusedfunc.Analyzer,
-		unusedparams.Analyzer,
 		unusedresult.Analyzer,
-		unusedvariable.Analyzer,
 		unusedwrite.Analyzer,
 		waitgroup.Analyzer,
-		yield.Analyzer,
 	}
 )

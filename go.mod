@@ -21,7 +21,6 @@ require (
 	lesiw.io/errfmt v0.1.0
 	lesiw.io/linelen v0.6.0
 	lesiw.io/linewrap v0.1.0
-	lesiw.io/plscheck v0.20.0
 	lesiw.io/singlefield v0.1.0
 	lesiw.io/strictvar v0.1.0
 	lesiw.io/testcmp v0.1.0
