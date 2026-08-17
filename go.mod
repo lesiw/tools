@@ -22,7 +22,7 @@ require (
 	lesiw.io/linelen v0.6.0
 	lesiw.io/linewrap v0.1.0
 	lesiw.io/singlefield v0.1.0
-	lesiw.io/strictvar v0.1.0
+	lesiw.io/strictvar v0.2.0
 	lesiw.io/testcmp v0.1.0
 	lesiw.io/testhelpers v0.1.0
 	lesiw.io/tidytypes v0.2.0
