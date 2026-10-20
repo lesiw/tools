@@ -53,46 +53,6 @@ func TestGolden(t *testing.T) {
 	}
 }
 
-// TestGoldenWidth holds every golden to its input's overlong count
-// through linelen itself, so the carve-out for declaration signatures
-// applies the way the analyzer applies it. A golden may inherit an
-// overlong line, such as a trailing comment the formatter leaves for
-// linelen to report, but formatting may never add one. A line of tabs
-// is short in bytes and long on screen, and every packing decision is
-// made in columns; this catches any that slips back into counting
-// bytes.
-func TestGoldenWidth(t *testing.T) {
-	goldens, err := filepath.Glob("testdata/*.golden")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(goldens) == 0 {
-		t.Fatal("no goldens")
-	}
-	for _, path := range goldens {
-		src, err := os.ReadFile(path)
-		if err != nil {
-			t.Fatal(err)
-		}
-		input := strings.TrimSuffix(path, ".golden") + ".input"
-		in, err := os.ReadFile(input)
-		if err != nil {
-			t.Fatal(err)
-		}
-		before, err := overlong(input, in)
-		if err != nil {
-			t.Fatalf("%s: %v", input, err)
-		}
-		after, err := overlong(path, src)
-		if err != nil {
-			t.Fatalf("%s: %v", path, err)
-		}
-		if after > before {
-			t.Errorf("%s: overlong lines %d -> %d", path, before, after)
-		}
-	}
-}
-
 // TestNoAddedOverlong holds the formatter to the rule the linelen
 // analyzer enforces downstream: it may leave an overlong line it was
 // handed, but it may never make one. Widths come from linelen itself,
@@ -100,26 +60,29 @@ func TestGoldenWidth(t *testing.T) {
 // analyzer applies it — a line of tabs is short in bytes and long on
 // screen, and every packing decision is made in columns.
 func TestNoAddedOverlong(t *testing.T) {
-	for _, path := range corpus(t) {
-		t.Run(path, func(t *testing.T) {
-			t.Parallel()
-			src, err := os.ReadFile(path)
-			if err != nil {
-				t.Fatal(err)
-			}
-			out := formatted(t, path, false, false)
-			before, err := overlong(path, src)
-			if err != nil {
-				t.Fatal(err)
-			}
-			after, err := overlong(path, out)
-			if err != nil {
-				t.Fatal(err)
-			}
-			if after > before {
-				t.Errorf("overlong lines %d -> %d", before, after)
-			}
-		})
+	for _, reflow := range []bool{false, true} {
+		for _, path := range corpus(t) {
+			name := fmt.Sprintf("%s/reflow=%v", path, reflow)
+			t.Run(name, func(t *testing.T) {
+				t.Parallel()
+				src, err := os.ReadFile(path)
+				if err != nil {
+					t.Fatal(err)
+				}
+				out := formatted(t, path, reflow, false)
+				before, err := overlong(path, src)
+				if err != nil {
+					t.Fatal(err)
+				}
+				after, err := overlong(path, out)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if after > before {
+					t.Errorf("overlong lines %d -> %d", before, after)
+				}
+			})
+		}
 	}
 }
 
@@ -130,7 +93,7 @@ func overlong(path string, src []byte) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	return len(cfg.Check(fset, file, src)), nil
+	return len(cfg.CheckFile(fset, file, src)), nil
 }
 
 // TestProperties holds every corpus file to the invariants that no

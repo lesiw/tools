@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"go/ast"
 	"go/token"
 	"slices"
@@ -66,7 +67,7 @@ func liftOverlongComments(tokFile *token.File, file *ast.File, snap *snapshot) {
 		// The full width, comment included: this is the one rule
 		// that reshapes for comment overlength, so it cannot use the
 		// comment-blind measurement the default rules share.
-		if cfg.Width(snap.text(slash)) <= cfg.Len {
+		if cfg.CheckLine(snap.text(slash)) {
 			continue
 		}
 		codePos, ok := earliestOnLine[slash]
@@ -272,6 +273,20 @@ func isDirective(body string) bool {
 	return false
 }
 
+// indentAt returns the leading whitespace of the line where c renders.
+// go/printer can add a line break the position table does not carry, so
+// the line is found by its text rather than by c.Slash.
+func indentAt(snap *snapshot, c *ast.Comment) []byte {
+	var (
+		text = []byte(c.Text)
+		line = snap.line(c.Slash)
+	)
+	for line <= len(snap.lines) && !bytes.Contains(snap.text(line), text) {
+		line++
+	}
+	return extractIndent(snap.text(line))
+}
+
 // reflowGroup reflows a single doc comment group in place. Each reflowed
 // prose run collapses N original lines into M output lines; the token
 // file gains or loses that many line boundaries so the comments that
@@ -281,7 +296,7 @@ func reflowGroup(tokFile *token.File, doc *ast.CommentGroup, snap *snapshot) {
 	if !strings.HasPrefix(first.Text, "//") {
 		return // block comment; don't reflow
 	}
-	textWidth := cfg.Len - width(snap.indent(first.Slash)) - len("// ")
+	textWidth := cfg.Len - width(indentAt(snap, first)) - len("// ")
 	if textWidth < 1 {
 		return
 	}
