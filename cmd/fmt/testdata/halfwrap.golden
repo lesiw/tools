@@ -1,0 +1,13 @@
+package p
+
+func f(ctx int, more, args, here string) {}
+
+func g() {
+	someFunc(someVeryLongArgumentName,
+		moreArguments, andMoreArguments, andEvenMoreArguments,
+	)
+
+	short(1, 2)
+
+	someFunc(ctx, "this is a long string argument that takes up most of the line when joined")
+}
