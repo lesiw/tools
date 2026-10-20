@@ -36,8 +36,7 @@ func collapseWrappedLines(tokFile *token.File, file *ast.File, snap *snapshot) {
 			if spansDeclGroup(file, pos, end) {
 				return false
 			}
-			w, ok := snap.mergedWidth(pos, end)
-			return ok && w <= cfg.Len
+			return snap.fits(pos, end)
 		}
 	)
 	ast.Inspect(file, func(n ast.Node) bool {

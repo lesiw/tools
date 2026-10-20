@@ -27,8 +27,7 @@ func parseMarkers() {
 	}, {"//other", nil, false}, {"// This is a comment. //expand:all",
 		map[string]struct{}{
 			"all": {},
-		}, true},
-		{"// This is a comment. //expand:all // And another comment.",
-			map[string]struct{}{"all": {}}, true}}
+		}, true}, {"// This is a comment. //expand:all // And another comment.",
+		map[string]struct{}{"all": {}}, true}}
 	_ = tests
 }

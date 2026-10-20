@@ -16,11 +16,7 @@ import (
 	"os"
 )
 
-var reflow = flag.Bool(
-	"reflow", false,
-	"reshape comments: lift overlong trailing comments and reflow "+
-		"doc comments",
-)
+var reflow = flag.Bool("reflow", false, "reflow doc and trailing comments")
 
 func main() {
 	cfg.Flags(flag.CommandLine)
@@ -84,8 +80,8 @@ func layout(fset *token.FileSet, tokFile *token.File, file *ast.File, reflow boo
 	layoutLiterals(fset, tokFile, file, snap())
 	collapseDelimited(fset, tokFile, file, snap())
 	expandDelimited(fset, tokFile, file, snap())
-	alignClosers(fset, tokFile, file, snap())
 	collapseWrappedLines(tokFile, file, snap())
+	alignClosers(fset, tokFile, file, snap())
 	collapseHeaders(tokFile, file, snap())
 	commentSpacing(tokFile, file)
 	splitSeams(tokFile, file, snap())

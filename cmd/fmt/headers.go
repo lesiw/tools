@@ -54,7 +54,7 @@ func collapseHeaders(tokFile *token.File, file *ast.File, snap *snapshot) {
 		if lineCommentWithin(file, s[0], s[1]) {
 			continue
 		}
-		if w, ok := snap.mergedWidth(s[0], s[1]); !ok || w > cfg.Len {
+		if !snap.fits(s[0], s[1]) {
 			continue
 		}
 		mergeSpan(tokFile, s[0], s[1])

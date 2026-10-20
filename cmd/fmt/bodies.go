@@ -38,7 +38,7 @@ func expandOneLineBodies(fset *token.FileSet, tokFile *token.File, file *ast.Fil
 		if p, ok := innermost(placed, body.Lbrace); ok {
 			indent, line = p.indent, p.text
 		}
-		if width([]byte(line)) <= cfg.Len {
+		if fits([]byte(line)) {
 			return true
 		}
 		opened = append(opened, body)

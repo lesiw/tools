@@ -28,6 +28,11 @@ func width(line []byte) int {
 	return cfg.Width(uncommented(line))
 }
 
+// fits reports whether code may stay on one line: within the limit, or mostly
+// one literal or URL. Both merging and splitting ask this, so a line the limit
+// permits has one canonical shape however the author left it.
+func fits(code []byte) bool { return cfg.CheckLine(uncommented(code)) }
+
 // uncommented returns line up to its trailing line comment, with
 // trailing whitespace removed. String, rune, and raw string literals
 // are respected: a // inside one is content, not a comment.
@@ -155,19 +160,19 @@ func extractIndent(line []byte) []byte {
 	return line
 }
 
-// mergedWidth predicts the visual width of the line that results from
-// merging every line the span [start, end] touches. Lines after the
-// first contribute their content with leading whitespace stripped, plus
-// the blank go/printer writes at each seam — the shape MergeLine plus
+// mergedText returns the text of the line that results from merging
+// every line the span [start, end] touches. Lines after the first
+// contribute their content with leading whitespace stripped, plus the
+// blank go/printer writes at each seam — the shape MergeLine plus
 // go/printer produces. It reports false for a span the snapshot cannot
 // measure, which callers read as "leave this alone".
-func (s *snapshot) mergedWidth(start, end token.Pos) (total int, ok bool) {
+func (s *snapshot) mergedText(start, end token.Pos) (out []byte, ok bool) {
 	if !start.IsValid() || !end.IsValid() || start > end {
-		return 0, false
+		return nil, false
 	}
 	lo, hi := s.line(start), s.line(end)
 	if lo < 1 || hi > len(s.lines) {
-		return 0, false
+		return nil, false
 	}
 	var prev []byte
 	for ln := lo; ln <= hi; ln++ {
@@ -175,13 +180,20 @@ func (s *snapshot) mergedWidth(start, end token.Pos) (total int, ok bool) {
 		if ln > lo {
 			seg = bytes.TrimLeft(seg, " \t")
 			if joinsWithBlank(prev, seg) {
-				total++
+				out = append(out, ' ')
 			}
 		}
-		total += width(seg)
+		out = append(out, seg...)
 		prev = seg
 	}
-	return total, true
+	return out, true
+}
+
+// fits reports whether merging the span [start, end] yields a line the limit
+// permits.
+func (s *snapshot) fits(start, end token.Pos) bool {
+	text, ok := s.mergedText(start, end)
+	return ok && fits(text)
 }
 
 // joinsWithBlank reports whether go/printer separates the tail of prev

@@ -75,10 +75,7 @@ func printerDir() (string, error) {
 	want := minor(mod.Go)
 	have := minor(strings.TrimPrefix(tc.GOVERSION, "go"))
 	if want != have {
-		return "", fmt.Errorf(
-			"toolchain is go%s but go.mod declares go %s: "+
-				"rerun with a go%s toolchain", have, mod.Go, want,
-		)
+		return "", fmt.Errorf("toolchain is go%s but go.mod declares go %s: rerun with a go%s toolchain", have, mod.Go, want)
 	}
 	return filepath.Join(tc.GOROOT, "src", "go", "printer"), nil
 }

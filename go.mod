@@ -19,7 +19,7 @@ require (
 	lesiw.io/ctxname v0.1.0
 	lesiw.io/errcheck v1.0.0
 	lesiw.io/errfmt v0.1.0
-	lesiw.io/linelen v0.6.0
+	lesiw.io/linelen v0.7.0
 	lesiw.io/linewrap v0.1.0
 	lesiw.io/singlefield v0.1.0
 	lesiw.io/strictvar v0.2.0

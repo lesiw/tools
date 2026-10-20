@@ -184,19 +184,34 @@ func printField(fset *token.FileSet, f *ast.Field) (string, error) {
 	return strings.Join(names, ", ") + " " + typ, nil
 }
 
-// collapsedWidth predicts the width of the line d occupies once its
-// span is on one line. Merging joins the rendered lines with the blanks
-// go/printer writes at each seam; the comma trailing the last item of a
-// broken list is the one byte the merge drops.
-func (d delimited) collapsedWidth(snap *snapshot) (int, bool) {
-	w, ok := snap.mergedWidth(d.open, d.close)
+// collapsedFits reports whether d's collapsed line is one the limit permits.
+func (d delimited) collapsedFits(snap *snapshot) bool {
+	text, ok := d.collapsedText(snap)
+	return ok && fits(text)
+}
+
+// collapsedText returns the line d occupies once its span is on one line.
+// Merging joins the rendered lines with the blanks go/printer writes at each
+// seam; the comma trailing the last item of a broken list is the one byte the
+// merge drops.
+func (d delimited) collapsedText(snap *snapshot) ([]byte, bool) {
+	text, ok := snap.mergedText(d.open, d.close)
 	if !ok {
-		return 0, false
+		return nil, false
 	}
 	if snap.line(d.lastEnd) != snap.line(d.close) {
-		w--
+		text = dropComma(text)
 	}
-	return w, true
+	return text, true
+}
+
+// dropComma removes the comma go/printer drops when a broken list's
+// closer moves onto a line of its own.
+func dropComma(text []byte) []byte {
+	if i := bytes.LastIndexByte(text, ','); i >= 0 {
+		return append(text[:i], text[i+1:]...)
+	}
+	return text
 }
 
 // delimiters returns the pair of bytes d opens and closes with.
@@ -243,8 +258,7 @@ func collapseDelimited(fset *token.FileSet, tokFile *token.File, file *ast.File,
 		if tokFile.Line(d.open) == tokFile.Line(d.close) {
 			continue
 		}
-		w, ok := d.collapsedWidth(snap)
-		if !ok || w > cfg.Len {
+		if !d.collapsedFits(snap) {
 			continue
 		}
 		// A composite literal nested inside a multi-line composite
@@ -285,18 +299,21 @@ func expandDelimited(fset *token.FileSet, tokFile *token.File, file *ast.File, s
 		region := snap.lineEnd(d.close)
 		oneLine := snap.line(d.open) == snap.line(d.close)
 		if p, ok := innermost(placed, d.open); ok {
-			if p.width() <= cfg.Len {
+			if fits([]byte(p.text)) {
 				continue
 			}
 			indent, line, region = p.indent, p.text, p.hi
 		} else {
 			if oneLine {
-				w, ok := d.collapsedWidth(snap)
-				if !ok || w <= cfg.Len {
+				if text, ok := d.collapsedText(snap); ok && fits(text) {
 					continue
 				}
 			} else if !d.itemsOnOneLine(snap) {
 				// Already multi-line with items on separate lines.
+				continue
+			} else if fits(snap.text(snap.line(d.itemPos[0]))) {
+				// The items already sit on a line within the limit
+				// or permitted by an exemption.
 				continue
 			}
 			indent = snap.indent(d.open)
@@ -314,7 +331,7 @@ func expandDelimited(fset *token.FileSet, tokFile *token.File, file *ast.File, s
 			})
 		}
 		inner := append(slices.Clone(indent), '\t')
-		starts := packLines(d.items, width(inner))
+		starts := packLines(d.items, inner)
 		prev := d.open
 		for i, start := range starts {
 			breakBefore(tokFile, snap, prev, d.itemPos[start])
@@ -372,29 +389,27 @@ func alignClosers(fset *token.FileSet, tokFile *token.File, file *ast.File, snap
 	}
 }
 
-// packLines bin-packs items onto lines indented by indentWidth columns,
-// each line ending in a comma. It returns the index of the item that
-// opens each line.
-func packLines(items []string, indentWidth int) []int {
+// packLines bin-packs items onto lines starting with indent, each
+// line ending in a comma. It returns the index of the item that opens
+// each line.
+func packLines(items []string, indent []byte) []int {
 	if len(items) == 0 {
 		return nil
 	}
 	starts := []int{0}
-	lineWidth := indentWidth
-	// Every packed line ends in a comma, so it counts against the
-	// limit the same as any other column.
-	limit := cfg.Len - len(",")
+	line := slices.Clone(indent)
 	for i, item := range items {
-		itemWidth := width([]byte(item))
 		if i > starts[len(starts)-1] {
-			if lineWidth+len(", ")+itemWidth > limit {
+			cand := append(append(slices.Clone(line), ", "...), item...)
+			cand = append(cand, ',')
+			if !fits(cand) {
 				starts = append(starts, i)
-				lineWidth = indentWidth
+				line = slices.Clone(indent)
 			} else {
-				lineWidth += len(", ")
+				line = append(line, ", "...)
 			}
 		}
-		lineWidth += itemWidth
+		line = append(line, item...)
 	}
 	return unwidow(starts, len(items))
 }

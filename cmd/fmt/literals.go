@@ -90,9 +90,10 @@ func layoutLiterals(fset *token.FileSet, tokFile *token.File, file *ast.File, sn
 }
 
 // planLiterals decides every literal's shape without applying any of
-// it. outdent carries what cuddling lifts off a snapshot line, and
-// placed carries the lines a broken-open literal's elements land on;
-// both are filled by ancestors before a descendant reads them.
+// it. outdent carries how many indent levels cuddling lifts off a
+// snapshot line, and placed carries the lines a broken-open literal's
+// elements land on; both are filled by ancestors before a descendant
+// reads them.
 func planLiterals(fset *token.FileSet, tokFile *token.File, file *ast.File, snap *snapshot) []*litPlan {
 	var (
 		plans   []*litPlan
@@ -110,9 +111,9 @@ func planLiterals(fset *token.FileSet, tokFile *token.File, file *ast.File, snap
 		}
 		ln := snap.line(lit.Lbrace)
 		indent := snap.indent(lit.Lbrace)
-		lineW := snap.width(ln) - outdent[ln]
+		text := outdented(snap, outdent, ln)
 		if p, ok := innermost(placed, lit.Lbrace); ok {
-			indent, lineW = p.indent, p.width()
+			indent, text = p.indent, []byte(p.text)
 		}
 		plan := &litPlan{lit: lit}
 		plans = append(plans, plan)
@@ -131,7 +132,7 @@ func planLiterals(fset *token.FileSet, tokFile *token.File, file *ast.File, snap
 			case !multi:
 				// This literal is about to be broken open, and its
 				// elements go with it.
-				takesLines = lineW > cfg.Len
+				takesLines = !fits(text)
 			default:
 				takesLines = anyWillSplit(snap, outdent, elts)
 			}
@@ -151,7 +152,7 @@ func planLiterals(fset *token.FileSet, tokFile *token.File, file *ast.File, snap
 			)
 			if !cuddledAlready(snap, lit, plan.elts) {
 				for l := ln + 1; l < bottom; l++ {
-					outdent[l] += cfg.Tab
+					outdent[l]++
 				}
 			}
 			for _, s := range seams(lit, plan.elts) {
@@ -189,7 +190,7 @@ func planLiterals(fset *token.FileSet, tokFile *token.File, file *ast.File, snap
 		// Single-line: only expand when the line itself is overlong.
 		// A single-line literal nested inside a multi-line parent is
 		// explicitly allowed — being nested does not force a split.
-		if lineW <= cfg.Len {
+		if fits(text) {
 			return true
 		}
 		// For single-line expansions the elements move onto lines one
@@ -199,7 +200,7 @@ func planLiterals(fset *token.FileSet, tokFile *token.File, file *ast.File, snap
 		if !ok {
 			return true
 		}
-		inner := width(indent) + cfg.Tab
+		inner := append(slices.Clone(indent), '\t')
 		plan.eltSplits = packLines(items, inner)[1:]
 		plan.splitOpen, plan.splitClose = true, true
 		placed = append(placed, eltLines(fset, plan, indent)...)
@@ -260,10 +261,10 @@ func seamLine(snap *snapshot, outdent map[int]int, seam [2]token.Pos) placement 
 }
 
 // outdented returns a line's text with the indent cuddling takes off it
-// removed.
+// removed, one level per outdent unit.
 func outdented(snap *snapshot, outdent map[int]int, line int) []byte {
 	text := snap.text(line)
-	for range outdent[line] / cfg.Tab {
+	for range outdent[line] {
 		if len(text) == 0 || text[0] != '\t' {
 			break
 		}
@@ -290,7 +291,7 @@ func splitSeams(tokFile *token.File, file *ast.File, snap *snapshot) {
 			if snap.line(s[0]) != snap.line(s[1]) {
 				continue
 			}
-			if snap.width(snap.line(s[0])) <= cfg.Len {
+			if fits(snap.text(snap.line(s[0]))) {
 				continue
 			}
 			addNewline(tokFile, s[1])
@@ -398,7 +399,7 @@ func untypedLits(elts []ast.Expr) ([]*ast.CompositeLit, bool) {
 func anyWillSplit(snap *snapshot, outdent map[int]int, lits []*ast.CompositeLit) bool {
 	for _, lit := range lits {
 		ln := snap.line(lit.Lbrace)
-		if snap.width(ln)-outdent[ln] > cfg.Len {
+		if !fits(outdented(snap, outdent, ln)) {
 			return true
 		}
 	}
@@ -419,10 +420,9 @@ func anyMultiLine(tokFile *token.File, lits []*ast.CompositeLit) bool {
 // already spans lines.
 func planMultiLineSplits(tokFile *token.File, snap *snapshot, outdent map[int]int, plan *litPlan) {
 	var (
-		lineWidth = func(ln int) int { return snap.width(ln) - outdent[ln] }
-		lit       = plan.lit
-		last      = lit.Elts[len(lit.Elts)-1]
-		cuddled   = tokFile.Line(lit.Lbrace)+1 == tokFile.Line(lit.Rbrace)
+		lit     = plan.lit
+		last    = lit.Elts[len(lit.Elts)-1]
+		cuddled = tokFile.Line(lit.Lbrace)+1 == tokFile.Line(lit.Rbrace)
 
 		// A literal wrapped tight around its elements — opener on the
 		// first element's line, closer on the last one's — reads as
@@ -442,7 +442,7 @@ func planMultiLineSplits(tokFile *token.File, snap *snapshot, outdent map[int]in
 	openLine := tokFile.Line(lit.Lbrace)
 	closeLine := tokFile.Line(lit.Rbrace)
 	for ln := openLine + 1; ln < closeLine; ln++ {
-		if lineWidth(ln) > cfg.Len {
+		if !fits(outdented(snap, outdent, ln)) {
 			overlong[ln] = struct{}{}
 		}
 	}

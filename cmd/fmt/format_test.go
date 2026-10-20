@@ -174,7 +174,8 @@ func checkProperties(t *testing.T, path string, reflow bool) {
 		t.Errorf("comment count: got %d, want %d", len(got), len(in))
 	}
 	if strings.Join(in, " ") != strings.Join(got, " ") {
-		t.Errorf("comment text changed:\nin:  %s\nout: %s",
+		t.Errorf(
+			"comment text changed:\nin:  %s\nout: %s",
 			strings.Join(in, " "), strings.Join(got, " "),
 		)
 	}
@@ -226,9 +227,7 @@ func TestSinglePass(t *testing.T) {
 				if ast.IsGenerated(file) {
 					out := formatted(t, path, reflow, false)
 					if !bytes.Equal(out, src) {
-						t.Errorf("generated file did not pass through:\n%s",
-							firstDiff(src, out),
-						)
+						t.Errorf("generated file did not pass through:\n%s", firstDiff(src, out))
 					}
 					return
 				}
@@ -239,15 +238,11 @@ func TestSinglePass(t *testing.T) {
 				}
 				out := formatted(t, path, reflow, false)
 				if once != string(out) {
-					t.Errorf("formatSrc ran the rules twice:\n%s",
-						firstDiff(out, []byte(once)),
-					)
+					t.Errorf("formatSrc ran the rules twice, output differs:\n%s", firstDiff(out, []byte(once)))
 				}
 				again := formatted(t, path, reflow, true)
 				if !bytes.Equal(again, out) {
-					t.Errorf("a second full run changed the output:\n%s",
-						firstDiff(out, again),
-					)
+					t.Errorf("a second full run of the rules changed the output:\n%s", firstDiff(out, again))
 				}
 			})
 		}
