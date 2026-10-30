@@ -5,6 +5,7 @@ go 1.25.0
 tool (
 	golang.org/x/tools/cmd/goimports
 	lesiw.io/tools/cmd/clerk
+	lesiw.io/tools/cmd/fix
 	lesiw.io/tools/cmd/fmt
 	lesiw.io/tools/cmd/reflow
 	lesiw.io/tools/cmd/vet
