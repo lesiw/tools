@@ -1,0 +1,11 @@
+package p
+
+// Do performs the operation and returns a value, and this comment is long enough that the reflow rules wrap it onto two lines.
+func Do() int {
+	c := Config{
+		Name:    "a-fairly-long-name", // a trailing comment long enough to widen the alignment group
+		Address: "0.0.0.0",            // and another one, for the same reason
+	}
+	_ = c
+	return 0
+}

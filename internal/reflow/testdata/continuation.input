@@ -1,0 +1,10 @@
+package p
+
+func f(a, b, c bool) {
+	if a &&
+		b && c { // this trailing comment is long enough to push the line past the limit
+	}
+	g("a",
+		"b") // this trailing comment is long enough to push the line past the limit
+	x := 1 // this trailing comment is long enough to push the line past the limit
+}
