@@ -28,7 +28,7 @@ require (
 	lesiw.io/strictvar v0.2.0
 	lesiw.io/testcmp v0.1.0
 	lesiw.io/testhelpers v0.1.0
-	lesiw.io/tidytypes v0.2.0
+	lesiw.io/tidytypes v0.3.0
 	lesiw.io/timeafter v0.1.0
 )
 
