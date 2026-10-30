@@ -1,0 +1,10 @@
+package p
+
+const (
+	xxxxxxxxxxxxxxxxxxxx = aaaaaaaaaaaaaaaaa + bbbbbbbbbbbbbbbbb + cccccccccccc
+)
+
+const short = 1
+
+// Doc for the block.
+const documented = 2

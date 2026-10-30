@@ -1,0 +1,12 @@
+package p
+
+type device struct {
+	s *state
+}
+
+func (d device) Limit() int      { return d.s.limit }
+func (d device) WindowSize() int { return d.s.windowSize() }
+
+func (d device) Set(v int) {
+	d.s.limit = v
+}

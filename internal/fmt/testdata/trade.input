@@ -1,0 +1,11 @@
+package p
+
+type A struct {
+	alpha int
+	beta  int
+	gamma int
+}
+
+func f() {
+	_ = A{alpha /* a comment long enough to widen the alignment group by a lot */ : 1, beta: 2, gamma: 3}
+}

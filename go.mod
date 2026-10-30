@@ -11,6 +11,7 @@ tool (
 
 require (
 	github.com/Antonboom/errname v1.1.2
+	golang.org/x/sync v0.22.0
 	golang.org/x/tools v0.48.0
 	lesiw.io/boolset v0.1.0
 	lesiw.io/checker v0.16.0
@@ -19,7 +20,7 @@ require (
 	lesiw.io/ctxname v0.1.0
 	lesiw.io/errcheck v1.0.0
 	lesiw.io/errfmt v0.1.0
-	lesiw.io/linelen v0.7.0
+	lesiw.io/linelen v0.9.0
 	lesiw.io/linewrap v0.1.0
 	lesiw.io/singlefield v0.1.0
 	lesiw.io/strictvar v0.2.0
@@ -31,7 +32,6 @@ require (
 
 require (
 	golang.org/x/mod v0.38.0 // indirect
-	golang.org/x/sync v0.22.0 // indirect
 	golang.org/x/sys v0.47.0 // indirect
 	golang.org/x/telemetry v0.0.0-20260708182218-49f421fb7959 // indirect
 )

@@ -1,0 +1,28 @@
+package p
+
+func f(target string, pos, end int, text string) {
+	edits = apply(x, []Edit{
+		{
+			Position:    pos,
+			End:         end,
+			Replacement: text,
+			Reason:      "a reason long enough to keep this off one line",
+		},
+	})
+	spans = collect([]Span{
+		{
+			Start: pos,
+			Stop:  end,
+			Label: "a label long enough to keep this off one line",
+		},
+	})
+	pair = build([]Entry{
+		{Key: "k", Value: "v"},
+	})
+}
+
+func g(a, b int, v string) {
+	pair = build([]Entry{
+		{Key: "k", Value: "v"},
+	})
+}

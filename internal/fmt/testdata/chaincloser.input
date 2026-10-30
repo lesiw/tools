@@ -1,0 +1,14 @@
+package p
+
+type matrix struct{}
+
+func (matrix) Add(x matrix) matrix { return x }
+func (matrix) Mul(x matrix) matrix { return x }
+
+func valueFromTheStartOfEveryRow(x []matrix) matrix { return x[0] }
+
+func f(x, y []matrix, a matrix) matrix {
+	a = a.Add(valueFromTheStartOfEveryRow(x).
+		Mul(valueFromTheStartOfEveryRow(y)))
+	return a
+}

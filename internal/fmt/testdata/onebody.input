@@ -1,0 +1,6 @@
+package p
+
+type first int
+type second int
+
+func _[T interface{ first | second; ~int }]() T { return T(0) }
