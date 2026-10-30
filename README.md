@@ -7,24 +7,21 @@
 [![Discord](https://img.shields.io/discord/1145827224516300971?logo=discord&logoColor=white&color=5865F2&label=discord)](https://lesiw.dev/discord)
 [![License](https://img.shields.io/github/license/lesiw/tools)](LICENSE)
 
-Commands for working on Go projects. Each command lives under
-cmd and is added to a project as a module tool:
+Commands for working on Go projects.
 
 ```sh
-go get -tool lesiw.io/tools/cmd/vet
-go get -tool lesiw.io/tools/cmd/clerk
+go run lesiw.io/tools/cmd/fix@latest ./...
 ```
 
 ## cmd/vet
 
-Vet checks Go packages with the golang.org/x/tools analysis
-passes plus analyzers for error handling, line length, testing
-practice, declaration style, and code modernization. Diagnostics
-may be suppressed with //ignore directives as supported by
-[lesiw.io/checker](https://pkg.go.dev/lesiw.io/checker).
+Vet checks Go packages with the golang.org/x/tools analysis passes. It adds
+analyzers for error handling, line length, testing practice, declaration
+style, and code modernization. A //ignore directive suppresses a diagnostic,
+as supported by [lesiw.io/checker](https://pkg.go.dev/lesiw.io/checker).
 
-Run it by its full package path — the short name would refer to
-the Go distribution's own vet tool:
+Run it by its full package path. The short name refers to the Go
+distribution's own vet tool:
 
 ```sh
 go tool lesiw.io/tools/cmd/vet ./...
@@ -35,6 +32,47 @@ The -fix flag applies the suite's suggested fixes:
 ```sh
 go tool lesiw.io/tools/cmd/vet -fix ./...
 ```
+
+## cmd/fix
+
+Fix applies the analyzer suite's fixes over the packages named on the command
+line. It repeats until the tool has nothing left to suggest. One run of -fix is
+not enough. Fixes are independent edits of the same baseline, so two of them
+can conflict. The driver keeps one, and the loop applies the rest.
+
+## cmd/fmt
+
+Fmt lays Go source out under stricter rules than gofmt. It puts a wrapped call
+or control-flow header back onto one line when the result fits. It rejoins a
+composite literal whose elements share a line. A parenthesized block holding
+one spec loses its parentheses. A declared signature stays on one line however
+long it is. Fmt sets the blank lines between declarations and before a doc
+comment inside a block. It takes gofmt's `-l` and `-w`:
+
+```sh
+go tool lesiw.io/tools/cmd/fmt -w .
+```
+
+A file marked generated passes through untouched. One pass makes the output
+gofmt-clean. Fmt never breaks a long line, and never makes one longer than
+[lesiw.io/linelen](https://pkg.go.dev/lesiw.io/linelen) allows. It does move a
+closer onto a line of its own when its opener sits at a different indent.
+
+## cmd/reflow
+
+Reflow fills comment prose to the width limit. It also lifts a trailing comment
+that is too long for its line above the code it trails. Lifting moves a comment
+and does not shorten it. It reads source on stdin, like cmd/fmt, and it changes
+only the comments. The file passes through the printer, so a file gofmt would
+change comes back gofmt-clean:
+
+```sh
+go tool lesiw.io/tools/cmd/reflow < in.go > out.go
+```
+
+It is a separate command because it moves the line breaks inside comments.
+Reflow joins a paragraph's lines and breaks them again at the width limit. An
+author who breaks those lines on purpose loses them.
 
 ## cmd/clerk
 
@@ -69,5 +107,6 @@ go.rc:
 
 ```
 vet go tool lesiw.io/tools/cmd/vet $GOARGS $GOFLAGS
+fix go tool lesiw.io/tools/cmd/fix $GOARGS $GOFLAGS
 clerk go tool lesiw.io/tools/cmd/clerk app
 ```
