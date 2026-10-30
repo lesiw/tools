@@ -1,18 +1,16 @@
-// Vet checks Go packages with the lesiw.io analyzer suite.
-//
-// Usage:
+// Command vet checks Go packages with the lesiw.io analyzer suite.
 //
 //	go tool lesiw.io/tools/cmd/vet [packages]
 //
-// Vet loads packages itself and reports diagnostics to standard
-// error, exiting non-zero when any diagnostic is reported. The
-// -fix flag applies the suite's suggested fixes.
+// It loads packages itself and reports diagnostics to standard error. It exits
+// non-zero when it reports any diagnostic. The -fix flag applies the suite's
+// suggested fixes.
 package main
 
 import (
-	"golang.org/x/tools/go/analysis/singlechecker"
+	"os"
 
-	"lesiw.io/checker"
+	"lesiw.io/tools/internal/vet"
 )
 
-func main() { singlechecker.Main(checker.NewAnalyzer(analyzers...)) }
+func main() { vet.Main(os.Args[1:]) }
