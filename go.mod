@@ -13,10 +13,10 @@ tool (
 
 require (
 	github.com/Antonboom/errname v1.1.2
+	github.com/google/go-cmp v0.7.0
 	golang.org/x/sync v0.22.0
 	golang.org/x/tools v0.48.0
 	lesiw.io/boolset v0.1.0
-	lesiw.io/checker v0.16.0
 	lesiw.io/clerk v0.3.0
 	lesiw.io/ctxguard v0.1.0
 	lesiw.io/ctxname v0.1.0

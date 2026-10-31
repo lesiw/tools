@@ -18,7 +18,16 @@ go run lesiw.io/tools/cmd/fix@latest ./...
 Vet checks Go packages with the golang.org/x/tools analysis passes. It adds
 analyzers for error handling, line length, testing practice, declaration
 style, and code modernization. A //ignore directive suppresses a diagnostic,
-as supported by [lesiw.io/checker](https://pkg.go.dev/lesiw.io/checker).
+for one analyzer or for all of them. Each analyzer can be selected or
+disabled by name:
+
+```sh
+go tool lesiw.io/tools/cmd/vet -printf=false ./...
+go tool lesiw.io/tools/cmd/vet -printf=true ./...
+```
+
+An analyzer's own flags are namespaced under its name, such as
+-linelen.len=100.
 
 Run it by its full package path. The short name refers to the Go
 distribution's own vet tool:
