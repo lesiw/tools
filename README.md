@@ -45,9 +45,17 @@ go tool lesiw.io/tools/cmd/vet -fix ./...
 ## cmd/fix
 
 Fix applies the analyzer suite's fixes over the packages named on the command
-line. It repeats until the tool has nothing left to suggest. One run of -fix is
-not enough. Fixes are independent edits of the same baseline, so two of them
-can conflict. The driver keeps one, and the loop applies the rest.
+line, and repeats until nothing is left to suggest.
+
+The go command does the work. Each round asks `go vet` which analyzers still
+have fixes, then runs one analyzer at a time with `-fix`, so two analyzers
+never edit the same file in one pass. That is the shape whose work is never
+discarded: the go command keeps the patch of a tool that exits zero, and a tool
+that sets a fix aside exits non-zero.
+
+Every flag goes to the go command, so an analyzer flag means there what it
+means there: `-stringsseq` runs one analyzer, `-stringsseq=false` turns one
+off, and `-linelen.len=100` sets one of its own.
 
 ## cmd/fmt
 

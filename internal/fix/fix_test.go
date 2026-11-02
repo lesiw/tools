@@ -1,43 +1,49 @@
 package fix
 
 import (
+	"fmt"
 	"slices"
 	"strings"
 	"testing"
 )
 
 type argCase struct {
-	name    string
-	args    []string
-	vet     string
-	vetArgs []string
+	name string
+	args []string
+	vet  string
+	want []string
 }
 
 var argCases = []argCase{{
-	name:    "packages only",
-	args:    []string{"./..."},
-	vet:     defaultVet,
-	vetArgs: []string{"./..."},
+	name: "packages only",
+	args: []string{"./..."},
+	vet:  defaultVet,
+	want: []string{"./..."},
 }, {
-	name:    "analysis tool as two words",
-	args:    []string{"-vettool", "x/y", "./..."},
-	vet:     "x/y",
-	vetArgs: []string{"./..."},
+	name: "no package named means this directory",
+	args: nil,
+	vet:  defaultVet,
+	want: []string{"."},
 }, {
-	name:    "analysis tool as one word",
-	args:    []string{"-vettool=x/y", "./..."},
-	vet:     "x/y",
-	vetArgs: []string{"./..."},
+	name: "analysis tool as two words",
+	args: []string{"-vettool", "x/y", "./..."},
+	vet:  "x/y",
+	want: []string{"./..."},
 }, {
-	name:    "analysis tool with two hyphens",
-	args:    []string{"--vettool=x/y", "./..."},
-	vet:     "x/y",
-	vetArgs: []string{"./..."},
+	name: "analysis tool as one word",
+	args: []string{"-vettool=x/y", "./..."},
+	vet:  "x/y",
+	want: []string{"./..."},
 }, {
-	name:    "build flag passed on",
-	args:    []string{"-tags=netgo", "./..."},
-	vet:     defaultVet,
-	vetArgs: []string{"-tags=netgo", "./..."},
+	name: "analysis tool with two hyphens",
+	args: []string{"--vettool=x/y", "./..."},
+	vet:  "x/y",
+	want: []string{"./..."},
+}, {
+	name: "an analyzer flag is passed on",
+	args: []string{"-stringsseq=false", "-tags=netgo", "./..."},
+	vet:  defaultVet,
+	want: []string{"-stringsseq=false", "-tags=netgo", "./..."},
 }}
 
 func TestParseArgs(t *testing.T) {
@@ -50,8 +56,8 @@ func TestParseArgs(t *testing.T) {
 			if opts.vet != tt.vet {
 				t.Errorf("vet = %q, want %q", opts.vet, tt.vet)
 			}
-			if !slices.Equal(opts.vetArgs, tt.vetArgs) {
-				t.Errorf("vetArgs = %q, want %q", opts.vetArgs, tt.vetArgs)
+			if !slices.Equal(opts.args, tt.want) {
+				t.Errorf("args = %q, want %q", opts.args, tt.want)
 			}
 		})
 	}
@@ -63,20 +69,44 @@ func TestParseArgsError(t *testing.T) {
 	}
 }
 
-func TestSkippedFixes(t *testing.T) {
-	cases := map[string]bool{
-		"checker: applied 3 of 5 fixes; 2 files updated. " +
-			"(Re-run the command to apply more.)": true,
-		"checker: 2 of 5 fixes skipped (e.g. due to conflicts)": true,
-		"checker: applied 0 of 1 fix; 0 files updated. " +
-			"(Re-run the command to apply more.)": true,
-		"checker: open x.go: permission denied":  false,
-		"checker: layout: layout did not settle": false,
+func TestGoCommand(t *testing.T) {
+	opts, err := parseArgs([]string{"-C", "/tmp", "-tags=netgo", "./..."})
+	if err != nil {
+		t.Fatal(err)
 	}
-	for msg, want := range cases {
-		if got := skippedFixes(msg); got != want {
-			t.Errorf("skippedFixes(%q) = %v, want %v", msg, got, want)
-		}
+	argv := opts.goCommand("vet", "-json").Args[1:]
+	want := []string{"-C", "/tmp", "vet", "-json", "-tags=netgo", "./..."}
+	if !slices.Equal(argv, want) {
+		t.Errorf("goCommand = %q, want %q", argv, want)
+	}
+}
+
+func TestParseReport(t *testing.T) {
+	const report = `{"m": {"stringsseq": [
+		{"posn": "a.go:6:20", "message": "ranging",
+		 "suggested_fixes": [{"message": "use FieldsSeq"}]},
+		{"posn": "a.go:9:2", "message": "no fix here"}
+	], "strictvar": [
+		{"posn": "a.go:22:1", "message": "combine",
+		 "suggested_fixes": [{"message": "combine them"}]}
+	]}}`
+	got, err := parseReport(strings.NewReader(report))
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := []string{
+		"strictvar\ta.go:22:1: combine them",
+		"stringsseq\ta.go:6:20: use FieldsSeq",
+	}
+	if !slices.Equal(got, want) {
+		t.Errorf("parseReport = %q, want %q", got, want)
+	}
+}
+
+func TestParseReportEmpty(t *testing.T) {
+	got, err := parseReport(strings.NewReader(""))
+	if err != nil || len(got) != 0 {
+		t.Errorf("parseReport(empty) = %q, %v", got, err)
 	}
 }
 
@@ -88,78 +118,86 @@ func TestRounds(t *testing.T) {
 	}
 }
 
-// TestToolCommand holds tool resolution to the order a run tries: the go
-// command's tool, then PATH, then the package at its latest version.
-func TestToolCommand(t *testing.T) {
-	// A tool of this module resolves through the go command.
-	argv, err := toolCommand(defaultVet)
-	if err != nil {
-		t.Fatal(err)
+// fakeDriver reports a list of analyzers per round and applies what it is
+// asked to.
+type fakeDriver struct {
+	reports [][]string
+	applied []string
+	fail    error
+}
+
+func (f *fakeDriver) report(string) ([]string, error) {
+	if len(f.reports) == 0 {
+		return nil, nil
 	}
-	if len(argv) != 3 || argv[0] != "go" || argv[1] != "tool" {
-		t.Errorf("toolCommand(%q) = %q", defaultVet, argv)
+	next := f.reports[0]
+	f.reports = f.reports[1:]
+	return next, nil
+}
+
+func (f *fakeDriver) apply(_, name string) error {
+	if f.fail != nil {
+		return f.fail
 	}
-	// A program on PATH resolves to its path.
-	if argv, err := toolCommand("go"); err != nil {
-		t.Fatal(err)
-	} else if len(argv) != 1 {
-		t.Errorf("toolCommand(go) = %q", argv)
+	f.applied = append(f.applied, name)
+	return nil
+}
+
+func TestRunSettles(t *testing.T) {
+	f := &fakeDriver{reports: [][]string{
+		{"stringsseq\ta.go:6:20: use FieldsSeq"},
+		nil,
+	}}
+	if err := loop(f, "vet"); err != nil {
+		t.Fatalf("run = %v, want nil", err)
 	}
-	// A package that is neither falls back to its latest version.
-	argv, err = toolCommand("example.com/nothing/cmd/nothing")
-	if err != nil {
-		t.Fatal(err)
-	}
-	want := "example.com/nothing/cmd/nothing@latest"
-	if argv[1] != "run" || argv[2] != want {
-		t.Errorf("toolCommand = %q, want go run %s", argv, want)
+	if want := []string{"stringsseq"}; !slices.Equal(f.applied, want) {
+		t.Errorf("applied = %q, want %q", f.applied, want)
 	}
 }
 
-// runCase is one run: the rounds the tool reports work for, and the error the
-// run ends with.
-type runCase struct {
-	name   string
-	rounds int
-	stuck  bool
-	want   string
+func TestRunNothingToFix(t *testing.T) {
+	f := new(fakeDriver)
+	if err := loop(f, "vet"); err != nil {
+		t.Fatalf("run = %v, want nil", err)
+	}
+	if len(f.applied) != 0 {
+		t.Errorf("applied = %q, want nothing", f.applied)
+	}
 }
 
-var runCases = []runCase{{name: "settles"}, {
-	name: "applies the rest next round", rounds: 2,
-}, {name: "refuses a patch it has seen", stuck: true,
-	want: "the same patch is still pending"}}
+func TestRunAppliesEachAnalyzerOnce(t *testing.T) {
+	f := &fakeDriver{reports: [][]string{{
+		"slicescontains\ta.go:6:2: use slices.Contains",
+		"stringsseq\ta.go:6:20: use FieldsSeq",
+		"strictvar\ta.go:22:1: combine",
+	}, nil}}
+	if err := loop(f, "vet"); err != nil {
+		t.Fatalf("run = %v, want nil", err)
+	}
+	want := []string{"slicescontains", "stringsseq", "strictvar"}
+	if !slices.Equal(f.applied, want) {
+		t.Errorf("applied = %q, want %q", f.applied, want)
+	}
+}
 
-// TestRun holds the loop to its three exits. A tree settles. A tree needs
-// another round. A patch has been seen before.
-func TestRun(t *testing.T) {
-	for _, tt := range runCases {
-		t.Run(tt.name, func(t *testing.T) {
-			var (
-				rounds = tt.rounds
-				stuck  = tt.stuck
-				apply  = func() ([]byte, error) {
-					if rounds > 0 {
-						rounds--
-					}
-					return nil, nil
-				}
-				pending = func() ([]byte, error) {
-					if stuck || rounds > 0 {
-						return []byte("--- a\n+++ b\n"), nil
-					}
-					return nil, nil
-				}
-			)
-			err := run(apply, pending)
-			switch {
-			case tt.want == "" && err != nil:
-				t.Fatalf("run = %v, want nil", err)
-			case tt.want != "" && err == nil:
-				t.Fatalf("run = nil, want %q", tt.want)
-			case tt.want != "" && !strings.Contains(err.Error(), tt.want):
-				t.Fatalf("run = %v, want %q", err, tt.want)
-			}
-		})
+func TestRunStopsOnARepeatedReport(t *testing.T) {
+	var (
+		report = []string{"strictvar\ta.go:22:1: combine"}
+		f      = &fakeDriver{reports: [][]string{report, report}}
+	)
+	err := loop(f, "vet")
+	if err == nil || !strings.Contains(err.Error(), "still pending") {
+		t.Fatalf("run = %v, want a stall", err)
+	}
+}
+
+func TestRunReportsAnApplyFailure(t *testing.T) {
+	f := &fakeDriver{
+		reports: [][]string{{"strictvar\ta.go:22:1: combine"}},
+		fail:    fmt.Errorf("conflict"),
+	}
+	if err := loop(f, "vet"); err == nil {
+		t.Fatal("run = nil, want the apply failure")
 	}
 }
