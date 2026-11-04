@@ -201,3 +201,40 @@ func TestRunReportsAnApplyFailure(t *testing.T) {
 		t.Fatal("run = nil, want the apply failure")
 	}
 }
+
+// skipDriver reports one analyzer per round and fails each apply the way the
+// go command fails a skipped fix.
+type skipDriver struct {
+	reports [][]string
+	applied []string
+}
+
+func (s *skipDriver) report(string) ([]string, error) {
+	if len(s.reports) == 0 {
+		return nil, nil
+	}
+	next := s.reports[0]
+	s.reports = s.reports[1:]
+	return next, nil
+}
+
+func (s *skipDriver) apply(_, name string) error {
+	s.applied = append(s.applied, name)
+	return fmt.Errorf("fix with %s: exit status 1: applied 3 of 4 fixes; "+
+		"1 file updated. (Re-run the command to apply more.)", name,
+	)
+}
+
+func TestRunSetsAsideAnAnalyzerThatSkips(t *testing.T) {
+	f := &skipDriver{reports: [][]string{
+		{"strictvar\ta.go:1:1: combine"},
+		{"strictvar\ta.go:1:1: combine"},
+	}}
+	err := loop(f, "vet")
+	if err == nil || !strings.Contains(err.Error(), "still pending") {
+		t.Fatalf("run = %v, want the pending fix named", err)
+	}
+	if len(f.applied) != 1 {
+		t.Errorf("applied = %q, want one attempt", f.applied)
+	}
+}

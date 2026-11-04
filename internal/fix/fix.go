@@ -158,6 +158,11 @@ type driver interface {
 }
 
 // loop applies fixes one analyzer at a time until a report comes back empty.
+//
+// The go command discards the patch for a whole package when one of its fixes
+// is skipped. Packages with no skipped fix still get theirs, so the loop
+// continues, and a round whose report repeats fails with the findings that
+// remain.
 func loop(d driver, tool string) error {
 	seen := make(map[[sha256.Size]byte]struct{}, maxRounds)
 	for round := 1; round <= maxRounds; round++ {
@@ -180,21 +185,39 @@ func loop(d driver, tool string) error {
 		if _, ok := seen[sum]; ok {
 			return fmt.Errorf(
 				"the same fixes are still pending after %s: %s",
-				rounds(round-1), strings.Join(analyzers(pending), ", "),
+				rounds(round-1), strings.Join(head(pending, 3), "; "),
 			)
 		}
 		seen[sum] = struct{}{}
-		for _, line := range pending {
-			name, _, _ := strings.Cut(line, "\t")
-			if err := d.apply(tool, name); err != nil {
-				return err
+		for _, name := range analyzers(pending) {
+			err := d.apply(tool, name)
+			if err == nil || skipped(err) {
+				continue
 			}
+			return err
 		}
 		fmt.Fprintf(os.Stderr, "fix: round %d: %s\n", round,
 			strings.Join(analyzers(pending), ", "),
 		)
 	}
 	return fmt.Errorf("fixes did not settle in %d rounds", maxRounds)
+}
+
+// skipped reports whether err says the tool set a fix aside. The exit status
+// is non-zero for that and for a hard error alike; the message is the only
+// signal.
+func skipped(err error) bool {
+	msg := err.Error()
+	return strings.Contains(msg, "Re-run the command to apply more.") ||
+		strings.Contains(msg, "skipped (e.g. due to conflicts)")
+}
+
+// head returns at most n of a report's lines.
+func head(lines []string, n int) []string {
+	if len(lines) > n {
+		return append(lines[:n:n], fmt.Sprintf("and %d more", len(lines)-n))
+	}
+	return lines
 }
 
 // analyzers returns the distinct analyzer names in a report.
