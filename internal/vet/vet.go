@@ -72,8 +72,7 @@ func run(args []string) int {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
-		var exit *exec.ExitError
-		if errors.As(err, &exit) {
+		if exit, ok := errors.AsType[*exec.ExitError](err); ok {
 			// A signalled child reports -1, and os.Exit(-1) is 255.
 			if code := exit.ExitCode(); code > 0 {
 				return code
