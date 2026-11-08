@@ -308,9 +308,6 @@ func init() {
 
 func run(pass *analysis.Pass) (any, error) {
 	for _, f := range pass.Files {
-		if ast.IsGenerated(f) {
-			continue
-		}
 		file := pass.Fset.File(f.FileStart)
 		src, err := pass.ReadFile(file.Name())
 		if err != nil {

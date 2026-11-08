@@ -2,9 +2,8 @@
 package main
 
 import (
-	"golang.org/x/tools/go/analysis/singlechecker"
-
 	"lesiw.io/tools/analyzers/ctxname"
+	"lesiw.io/tools/singlechecker"
 )
 
 func main() { singlechecker.Main(ctxname.Analyzer) }

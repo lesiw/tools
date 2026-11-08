@@ -1,4 +1,4 @@
-package vet
+package ignore
 
 import (
 	"fmt"
@@ -12,12 +12,17 @@ import (
 	"golang.org/x/tools/go/analysis"
 )
 
-// filter returns copies of analyzers that drop the diagnostics an //ignore
-// directive covers.
+// Apply returns copies of analyzers that drop the diagnostics an //ignore
+// directive covers, and that never see a generated file.
+//
+// A generated file is not the author's to fix, so every analyzer in the suite
+// and every standalone command leaves one alone. Skipping it here rather than
+// in each analyzer keeps the rule in one place, and keeps a command and the
+// suite agreeing about what a directive and a generated file mean.
 //
 // The copies keep their names, flags, facts and prerequisites, so a driver
 // sees the suite as it was written: one analyzer per linter.
-func filter(analyzers ...*analysis.Analyzer) []*analysis.Analyzer {
+func Apply(analyzers ...*analysis.Analyzer) []*analysis.Analyzer {
 	filtered := make([]*analysis.Analyzer, 0, len(analyzers))
 	for _, a := range analyzers {
 		filtered = append(filtered, filterAnalyzer(a))
@@ -41,6 +46,18 @@ var ignore = &analysis.Analyzer{
 	},
 }
 
+// written returns the files that were written by hand, so a rule never sees
+// what a generator produced.
+func written(files []*ast.File) []*ast.File {
+	out := make([]*ast.File, 0, len(files))
+	for _, f := range files {
+		if !ast.IsGenerated(f) {
+			out = append(out, f)
+		}
+	}
+	return out
+}
+
 // filterAnalyzer returns a copy of a that drops diagnostics inside the
 // ranges an //ignore directive covers for a.
 func filterAnalyzer(a *analysis.Analyzer) *analysis.Analyzer {
@@ -54,6 +71,7 @@ func filterAnalyzer(a *analysis.Analyzer) *analysis.Analyzer {
 		}
 		inner := *pass
 		inner.Analyzer = a
+		inner.Files = written(pass.Files)
 		inner.Report = func(d analysis.Diagnostic) {
 			if !ignoreDiagnostic(d, ranges, a.Name, pass.Fset) {
 				pass.Report(d)

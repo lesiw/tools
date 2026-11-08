@@ -3,10 +3,9 @@
 package main
 
 import (
-	"golang.org/x/tools/go/analysis/singlechecker"
-
 	"lesiw.io/tools/analyzers/bookends"
 	"lesiw.io/tools/analyzers/linelen"
+	"lesiw.io/tools/singlechecker"
 )
 
 // A command sets the width it runs with; the library default is no limit.

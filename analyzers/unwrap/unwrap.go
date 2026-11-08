@@ -8,7 +8,6 @@ package unwrap
 
 import (
 	"bytes"
-	"go/ast"
 	"go/token"
 
 	"golang.org/x/tools/go/analysis"
@@ -23,9 +22,6 @@ var Analyzer = &analysis.Analyzer{
 
 func run(pass *analysis.Pass) (any, error) {
 	for _, file := range pass.Files {
-		if ast.IsGenerated(file) {
-			continue
-		}
 		name := pass.Fset.File(file.FileStart).Name()
 		src, err := pass.ReadFile(name)
 		if err != nil {

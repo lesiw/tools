@@ -1,4 +1,4 @@
-package vet
+package ignore
 
 import (
 	"slices"
@@ -83,12 +83,6 @@ func TestParseIgnore(t *testing.T) {
 	}
 }
 
-func TestSuiteValidates(t *testing.T) {
-	if err := analysis.Validate(filter(analyzers...)); err != nil {
-		t.Fatal(err)
-	}
-}
-
 type factA struct{}
 
 func (*factA) AFact() {}
@@ -107,26 +101,26 @@ func TestFilterKeepsAnalyzers(t *testing.T) {
 		}
 	)
 	a.Flags.BoolVar(&flag, "flag", false, "a flag")
-	got := filter(a)
+	got := Apply(a)
 	if len(got) != 1 {
-		t.Fatalf("filter(a) = %d analyzers, want 1", len(got))
+		t.Fatalf("Apply(a) = %d analyzers, want 1", len(got))
 	}
 	if got[0].Name != a.Name || got[0].Doc != a.Doc {
-		t.Errorf("filter(a)[0] = %q, %q, want %q, %q",
+		t.Errorf("Apply(a)[0] = %q, %q, want %q, %q",
 			got[0].Name, got[0].Doc, a.Name, a.Doc,
 		)
 	}
 	if got[0].Flags.Lookup("flag") == nil {
-		t.Error(`filter(a)[0].Flags.Lookup("flag") = nil, want flag`)
+		t.Error(`Apply(a)[0].Flags.Lookup("flag") = nil, want flag`)
 	}
 	if !slices.Equal(got[0].FactTypes, a.FactTypes) {
-		t.Errorf("filter(a)[0].FactTypes = %v, want %v",
+		t.Errorf("Apply(a)[0].FactTypes = %v, want %v",
 			got[0].FactTypes, a.FactTypes,
 		)
 	}
 	reqs := got[0].Requires
 	if want := []*analysis.Analyzer{dep, ignore}; !slices.Equal(reqs, want) {
-		t.Errorf("filter(a)[0].Requires = %v, want %v", reqs, want)
+		t.Errorf("Apply(a)[0].Requires = %v, want %v", reqs, want)
 	}
 	if len(a.Requires) != 1 {
 		t.Errorf("len(a.Requires) = %d, want 1", len(a.Requires))

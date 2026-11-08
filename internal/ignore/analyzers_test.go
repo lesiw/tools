@@ -1,4 +1,4 @@
-package vet
+package ignore
 
 import (
 	"go/ast"
@@ -180,7 +180,7 @@ func combined(analyzers ...*analysis.Analyzer) *analysis.Analyzer {
 		Doc:  "runs analyzers as one",
 		Run: func(pass *analysis.Pass) (any, error) {
 			var (
-				filtered = filter(analyzers...)
+				filtered = Apply(analyzers...)
 				results  = make(map[*analysis.Analyzer]any)
 				exec     func(*analysis.Analyzer) error
 			)
