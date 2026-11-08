@@ -131,12 +131,14 @@ func formatFiles(args []string) error {
 	// threads for the same reason, and a file bigger than the whole budget
 	// takes the budget. Output is written in the order the files were
 	// named, not the order they finished.
-	budget := maxWeight()
-	sem := semaphore.NewWeighted(budget)
-	listed := make([]string, len(files))
-	writes := make([][]byte, len(files))
-	errs := make([]error, len(files))
-	var group sync.WaitGroup
+	var (
+		budget = maxWeight()
+		sem    = semaphore.NewWeighted(budget)
+		listed = make([]string, len(files))
+		writes = make([][]byte, len(files))
+		errs   = make([]error, len(files))
+		group  sync.WaitGroup
+	)
 	for i, name := range files {
 		weight := int64(1)
 		if info, err := os.Stat(name); err == nil {

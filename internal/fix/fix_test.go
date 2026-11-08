@@ -74,8 +74,10 @@ func TestGoCommand(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	argv := opts.goCommand("vet", "-json").Args[1:]
-	want := []string{"-C", "/tmp", "vet", "-json", "-tags=netgo", "./..."}
+	var (
+		argv = opts.goCommand("vet", "-json").Args[1:]
+		want = []string{"-C", "/tmp", "vet", "-json", "-tags=netgo", "./..."}
+	)
 	if !slices.Equal(argv, want) {
 		t.Errorf("goCommand = %q, want %q", argv, want)
 	}

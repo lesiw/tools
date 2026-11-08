@@ -1,0 +1,62 @@
+-- remove redundant type --
+package fix
+
+// Function with redundant parameter types
+func redundantParams(x, y int, z string) { // want "redundant type in parameter list"
+}
+
+// Function with multiple redundant groups
+func multipleGroups(a, b int, c, d string) { // want "redundant type in parameter list" "redundant type in parameter list"
+}
+
+// Function with redundant return types
+func redundantReturns() (_, _ int) { // want "redundant type in result list"
+	return 0, 0
+}
+
+// Function with named redundant return types
+func namedRedundantReturns() (x, y int) { // want "redundant type in result list"
+	return 0, 0
+}
+
+// Function literals with redundant types
+var fn = func(a, b int) {} // want "redundant type in parameter list"
+
+// Complex types
+func complexTypes(a, b []int) { // want "redundant type in parameter list"
+}
+
+// Mixed cases - parameters need fixing, results don't
+func paramsNeedFix(x, y int) (string, error) { // want "redundant type in parameter list"
+	return "", nil
+}
+
+// Mixed cases - results need fixing, parameters don't
+func resultsNeedFix(x int, y string) (_, _ int) { // want "redundant type in result list"
+	return 0, 0
+}
+
+// Mixed cases - both parameters and results need fixing
+func bothNeedFix(a, b int) (_, _ string) { // want "redundant type in parameter list" "redundant type in result list"
+	return "", ""
+}
+
+// Mixed cases - neither parameters nor results need fixing (already grouped or mixed types)
+func neitherNeedFix(x, y int, z string) (int, string, error) {
+	return 0, "", nil
+}
+
+// Complex mixed case with multiple redundant groups in both parameters and results
+func complexMixed(a, b int, c, d []string) (_, _ map[string]int, _, _ bool) { // want "redundant type in parameter list" "redundant type in parameter list" "redundant type in result list" "redundant type in result list"
+	return nil, nil, false, false
+}
+
+// Mixed case with some grouped, some not
+func partiallyGrouped(x, y, z int, w string) (_, _ bool, _ error) { // want "redundant type in parameter list" "redundant type in result list"
+	return false, false, nil
+}
+
+// Function with unnamed parameters and results needing fixes
+func unnamedMixed(_, _ int, _ string) (_, _ bool) { // want "redundant type in parameter list" "redundant type in result list"
+	return false, false
+}

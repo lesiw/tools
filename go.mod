@@ -16,20 +16,8 @@ require (
 	github.com/google/go-cmp v0.7.0
 	golang.org/x/sync v0.24.0
 	golang.org/x/tools v0.52.0
-	lesiw.io/boolset v0.1.0
 	lesiw.io/clerk v0.3.0
-	lesiw.io/ctxguard v0.1.0
-	lesiw.io/ctxname v0.1.0
 	lesiw.io/errcheck v1.0.0
-	lesiw.io/errfmt v0.1.0
-	lesiw.io/linelen v0.9.0
-	lesiw.io/linewrap v0.1.0
-	lesiw.io/singlefield v0.1.0
-	lesiw.io/strictvar v0.2.0
-	lesiw.io/testcmp v0.1.0
-	lesiw.io/testhelpers v0.1.0
-	lesiw.io/tidytypes v0.3.0
-	lesiw.io/timeafter v0.1.0
 )
 
 require (

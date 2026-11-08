@@ -1,0 +1,70 @@
+package a
+
+import "context"
+
+func work(ctx context.Context) error { return ctx.Err() }
+
+func bare(ctx context.Context) error {
+	return work(ctx)
+}
+
+func initForm(ctx context.Context) error {
+	return work(ctx)
+}
+
+func loop(ctx context.Context) {
+	for ctx.Err() == nil {
+		_ = work(ctx)
+	}
+}
+
+func midway(ctx context.Context) error {
+	err := work(ctx)
+	if ctx.Err() != nil {
+		return err
+	}
+	return nil
+}
+
+func commented(ctx context.Context) error {
+	return work(ctx)
+}
+
+type rows struct{}
+
+func (rows) Err() error { return nil }
+
+func otherErr(ctx context.Context, r rows) error {
+	if r.Err() != nil {
+		return r.Err()
+	}
+	return work(ctx)
+}
+
+func withElse(ctx context.Context) error {
+	if ctx.Err() != nil {
+		return ctx.Err()
+	} else {
+		_ = work(ctx)
+	}
+	return nil
+}
+
+func logsFirst(ctx context.Context) error {
+	if ctx.Err() != nil {
+		println("canceled")
+		return ctx.Err()
+	}
+	return work(ctx)
+}
+
+func initSideEffect(ctx context.Context) error {
+	if err := work(ctx); ctx.Err() != nil {
+		return err
+	}
+	return nil
+}
+
+var _ = func(ctx context.Context) error {
+	return work(ctx)
+}

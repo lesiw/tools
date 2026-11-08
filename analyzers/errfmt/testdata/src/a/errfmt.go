@@ -1,0 +1,76 @@
+package a
+
+import (
+	"errors"
+	"fmt"
+)
+
+var errSentinel = errors.New("sentinel") // want `errors.New can be replaced by fmt.Errorf`
+
+func dynamic(msg string) error {
+	return errors.New(msg) // want `errors.New can be replaced by fmt.Errorf`
+}
+
+func wrap(err error) error {
+	return fmt.Errorf("open failed: %v", err) // want `error can be wrapped with %w, not %v`
+}
+
+func wrapS(err error) error {
+	return fmt.Errorf("open failed: %s", err) // want `error can be wrapped with %w, not %s`
+}
+
+func good(err error) error {
+	return fmt.Errorf("open failed: %w", err)
+}
+
+func nonError(n int) error {
+	return fmt.Errorf("count: %v", n)
+}
+
+func multiVerb(name string, err error) error {
+	return fmt.Errorf("%s: %v", name, err) // want `error can be wrapped with %w, not %v`
+}
+
+func escaped(err error) error {
+	return fmt.Errorf("open failed:\n%v", err) // want `error can be wrapped with %w, not %v`
+}
+
+func indexed(err error) error {
+	return fmt.Errorf("%[1]v", err)
+}
+
+func starred(w int, err error) error {
+	return fmt.Errorf("%*v", w, err)
+}
+
+func flagged(err error) error {
+	return fmt.Errorf("%-10v", err) // want `error can be wrapped with %w, not %v`
+}
+
+func percented(err error) error {
+	return fmt.Errorf("100%% done: %v", err) // want `error can be wrapped with %w, not %v`
+}
+
+func raw(err error) error {
+	return fmt.Errorf(`open failed: %v`, err) // want `error can be wrapped with %w, not %v`
+}
+
+func nonLiteral(msg string, err error) error {
+	return fmt.Errorf(msg, err)
+}
+
+func trailing(err error) error {
+	return fmt.Errorf("50%", err)
+}
+
+func extraArgs(err error, x int) error {
+	return fmt.Errorf("%v", err, x) // want `error can be wrapped with %w, not %v`
+}
+
+type pathError struct{}
+
+func (*pathError) Error() string { return "path" }
+
+func implementsOnly(p *pathError) error {
+	return fmt.Errorf("stat: %v", p)
+}

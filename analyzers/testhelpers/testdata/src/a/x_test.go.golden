@@ -1,0 +1,66 @@
+package a
+
+import (
+	"context"
+	"os"
+	"testing"
+)
+
+func use(...any) {}
+
+func TestNative(t *testing.T) {
+	ctx := t.Context() // want `context.Background\(\) can be replaced by t.Context\(\)`
+	use(ctx)
+	todo := t.Context() // want `context.TODO\(\) can be replaced by t.Context\(\)`
+	use(todo)
+	t.Setenv("K", "V")                            // want `os.Setenv can be replaced by t.Setenv`
+	if err := os.Setenv("K2", "V2"); err != nil { // want `os.Setenv can be replaced by t.Setenv`
+		t.Fatal(err)
+	}
+	_, err := os.MkdirTemp("", "x") // want `os.MkdirTemp can be replaced by t.TempDir`
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Chdir("/"); err != nil { // want `os.Chdir can be replaced by t.Chdir`
+		t.Fatal(err)
+	}
+}
+
+func BenchmarkNative(b *testing.B) {
+	ctx := b.Context() // want `context.Background\(\) can be replaced by b.Context\(\)`
+	use(ctx)
+}
+
+func TestSubtest(t *testing.T) {
+	t.Run("inner", func(t *testing.T) {
+		ctx := t.Context() // want `context.Background\(\) can be replaced by t.Context\(\)`
+		use(ctx)
+	})
+	func() {
+		use(context.Background())
+	}()
+}
+
+func unnamed(_ *testing.T) {
+	use(context.Background())
+}
+
+func bare(*testing.T) {
+	use(context.Background())
+}
+
+type fake struct{}
+
+func (fake) Setenv(k, v string) {}
+
+func TestShadowed(t *testing.T) {
+	var os fake
+	os.Setenv("K", "V")
+	use(t)
+}
+
+func asmStub(t *testing.T)
+
+func multiName(t, u *testing.T) {
+	use(context.Background())
+}

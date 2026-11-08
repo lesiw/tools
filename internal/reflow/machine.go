@@ -10,7 +10,7 @@ import (
 	"slices"
 	"strings"
 
-	"lesiw.io/linelen"
+	"lesiw.io/tools/analyzers/linelen"
 )
 
 // cfg is the width limit the comments are measured against. It is linelen's

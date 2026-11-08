@@ -388,8 +388,10 @@ func reflowGroup(tokFile *token.File, doc *ast.CommentGroup, snap *snapshot) {
 			return
 		}
 	}
-	first := doc.List[0]
-	indent := indentAt(snap, first)
+	var (
+		first  = doc.List[0]
+		indent = indentAt(snap, first)
+	)
 	// An empty comment at this indent has to fit, or there is no room to
 	// wrap the prose into.
 	if !fits(commentLine(indent, "")) {
@@ -403,8 +405,10 @@ func reflowGroup(tokFile *token.File, doc *ast.CommentGroup, snap *snapshot) {
 			i++
 			continue
 		}
-		var words []string
-		start := i
+		var (
+			words []string
+			start = i
+		)
 		for i < len(doc.List) {
 			body := stripCommentPrefix(doc.List[i].Text)
 			if !isProseBody(body) {

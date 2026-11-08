@@ -1,0 +1,18 @@
+package linedirective
+
+import "fmt"
+
+//line other.go:999999
+func renumbered() string {
+	return "a string literal on a line the directive renumbered"
+}
+
+//line :100
+func longSignatureThatWouldOtherwiseBeReportedButSignaturesAreExempt(a, b, c int) string {
+	return ""
+}
+
+//line :200
+func longBodyAfterDirective() {
+	fmt.Println("alphabet", "bicycle", "carousel", "dandelion", "elephant", "flamingo") // want "line is .* characters long, exceeds 79 limit"
+}

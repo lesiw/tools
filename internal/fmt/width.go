@@ -8,7 +8,7 @@ import (
 	"slices"
 	"strings"
 
-	"lesiw.io/linelen"
+	"lesiw.io/tools/analyzers/linelen"
 )
 
 // cfg is the line-length authority. The linelen command reads it too, so both
