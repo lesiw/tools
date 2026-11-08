@@ -57,6 +57,7 @@ import (
 	"lesiw.io/tools/analyzers/ctxname"
 	"lesiw.io/tools/analyzers/docsyntax"
 	"lesiw.io/tools/analyzers/errfmt"
+	"lesiw.io/tools/analyzers/gospell"
 	"lesiw.io/tools/analyzers/linelen"
 	"lesiw.io/tools/analyzers/linewrap"
 	"lesiw.io/tools/analyzers/singlefield"
@@ -96,6 +97,7 @@ var (
 		errorsas.Analyzer,
 		framepointer.Analyzer,
 		gofix.Analyzer,
+		gospell.Analyzer,
 		hostport.Analyzer,
 		httpmux.Analyzer,
 		httpresponse.Analyzer,
