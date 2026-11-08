@@ -129,8 +129,8 @@ func parseArgs(args []string) (options, error) {
 		}
 		opts.vet = value
 	}
-	// With no package named, the run covers the current directory, the way
-	// `go vet` does.
+	// With no package named, the run covers the current directory, the way go
+	// vet does.
 	named := func(arg string) bool { return !strings.HasPrefix(arg, "-") }
 	if !slices.ContainsFunc(opts.args, named) {
 		opts.args = append(opts.args, ".")

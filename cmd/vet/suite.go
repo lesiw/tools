@@ -55,6 +55,7 @@ import (
 	"lesiw.io/tools/analyzers/boolset"
 	"lesiw.io/tools/analyzers/ctxguard"
 	"lesiw.io/tools/analyzers/ctxname"
+	"lesiw.io/tools/analyzers/docsyntax"
 	"lesiw.io/tools/analyzers/errfmt"
 	"lesiw.io/tools/analyzers/linelen"
 	"lesiw.io/tools/analyzers/linewrap"
@@ -74,11 +75,9 @@ var (
 		appends.Analyzer,
 		asmdecl.Analyzer,
 		assign.Analyzer,
-		bookends.Analyzer,
-		unwrap.Analyzer,
-		whitespace.Analyzer,
 		atomic.Analyzer,
 		atomicalign.Analyzer,
+		bookends.Analyzer,
 		bools.Analyzer,
 		boolset.Analyzer,
 		buildtag.Analyzer,
@@ -90,6 +89,7 @@ var (
 		deepequalerrors.Analyzer,
 		defers.Analyzer,
 		directive.Analyzer,
+		docsyntax.Analyzer,
 		errcheck.Analyzer,
 		errfmt.Analyzer,
 		errname.New(),
@@ -130,6 +130,8 @@ var (
 		unsafeptr.Analyzer,
 		unusedresult.Analyzer,
 		unusedwrite.Analyzer,
+		unwrap.Analyzer,
 		waitgroup.Analyzer,
+		whitespace.Analyzer,
 	}
 )
