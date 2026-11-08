@@ -55,9 +55,7 @@ func Resolve(name string) (path string, cleanup func(), err error) {
 		return path, cleanup, nil
 	}
 	if !strings.Contains(name, "/") {
-		return "", cleanup, fmt.Errorf("%s: not a tool of this module, "+
-			"and not on PATH", name,
-		)
+		return "", cleanup, fmt.Errorf("%s: not a tool of this module, and not on PATH", name)
 	}
 	// Last, install the published package into a directory of our own. A
 	// tree that has added nothing still gets a suite.

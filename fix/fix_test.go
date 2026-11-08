@@ -224,9 +224,7 @@ func (s *skipDriver) report(string) ([]string, error) {
 
 func (s *skipDriver) apply(_, name string) error {
 	s.applied = append(s.applied, name)
-	return fmt.Errorf("fix with %s: exit status 1: applied 3 of 4 fixes; "+
-		"1 file updated. (Re-run the command to apply more.)", name,
-	)
+	return fmt.Errorf("fix with %s: exit status 1: applied 3 of 4 fixes; 1 file updated. (Re-run the command to apply more.)", name)
 }
 
 func TestRunSetsAsideAnAnalyzerThatSkips(t *testing.T) {

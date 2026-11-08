@@ -1,0 +1,27 @@
+package a
+
+const sep = ","
+
+// Joined literals that fit on one line are one literal.
+var fits = "one " + "two" // want "joined by"
+
+// A chain of three is the same finding.
+var chain = "a" + "b" + "c" // want "joined by"
+
+// A line dominated by one string literal is exempt from the width, so a
+// long message merges.
+var long = "a message long enough that joining it would push this line " + // want "joined by"
+	"past the limit the rules allow"
+
+// A join that would push a line past the limit stays.
+var keepThis = []string{"alpha", "bravo", "charlie", "delta", "echo", "one " +
+	"two"}
+
+// Joining onto a non-literal operand is not this rule's business.
+var mixed = "one " + sep + "two"
+
+// Raw strings merge into one raw string.
+var raw = `C:\dir` + `\file` // want "joined by"
+
+// A literal holding a newline stays a raw string.
+var multiline = "one\n" + "two"

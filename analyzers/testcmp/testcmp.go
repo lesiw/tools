@@ -31,10 +31,9 @@ func run(pass *analysis.Pass) (any, error) {
 			call, ok := n.(*ast.CallExpr)
 			if ok && callee(pass, call) == "reflect.DeepEqual" {
 				pass.Report(analysis.Diagnostic{
-					Pos: call.Pos(),
-					End: call.End(),
-					Message: "avoid reflect.DeepEqual in " +
-						"tests; consider go-cmp",
+					Pos:     call.Pos(),
+					End:     call.End(),
+					Message: "avoid reflect.DeepEqual in tests; consider go-cmp",
 				})
 			}
 			return true

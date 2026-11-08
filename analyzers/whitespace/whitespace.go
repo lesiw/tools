@@ -16,9 +16,8 @@ import (
 // Analyzer reports files the spacing rules would change.
 var Analyzer = &analysis.Analyzer{
 	Name: "whitespace",
-	Doc: "reports blank lines around declarations that do not follow the " +
-		"layout rules",
-	Run: run,
+	Doc:  "reports blank lines around declarations that do not follow the layout rules",
+	Run:  run,
 }
 
 func run(pass *analysis.Pass) (any, error) {

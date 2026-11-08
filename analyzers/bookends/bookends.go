@@ -130,12 +130,10 @@ func check(pass *analysis.Pass, file *ast.File, src []byte) {
 			}
 			if l.line(p.open) == l.line(p.first) {
 				pass.Report(analysis.Diagnostic{
-					Pos: p.open,
-					Message: "opening bracket shares a line with its " +
-						"first element",
+					Pos:     p.open,
+					Message: "opening bracket shares a line with its first element",
 					SuggestedFixes: []analysis.SuggestedFix{{
-						Message: "Move the first element onto its " +
-							"own line",
+						Message: "Move the first element onto its own line",
 						TextEdits: []analysis.TextEdit{{
 							Pos: p.open + 1,
 							End: p.open + 1,

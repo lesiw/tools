@@ -69,6 +69,7 @@ import (
 	"lesiw.io/tools/analyzers/tidytypes"
 	"lesiw.io/tools/analyzers/timeafter"
 	"lesiw.io/tools/analyzers/unwrap"
+	"lesiw.io/tools/analyzers/uselessconcat"
 	"lesiw.io/tools/analyzers/whitespace"
 )
 
@@ -137,6 +138,7 @@ var (
 		unusedresult.Analyzer,
 		unusedwrite.Analyzer,
 		unwrap.Analyzer,
+		uselessconcat.Analyzer,
 		waitgroup.Analyzer,
 		whitespace.Analyzer,
 	}

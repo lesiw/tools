@@ -71,10 +71,9 @@ func checkPrecheck(pass *analysis.Pass, stmt ast.Stmt) {
 		}}
 	}
 	d := analysis.Diagnostic{
-		Pos: ifStmt.Pos(),
-		End: ifStmt.End(),
-		Message: "redundant ctx.Err() pre-check: the first " +
-			"context-aware operation observes cancellation",
+		Pos:     ifStmt.Pos(),
+		End:     ifStmt.End(),
+		Message: "redundant ctx.Err() pre-check: the first context-aware operation observes cancellation",
 	}
 	if edits != nil {
 		d.SuggestedFixes = []analysis.SuggestedFix{{
