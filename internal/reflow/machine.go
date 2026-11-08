@@ -17,9 +17,8 @@ import (
 func flags(fs *flag.FlagSet) { linelen.Flags(fs) }
 
 // printerNormalizeNumbers is the mode bit go/format sets to have go/printer
-// rewrite numeric literals to their canonical form. The formatter's output has
-// to be the same text gofmt leaves, so this copy names it the way go/format
-// does.
+// rewrite numeric literals to their canonical form. The output has to be the
+// same text gofmt leaves, so this copy names it the way go/format does.
 const printerNormalizeNumbers = 1 << 30
 
 var printerCfg = printer.Config{

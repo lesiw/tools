@@ -108,6 +108,10 @@ func parseArgs(args []string) (options, error) {
 	return opts, nil
 }
 
+// Tool returns the analyzer suite this command would run, building or
+// installing it the way a fix run would.
+func Tool() (string, func(), error) { return resolve(defaultVet) }
+
 // resolve returns the path of the program the go command should run as its
 // vet tool, and a cleanup for a copy it built itself.
 func resolve(name string) (path string, cleanup func(), err error) {

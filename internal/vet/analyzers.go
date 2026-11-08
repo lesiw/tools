@@ -51,6 +51,7 @@ import (
 	"golang.org/x/tools/go/analysis/passes/waitgroup"
 
 	"lesiw.io/errcheck/errcheck"
+	"lesiw.io/tools/analyzers/bookends"
 	"lesiw.io/tools/analyzers/boolset"
 	"lesiw.io/tools/analyzers/ctxguard"
 	"lesiw.io/tools/analyzers/ctxname"
@@ -63,6 +64,8 @@ import (
 	"lesiw.io/tools/analyzers/testhelpers"
 	"lesiw.io/tools/analyzers/tidytypes"
 	"lesiw.io/tools/analyzers/timeafter"
+	"lesiw.io/tools/analyzers/unwrap"
+	"lesiw.io/tools/analyzers/whitespace"
 )
 
 var (
@@ -71,6 +74,9 @@ var (
 		appends.Analyzer,
 		asmdecl.Analyzer,
 		assign.Analyzer,
+		bookends.Analyzer,
+		unwrap.Analyzer,
+		whitespace.Analyzer,
 		atomic.Analyzer,
 		atomicalign.Analyzer,
 		bools.Analyzer,

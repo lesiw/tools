@@ -19,8 +19,16 @@ jobs:
           files=$(go run lesiw.io/gorc/gofmt@latest -l .)
           echo "$files"
           test -z "$files"
+  vet:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version: stable
+      - run: go tool lesiw.io/tools/cmd/vet ./...
   test:
-    needs: fmt
+    needs: [fmt, vet]
     strategy:
       fail-fast: false
       matrix:
@@ -33,7 +41,7 @@ jobs:
           go-version: stable
       - run: go run lesiw.io/gorc/go@latest test ./...
   alpine:
-    needs: fmt
+    needs: [fmt, vet]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -49,7 +57,7 @@ jobs:
             go run lesiw.io/gorc/go@latest test ./...
           '
   freebsd:
-    needs: fmt
+    needs: [fmt, vet]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -65,7 +73,7 @@ jobs:
             export PATH=/usr/local/go/bin:$PATH
             go run lesiw.io/gorc/go@latest test ./...
   cross:
-    needs: fmt
+    needs: [fmt, vet]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7

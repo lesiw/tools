@@ -1,0 +1,8 @@
+package a
+
+func a() {}
+
+func b() {
+	println(1)
+}
+func c() {} // want `a declaration needs a blank line above it`

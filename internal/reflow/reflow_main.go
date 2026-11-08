@@ -1,9 +1,3 @@
-// Package reflow fills comment prose to the width limit. It also lifts a
-// trailing comment that is too long for its line above the code it trails.
-//
-// It is a separate command from fmt because it moves the line breaks inside
-// comments. Reflow joins a paragraph's lines and breaks them again at the
-// width limit. An author who breaks those lines on purpose loses them.
 package reflow
 
 import (

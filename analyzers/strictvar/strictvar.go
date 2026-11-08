@@ -1,9 +1,9 @@
 // Package strictvar provides an analysis.Analyzer that reduces the number of
 // ways a variable may be declared.
 //
-// strictvar is a formatter with type information. Whether a declaration
-// carries a zero value is invisible to syntax alone, so these rules cannot
-// live in a formatter, but running the fixes is meant to feel like running
+// strictvar is a rewrite with type information. Whether a declaration
+// carries a zero value is invisible to syntax alone, so no syntax-level tool
+// can make these changes, but running the fixes is meant to feel like running
 // one.
 //
 // Two ideas underlie every check. Zero values stay visually distinct, with no

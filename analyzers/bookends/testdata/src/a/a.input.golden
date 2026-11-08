@@ -1,0 +1,61 @@
+package a
+
+type pair struct {
+	a int
+	b int
+}
+
+var table = []pair{{
+	1,
+	2,
+}, {
+	3,
+	4,
+}}
+
+var nested = map[string][]int{
+	"a": {
+		1, // want `opening bracket shares a line with its first element`
+		2,
+	},
+}
+
+func f(ps []pair, a, b int, values map[string]int, keys []string) []pair {
+	ps = append(ps, pair{a: a,
+		b: values[keys[0]],
+	}) // want `closer is not at the indent of its opener`
+	return ps
+}
+
+func call(g func(int, int) int) int {
+	return g(
+		1,
+		2,
+	)
+}
+
+type list[T, U any] struct{}
+
+func instantiate[T, U any]() list[
+	T, U,
+] { // want `closer is not at the indent of its opener`
+	return list[T, U]{}
+}
+
+func spread(xs []int) []int {
+	return append(xs,
+		xs...,
+	) // want `closer is not at the indent of its opener`
+}
+
+func indented(g func(int, int) int) int {
+	return g(1,
+		2,
+	)
+}
+
+func comment(g func(int, int) int) int {
+	return g(1,
+		2, /* why */
+	) // want `closer is not at the indent of its opener`
+}
