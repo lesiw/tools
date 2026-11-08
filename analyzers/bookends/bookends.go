@@ -249,7 +249,7 @@ func rowWide(pass *analysis.Pass, l *layout, row *ast.CompositeLit) bool {
 	if err := format.Node(&buf, pass.Fset, row); err != nil {
 		return false
 	}
-	line := append(l.indentAt(row.Lbrace), buf.Bytes()...)
+	line := append(slices.Clone(l.indentAt(row.Lbrace)), buf.Bytes()...)
 	return !linelen.CheckLine(line)
 }
 

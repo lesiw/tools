@@ -52,3 +52,15 @@ func comment(g func(int, int) int) int {
 	return g(1,
 		2 /* why */) // want `closer is not at the indent of its opener`
 }
+
+type row struct {
+	first, second, third, fourth, fifth, sixth, seventh, eighth int
+}
+
+// wideTable puts the first row on the opener's line and the second across
+// lines. Measuring the first row appends to its indent, and that indent is
+// the line the table starts on, so a fix that builds the line on the source's
+// own bytes corrupts the text it is about to write.
+var wideTable = []row{{1, 2, 3, 4, 5, 6, 7, 8}, { // want `table mixes one-line and multi-line rows`
+	1, 2, 3, 4, 5, 6, 7, 8,
+}}
