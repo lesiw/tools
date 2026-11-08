@@ -1,0 +1,40 @@
+package a
+
+import "testing"
+
+func TestLiteral(t *testing.T) {
+	t.Run("ensure the cache evicts", func(t *testing.T) { // want `subtest name is string literal`
+		t.Error("stale entry survived")
+	})
+}
+
+func TestLiteralAnyBody(t *testing.T) {
+	t.Run("several statements", func(t *testing.T) { // want `subtest name is string literal`
+		n := 1
+		if n != 1 {
+			t.Error("fails")
+		}
+	})
+}
+
+func TestConst(t *testing.T) {
+	const name = "a constant"
+	t.Run(name, func(t *testing.T) { // want `subtest name is string literal`
+		t.Error("fails")
+	})
+}
+
+func TestTable(t *testing.T) {
+	for _, tt := range []string{"a", "b"} {
+		t.Run(tt, func(t *testing.T) {
+			t.Error("fails")
+		})
+	}
+}
+
+func TestBuilt(t *testing.T) {
+	name := "a variable"
+	t.Run(name, func(t *testing.T) {
+		t.Error("fails")
+	})
+}

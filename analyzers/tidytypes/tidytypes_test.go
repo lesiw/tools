@@ -16,7 +16,9 @@ func TestAnalysisTest(t *testing.T) {
 			analysistest.Run(t, testdata, Analyzer, pkg)
 		})
 	}
-	t.Run("fix", func(t *testing.T) {
-		analysistest.RunWithSuggestedFixes(t, testdata, Analyzer, "fix")
-	})
+	for _, dir := range []string{"fix"} {
+		t.Run(dir, func(t *testing.T) {
+			analysistest.RunWithSuggestedFixes(t, testdata, Analyzer, dir)
+		})
+	}
 }

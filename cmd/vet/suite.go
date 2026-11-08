@@ -65,6 +65,7 @@ import (
 	"lesiw.io/tools/analyzers/strictvar"
 	"lesiw.io/tools/analyzers/testcmp"
 	"lesiw.io/tools/analyzers/testhelpers"
+	"lesiw.io/tools/analyzers/testlabel"
 	"lesiw.io/tools/analyzers/tidytypes"
 	"lesiw.io/tools/analyzers/timeafter"
 	"lesiw.io/tools/analyzers/unwrap"
@@ -125,6 +126,7 @@ var (
 		testcmp.Analyzer,
 		testhelpers.Analyzer,
 		testinggoroutine.Analyzer,
+		testlabel.Analyzer,
 		tests.Analyzer,
 		tidytypes.Analyzer,
 		timeafter.Analyzer,
