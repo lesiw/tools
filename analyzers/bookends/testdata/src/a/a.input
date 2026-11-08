@@ -11,6 +11,15 @@ var table = []pair{ // want `table mixes one-line and multi-line rows`
 		4},
 }
 
+// emptyRow has a row with no elements. An empty row cannot be expanded, so it
+// keeps its braces on one line.
+var emptyRow = []pair{ // want `table mixes one-line and multi-line rows`
+	{1, 2},
+	{},
+	{3,
+		4},
+}
+
 var nested = map[string][]int{
 	"a": {1, // want `opening bracket shares a line with its first element`
 		2,

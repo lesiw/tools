@@ -263,6 +263,11 @@ func tableDone(l *layout, lit *ast.CompositeLit) bool {
 	}
 	for i, elt := range lit.Elts {
 		row := elt.(*ast.CompositeLit)
+		if len(row.Elts) == 0 {
+			// An empty row cannot be expanded, so it keeps its
+			// braces together whatever the rest of the table does.
+			continue
+		}
 		if l.line(row.Lbrace) == l.line(row.Rbrace) {
 			return false
 		}
@@ -307,23 +312,32 @@ func tableText(pass *analysis.Pass, l *layout, src []byte, lit *ast.CompositeLit
 		inner  = append(slices.Clone(indent), '\t')
 	)
 	b.Write(head)
-	b.WriteString("{{\n")
+	b.WriteString("{")
 	for i, elt := range lit.Elts {
-		for _, e := range elt.(*ast.CompositeLit).Elts {
-			var buf bytes.Buffer
-			if err := format.Node(&buf, pass.Fset, e); err != nil {
-				return nil, false
+		row := elt.(*ast.CompositeLit)
+		if len(row.Elts) == 0 {
+			// An empty row cannot be expanded, so it keeps its
+			// braces on the line they start on.
+			b.WriteString("{}")
+		} else {
+			b.WriteString("{\n")
+			for _, e := range row.Elts {
+				var buf bytes.Buffer
+				if err := format.Node(&buf, pass.Fset, e); err != nil {
+					return nil, false
+				}
+				b.Write(inner)
+				b.Write(buf.Bytes())
+				b.WriteString(",\n")
 			}
-			b.Write(inner)
-			b.Write(buf.Bytes())
-			b.WriteString(",\n")
+			b.Write(indent)
+			b.WriteString("}")
 		}
-		b.Write(indent)
 		if i < len(lit.Elts)-1 {
-			b.WriteString("}, {\n")
+			b.WriteString(", ")
 			continue
 		}
-		b.WriteString("}}")
+		b.WriteString("}")
 	}
 	return []byte(b.String()), true
 }
