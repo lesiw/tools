@@ -18,20 +18,18 @@ import (
 	"io"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"slices"
 	"strings"
+
+	"lesiw.io/tools/internal/tool"
 )
 
 // maxRounds bounds the loop. A tree that does not settle is reported as a
 // failure, not run forever.
 const maxRounds = 100
 
-// defaultVet is this module's analysis suite.
-const defaultVet = "lesiw.io/tools/cmd/vet"
-
 // errUsage marks a command line this command cannot act on.
-var errUsage = fmt.Errorf("usage: fix [-vettool prog] [go vet flags] [packages]")
+var errUsage = fmt.Errorf("usage: fix [-diff] [-vettool prog] [go vet flags] [packages]")
 
 // Main runs the command with args and returns its exit status. The exit
 // status is the only thing decided here; the command itself is run.
@@ -56,18 +54,46 @@ func run(args []string) error {
 	if err != nil {
 		return err
 	}
-	tool, cleanup, err := resolve(opts.vet)
+	toolPath, cleanup, err := tool.Resolve(opts.vet)
 	if err != nil {
 		return err
 	}
 	defer cleanup()
-	return loop(opts, tool)
+	if opts.diff {
+		return report(opts, toolPath)
+	}
+	return loop(opts, toolPath)
 }
 
-// options is the command line: the suite to run, and everything that goes to
-// the go command, package patterns included.
+// report prints the fixes that are pending and fails when there are any. It
+// writes nothing, so a check leaves the tree as it found it.
+//
+// A tree with nothing pending is settled: a fix appears only because an
+// earlier one changed the code, so an empty first report is an empty run.
+func report(o options, tool string) error {
+	return reportWith(o, tool)
+}
+
+// reportWith is report over any driver, so the verdict is testable.
+func reportWith(d driver, tool string) error {
+	pending, err := d.report(tool)
+	if err != nil {
+		return err
+	}
+	if len(pending) == 0 {
+		return nil
+	}
+	for _, line := range pending {
+		fmt.Fprintln(os.Stderr, line)
+	}
+	return fmt.Errorf("%d fixes pending", len(pending))
+}
+
+// options is the command line: the suite to run, whether to write, and
+// everything that goes to the go command, package patterns included.
 type options struct {
 	vet  string
+	diff bool
 	args []string
 }
 
@@ -76,7 +102,7 @@ type options struct {
 // one analyzer, -NAME=false turns one off, and -NAME.flag=value sets one of
 // its own.
 func parseArgs(args []string) (options, error) {
-	opts := options{vet: defaultVet}
+	opts := options{vet: tool.Suite}
 	for i := 0; i < len(args); i++ {
 		var (
 			arg                   = args[i]
@@ -84,6 +110,10 @@ func parseArgs(args []string) (options, error) {
 				strings.TrimLeft(arg, "-"), "=",
 			)
 		)
+		if strings.HasPrefix(arg, "-") && name == "diff" && !hasValue {
+			opts.diff = true
+			continue
+		}
 		if !strings.HasPrefix(arg, "-") || name != "vettool" {
 			opts.args = append(opts.args, arg)
 			continue
@@ -110,50 +140,7 @@ func parseArgs(args []string) (options, error) {
 
 // Tool returns the analyzer suite this command would run, building or
 // installing it the way a fix run would.
-func Tool() (string, func(), error) { return resolve(defaultVet) }
-
-// resolve returns the path of the program the go command should run as its
-// vet tool, and a cleanup for a copy it built itself.
-func resolve(name string) (path string, cleanup func(), err error) {
-	cleanup = func() {}
-	// A path, as opposed to a package path, starts at the root or the
-	// current directory.
-	if strings.HasPrefix(name, ".") || filepath.IsAbs(name) {
-		abs, err := filepath.Abs(name)
-		return abs, cleanup, err
-	}
-	// A module that names the suite builds it, and the go command says
-	// where. That is the common case inside a lesiw module.
-	probe := exec.Command("go", "tool", "-n", name)
-	if out, err := probe.Output(); err == nil {
-		return strings.TrimSpace(string(out)), cleanup, nil
-	}
-	if path, err := exec.LookPath(name); err == nil {
-		return path, cleanup, nil
-	}
-	if !strings.Contains(name, "/") {
-		return "", cleanup, fmt.Errorf("%s: not a tool of this module, "+
-			"and not on PATH", name,
-		)
-	}
-	// Last, install the published package into a directory of our own. A
-	// tree that has added nothing still gets a suite.
-	dir, err := os.MkdirTemp("", "fix")
-	if err != nil {
-		return "", cleanup, err
-	}
-	cleanup = func() { _ = os.RemoveAll(dir) }
-	var stderr bytes.Buffer
-	cmd := exec.Command("go", "install", name+"@latest")
-	cmd.Env = append(os.Environ(), "GOBIN="+dir)
-	cmd.Stderr = &stderr
-	if err := cmd.Run(); err != nil {
-		return "", cleanup, fmt.Errorf("install %s: %w: %s", name, err,
-			strings.TrimSpace(stderr.String()),
-		)
-	}
-	return filepath.Join(dir, filepath.Base(name)), cleanup, nil
-}
+func Tool() (string, func(), error) { return tool.Resolve(tool.Suite) }
 
 // driver is the two things a round asks of the go command.
 type driver interface {

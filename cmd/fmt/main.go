@@ -26,7 +26,7 @@ import (
 	"lesiw.io/tools/analyzers/linelen"
 	"lesiw.io/tools/analyzers/unwrap"
 	"lesiw.io/tools/analyzers/whitespace"
-	"lesiw.io/tools/internal/fix"
+	"lesiw.io/tools/fix"
 )
 
 // A command sets the width it runs with; the library default is no limit.

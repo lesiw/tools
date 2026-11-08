@@ -12,7 +12,7 @@ package main
 import (
 	"os"
 
-	"lesiw.io/tools/internal/fix"
+	"lesiw.io/tools/fix"
 )
 
 func main() { os.Exit(fix.Main(os.Args[1:])) }

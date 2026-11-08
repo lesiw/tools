@@ -2,12 +2,17 @@
 package tool
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 )
+
+// Suite is this module's analysis suite.
+const Suite = "lesiw.io/tools/cmd/vet"
 
 // Main calls analyze when the go command started this program as its vet
 // tool, and otherwise asks the go command to vet the named packages with this
@@ -28,6 +33,49 @@ func Main(analyze func()) {
 		return
 	}
 	os.Exit(run(args))
+}
+
+// Resolve returns the path of the program the go command should run as its
+// vet tool, and a cleanup for a copy it built itself.
+func Resolve(name string) (path string, cleanup func(), err error) {
+	cleanup = func() {}
+	// A path, as opposed to a package path, starts at the root or the
+	// current directory.
+	if strings.HasPrefix(name, ".") || filepath.IsAbs(name) {
+		abs, err := filepath.Abs(name)
+		return abs, cleanup, err
+	}
+	// A module that names the suite builds it, and the go command says
+	// where. That is the common case inside a lesiw module.
+	probe := exec.Command("go", "tool", "-n", name)
+	if out, err := probe.Output(); err == nil {
+		return strings.TrimSpace(string(out)), cleanup, nil
+	}
+	if path, err := exec.LookPath(name); err == nil {
+		return path, cleanup, nil
+	}
+	if !strings.Contains(name, "/") {
+		return "", cleanup, fmt.Errorf("%s: not a tool of this module, "+
+			"and not on PATH", name,
+		)
+	}
+	// Last, install the published package into a directory of our own. A
+	// tree that has added nothing still gets a suite.
+	dir, err := os.MkdirTemp("", "fix")
+	if err != nil {
+		return "", cleanup, err
+	}
+	cleanup = func() { _ = os.RemoveAll(dir) }
+	var stderr bytes.Buffer
+	cmd := exec.Command("go", "install", name+"@latest")
+	cmd.Env = append(os.Environ(), "GOBIN="+dir)
+	cmd.Stderr = &stderr
+	if err := cmd.Run(); err != nil {
+		return "", cleanup, fmt.Errorf("install %s: %w: %s", name, err,
+			strings.TrimSpace(stderr.String()),
+		)
+	}
+	return filepath.Join(dir, filepath.Base(name)), cleanup, nil
 }
 
 // isTool reports whether the go command started this program as its vet tool.

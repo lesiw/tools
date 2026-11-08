@@ -1,4 +1,4 @@
-package reflow
+package main
 
 import (
 	"flag"

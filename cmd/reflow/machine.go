@@ -1,4 +1,4 @@
-package reflow
+package main
 
 import (
 	"bytes"
@@ -13,6 +13,9 @@ import (
 	"lesiw.io/tools/analyzers/linelen"
 )
 
+// The width limit the comments are measured against is linelen's
+// own configuration, so a line this command calls long is a line the width
+// check calls long.
 // flags registers the width flags on fs.
 func flags(fs *flag.FlagSet) { linelen.Flags(fs) }
 

@@ -5,6 +5,8 @@ import (
 	"slices"
 	"strings"
 	"testing"
+
+	"lesiw.io/tools/internal/tool"
 )
 
 type argCase struct {
@@ -17,12 +19,12 @@ type argCase struct {
 var argCases = []argCase{{
 	name: "packages only",
 	args: []string{"./..."},
-	vet:  defaultVet,
+	vet:  tool.Suite,
 	want: []string{"./..."},
 }, {
 	name: "no package named means this directory",
 	args: nil,
-	vet:  defaultVet,
+	vet:  tool.Suite,
 	want: []string{"."},
 }, {
 	name: "analysis tool as two words",
@@ -42,7 +44,7 @@ var argCases = []argCase{{
 }, {
 	name: "an analyzer flag is passed on",
 	args: []string{"-stringsseq=false", "-tags=netgo", "./..."},
-	vet:  defaultVet,
+	vet:  tool.Suite,
 	want: []string{"-stringsseq=false", "-tags=netgo", "./..."},
 }}
 
