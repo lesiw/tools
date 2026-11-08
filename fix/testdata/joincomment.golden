@@ -1,0 +1,7 @@
+package p
+
+func f() {
+	go func(x int) {
+		_ = x
+	}(1) // a trailing note long enough to keep this call off one line
+}

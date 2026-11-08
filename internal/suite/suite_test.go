@@ -1,4 +1,4 @@
-package main
+package suite
 
 import (
 	"testing"
@@ -9,7 +9,7 @@ import (
 )
 
 func TestSuiteValidates(t *testing.T) {
-	if err := analysis.Validate(ignore.Apply(analyzers...)); err != nil {
+	if err := analysis.Validate(ignore.Apply(Analyzers()...)); err != nil {
 		t.Fatal(err)
 	}
 }

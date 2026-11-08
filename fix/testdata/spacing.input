@@ -1,0 +1,9 @@
+package p
+
+func a() int { return 1 }
+
+func b() int {
+	return 2
+}
+
+func c() int { return 3 }

@@ -1,10 +1,10 @@
-// Package multichecker runs a set of analyzers as one vet tool.
+// Package multichecker runs a set of analyzers as one command.
 //
 // It is golang.org/x/tools/go/analysis/multichecker with the //ignore
-// directives honored: a diagnostic inside a range a directive covers is
-// dropped before the driver sees it. The singlechecker honors the same
-// directives, so a standalone command and the suite agree about what a
-// directive suppresses.
+// directives honored and generated files left alone: a diagnostic inside a
+// range a directive covers is dropped, and a rule never sees what a generator
+// wrote. The singlechecker does the same for one analyzer, so a standalone
+// command and the suite agree about what a directive suppresses.
 package multichecker
 
 import (
@@ -12,11 +12,10 @@ import (
 	xmultichecker "golang.org/x/tools/go/analysis/multichecker"
 
 	"lesiw.io/tools/internal/ignore"
-	"lesiw.io/tools/internal/tool"
 )
 
 // Main runs analyzers over the packages named on the command line. It does
 // not return.
 func Main(analyzers ...*analysis.Analyzer) {
-	tool.Main(func() { xmultichecker.Main(ignore.Apply(analyzers...)...) })
+	xmultichecker.Main(ignore.Apply(analyzers...)...)
 }

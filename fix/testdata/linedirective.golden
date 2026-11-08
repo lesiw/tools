@@ -1,0 +1,8 @@
+package p
+
+func g(a, b string) {}
+
+//line other.go:999999
+func f() {
+	g("a", "b")
+}

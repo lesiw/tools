@@ -1,0 +1,17 @@
+package p
+
+type A struct{ X, Y int }
+
+func f() {
+	var (
+		a = A{1, 2}
+		b = []int{1, 2, 3}
+		c = A{
+			// the comment keeps this one open
+			1, 2,
+		}
+	)
+	_ = a
+	_ = b
+	_ = c
+}

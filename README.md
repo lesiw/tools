@@ -47,39 +47,24 @@ go tool lesiw.io/tools/cmd/vet -fix ./...
 Fix applies the analyzer suite's fixes over the packages named on the command
 line, and repeats until nothing is left to suggest.
 
-The go command does the work. Each round asks `go vet` which analyzers still
-have fixes, then runs one analyzer at a time with `-fix`, so two analyzers
-never edit the same file in one pass. That is the shape whose work is never
-discarded: the go command keeps the patch of a tool that exits zero, and a tool
-that sets a fix aside exits non-zero.
+The analyzers run in this process. A round loads the packages, runs the suite
+over them, and writes the edits every analyzer suggested, then formats the
+result and prunes the imports the fixes orphaned. A round that finds nothing is
+a fixed point. A fix is applied whole or not at all: when two analyzers would
+edit the same span, one of them waits for the next round.
 
-Every flag goes to the go command, so an analyzer flag means there what it
-means there: `-stringsseq` runs one analyzer, `-stringsseq=false` turns one
-off, and `-linelen.len=100` sets one of its own.
+A package that does not load stops the run, because the next round cannot
+check a fix applied to a tree that does not compile.
 
-## cmd/fmt
-
-Fmt lays Go source out under stricter rules than gofmt. It puts a wrapped call
-or control-flow header back onto one line when the result fits. It rejoins a
-composite literal whose elements share a line. A parenthesized block holding
-one spec loses its parentheses. A declared signature stays on one line however
-long it is. Fmt sets the blank lines between declarations and before a doc
-comment inside a block. It takes gofmt's `-l` and `-w`:
-
-```sh
-go tool lesiw.io/tools/cmd/fmt -w .
-```
-
-A file marked generated passes through untouched. One pass makes the output
-gofmt-clean. Fmt never breaks a long line, and never makes one longer than
-[lesiw.io/linelen](https://pkg.go.dev/lesiw.io/linelen) allows. It does move a
-closer onto a line of its own when its opener sits at a different indent.
+Analyzer flags mean what they mean to the analyzer: `-stringsseq` runs one
+analyzer, `-stringsseq=false` turns one off, and `-linelen.len=100` sets one of
+its own. Build flags are passed to the load.
 
 ## cmd/reflow
 
 Reflow fills comment prose to the width limit. It also lifts a trailing comment
 that is too long for its line above the code it trails. Lifting moves a comment
-and does not shorten it. It reads source on stdin, like cmd/fmt, and it changes
+and does not shorten it. It reads source on stdin, and it changes
 only the comments. The file passes through the printer, so a file gofmt would
 change comes back gofmt-clean:
 

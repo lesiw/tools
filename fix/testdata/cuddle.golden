@@ -1,0 +1,31 @@
+package p
+
+type Edit struct {
+	Position    int
+	End         int
+	Replacement string
+	Reason      string
+}
+
+type Span struct {
+	Start int
+	Stop  int
+	Label string
+}
+
+func apply(x int, edits []Edit) {}
+func collect(spans []Span)      {}
+
+func f(pos, end int, text string) {
+	apply(0, []Edit{{
+		Position:    pos,
+		End:         end,
+		Replacement: text,
+		Reason:      "a reason long enough to keep this off one line",
+	}})
+	collect([]Span{{
+		Start: pos,
+		Stop:  end,
+		Label: "a label long enough to keep this off one line",
+	}})
+}

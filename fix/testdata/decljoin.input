@@ -1,0 +1,11 @@
+package p
+
+const (
+	aaaaaaaaaaaaaaaaa = 1
+	bbbbbbbbbbbbbbbbb = 2
+	cccccccccccc      = 3
+)
+
+const (
+	xxxxxxxxxxxxxxxxxxxx = aaaaaaaaaaaaaaaaa + bbbbbbbbbbbbbbbbb + cccccccccccc
+)

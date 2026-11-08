@@ -1,0 +1,8 @@
+package p
+
+const (
+	aaaaaaaaaaaaaaaaa    = 1
+	bbbbbbbbbbbbbbbbb    = 2
+	cccccccccccc         = 3
+	xxxxxxxxxxxxxxxxxxxx = aaaaaaaaaaaaaaaaa + bbbbbbbbbbbbbbbbb + cccccccccccc
+)

@@ -1,0 +1,14 @@
+package p
+
+func g(a, b, c string) {}
+
+func first()  {}
+func second() {}
+
+func f() {
+	first()
+	second()
+
+	g("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+		"ccccccccccccccccccccccccccccccccc")
+}

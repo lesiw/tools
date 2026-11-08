@@ -1,0 +1,11 @@
+package p
+
+func h(a, b, c int) {}
+
+func f() {
+	h(
+		1, // first
+		2, // second
+		3,
+	)
+}

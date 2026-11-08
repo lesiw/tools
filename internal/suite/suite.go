@@ -1,4 +1,5 @@
-package main
+// Package suite names the lesiw.io analyzer suite.
+package suite
 
 import (
 	"slices"
@@ -73,9 +74,13 @@ import (
 	"lesiw.io/tools/analyzers/whitespace"
 )
 
+// Analyzers returns the suite: the x/tools passes, the lesiw.io analyzers, and
+// the modernize suite, which carries the upstream rules.
+func Analyzers() []*analysis.Analyzer { return analyzers }
+
 var (
-	analyzers = slices.Concat(suite, modernize.Suite)
-	suite     = []*analysis.Analyzer{
+	analyzers = slices.Concat(list, modernize.Suite)
+	list      = []*analysis.Analyzer{
 		appends.Analyzer,
 		asmdecl.Analyzer,
 		assign.Analyzer,

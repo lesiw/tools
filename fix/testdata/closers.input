@@ -1,0 +1,13 @@
+package p
+
+type entry struct {
+	name    string
+	value   int
+	comment string
+}
+
+func add(entries []entry, name string, value int, comment string, values map[string]int, keys []string) []entry {
+	entries = append(entries, entry{name: name,
+		value: values[keys[0]], comment: comment})
+	return entries
+}

@@ -1,0 +1,16 @@
+package p
+
+type Edit struct {
+	Pos int
+	End int
+}
+
+func f(a, b, c, d int, v string) []Edit {
+	return []Edit{{
+		Pos: a,
+		End: b,
+	}, {
+		Pos: c,
+		End: d,
+	}}
+}

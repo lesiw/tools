@@ -1,0 +1,14 @@
+package p
+
+type Alpha struct{}
+type Beta struct{}
+type Gamma struct{}
+type record struct{}
+
+func gather(first *Alpha, second *Beta, third map[string]*Gamma, fourth map[string][]int) {
+	_ = first
+}
+
+func (r *record) submit(pos, end int, msg string) {
+	_ = pos
+}

@@ -1,0 +1,15 @@
+package p
+
+import "context"
+
+func run(ctx context.Context, script, a, b, c string) error { return nil }
+
+func f(ctx context.Context) error {
+	return run(ctx, `
+		echo one
+		echo "a line of shell that reaches well past the margin"`,
+		alpha, beta, gamma,
+	)
+}
+
+var alpha, beta, gamma string
