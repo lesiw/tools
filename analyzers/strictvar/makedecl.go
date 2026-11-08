@@ -56,7 +56,14 @@ func (f *file) checkListMakeDecls(list []ast.Stmt) {
 // checkFirstUse scans forward for the first statement mentioning obj. If that
 // statement overwrites the whole variable at the same list depth with a value
 // := would type identically, the declaration is reported.
+//
+// A function holding a goto is left alone. Moving a declaration to its first
+// use can put it past a label, and the spec forbids a goto that jumps over a
+// declaration.
 func (f *file) checkFirstUse(rest []ast.Stmt, gd *ast.GenDecl, obj types.Object) {
+	if f.hasGoto(gd.Pos()) {
+		return
+	}
 	info := f.pass.TypesInfo
 	for _, stmt := range rest {
 		if !mentions(info, stmt, obj) {
@@ -96,6 +103,28 @@ func (f *file) checkFirstUse(rest []ast.Stmt, gd *ast.GenDecl, obj types.Object)
 		)
 		return
 	}
+}
+
+// hasGoto reports whether the function holding pos contains a goto.
+func (f *file) hasGoto(pos token.Pos) bool {
+	var found bool
+	ast.Inspect(f.syntax, func(n ast.Node) bool {
+		if found {
+			return false
+		}
+		body, ok := n.(*ast.BlockStmt)
+		if !ok || pos < body.Pos() || pos > body.End() {
+			return true
+		}
+		ast.Inspect(body, func(n ast.Node) bool {
+			if br, ok := n.(*ast.BranchStmt); ok && br.Tok == token.GOTO {
+				found = true
+			}
+			return !found
+		})
+		return false
+	})
+	return found
 }
 
 // checkBlockAssign reports a zero spec in a var block whose whole variable is
