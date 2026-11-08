@@ -58,6 +58,7 @@ import (
 	"lesiw.io/tools/analyzers/docsyntax"
 	"lesiw.io/tools/analyzers/errfmt"
 	"lesiw.io/tools/analyzers/gospell"
+	"lesiw.io/tools/analyzers/ipliteral"
 	"lesiw.io/tools/analyzers/linelen"
 	"lesiw.io/tools/analyzers/linewrap"
 	"lesiw.io/tools/analyzers/singlefield"
@@ -102,6 +103,7 @@ var (
 		httpmux.Analyzer,
 		httpresponse.Analyzer,
 		ifaceassert.Analyzer,
+		ipliteral.Analyzer,
 		linelen.Analyzer,
 		linewrap.Analyzer,
 		loopclosure.Analyzer,
