@@ -14,33 +14,28 @@ import (
 	"golang.org/x/tools/go/analysis"
 )
 
-// Config configures the line-length rules. The zero value uses the
-// defaults: a 79 column limit and 4 column tabs.
-type Config struct {
-	Len int // maximum line width in visual columns
+// Config is the line-length policy. Len at zero means unlimited; a driver
+// that wants a limit sets it before analysis starts.
+var Config = struct {
+	Len int // maximum line width in visual columns; zero means no limit
 	Tab int // visual width of a tab
-}
+}{0, 4}
 
-// len and tab resolve unset fields to the defaults, so cmp.Or
-// appears here and nowhere else.
-func (c Config) len() int { return cmp.Or(c.Len, 79) }
-func (c Config) tab() int { return cmp.Or(c.Tab, 4) }
-
-// Flags registers the len and tab flags on fs, bound to c, so every
-// command sharing the rules exposes identical knobs.
-func (c *Config) Flags(fs *flag.FlagSet) {
-	fs.IntVar(&c.Len, "len", c.len(), "maximum line length")
-	fs.IntVar(&c.Tab, "tab", c.tab(), "tab width in spaces")
+// Flags registers the len and tab flags on fs, so every command sharing the
+// rules exposes identical knobs. A flag registered with the value Config
+// already holds leaves that value in place until the flag is set.
+func Flags(fs *flag.FlagSet) {
+	fs.IntVar(&Config.Len, "len", Config.Len, "maximum line length")
+	fs.IntVar(&Config.Tab, "tab", Config.Tab, "tab width in spaces")
 }
 
 // Width returns the visual width of line: a tab counts Tab columns,
 // every other rune one. A trailing carriage return does not count.
-func (c Config) Width(line []byte) (width int) {
-	tab := c.tab()
+func Width(line []byte) (width int) {
 	line = bytes.TrimSuffix(line, []byte("\r"))
 	for _, r := range string(line) {
 		if r == '\t' {
-			width += tab
+			width += cmp.Or(Config.Tab, 4)
 		} else {
 			width++
 		}
@@ -64,26 +59,31 @@ type span struct {
 // CheckLine reports whether line is within the limit, or more than
 // half of it is one continuous string literal or URL. It is lexical: a
 // line that begins inside a multiline literal is not seen.
-func (c Config) CheckLine(line []byte) bool {
-	return c.Width(line) <= c.len() || c.continuous(line, scanLits(line))
+func CheckLine(line []byte) bool {
+	if Config.Len <= 0 {
+		return true
+	}
+	return Width(line) <= Config.Len || continuous(line, scanLits(line))
 }
 
 // CheckFile returns f's overlong lines: every line of src whose width
 // exceeds the limit, which f measures, and which is not continuous.
 // Positions where wrapping is the author's layout, and generated
 // files, are the caller's to skip.
-func (c Config) CheckFile(fset *token.FileSet, f *ast.File, src []byte) (long []Line) {
+func CheckFile(fset *token.FileSet, f *ast.File, src []byte) (long []Line) {
+	if Config.Len <= 0 {
+		return nil
+	}
 	var (
 		n, pos   int
 		measured = checked(fset, f)
 		file     = fset.File(f.FileStart)
-		limit    = c.len()
 		lits     = astLits(fset, f)
 	)
 	for line := range bytes.SplitSeq(src, []byte("\n")) {
 		n++
-		width := c.Width(line)
-		if measured(n) && width > limit && !c.continuous(line, lits[n]) {
+		width := Width(line)
+		if measured(n) && width > Config.Len && !continuous(line, lits[n]) {
 			long = append(long, Line{N: n, Width: width, Pos: file.Pos(pos)})
 		}
 		pos += len(line) + 1 // len("\n")
@@ -93,19 +93,19 @@ func (c Config) CheckFile(fset *token.FileSet, f *ast.File, src []byte) (long []
 
 // continuous reports whether one continuous string literal or URL takes
 // up more than half of the line's width, ignoring indentation.
-func (c Config) continuous(line []byte, lits []span) bool {
+func continuous(line []byte, lits []span) bool {
 	var (
 		body    = bytes.TrimLeft(line, " \t")
 		shifted = shiftSpans(lits, len(line)-len(body))
-		width   = c.Width(body)
+		width   = Width(body)
 	)
 	for _, s := range shifted {
-		if c.dominant(body, s, width) {
+		if dominant(body, s, width) {
 			return true
 		}
 	}
 	for _, u := range urlSpans(body) {
-		if !within(shifted, u) && c.dominant(body, u, width) {
+		if !within(shifted, u) && dominant(body, u, width) {
 			return true
 		}
 	}
@@ -128,19 +128,19 @@ func shiftSpans(spans []span, shift int) (out []span) {
 
 // dominant reports whether s is more than half of the limit and more than
 // half of a line of the given width.
-func (c Config) dominant(body []byte, s span, width int) bool {
+func dominant(body []byte, s span, width int) bool {
 	lo, hi := max(s.pos, 0), min(s.end, len(body))
 	if lo >= hi {
 		return false
 	}
-	if 2*c.Width(body[lo:hi]) <= width {
+	if 2*Width(body[lo:hi]) <= width {
 		return false
 	}
-	start := c.Width(body[:lo])
-	if start >= c.len() {
+	start := Width(body[:lo])
+	if start >= Config.Len {
 		return false
 	}
-	return 2*(min(c.Width(body[:hi]), c.len())-start) > c.len()
+	return 2*(min(Width(body[:hi]), Config.Len)-start) > Config.Len
 }
 
 // within reports whether s lies inside one of spans.
@@ -296,17 +296,14 @@ func checked(fset *token.FileSet, f *ast.File) func(line int) bool {
 	}
 }
 
-var (
-	cfg      Config
-	Analyzer = &analysis.Analyzer{
-		Name: "linelen",
-		Doc:  "reports lines longer than the specified character limit",
-		Run:  run,
-	}
-)
+var Analyzer = &analysis.Analyzer{
+	Name: "linelen",
+	Doc:  "reports lines longer than the specified character limit",
+	Run:  run,
+}
 
 func init() {
-	cfg.Flags(&Analyzer.Flags)
+	Flags(&Analyzer.Flags)
 }
 
 func run(pass *analysis.Pass) (any, error) {
@@ -319,8 +316,8 @@ func run(pass *analysis.Pass) (any, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to open file: %w", err)
 		}
-		for _, l := range cfg.CheckFile(pass.Fset, f, src) {
-			pass.Reportf(l.Pos, "line is %d characters long, exceeds %d limit", l.Width, cfg.len())
+		for _, l := range CheckFile(pass.Fset, f, src) {
+			pass.Reportf(l.Pos, "line is %d characters long, exceeds %d limit", l.Width, Config.Len)
 		}
 	}
 	return nil, nil

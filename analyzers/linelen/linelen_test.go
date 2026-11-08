@@ -72,10 +72,11 @@ var checkLineTests = []struct {
 }
 
 func TestCheckLine(t *testing.T) {
-	c := Config{Len: 20}
+	defer func(old struct{ Len, Tab int }) { Config = old }(Config)
+	Config.Len = 20
 	for _, tt := range checkLineTests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := c.CheckLine([]byte(tt.line)); got != tt.allow {
+			if got := CheckLine([]byte(tt.line)); got != tt.allow {
 				t.Errorf("CheckLine(%q) = %v, want %v", tt.line, got, tt.allow)
 			}
 		})
@@ -83,6 +84,9 @@ func TestCheckLine(t *testing.T) {
 }
 
 func TestAnalysisTest(t *testing.T) {
+	// The suite's driver gives the analyzer a width; a bare test binary
+	// has none.
+	Config.Len = 79
 	analysistest.Run(t, testdataDir(t), Analyzer,
 		"basic", "longimportblock", "longimportstmt",
 		"methodwrap", "continuous", "linedirective",

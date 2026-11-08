@@ -8,3 +8,4 @@ import (
 )
 
 func main() { singlechecker.Main(linelen.Analyzer) }
+func init() { linelen.Config.Len = 79 }

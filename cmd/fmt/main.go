@@ -10,7 +10,12 @@ package main
 import (
 	"os"
 
+	"lesiw.io/tools/analyzers/linelen"
 	"lesiw.io/tools/internal/fmt"
 )
+
+// A tool that was asked to run gives the width rules the house limit; the
+// library default is no limit at all.
+func init() { linelen.Config.Len = 79 }
 
 func main() { os.Exit(fmt.Main(os.Args[1:])) }

@@ -8,7 +8,11 @@ import (
 	"path/filepath"
 	"slices"
 	"testing"
+
+	"lesiw.io/tools/analyzers/linelen"
 )
+
+func init() { linelen.Config.Len = 79 }
 
 func TestMain(m *testing.M) {
 	register(flag.NewFlagSet("fmt", flag.ContinueOnError))

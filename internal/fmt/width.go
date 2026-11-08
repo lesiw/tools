@@ -11,11 +11,6 @@ import (
 	"lesiw.io/tools/analyzers/linelen"
 )
 
-// cfg is the line-length authority. The linelen command reads it too, so both
-// tools agree on what an overlong line is. The zero value carries the
-// defaults.
-var cfg linelen.Config
-
 // printerNormalizeNumbers is the mode bit go/format sets to have go/printer
 // rewrite numeric literals to their canonical form. go/printer does not export
 // it. The rules start from gofmt's output, so it is named here the way
@@ -30,7 +25,7 @@ var printerCfg = printer.Config{
 // fits reports whether line may stay on one line. It asks about the whole
 // line, trailing comment included. A join that fits only because its comment
 // was ignored would print a line the width rules reject.
-func fits(line []byte) bool { return cfg.CheckLine(line) }
+func fits(line []byte) bool { return linelen.CheckLine(line) }
 
 // printNode renders n with the shared printer configuration.
 func printNode(fset *token.FileSet, n ast.Node) (string, error) {

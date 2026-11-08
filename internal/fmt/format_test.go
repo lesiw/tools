@@ -14,6 +14,8 @@ import (
 	"slices"
 	"strings"
 	"testing"
+
+	"lesiw.io/tools/analyzers/linelen"
 )
 
 // corpus returns the Go sources the properties are checked against: this
@@ -113,7 +115,7 @@ func longLines(t *testing.T, src []byte) int {
 	if err != nil {
 		t.Fatalf("parse: %v", err)
 	}
-	return len(cfg.CheckFile(fset, file, src))
+	return len(linelen.CheckFile(fset, file, src))
 }
 
 // comments returns each comment's text with its whitespace collapsed.

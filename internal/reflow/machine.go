@@ -13,13 +13,8 @@ import (
 	"lesiw.io/tools/analyzers/linelen"
 )
 
-// cfg is the width limit the comments are measured against. It is linelen's
-// own configuration, so a line this command calls long is a line the width
-// check calls long.
-var cfg linelen.Config
-
 // flags registers the width flags on fs.
-func flags(fs *flag.FlagSet) { cfg.Flags(fs) }
+func flags(fs *flag.FlagSet) { linelen.Flags(fs) }
 
 // printerNormalizeNumbers is the mode bit go/format sets to have go/printer
 // rewrite numeric literals to their canonical form. The formatter's output has
@@ -84,7 +79,7 @@ func (s *snapshot) text(line int) []byte {
 }
 
 // fits reports whether line may stay on one line, trailing comment included.
-func fits(line []byte) bool { return cfg.CheckLine(line) }
+func fits(line []byte) bool { return linelen.CheckLine(line) }
 
 // lineAt returns the line pos is written on, ignoring any //line directive.
 func lineAt(tokFile *token.File, pos token.Pos) int {

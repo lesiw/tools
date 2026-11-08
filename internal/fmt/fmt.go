@@ -44,13 +44,15 @@ import (
 	"strings"
 	"sync"
 
+	"lesiw.io/tools/analyzers/linelen"
+
 	"golang.org/x/sync/semaphore"
 )
 
 var list, write *bool
 
 // flags registers the width flags on fs.
-func flags(fs *flag.FlagSet) { cfg.Flags(fs) }
+func flags(fs *flag.FlagSet) { linelen.Flags(fs) }
 
 // register sets up the command's flags on fs.
 func register(fs *flag.FlagSet) {
