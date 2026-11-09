@@ -20,6 +20,14 @@ var emptyRow = []pair{ // want `table mixes one-line and multi-line rows`
 		4},
 }
 
+// trailingCloser mixes a one-line row with a multi-line one and puts the
+// closer on the last row's line, which is the shape where the literal's own
+// delimiters pair opens on the same brace as the table.
+var trailingCloser = []pair{ // want `table mixes one-line and multi-line rows`
+	{1, 2},
+	{3,
+		4}}
+
 var nested = map[string][]int{
 	"a": {1, // want `opening bracket shares a line with its first element`
 		2,

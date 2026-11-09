@@ -5,7 +5,7 @@ type pair struct {
 	b int
 }
 
-var table = []pair{{
+var table = []pair{{ // want `table mixes one-line and multi-line rows`
 	1,
 	2,
 }, {
@@ -15,10 +15,21 @@ var table = []pair{{
 
 // emptyRow has a row with no elements. An empty row cannot be expanded, so it
 // keeps its braces on one line.
-var emptyRow = []pair{{
+var emptyRow = []pair{{ // want `table mixes one-line and multi-line rows`
 	1,
 	2,
 }, {}, {
+	3,
+	4,
+}}
+
+// trailingCloser mixes a one-line row with a multi-line one and puts the
+// closer on the last row's line, which is the shape where the literal's own
+// delimiters pair opens on the same brace as the table.
+var trailingCloser = []pair{{ // want `table mixes one-line and multi-line rows`
+	1,
+	2,
+}, {
 	3,
 	4,
 }}
@@ -78,7 +89,7 @@ type row struct {
 // lines. Measuring the first row appends to its indent, and that indent is
 // the line the table starts on, so a fix that builds the line on the source's
 // own bytes corrupts the text it is about to write.
-var wideTable = []row{{
+var wideTable = []row{{ // want `table mixes one-line and multi-line rows`
 	1,
 	2,
 	3,
@@ -97,3 +108,4 @@ var wideTable = []row{{
 	7,
 	8,
 }}
+

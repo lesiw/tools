@@ -9,9 +9,8 @@ var fits = "one " + "two" // want "joined by"
 var chain = "a" + "b" + "c" // want "joined by"
 
 // A line dominated by one string literal is exempt from the width, so a
-// long message merges.
-var long = "a message long enough that joining it would push this line " + // want "joined by"
-	"past the limit the rules allow"
+// long message merges even though the result passes the limit.
+var long = "a message long enough that joining it would push this line " + "past the limit the rules allow" // want "joined by"
 
 // A join that would push a line past the limit stays.
 var keepThis = []string{"alpha", "bravo", "charlie", "delta", "echo", "one " +
@@ -25,3 +24,9 @@ var raw = `C:\dir` + `\file` // want "joined by"
 
 // A literal holding a newline stays a raw string.
 var multiline = "one\n" + "two"
+
+// A comment between the operands belongs to the author, so the finding is
+// reported and the fix is withheld.
+var commented = "one " + // want "joined by"
+	// why the split
+	"two"

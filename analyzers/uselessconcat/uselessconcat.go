@@ -77,18 +77,34 @@ func check(pass *analysis.Pass, bin *ast.BinaryExpr) {
 		return
 	}
 	pass.Report(analysis.Diagnostic{
-		Pos:     bin.Pos(),
-		End:     bin.End(),
-		Message: "string literals joined by + fit on one line",
-		SuggestedFixes: []analysis.SuggestedFix{{
-			Message: "merge the literals",
-			TextEdits: []analysis.TextEdit{{
-				Pos:     bin.Pos(),
-				End:     bin.End(),
-				NewText: []byte(merged),
-			}},
-		}},
+		Pos:            bin.Pos(),
+		End:            bin.End(),
+		Message:        "string literals joined by + fit on one line",
+		SuggestedFixes: fixes(pass, bin, merged),
 	})
+}
+
+// fixes returns the merge, or nothing when the span holds a comment. The edit
+// replaces everything between the first operand and the last, and a comment
+// there belongs to the author.
+func fixes(pass *analysis.Pass, bin *ast.BinaryExpr, merged string) []analysis.SuggestedFix {
+	for _, f := range pass.Files {
+		for _, cg := range f.Comments {
+			for _, c := range cg.List {
+				if c.Pos() >= bin.Pos() && c.End() <= bin.End() {
+					return nil
+				}
+			}
+		}
+	}
+	return []analysis.SuggestedFix{{
+		Message: "Merge the literals",
+		TextEdits: []analysis.TextEdit{{
+			Pos:     bin.Pos(),
+			End:     bin.End(),
+			NewText: []byte(merged),
+		}},
+	}}
 }
 
 // flatten returns the operands of a chain of + expressions, and whether every

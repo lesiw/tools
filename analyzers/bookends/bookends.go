@@ -73,7 +73,10 @@ func check(pass *analysis.Pass, file *ast.File, src []byte) {
 	}
 	inTable := func(pos token.Pos) bool {
 		for _, t := range tables {
-			if pos > t.open && pos <= t.close {
+			// A delimiters pair for the table literal opens on
+			// the same brace as the table, so the bound is
+			// inclusive.
+			if pos >= t.open && pos <= t.close {
 				return true
 			}
 		}
@@ -100,7 +103,7 @@ func check(pass *analysis.Pass, file *ast.File, src []byte) {
 			}
 			// A table is one edit: the braces, the seams and the row
 			// breaks overlap, so they are decided together.
-			text, ok := tableText(pass, l, src, p.lit)
+			text, ok := tableText(pass, l, src, p.lit, file)
 			if !ok {
 				continue
 			}
@@ -300,17 +303,48 @@ func hasInteriorComment(l *layout, file *ast.File, lit *ast.CompositeLit) bool {
 	return false
 }
 
+// trailingComments returns the comments that sit on the table's opening line.
+// The rebuild replaces that line, so they are written back explicitly.
+func trailingComments(l *layout, file *ast.File, lit *ast.CompositeLit) (out []*ast.Comment) {
+	open := l.line(lit.Lbrace)
+	for _, cg := range file.Comments {
+		for _, c := range cg.List {
+			if c.Pos() <= lit.Lbrace || c.End() > lit.Rbrace {
+				continue
+			}
+			if l.line(c.Pos()) == open {
+				out = append(out, c)
+			}
+		}
+	}
+	return out
+}
+
 // tableText renders a table with every row across lines and the braces
 // cuddled. It replaces the line the literal starts on, so the text is written
 // from a known column rather than from the middle of a line.
-func tableText(pass *analysis.Pass, l *layout, src []byte, lit *ast.CompositeLit) ([]byte, bool) {
+func tableText(pass *analysis.Pass, l *layout, src []byte, lit *ast.CompositeLit, file *ast.File) ([]byte, bool) {
 	var (
-		start  = l.lineStart(lit.Lbrace)
-		head   = src[start : int(lit.Lbrace)-l.base]
-		b      strings.Builder
-		indent = l.indentAt(lit.Lbrace)
-		inner  = append(slices.Clone(indent), '\t')
+		start    = l.lineStart(lit.Lbrace)
+		head     = src[start : int(lit.Lbrace)-l.base]
+		b        strings.Builder
+		indent   = l.indentAt(lit.Lbrace)
+		inner    = append(slices.Clone(indent), '\t')
+		comments = trailingComments(l, file, lit)
+		written  bool
 	)
+	// A comment on the opener's line is written back after the first row's
+	// brace, which is where the author put it.
+	writeComments := func() {
+		if written {
+			return
+		}
+		written = true
+		for _, c := range comments {
+			b.WriteString(" ")
+			b.Write(src[int(c.Pos())-l.base : int(c.End())-l.base])
+		}
+	}
 	b.Write(head)
 	b.WriteString("{")
 	for i, elt := range lit.Elts {
@@ -319,8 +353,11 @@ func tableText(pass *analysis.Pass, l *layout, src []byte, lit *ast.CompositeLit
 			// An empty row cannot be expanded, so it keeps its
 			// braces on the line they start on.
 			b.WriteString("{}")
+			writeComments()
 		} else {
-			b.WriteString("{\n")
+			b.WriteString("{")
+			writeComments()
+			b.WriteString("\n")
 			for _, e := range row.Elts {
 				var buf bytes.Buffer
 				if err := format.Node(&buf, pass.Fset, e); err != nil {

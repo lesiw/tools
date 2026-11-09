@@ -13,5 +13,6 @@ import (
 func init() { linelen.Config.Len = 79 }
 
 func TestAnalysisTest(t *testing.T) {
-	analysistest.Run(t, analysistest.TestData(), Analyzer, "a")
+	dir := analysistest.TestData()
+	analysistest.RunWithSuggestedFixes(t, dir, Analyzer, "a")
 }
