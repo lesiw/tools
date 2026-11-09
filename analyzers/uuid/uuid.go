@@ -1,4 +1,10 @@
-package modernize
+// Package uuid reports a UUID built by formatting hex digits into the
+// canonical shape.
+//
+// A UUID is a value with one spelling and one parser, and both live in a
+// library. Building the text by hand gets the version and variant nibbles
+// wrong, and it produces a string that no parser will agree with.
+package uuid
 
 import (
 	"go/ast"
@@ -10,16 +16,10 @@ import (
 	"golang.org/x/tools/go/analysis"
 )
 
-// UUID reports a UUID built by formatting hex digits into the canonical
-// shape.
-//
-// A UUID is a value with one spelling and one parser, and both live in a
-// library. Building the text by hand gets the version and variant nibbles
-// wrong, and it produces a string that no parser will agree with.
-var UUID = &analysis.Analyzer{
+var Analyzer = &analysis.Analyzer{
 	Name: "uuid",
 	Doc:  "reports UUIDs built by hand instead of by a library",
-	Run:  runUUID,
+	Run:  run,
 }
 
 // uuidFormat matches a format string whose verbs are laid out in the UUID
@@ -31,7 +31,7 @@ var (
 	verb     = regexp.MustCompile(`%[-+# 0-9.*]*[a-zA-Z]`)
 )
 
-func runUUID(pass *analysis.Pass) (any, error) {
+func run(pass *analysis.Pass) (any, error) {
 	for _, file := range pass.Files {
 		ast.Inspect(file, func(n ast.Node) bool {
 			call, ok := n.(*ast.CallExpr)

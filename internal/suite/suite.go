@@ -28,6 +28,7 @@ import (
 	"golang.org/x/tools/go/analysis/passes/ifaceassert"
 	"golang.org/x/tools/go/analysis/passes/loopclosure"
 	"golang.org/x/tools/go/analysis/passes/lostcancel"
+	"golang.org/x/tools/go/analysis/passes/modernize"
 	"golang.org/x/tools/go/analysis/passes/nilfunc"
 	"golang.org/x/tools/go/analysis/passes/nilness"
 	"golang.org/x/tools/go/analysis/passes/printf"
@@ -53,6 +54,7 @@ import (
 	"lesiw.io/errcheck/errcheck"
 	"lesiw.io/tools/analyzers/bookends"
 	"lesiw.io/tools/analyzers/boolset"
+	"lesiw.io/tools/analyzers/containscut"
 	"lesiw.io/tools/analyzers/ctxguard"
 	"lesiw.io/tools/analyzers/ctxname"
 	"lesiw.io/tools/analyzers/docsyntax"
@@ -61,7 +63,6 @@ import (
 	"lesiw.io/tools/analyzers/ipliteral"
 	"lesiw.io/tools/analyzers/linelen"
 	"lesiw.io/tools/analyzers/linewrap"
-	"lesiw.io/tools/analyzers/modernize"
 	"lesiw.io/tools/analyzers/singlefield"
 	"lesiw.io/tools/analyzers/strictvar"
 	"lesiw.io/tools/analyzers/testcmp"
@@ -71,11 +72,12 @@ import (
 	"lesiw.io/tools/analyzers/timeafter"
 	"lesiw.io/tools/analyzers/unwrap"
 	"lesiw.io/tools/analyzers/uselessconcat"
+	"lesiw.io/tools/analyzers/uuid"
 	"lesiw.io/tools/analyzers/whitespace"
 )
 
-// Analyzers returns the suite: the x/tools passes, the lesiw.io analyzers, and
-// the modernize suite, which carries the upstream rules.
+// Analyzers returns the suite: the x/tools passes, including the modernize
+// suite, and the lesiw.io analyzers.
 func Analyzers() []*analysis.Analyzer { return analyzers }
 
 var (
@@ -87,6 +89,7 @@ var (
 		atomic.Analyzer,
 		atomicalign.Analyzer,
 		bookends.Analyzer,
+		containscut.Analyzer,
 		bools.Analyzer,
 		boolset.Analyzer,
 		buildtag.Analyzer,
@@ -144,6 +147,7 @@ var (
 		unusedwrite.Analyzer,
 		unwrap.Analyzer,
 		uselessconcat.Analyzer,
+		uuid.Analyzer,
 		waitgroup.Analyzer,
 		whitespace.Analyzer,
 	}

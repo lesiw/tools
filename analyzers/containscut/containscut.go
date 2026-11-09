@@ -1,4 +1,10 @@
-package modernize
+// Package containscut reports a Contains check whose answer Cut already
+// returns.
+//
+// Cut reports whether the separator was present, so a Contains over the same
+// two operands is a second scan for a boolean the next line throws away. The
+// idiomatic form asks the question once.
+package containscut
 
 import (
 	"bytes"
@@ -9,18 +15,13 @@ import (
 	"golang.org/x/tools/go/analysis"
 )
 
-// ContainsCut reports a Contains check whose answer Cut already returns.
-//
-// Cut reports whether the separator was present, so a Contains over the same
-// two operands is a second scan for a boolean the next line throws away. The
-// idiomatic form asks the question once.
-var ContainsCut = &analysis.Analyzer{
+var Analyzer = &analysis.Analyzer{
 	Name: "containscut",
 	Doc:  "reports a Contains check whose answer Cut already returns",
-	Run:  runContainsCut,
+	Run:  run,
 }
 
-func runContainsCut(pass *analysis.Pass) (any, error) {
+func run(pass *analysis.Pass) (any, error) {
 	for _, file := range pass.Files {
 		ast.Inspect(file, func(n ast.Node) bool {
 			ifStmt, ok := n.(*ast.IfStmt)
