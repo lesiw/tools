@@ -57,6 +57,7 @@ import (
 	"lesiw.io/tools/analyzers/containscut"
 	"lesiw.io/tools/analyzers/ctxguard"
 	"lesiw.io/tools/analyzers/ctxname"
+	"lesiw.io/tools/analyzers/cyclo"
 	"lesiw.io/tools/analyzers/docsyntax"
 	"lesiw.io/tools/analyzers/errfmt"
 	"lesiw.io/tools/analyzers/gospell"
@@ -90,6 +91,7 @@ var (
 		atomicalign.Analyzer,
 		bookends.Analyzer,
 		containscut.Analyzer,
+		cyclo.Analyzer,
 		bools.Analyzer,
 		boolset.Analyzer,
 		buildtag.Analyzer,
