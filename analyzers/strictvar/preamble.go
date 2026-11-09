@@ -195,16 +195,7 @@ func (f *file) reportStrayBlock(gd *ast.GenDecl) {
 // structure and yields no fix, as does a block comment documenting more than
 // one spec.
 func (f *file) dissolveEdits(gd *ast.GenDecl) []analysis.TextEdit {
-	var (
-		kept  [][2]token.Pos
-		lines []string
-	)
-	for _, b := range f.text(f.lineStart(gd.Pos()), gd.Pos()) {
-		if b != ' ' && b != '\t' {
-			return nil
-		}
-	}
-	if strings.TrimSpace(f.text(gd.End(), f.lineEnd(gd.End()))) != "" {
+	if !f.dissolvable(gd) {
 		return nil
 	}
 	if len(gd.Specs) == 0 {
@@ -214,22 +205,52 @@ func (f *file) dissolveEdits(gd *ast.GenDecl) []analysis.TextEdit {
 		}
 		return []analysis.TextEdit{{Pos: pos, End: end}}
 	}
-	if gd.Doc != nil && len(gd.Specs) > 1 {
+	lines, kept, ok := f.dissolveLines(gd)
+	if !ok || f.strayComments(gd.Lparen, gd.Rparen, kept) {
 		return nil
 	}
+	text := f.dissolveText(lines, gd)
+	if !parses(text) {
+		return nil
+	}
+	return []analysis.TextEdit{{
+		Pos:     gd.Pos(),
+		End:     gd.End(),
+		NewText: []byte(text),
+	}}
+}
+
+// dissolvable reports whether a block can be written as standalone
+// declarations: alone on its line, with nothing after it, and with at most
+// one spec when it carries a doc comment.
+func (f *file) dissolvable(gd *ast.GenDecl) bool {
+	for _, b := range f.text(f.lineStart(gd.Pos()), gd.Pos()) {
+		if b != ' ' && b != '\t' {
+			return false
+		}
+	}
+	if strings.TrimSpace(f.text(gd.End(), f.lineEnd(gd.End()))) != "" {
+		return false
+	}
+	return gd.Doc == nil || len(gd.Specs) == 1
+}
+
+// dissolveLines returns the standalone line for each spec, and the source
+// ranges whose comments carry over.
+func (f *file) dissolveLines(gd *ast.GenDecl) (lines []string, kept [][2]token.Pos, ok bool) {
 	for _, spec := range gd.Specs {
-		vs, ok := spec.(*ast.ValueSpec)
-		if !ok || !f.trailOK(vs.End()) {
-			return nil
+		vs, isSpec := spec.(*ast.ValueSpec)
+		if !isSpec || !f.trailOK(vs.End()) {
+			return nil, nil, false
 		}
 		inline := f.Line(vs.Pos()) == f.Line(gd.Lparen)
 		multiline := f.Line(vs.End()) != f.Line(vs.Pos())
 		if inline || multiline {
-			return nil
+			return nil, nil, false
 		}
 		decl, ok := f.dissolveSpec(vs)
 		if !ok {
-			return nil
+			return nil, nil, false
 		}
 		if vs.Doc != nil {
 			if len(lines) > 0 {
@@ -246,11 +267,15 @@ func (f *file) dissolveEdits(gd *ast.GenDecl) []analysis.TextEdit {
 		}
 		lines = append(lines, decl)
 	}
-	if f.strayComments(gd.Lparen, gd.Rparen, kept) {
-		return nil
-	}
-	var sb strings.Builder
-	indent := f.indent(gd.Pos())
+	return lines, kept, true
+}
+
+// dissolveText joins the lines at the block's indent.
+func (f *file) dissolveText(lines []string, gd *ast.GenDecl) string {
+	var (
+		sb     strings.Builder
+		indent = f.indent(gd.Pos())
+	)
 	for i, l := range lines {
 		if i > 0 {
 			sb.WriteString("\n")
@@ -260,14 +285,7 @@ func (f *file) dissolveEdits(gd *ast.GenDecl) []analysis.TextEdit {
 		}
 		sb.WriteString(l)
 	}
-	if !parses(sb.String()) {
-		return nil
-	}
-	return []analysis.TextEdit{{
-		Pos:     gd.Pos(),
-		End:     gd.End(),
-		NewText: []byte(sb.String()),
-	}}
+	return sb.String()
 }
 
 // dissolveSpec returns the standalone declaration replacing a block spec,

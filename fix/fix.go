@@ -152,116 +152,173 @@ type options struct {
 // and -NAME.flag=value sets one of its own flags. Everything else that starts
 // with a dash is a build flag.
 func parseArgs(args []string) (options, error) {
-	var (
-		opts      = options{analyzers: suite.Analyzers()}
-		byName    = make(map[string]*analysis.Analyzer, len(opts.analyzers))
-		setByName = make(map[string]*flag.FlagSet, len(opts.analyzers))
-	)
-	for _, a := range opts.analyzers {
-		byName[a.Name] = a
-		setByName[a.Name] = flag.NewFlagSet(a.Name, flag.ContinueOnError)
-		a.Flags.VisitAll(func(f *flag.Flag) {
-			setByName[a.Name].Var(f.Value, f.Name, f.Usage)
-		})
+	p := newArgParser()
+	p.enable(args)
+	for i := 0; i < len(args); i++ {
+		next, err := p.arg(args, i)
+		if err != nil {
+			return p.opts, err
+		}
+		i = next
 	}
-	// Naming an analyzer selects it, so the run covers exactly what was
-	// named; naming it false removes it from the whole suite.
+	p.keep()
+	// With no package named, the run covers the current directory, the way
+	// go vet does.
+	if len(p.opts.patterns) == 0 {
+		p.opts.patterns = []string{"."}
+	}
+	return p.opts, nil
+}
+
+// argParser is the state one command line is read into.
+type argParser struct {
+	opts      options
+	byName    map[string]*analysis.Analyzer
+	setByName map[string]*flag.FlagSet
+	enabled   map[string]bool
+}
+
+// newArgParser returns a parser whose analyzers all start enabled.
+func newArgParser() *argParser {
+	p := &argParser{
+		opts:      options{analyzers: suite.Analyzers()},
+		byName:    make(map[string]*analysis.Analyzer),
+		setByName: make(map[string]*flag.FlagSet),
+		enabled:   make(map[string]bool),
+	}
+	for _, a := range p.opts.analyzers {
+		p.byName[a.Name] = a
+		set := flag.NewFlagSet(a.Name, flag.ContinueOnError)
+		a.Flags.VisitAll(func(f *flag.Flag) {
+			set.Var(f.Value, f.Name, f.Usage)
+		})
+		p.setByName[a.Name] = set
+	}
+	return p
+}
+
+// enable decides which analyzers run. Naming one selects it, so the run
+// covers exactly what was named; naming it false removes it from the whole
+// suite.
+func (p *argParser) enable(args []string) {
 	var named bool
 	for _, arg := range args {
 		if !strings.HasPrefix(arg, "-") {
 			continue
 		}
-		name, value, hasValue := strings.Cut(strings.TrimLeft(arg, "-"), "=")
-		if _, ok := byName[name]; ok && (!hasValue || value == "true") {
+		name, value, hasValue := splitFlag(arg)
+		if _, ok := p.byName[name]; ok && (!hasValue || value == "true") {
 			named = true
 		}
 	}
-	enabled := make(map[string]bool, len(byName))
-	for name := range byName {
-		enabled[name] = !named
+	for name := range p.byName {
+		p.enabled[name] = !named
 	}
-	for i := 0; i < len(args); i++ {
-		arg := args[i]
-		if !strings.HasPrefix(arg, "-") || arg == "-" {
-			opts.patterns = append(opts.patterns, arg)
-			continue
-		}
-		name, value, hasValue := strings.Cut(strings.TrimLeft(arg, "-"), "=")
-		if name == "C" {
-			if !hasValue {
-				if i+1 >= len(args) {
-					return opts, fmt.Errorf("%w: -C needs a directory",
-						errUsage,
-					)
-				}
-				value = args[i+1]
-				i++
-			}
-			opts.dir = value
-			continue
-		}
-		if a, ok := byName[name]; ok {
-			on := true
-			if hasValue {
-				switch value {
-				case "true":
-				case "false":
-					on = false
-				default:
-					return opts, fmt.Errorf("%w: -%s takes true or false",
-						errUsage, name,
-					)
-				}
-			}
-			enabled[a.Name] = on
-			continue
-		}
-		if name, sub, ok := strings.Cut(name, "."); ok {
-			if fs, ok := setByName[name]; ok {
-				if !hasValue {
-					if i+1 >= len(args) {
-						return opts, fmt.Errorf("%w: -%s needs a value",
-							errUsage, name+"."+sub,
-						)
-					}
-					value = args[i+1]
-					i++
-				}
-				if err := fs.Set(sub, value); err != nil {
-					return opts, fmt.Errorf("%w: %w", errUsage, err)
-				}
-				continue
-			}
-		}
-		if name == "vettool" {
-			return opts, fmt.Errorf("%w: -vettool has no meaning; the analyzers run in process", errUsage)
-		}
-		// A build flag that takes a separate value needs both halves.
-		// Left alone, the value reads as a package pattern and the load
-		// fails on a path that was never a path.
-		if buildValueFlags["-"+name] && !hasValue {
-			if i+1 >= len(args) {
-				return opts, fmt.Errorf("%w: %s needs a value", errUsage, arg)
-			}
-			opts.build = append(opts.build, arg, args[i+1])
-			i++
-			continue
-		}
-		opts.build = append(opts.build, arg)
-	}
+}
+
+// keep drops the analyzers the command line turned off.
+func (p *argParser) keep() {
 	var kept []*analysis.Analyzer
-	for _, a := range opts.analyzers {
-		if enabled[a.Name] {
+	for _, a := range p.opts.analyzers {
+		if p.enabled[a.Name] {
 			kept = append(kept, a)
 		}
 	}
-	opts.analyzers = kept
-	// With no package named, the run covers the current directory, the way
-	// go vet does.
-	if len(opts.patterns) == 0 {
-		opts.patterns = []string{"."}
+	p.opts.analyzers = kept
+}
+
+// arg reads one argument and returns the index of the last one it consumed.
+// A flag that takes its value from the next argument consumes two.
+func (p *argParser) arg(args []string, i int) (int, error) {
+	arg := args[i]
+	if !strings.HasPrefix(arg, "-") || arg == "-" {
+		p.opts.patterns = append(p.opts.patterns, arg)
+		return i, nil
 	}
-	return opts, nil
+	name, value, hasValue := splitFlag(arg)
+	if name == "C" {
+		return p.dir(args, i, value, hasValue)
+	}
+	if _, ok := p.byName[name]; ok {
+		return i, p.toggle(name, value, hasValue)
+	}
+	if base, sub, ok := strings.Cut(name, "."); ok {
+		if _, ok := p.setByName[base]; ok {
+			return p.setFlag(args, i, base, sub, value, hasValue)
+		}
+	}
+	// There is no tool to point at: the analyzers run in this process.
+	if name == "vettool" {
+		return i, fmt.Errorf("%w: -vettool has no meaning here", errUsage)
+	}
+	// A build flag that takes a separate value needs both halves. Left
+	// alone, the value reads as a package pattern and the load fails on a
+	// path that was never a path.
+	if buildValueFlags["-"+name] && !hasValue {
+		return p.twoPart(args, i, arg)
+	}
+	p.opts.build = append(p.opts.build, arg)
+	return i, nil
+}
+
+// splitFlag returns a flag's name and value, with or without an equals sign.
+func splitFlag(arg string) (name, value string, hasValue bool) {
+	return strings.Cut(strings.TrimLeft(arg, "-"), "=")
+}
+
+// dir reads -C, which names the directory the load runs in.
+func (p *argParser) dir(args []string, i int, value string, hasValue bool) (int, error) {
+	if !hasValue {
+		if i+1 >= len(args) {
+			return i, fmt.Errorf("%w: -C needs a directory", errUsage)
+		}
+		value = args[i+1]
+		i++
+	}
+	p.opts.dir = value
+	return i, nil
+}
+
+// toggle reads an analyzer's name, which selects it or removes it.
+func (p *argParser) toggle(name, value string, hasValue bool) error {
+	on := true
+	if hasValue {
+		switch value {
+		case "true":
+		case "false":
+			on = false
+		default:
+			return fmt.Errorf("%w: -%s takes true or false", errUsage, name)
+		}
+	}
+	p.enabled[name] = on
+	return nil
+}
+
+// setFlag reads one of an analyzer's own flags, written name.sub.
+func (p *argParser) setFlag(args []string, i int, base, sub, value string, hasValue bool) (int, error) {
+	if !hasValue {
+		if i+1 >= len(args) {
+			return i, fmt.Errorf("%w: -%s needs a value", errUsage,
+				base+"."+sub,
+			)
+		}
+		value = args[i+1]
+		i++
+	}
+	if err := p.setByName[base].Set(sub, value); err != nil {
+		return i, fmt.Errorf("%w: %w", errUsage, err)
+	}
+	return i, nil
+}
+
+// twoPart reads a build flag whose value is the next argument.
+func (p *argParser) twoPart(args []string, i int, arg string) (int, error) {
+	if i+1 >= len(args) {
+		return i, fmt.Errorf("%w: %s needs a value", errUsage, arg)
+	}
+	p.opts.build = append(p.opts.build, arg, args[i+1])
+	return i + 1, nil
 }
 
 // span is a range of a file that an accepted edit covers.

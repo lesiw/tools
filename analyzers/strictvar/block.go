@@ -37,17 +37,54 @@ func (f *file) checkBlockCommentSpacing(gd *ast.GenDecl) {
 // separate insert and delete edits on one block interleave badly under
 // repeated fix application.
 func (f *file) checkBlockPairs(gd *ast.GenDecl) {
+	pairs, ok := f.blockPairs(gd)
+	if !ok {
+		return
+	}
+	lines, fixOK := f.pairLines(gd, pairs)
+	indent := f.indent(gd.Pos())
+	text := "(" + strings.TrimRight(
+		f.text(gd.Lparen+1, f.lineEnd(gd.Lparen)), " \t",
+	) + "\n"
+	text += blockText(indent, lines) + indent + ")"
+	var edits []analysis.TextEdit
+	if fixOK && f.canCombine(gd, text) {
+		f.owned[gd] = struct{}{}
+		edits = []analysis.TextEdit{{
+			Pos:     gd.Lparen,
+			End:     gd.Rparen + 1,
+			NewText: []byte(text),
+		}}
+	}
+	f.report(pairs.first.Pos(), pairs.first.End(),
+		"zero-value declarations of the same type can be combined: "+pairs.msg,
+		"Combine the declarations", edits,
+	)
+}
+
+// blockPairs is what one pass over a block finds: the first spec that repeats
+// a type, the message naming it, and the specs that merge into another.
+type blockPairs struct {
+	first    *ast.ValueSpec
+	msg      string
+	combined map[*ast.ValueSpec]string
+	skip     map[*ast.ValueSpec]struct{}
+}
+
+// blockPairs returns the repeated declarations of a block, and whether any
+// spec can be combined.
+func (f *file) blockPairs(gd *ast.GenDecl) (blockPairs, bool) {
 	var (
-		firstDup *ast.ValueSpec
-		msg      string
-		combined = make(map[*ast.ValueSpec]string)
-		skip     = make(map[*ast.ValueSpec]struct{})
-		first    = make(map[string]*ast.ValueSpec)
+		pairs = blockPairs{
+			combined: make(map[*ast.ValueSpec]string),
+			skip:     make(map[*ast.ValueSpec]struct{}),
+		}
+		first = make(map[string]*ast.ValueSpec)
 	)
 	for _, spec := range gd.Specs {
 		vs, ok := spec.(*ast.ValueSpec)
 		if !ok {
-			return
+			return blockPairs{}, false
 		}
 		if len(vs.Values) != 0 || vs.Type == nil {
 			continue
@@ -56,37 +93,38 @@ func (f *file) checkBlockPairs(gd *ast.GenDecl) {
 		prev, ok := first[typ]
 		if !ok {
 			first[typ] = vs
-			combined[vs] = names(vs)
+			pairs.combined[vs] = names(vs)
 			continue
 		}
 		if vs.Doc != nil || vs.Comment != nil {
-			return
+			return blockPairs{}, false
 		}
-		combined[prev] += ", " + names(vs)
-		skip[vs] = struct{}{}
-		if firstDup == nil {
-			firstDup = prev
+		pairs.combined[prev] += ", " + names(vs)
+		pairs.skip[vs] = struct{}{}
+		if pairs.first == nil {
+			pairs.first = prev
 		}
-		if prev == firstDup {
-			msg = combined[prev] + " " + typ
+		if prev == pairs.first {
+			pairs.msg = pairs.combined[prev] + " " + typ
 		}
 	}
-	if firstDup == nil {
-		return
-	}
-	var lines []string
-	fixOK := f.trailOK(gd.Lparen + 1)
+	return pairs, pairs.first != nil
+}
+
+// pairLines returns the line each spec takes in the combined block, and
+// whether the block can be rebuilt at all.
+func (f *file) pairLines(gd *ast.GenDecl, pairs blockPairs) (lines []string, fixOK bool) {
+	fixOK = f.trailOK(gd.Lparen + 1)
 	for _, spec := range gd.Specs {
 		vs := spec.(*ast.ValueSpec)
-		if _, ok := skip[vs]; ok {
+		if _, ok := pairs.skip[vs]; ok {
 			continue
 		}
 		bad := f.Line(vs.Pos()) == f.Line(gd.Lparen) || !f.trailOK(vs.End())
 		if bad {
-			fixOK = false
-			break
+			return lines, false
 		}
-		c, merged := combined[vs]
+		c, merged := pairs.combined[vs]
 		if merged && c != names(vs) {
 			lines = append(lines, c+" "+
 				f.text(vs.Type.Pos(), f.lineEnd(vs.End())),
@@ -95,29 +133,17 @@ func (f *file) checkBlockPairs(gd *ast.GenDecl) {
 		}
 		lines = append(lines, f.lineText(vs))
 	}
-	indent := f.indent(gd.Pos())
-	text := "(" + strings.TrimRight(
-		f.text(gd.Lparen+1, f.lineEnd(gd.Lparen)), " \t",
-	) + "\n"
-	text += blockText(indent, lines) + indent + ")"
-	var edits []analysis.TextEdit
+	return lines, fixOK
+}
+
+// canCombine reports whether the rebuilt block can replace the original: no
+// name rebinds, the closer stays where it is, no comment is lost, and the
+// result parses.
+func (f *file) canCombine(gd *ast.GenDecl, text string) bool {
 	last := gd.Specs[len(gd.Specs)-1]
-	fixable := fixOK && !f.shadowRebind(gd) &&
-		f.Line(gd.Rparen) > f.Line(last.End()) &&
+	return !f.shadowRebind(gd) && f.Line(gd.Rparen) > f.Line(last.End()) &&
 		!f.strayComments(gd.Lparen, gd.Rparen, f.blockKept(gd)) &&
 		parses("var "+text)
-	if fixable {
-		f.owned[gd] = struct{}{}
-		edits = []analysis.TextEdit{{
-			Pos:     gd.Lparen,
-			End:     gd.Rparen + 1,
-			NewText: []byte(text),
-		}}
-	}
-	f.report(firstDup.Pos(), firstDup.End(),
-		"zero-value declarations of the same type can be combined: "+msg,
-		"Combine the declarations", edits,
-	)
 }
 
 // blockKept returns the comment-carrying ranges of a block: the paren line and

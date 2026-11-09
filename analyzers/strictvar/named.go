@@ -47,44 +47,14 @@ func (f *file) checkNamedReturns() {
 }
 
 func (f *file) checkFuncReturns(ft *ast.FuncType, body *ast.BlockStmt) {
-	if ft.Results == nil || len(ft.Results.List) == 0 {
+	if !unnamedResults(ft) {
 		return
 	}
-	for _, field := range ft.Results.List {
-		if len(field.Names) > 0 {
-			return
-		}
-	}
-	var cands []cand
-	for _, stmt := range body.List {
-		ds, ok := stmt.(*ast.DeclStmt)
-		if !ok {
-			continue
-		}
-		gd, ok := ds.Decl.(*ast.GenDecl)
-		if !ok || gd.Tok != token.VAR {
-			continue
-		}
-		for _, spec := range gd.Specs {
-			vs, ok := spec.(*ast.ValueSpec)
-			if !ok || len(vs.Values) != 0 || vs.Type == nil {
-				continue
-			}
-			if len(vs.Names) != 1 || vs.Names[0].Name == "_" {
-				continue
-			}
-			if idx, ok := f.returnCand(ft, body, gd, vs); ok {
-				cands = append(cands, cand{gd: gd, vs: vs,
-					obj: f.pass.TypesInfo.Defs[vs.Names[0]], idx: idx,
-				},
-				)
-			}
-		}
-	}
+	cands := f.returnCands(ft, body)
 	// A zero-value declaration belongs in the signature only when every
-	// result position is produced by such a declaration. Naming one
-	// result of a multi-result function requires naming them all, and if
-	// any result is produced by an expression (a literal, a method call)
+	// result position is produced by such a declaration. Naming one result
+	// of a multi-result function requires naming them all, and if any
+	// result is produced by an expression (a literal, a method call)
 	// rather than a declared zero value, there is nothing to name it for.
 	covered := make(map[int]struct{})
 	for _, c := range cands {
@@ -94,6 +64,62 @@ func (f *file) checkFuncReturns(ft *ast.FuncType, body *ast.BlockStmt) {
 		return
 	}
 	f.reportNamedReturn(ft, cands)
+}
+
+// unnamedResults reports whether a signature declares results and names none
+// of them.
+func unnamedResults(ft *ast.FuncType) bool {
+	if ft.Results == nil || len(ft.Results.List) == 0 {
+		return false
+	}
+	for _, field := range ft.Results.List {
+		if len(field.Names) > 0 {
+			return false
+		}
+	}
+	return true
+}
+
+// returnCands returns the zero-value declarations a body makes that a named
+// return could replace.
+func (f *file) returnCands(ft *ast.FuncType, body *ast.BlockStmt) (cands []cand) {
+	for _, stmt := range body.List {
+		ds, ok := stmt.(*ast.DeclStmt)
+		if !ok {
+			continue
+		}
+		gd, ok := ds.Decl.(*ast.GenDecl)
+		if !ok || gd.Tok != token.VAR {
+			continue
+		}
+		cands = append(cands, f.specCands(ft, body, gd)...)
+	}
+	return cands
+}
+
+// specCands returns the declarations of one var block that a named return
+// could replace.
+func (f *file) specCands(ft *ast.FuncType, body *ast.BlockStmt, gd *ast.GenDecl) (cands []cand) {
+	for _, spec := range gd.Specs {
+		vs, ok := spec.(*ast.ValueSpec)
+		if !ok || len(vs.Values) != 0 || vs.Type == nil {
+			continue
+		}
+		if len(vs.Names) != 1 || vs.Names[0].Name == "_" {
+			continue
+		}
+		idx, ok := f.returnCand(ft, body, gd, vs)
+		if !ok {
+			continue
+		}
+		cands = append(cands, cand{
+			gd:  gd,
+			vs:  vs,
+			obj: f.pass.TypesInfo.Defs[vs.Names[0]],
+			idx: idx,
+		})
+	}
+	return cands
 }
 
 // reportNamedReturn emits a single report for the function when every result

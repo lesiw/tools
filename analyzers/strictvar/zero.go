@@ -131,61 +131,81 @@ func (f *file) typedZeroSpec(decl *ast.GenDecl, vs *ast.ValueSpec) {
 // zeroRewrite returns the var declaration replacing a zero-value assignment to
 // name, or ok=false when rhs is not a rewritable zero value.
 func (f *file) zeroRewrite(name string, rhs ast.Expr) (string, bool) {
-	info := f.pass.TypesInfo
 	switch e := rhs.(type) {
 	case *ast.CompositeLit:
-		// T{}: var x T. Empty map, slice, and chan literals are not
-		// the zero value.
-		if len(e.Elts) != 0 || e.Type == nil {
-			return "", false
-		}
-		if f.hasComment(e.Lbrace, e.Rbrace) {
-			return "", false
-		}
-		switch info.TypeOf(e).Underlying().(type) {
-		case *types.Struct, *types.Array:
-		default:
-			return "", false
-		}
-		return "var " + name + " " + f.text(e.Type.Pos(), e.Type.End()), true
+		return f.zeroComposite(name, e)
 	case *ast.BasicLit:
-		if !constZero(info.Types[rhs].Value) {
-			return "", false
-		}
-		switch e.Kind {
-		case token.INT, token.FLOAT, token.IMAG, token.STRING:
-			return "var " + name + " " +
-				types.Default(info.TypeOf(e)).String(), true
-		}
-		return "", false
+		return f.zeroBasicLit(name, e)
 	case *ast.Ident:
-		if info.Uses[e] == types.Universe.Lookup("false") {
-			return "var " + name + " bool", true
-		}
-		return "", false
+		return f.zeroIdent(name, e)
 	case *ast.CallExpr:
-		// T(0) and T(nil): var x T.
-		if len(e.Args) != 1 {
-			return "", false
-		}
-		tv, ok := info.Types[e.Fun]
-		if !ok || !tv.IsType() {
-			return "", false
-		}
-		if types.IsInterface(tv.Type) {
-			// error(nil) is the interface zero value.
-			if !isNil(e.Args[0], info) {
-				return "", false
-			}
-		} else {
-			zero := constZero(info.Types[e].Value) || isNil(e.Args[0], info)
-			if !zero {
-				return "", false
-			}
-		}
-		return "var " + name + " " + f.text(e.Fun.Pos(), e.Fun.End()), true
+		return f.zeroCall(name, e)
 	}
 	return "", false
+}
+
+// zeroComposite rewrites T{} to a var declaration, since empty map, slice and
+// chan literals are not the zero value.
+func (f *file) zeroComposite(name string, e *ast.CompositeLit) (string, bool) {
+	if len(e.Elts) != 0 || e.Type == nil {
+		return "", false
+	}
+	if f.hasComment(e.Lbrace, e.Rbrace) {
+		return "", false
+	}
+	switch f.pass.TypesInfo.TypeOf(e).Underlying().(type) {
+	case *types.Struct, *types.Array:
+	default:
+		return "", false
+	}
+	return "var " + name + " " + f.text(e.Type.Pos(), e.Type.End()), true
+}
+
+// zeroBasicLit rewrites a typed zero literal to a var declaration.
+func (f *file) zeroBasicLit(name string, e *ast.BasicLit) (string, bool) {
+	info := f.pass.TypesInfo
+	if !constZero(info.Types[e].Value) {
+		return "", false
+	}
+	switch e.Kind {
+	case token.INT, token.FLOAT, token.IMAG, token.STRING:
+		return "var " + name + " " + types.Default(info.TypeOf(e)).String(),
+			true
+	}
+	return "", false
+}
+
+// zeroIdent rewrites false to a var declaration.
+func (f *file) zeroIdent(name string, e *ast.Ident) (string, bool) {
+	if f.pass.TypesInfo.Uses[e] != types.Universe.Lookup("false") {
+		return "", false
+	}
+	return "var " + name + " bool", true
+}
+
+// zeroCall rewrites T(0) and T(nil) to a var declaration.
+func (f *file) zeroCall(name string, e *ast.CallExpr) (string, bool) {
+	info := f.pass.TypesInfo
+	if len(e.Args) != 1 {
+		return "", false
+	}
+	tv, ok := info.Types[e.Fun]
+	if !ok || !tv.IsType() {
+		return "", false
+	}
+	if !f.zeroArg(e, tv, info) {
+		return "", false
+	}
+	return "var " + name + " " + f.text(e.Fun.Pos(), e.Fun.End()), true
+}
+
+// zeroArg reports whether the single argument of a conversion is that type's
+// zero value. error(nil) is the interface zero value.
+func (f *file) zeroArg(e *ast.CallExpr, tv types.TypeAndValue, info *types.Info) bool {
+	if types.IsInterface(tv.Type) {
+		return isNil(e.Args[0], info)
+	}
+	return constZero(info.Types[e].Value) || isNil(e.Args[0], info)
 }
 
 // zeroForType reports whether value is the zero value of typ. Used for

@@ -49,9 +49,33 @@ func run(pass *analysis.Pass) (any, error) {
 
 func check(pass *analysis.Pass, file *ast.File, src []byte) {
 	var (
-		l     = newLayout(pass.Fset.File(file.FileStart), src)
-		pairs []pair
+		l      = newLayout(pass.Fset.File(file.FileStart), src)
+		pairs  = collectPairs(pass, file, l)
+		tables = tablePairs(pairs)
 	)
+	// Innermost first: a closer that moves is in place before the pair
+	// around it is measured.
+	slices.SortFunc(pairs, func(a, b pair) int {
+		return cmp.Compare(b.open, a.open)
+	})
+	for _, p := range pairs {
+		if !p.table && inTable(tables, p.open) {
+			continue
+		}
+		switch {
+		case p.table:
+			reportTable(pass, l, src, file, p)
+		case p.opener:
+			reportOpener(pass, l, p)
+		default:
+			reportCloser(pass, l, src, p)
+		}
+	}
+}
+
+// collectPairs returns every bracket pair the file holds.
+func collectPairs(pass *analysis.Pass, file *ast.File, l *layout) []pair {
+	var pairs []pair
 	ast.Inspect(file, func(n ast.Node) bool {
 		if p, ok := delimiters(n); ok {
 			pairs = append(pairs, p)
@@ -64,125 +88,120 @@ func check(pass *analysis.Pass, file *ast.File, src []byte) {
 		}
 		return true
 	})
-	// A table is one edit, so the pairs inside it stand down.
-	var tables []pair
+	return pairs
+}
+
+// tablePairs returns the pairs that guard a whole table.
+func tablePairs(pairs []pair) (tables []pair) {
 	for _, p := range pairs {
 		if p.table {
 			tables = append(tables, p)
 		}
 	}
-	inTable := func(pos token.Pos) bool {
-		for _, t := range tables {
-			// A delimiters pair for the table literal opens on
-			// the same brace as the table, so the bound is
-			// inclusive.
-			if pos >= t.open && pos <= t.close {
-				return true
-			}
+	return tables
+}
+
+// inTable reports whether pos sits inside a table. A delimiters pair for the
+// table literal opens on the same brace as the table, so the bound is
+// inclusive.
+func inTable(tables []pair, pos token.Pos) bool {
+	for _, t := range tables {
+		if pos >= t.open && pos <= t.close {
+			return true
 		}
-		return false
 	}
-	// Innermost first: a closer that moves is in place before the pair
-	// around it is measured.
-	slices.SortFunc(pairs, func(a, b pair) int {
-		return cmp.Compare(b.open, a.open)
-	})
-	for _, p := range pairs {
-		if !p.table && inTable(p.open) {
-			continue
-		}
-		if p.table {
-			if tableDone(l, p.lit) {
-				continue // the table already reads as a table
-			}
-			// A comment inside the table would not survive a
-			// rebuild from the elements, and a comment is the
-			// author's. The table is reported and left alone.
-			if hasInteriorComment(l, file, p.lit) {
-				continue
-			}
-			// A table is one edit: the braces, the seams and the row
-			// breaks overlap, so they are decided together.
-			text, ok := tableText(pass, l, src, p.lit, file)
-			if !ok {
-				continue
-			}
-			start := token.Pos(sourceLineStart(src,
-				int(p.lit.Lbrace)-l.base,
-			) + l.base)
-			pass.Report(analysis.Diagnostic{
-				Pos:     p.open,
-				Message: "table mixes one-line and multi-line rows",
-				SuggestedFixes: []analysis.SuggestedFix{{
-					Message: "Put every row on its own lines",
-					TextEdits: []analysis.TextEdit{{
-						Pos:     start,
-						End:     p.close + 1,
-						NewText: text,
-					}},
-				}},
-			})
-			continue
-		}
-		if p.opener {
-			// An elided type that spans lines wears its opening
-			// brace at the end of a line, so every row starts at
-			// the same column.
-			if l.line(p.open) == l.line(p.close) {
-				continue // a one-line row keeps its shape
-			}
-			if l.line(p.open) == l.line(p.first) {
-				pass.Report(analysis.Diagnostic{
-					Pos:     p.open,
-					Message: "opening bracket shares a line with its first element",
-					SuggestedFixes: []analysis.SuggestedFix{{
-						Message: "Move the first element onto its own line",
-						TextEdits: []analysis.TextEdit{{
-							Pos: p.open + 1,
-							End: p.open + 1,
-							NewText: append([]byte("\n"),
-								l.indentAt(p.open)...,
-							),
-						}},
-					}},
-				})
-				l.breakAt(p.open+1, l.indentAt(p.open))
-			}
-			continue
-		}
-		if l.beginsLine(p.close) {
-			continue // the printer indents it to match the opener
-		}
-		want := l.indentAt(p.open)
-		if slices.Equal(want, l.indentAt(p.close)) {
-			continue
-		}
-		// The text between the last item and the closer is kept: a
-		// comment there stays where the author put it, with the comma
-		// ahead of it and the break behind it. A spread ends the
-		// argument it belongs to, so the comma follows it.
-		tail := string(src[int(p.lastEnd)-l.base : int(p.close)-l.base])
-		var at int
-		if strings.HasPrefix(tail, "...") {
-			at = len("...")
-		}
-		if !strings.Contains(tail[at:], ",") {
-			tail = tail[:at] + "," + tail[at:]
-		}
-		pass.Report(analysis.Diagnostic{
-			Pos:     p.close,
-			Message: "closer is not at the indent of its opener",
-			SuggestedFixes: []analysis.SuggestedFix{{
-				Message: "Move the closer onto its own line",
-				TextEdits: []analysis.TextEdit{{
-					Pos:     p.lastEnd,
-					End:     p.close,
-					NewText: append([]byte(tail+"\n"), want...),
-				}},
+	return false
+}
+
+// reportTable reports a table that does not read as a table. A comment inside
+// it would not survive a rebuild from the elements, so the table is reported
+// and left alone.
+func reportTable(pass *analysis.Pass, l *layout, src []byte, file *ast.File, p pair) {
+	if tableDone(l, p.lit) {
+		return // the table already reads as a table
+	}
+	if hasInteriorComment(l, file, p.lit) {
+		return
+	}
+	// A table is one edit: the braces, the seams and the row breaks
+	// overlap, so they are decided together.
+	text, ok := tableText(pass, l, src, p.lit, file)
+	if !ok {
+		return
+	}
+	start := token.Pos(sourceLineStart(src, int(p.lit.Lbrace)-l.base) + l.base)
+	pass.Report(analysis.Diagnostic{
+		Pos:     p.open,
+		Message: "table mixes one-line and multi-line rows",
+		SuggestedFixes: []analysis.SuggestedFix{{
+			Message: "Put every row on its own lines",
+			TextEdits: []analysis.TextEdit{{
+				Pos:     start,
+				End:     p.close + 1,
+				NewText: text,
 			}},
-		})
-		l.breakAt(p.close, want)
+		}},
+	})
+}
+
+// reportOpener reports an elided type that spans lines and wears its opening
+// brace at the end of a line, so every row starts at the same column.
+func reportOpener(pass *analysis.Pass, l *layout, p pair) {
+	if l.line(p.open) == l.line(p.close) {
+		return // a one-line row keeps its shape
 	}
+	if l.line(p.open) != l.line(p.first) {
+		return
+	}
+	pass.Report(analysis.Diagnostic{
+		Pos:     p.open,
+		Message: "opening bracket shares a line with its first element",
+		SuggestedFixes: []analysis.SuggestedFix{{
+			Message: "Move the first element onto its own line",
+			TextEdits: []analysis.TextEdit{{
+				Pos:     p.open + 1,
+				End:     p.open + 1,
+				NewText: append([]byte("\n"), l.indentAt(p.open)...),
+			}},
+		}},
+	})
+	l.breakAt(p.open+1, l.indentAt(p.open))
+}
+
+// reportCloser reports a closer that does not sit at the indent of its opener.
+func reportCloser(pass *analysis.Pass, l *layout, src []byte, p pair) {
+	if l.beginsLine(p.close) {
+		return // the printer indents it to match the opener
+	}
+	want := l.indentAt(p.open)
+	if slices.Equal(want, l.indentAt(p.close)) {
+		return
+	}
+	// The text between the last item and the closer is kept: a comment
+	// there stays where the author put it, with the comma ahead of it and
+	// the break behind it. A spread ends the argument it belongs to, so
+	// the comma follows it.
+	tail := string(src[int(p.lastEnd)-l.base : int(p.close)-l.base])
+	var at int
+	if strings.HasPrefix(tail, "...") {
+		at = len("...")
+	}
+	if !strings.Contains(tail[at:], ",") {
+		tail = tail[:at] + "," + tail[at:]
+	}
+	pass.Report(analysis.Diagnostic{
+		Pos:     p.close,
+		Message: "closer is not at the indent of its opener",
+		SuggestedFixes: []analysis.SuggestedFix{{
+			Message: "Move the closer onto its own line",
+			TextEdits: []analysis.TextEdit{{
+				Pos:     p.lastEnd,
+				End:     p.close,
+				NewText: append([]byte(tail+"\n"), want...),
+			}},
+		}},
+	})
+	l.breakAt(p.close, want)
 }
 
 // pair is one bracket pair: where it opens, where it closes, and the end of

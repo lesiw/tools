@@ -238,27 +238,11 @@ func (f *file) iifeEdits(gd *ast.GenDecl, vs *ast.ValueSpec, lit *ast.FuncLit) (
 	if len(lit.Body.List) == 0 {
 		return nil, true
 	}
-	if len(lit.Body.List) == 1 {
-		var (
-			ret, ok = lit.Body.List[0].(*ast.ReturnStmt)
-			retOK   = ok && len(ret.Results) == 1 &&
-				!f.hasComment(lit.Pos(), value.End())
-		)
-		if retOK {
-			return []analysis.TextEdit{{
-				Pos: value.Pos(),
-				End: value.End(),
-				NewText: []byte(f.text(
-					ret.Results[0].Pos(), ret.Results[0].End(),
-				)),
-			}}, true
-		}
+	if edits, ok := f.inlineReturn(lit, value); ok {
+		return edits, true
 	}
-	if lit.Type.Results == nil || len(lit.Type.Results.List) != 1 {
-		return nil, true
-	}
-	field := lit.Type.Results.List[0]
-	if len(field.Names) != 0 {
+	field, ok := f.resultField(lit)
+	if !ok {
 		return nil, true
 	}
 	if f.hasComment(vs.Names[0].End(), lit.Body.Lbrace) {
@@ -270,26 +254,8 @@ func (f *file) iifeEdits(gd *ast.GenDecl, vs *ast.ValueSpec, lit *ast.FuncLit) (
 		// value after the move.
 		return nil, false
 	}
-	last := lit.Body.List[len(lit.Body.List)-1]
-	var bad bool
-	var rets []*ast.ReturnStmt
-	ast.Inspect(lit.Body, func(n ast.Node) bool {
-		if bad {
-			return false
-		}
-		if _, ok := n.(*ast.FuncLit); ok {
-			return false
-		}
-		if ret, ok := n.(*ast.ReturnStmt); ok {
-			if len(ret.Results) != 1 {
-				bad = true
-				return false
-			}
-			rets = append(rets, ret)
-		}
-		return true
-	})
-	if bad {
+	rets, ok := f.returns(lit)
+	if !ok {
 		return nil, true
 	}
 	if f.hasComment(vs.End(), f.lineEnd(vs.End())) {
@@ -305,8 +271,80 @@ func (f *file) iifeEdits(gd *ast.GenDecl, vs *ast.ValueSpec, lit *ast.FuncLit) (
 	if !ok {
 		return nil, false
 	}
-	pos := lit.Body.Lbrace + 1
-	var body strings.Builder
+	return []analysis.TextEdit{{
+		Pos: vs.Names[0].End(),
+		End: value.End(),
+		NewText: []byte(" " +
+			f.text(field.Type.Pos(), field.Type.End()),
+		),
+	}, {
+		Pos: gd.End(),
+		End: gd.End(),
+		NewText: []byte("\n\nfunc init() {" +
+			f.initBody(name, lit, rets, renames) + "}"),
+	}}, true
+}
+
+// inlineReturn returns the edit for a body that is one return statement.
+func (f *file) inlineReturn(lit *ast.FuncLit, value ast.Expr) ([]analysis.TextEdit, bool) {
+	if len(lit.Body.List) != 1 {
+		return nil, false
+	}
+	ret, ok := lit.Body.List[0].(*ast.ReturnStmt)
+	if !ok || len(ret.Results) != 1 || f.hasComment(lit.Pos(), value.End()) {
+		return nil, false
+	}
+	return []analysis.TextEdit{{
+		Pos:     value.Pos(),
+		End:     value.End(),
+		NewText: []byte(f.text(ret.Results[0].Pos(), ret.Results[0].End())),
+	}}, true
+}
+
+// resultField returns the single unnamed result a body can be moved into an
+// init function with.
+func (f *file) resultField(lit *ast.FuncLit) (*ast.Field, bool) {
+	if lit.Type.Results == nil || len(lit.Type.Results.List) != 1 {
+		return nil, false
+	}
+	field := lit.Type.Results.List[0]
+	if len(field.Names) != 0 {
+		return nil, false
+	}
+	return field, true
+}
+
+// returns returns the returns of a body, in order, and whether each of them
+// carries one result.
+func (f *file) returns(lit *ast.FuncLit) (rets []*ast.ReturnStmt, ok bool) {
+	ok = true
+	ast.Inspect(lit.Body, func(n ast.Node) bool {
+		if !ok {
+			return false
+		}
+		if _, isLit := n.(*ast.FuncLit); isLit {
+			return false
+		}
+		if ret, isRet := n.(*ast.ReturnStmt); isRet {
+			if len(ret.Results) != 1 {
+				ok = false
+				return false
+			}
+			rets = append(rets, ret)
+		}
+		return true
+	})
+	return rets, ok
+}
+
+// initBody writes the body of the init function: each return becomes an
+// assignment, and the last one leaves the function.
+func (f *file) initBody(name string, lit *ast.FuncLit, rets []*ast.ReturnStmt, renames []rename) string {
+	var (
+		last = lit.Body.List[len(lit.Body.List)-1]
+		pos  = lit.Body.Lbrace + 1
+		body strings.Builder
+	)
 	for _, ret := range rets {
 		body.WriteString(f.textRenamed(pos, ret.Pos(), renames))
 		fmt.Fprintf(&body, "%s = %s", name,
@@ -318,15 +356,5 @@ func (f *file) iifeEdits(gd *ast.GenDecl, vs *ast.ValueSpec, lit *ast.FuncLit) (
 		pos = ret.End()
 	}
 	body.WriteString(f.textRenamed(pos, lit.Body.Rbrace, renames))
-	return []analysis.TextEdit{{
-		Pos: vs.Names[0].End(),
-		End: value.End(),
-		NewText: []byte(" " +
-			f.text(field.Type.Pos(), field.Type.End()),
-		),
-	}, {
-		Pos:     gd.End(),
-		End:     gd.End(),
-		NewText: []byte("\n\nfunc init() {" + body.String() + "}"),
-	}}, true
+	return body.String()
 }

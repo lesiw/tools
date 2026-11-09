@@ -28,57 +28,13 @@ func collectDelimited(fset *token.FileSet, tokFile *token.File, file *ast.File) 
 	ast.Inspect(file, func(n ast.Node) bool {
 		switch n := n.(type) {
 		case *ast.CallExpr:
-			if len(n.Args) == 0 {
-				break
-			}
-			if inHeader(headers, n.Pos()) {
-				// A header is single-line-or-nothing; joining
-				// across one would wrap it.
-				break
-			}
-			// Rewriting the span between the delimiters would drop
-			// every comment inside it, and comments are never
-			// deleted.
-			if commentWithin(file, n.Lparen, n.Rparen) {
-				break
-			}
-			if spansLines(tokFile, n.Args) {
-				break
-			}
-			result = append(result, delimited{open: n.Lparen, close: n.Rparen})
+			result = append(result,
+				callDelimited(file, tokFile, headers, n)...,
+			)
 		case *ast.FuncType:
-			// Declared signatures keep their author-chosen layout,
-			// as does anything nested inside one — e.g. a
-			// function-typed parameter. FuncLits collapse
-			// normally.
-			if inSignature(sigs, n.Pos()) {
-				break
-			}
-			for _, l := range []*ast.FieldList{n.Params, n.Results} {
-				if l == nil || !l.Opening.IsValid() || len(l.List) == 0 {
-					continue
-				}
-				result = append(result, delimited{
-					open: l.Opening, close: l.Closing,
-				})
-			}
+			result = append(result, typeDelimited(sigs, n)...)
 		case *ast.CompositeLit:
-			if !n.Lbrace.IsValid() || !n.Rbrace.IsValid() {
-				break
-			}
-			if len(n.Elts) <= 1 || commentWithin(file, n.Lbrace, n.Rbrace) {
-				break
-			}
-			// A literal whose elements sit on lines of their own,
-			// or that holds an element spanning lines, was
-			// expanded for readability, and joining it would undo
-			// that.
-			if !allOnOneLine(tokFile, n.Elts) || spansLines(tokFile, n.Elts) {
-				break
-			}
-			result = append(result, delimited{
-				open: n.Lbrace, close: n.Rbrace, lit: true,
-			})
+			result = append(result, litDelimited(file, tokFile, n)...)
 		}
 		return true
 	})
@@ -89,6 +45,59 @@ func collectDelimited(fset *token.FileSet, tokFile *token.File, file *ast.File) 
 		return cmp.Compare(a.open, b.open)
 	})
 	return result
+}
+
+// callDelimited returns the argument list of a call whose arguments fit on one
+// line.
+func callDelimited(file *ast.File, tokFile *token.File, headers [][2]token.Pos, n *ast.CallExpr) []delimited {
+	if len(n.Args) == 0 {
+		return nil
+	}
+	// A header is single-line-or-nothing; joining across one would wrap it.
+	if inHeader(headers, n.Pos()) {
+		return nil
+	}
+	// Rewriting the span between the delimiters would drop every comment
+	// inside it, and comments are never deleted.
+	if commentWithin(file, n.Lparen, n.Rparen) {
+		return nil
+	}
+	if spansLines(tokFile, n.Args) {
+		return nil
+	}
+	return []delimited{{open: n.Lparen, close: n.Rparen}}
+}
+
+// typeDelimited returns the parameter and result lists of a function type.
+// Declared signatures keep their author-chosen layout, as does anything nested
+// inside one; function literals collapse normally.
+func typeDelimited(sigs []signature, n *ast.FuncType) (out []delimited) {
+	if inSignature(sigs, n.Pos()) {
+		return nil
+	}
+	for _, l := range []*ast.FieldList{n.Params, n.Results} {
+		if l == nil || !l.Opening.IsValid() || len(l.List) == 0 {
+			continue
+		}
+		out = append(out, delimited{open: l.Opening, close: l.Closing})
+	}
+	return out
+}
+
+// litDelimited returns the braces of a composite literal whose elements sit on
+// one line. A literal whose elements sit on lines of their own, or that holds
+// an element spanning lines, was expanded for readability.
+func litDelimited(file *ast.File, tokFile *token.File, n *ast.CompositeLit) []delimited {
+	if !n.Lbrace.IsValid() || !n.Rbrace.IsValid() {
+		return nil
+	}
+	if len(n.Elts) <= 1 || commentWithin(file, n.Lbrace, n.Rbrace) {
+		return nil
+	}
+	if !allOnOneLine(tokFile, n.Elts) || spansLines(tokFile, n.Elts) {
+		return nil
+	}
+	return []delimited{{open: n.Lbrace, close: n.Rbrace, lit: true}}
 }
 
 // allOnOneLine reports whether every expression starts on the line the first

@@ -132,65 +132,85 @@ func (f *file) hasGoto(pos token.Pos) bool {
 // into the spec: moving it any further up could not reorder anything, because
 // nothing runs in between.
 func (f *file) checkBlockAssign(list []ast.Stmt, i int, gd *ast.GenDecl) {
-	if i+1 >= len(list) {
-		return
-	}
-	var (
-		info       = f.pass.TypesInfo
-		assign, ok = list[i+1].(*ast.AssignStmt)
-	)
-	if !ok || assign.Tok != token.ASSIGN {
-		return
-	}
-	if len(assign.Lhs) != 1 || len(assign.Rhs) != 1 {
-		return
-	}
-	id, ok := assign.Lhs[0].(*ast.Ident)
+	assign, id, rhs, ok := blockAssign(list, i)
 	if !ok {
 		return
 	}
-	rhs := assign.Rhs[0]
 	for i, spec := range gd.Specs {
 		vs, ok := spec.(*ast.ValueSpec)
-		if !ok || len(vs.Values) != 0 || vs.Type == nil {
+		if !ok || !f.foldsInto(gd, i, vs, id, rhs) {
 			continue
 		}
-		if len(vs.Names) != 1 || info.Defs[vs.Names[0]] == nil {
-			continue
-		}
-		obj := info.Defs[vs.Names[0]]
-		if info.Uses[id] != obj || mentions(info, rhs, obj) {
-			continue
-		}
-		if !f.typeFaithful(rhs, obj.Type()) {
-			continue
-		}
-		// The folded value runs at the spec's position: a name a
-		// later spec declares is not yet in scope there.
-		if f.mentionsLater(gd, i, rhs) {
-			continue
-		}
-		var edits []analysis.TextEdit
-		pos, end, ok := f.deleteLineSpan(assign)
-		if ok {
-			edits = f.ownedEdits(gd, []analysis.TextEdit{{
-				Pos: vs.Pos(),
-				End: vs.End(),
-				NewText: []byte(vs.Names[0].Name + " = " +
-					f.text(rhs.Pos(), rhs.End()),
-				),
-			}, {
-				Pos:     pos,
-				End:     end,
-				NewText: nil,
-			}})
-		}
+		obj := f.pass.TypesInfo.Defs[vs.Names[0]]
 		f.report(vs.Pos(), vs.End(), obj.Name()+" can be "+
-			assignKind(info, rhs)+" in its declaration",
-			"Fold the assignment into the declaration", edits,
+			assignKind(f.pass.TypesInfo, rhs)+" in its declaration",
+			"Fold the assignment into the declaration",
+			f.foldEdits(gd, vs, assign, rhs),
 		)
 		return
 	}
+}
+
+// blockAssign returns the assignment that follows a block, and the name and
+// value it assigns.
+func blockAssign(list []ast.Stmt, i int) (*ast.AssignStmt, *ast.Ident, ast.Expr, bool) {
+	if i+1 >= len(list) {
+		return nil, nil, nil, false
+	}
+	assign, ok := list[i+1].(*ast.AssignStmt)
+	if !ok || assign.Tok != token.ASSIGN {
+		return nil, nil, nil, false
+	}
+	if len(assign.Lhs) != 1 || len(assign.Rhs) != 1 {
+		return nil, nil, nil, false
+	}
+	id, ok := assign.Lhs[0].(*ast.Ident)
+	if !ok {
+		return nil, nil, nil, false
+	}
+	return assign, id, assign.Rhs[0], true
+}
+
+// foldsInto reports whether a spec declares the assigned name, and whether the
+// assignment can be written in its declaration.
+func (f *file) foldsInto(gd *ast.GenDecl, i int, vs *ast.ValueSpec, id *ast.Ident, rhs ast.Expr) bool {
+	info := f.pass.TypesInfo
+	if len(vs.Values) != 0 || vs.Type == nil {
+		return false
+	}
+	if len(vs.Names) != 1 || info.Defs[vs.Names[0]] == nil {
+		return false
+	}
+	obj := info.Defs[vs.Names[0]]
+	if info.Uses[id] != obj || mentions(info, rhs, obj) {
+		return false
+	}
+	if !f.typeFaithful(rhs, obj.Type()) {
+		return false
+	}
+	// The folded value runs at the spec's position: a name a later spec
+	// declares is not yet in scope there.
+	return !f.mentionsLater(gd, i, rhs)
+}
+
+// foldEdits returns the edits that move the assignment into the declaration,
+// or nothing when the assignment's line cannot be removed.
+func (f *file) foldEdits(gd *ast.GenDecl, vs *ast.ValueSpec, assign *ast.AssignStmt, rhs ast.Expr) []analysis.TextEdit {
+	pos, end, ok := f.deleteLineSpan(assign)
+	if !ok {
+		return nil
+	}
+	return f.ownedEdits(gd, []analysis.TextEdit{{
+		Pos: vs.Pos(),
+		End: vs.End(),
+		NewText: []byte(vs.Names[0].Name + " = " +
+			f.text(rhs.Pos(), rhs.End()),
+		),
+	}, {
+		Pos:     pos,
+		End:     end,
+		NewText: nil,
+	}})
 }
 
 // typeFaithful reports whether x := rhs gives x the type its var declaration

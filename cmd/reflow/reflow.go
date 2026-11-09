@@ -68,63 +68,19 @@ func liftOverlongComments(r *renderer) {
 		return true
 	})
 	trailing := trailedBy(file)
-
-	type lift struct {
-		cg      *ast.CommentGroup
-		codeOff int
-		decl    ast.Node
+	l := &lifter{
+		tokFile:  tokFile,
+		file:     file,
+		snap:     snap,
+		earliest: earliestOnLine,
+		docAt:    docAt,
 	}
 	var lifts []lift
-
 	for _, cg := range file.Comments {
-		if len(cg.List) == 0 {
-			continue
+		if found, ok := l.lift(cg); ok {
+			lifts = append(lifts, found)
 		}
-		first := cg.List[0]
-		if !strings.HasPrefix(first.Text, "//") {
-			continue // block comments can wrap; skip
-		}
-		slash := lineAt(tokFile, first.Slash)
-		// The comment has to be what makes the line too long. Moving
-		// it off a line the code already fills only puts it somewhere
-		// else.
-		line := snap.text(slash)
-		code := line[:bytes.Index(line, []byte(first.Text))]
-		// The printer pads a comment to the column of the group's
-		// widest code, so the padding is not the code's length.
-		code = bytes.TrimRight(code, " \t")
-		if fits(line) || !fits(code) {
-			continue
-		}
-		// The lift leaves the comment alone on the line the code
-		// vacated. A line that already carries a comment has no room
-		// for it. The printer keeps the two in one group, and a line
-		// comment in that group forces a break nobody asked for.
-		if commentBefore(tokFile, file, first) {
-			continue
-		}
-		codePos, ok := earliestOnLine[slash]
-		if !ok || codePos >= first.Slash {
-			continue // nothing before the comment on this line
-		}
-		// The lift puts the comment above the code on its line. That
-		// only reads as "above the code it trails" when the line
-		// starts something. On a continuation line, or on a line that
-		// opens with a closer, the comment would land inside the
-		// expression it trailed.
-		if continuesLine(snap, slash) {
-			continue
-		}
-		codeOff := tokFile.Offset(codePos)
-		lineStartOff := tokFile.Offset(tokFile.LineStart(slash))
-		if codeOff <= lineStartOff {
-			continue // code is at column 1; no indent to carve the lift into
-		}
-		lifts = append(lifts, lift{
-			cg: cg, codeOff: codeOff, decl: docAt[codePos],
-		})
 	}
-
 	for _, l := range lifts {
 		addNewline(tokFile, tokFile.Pos(l.codeOff))
 		newSlash := tokFile.Pos(l.codeOff - 1)
@@ -132,7 +88,6 @@ func liftOverlongComments(r *renderer) {
 			c.Slash = newSlash
 		}
 	}
-
 	// Fold a lifted comment into the group it now abuts, so the rules that
 	// read doc comments see it where the reader does.
 	for _, l := range lifts {
@@ -152,6 +107,67 @@ func liftOverlongComments(r *renderer) {
 		}
 		setDoc(l.decl, group)
 	}
+}
+
+// lift is one comment group that moves above the code it trails.
+type lift struct {
+	cg      *ast.CommentGroup
+	codeOff int
+	decl    ast.Node
+}
+
+// lifter is the state one file's lifts are found with.
+type lifter struct {
+	tokFile  *token.File
+	file     *ast.File
+	snap     *snapshot
+	earliest map[int]token.Pos
+	docAt    map[token.Pos]ast.Node
+}
+
+// lift returns the lift for one comment group, and whether it can move.
+func (l *lifter) lift(cg *ast.CommentGroup) (lift, bool) {
+	if len(cg.List) == 0 {
+		return lift{}, false
+	}
+	first := cg.List[0]
+	if !strings.HasPrefix(first.Text, "//") {
+		return lift{}, false // block comments can wrap; skip
+	}
+	slash := lineAt(l.tokFile, first.Slash)
+	// The comment has to be what makes the line too long. Moving it off a
+	// line the code already fills only puts it somewhere else.
+	line := l.snap.text(slash)
+	code := line[:bytes.Index(line, []byte(first.Text))]
+	// The printer pads a comment to the column of the group's widest code,
+	// so the padding is not the code's length.
+	code = bytes.TrimRight(code, " \t")
+	if fits(line) || !fits(code) {
+		return lift{}, false
+	}
+	// The lift leaves the comment alone on the line the code vacated. A
+	// line that already carries a comment has no room for it. The printer
+	// keeps the two in one group, and a line comment in that group forces
+	// a break nobody asked for.
+	if commentBefore(l.tokFile, l.file, first) {
+		return lift{}, false
+	}
+	codePos, ok := l.earliest[slash]
+	if !ok || codePos >= first.Slash {
+		return lift{}, false // nothing before the comment on this line
+	}
+	// The lift puts the comment above the code on its line. That only reads
+	// as "above the code it trails" when the line starts something. On a
+	// continuation line, or on a line that opens with a closer, the comment
+	// would land inside the expression it trailed.
+	if continuesLine(l.snap, slash) {
+		return lift{}, false
+	}
+	codeOff := l.tokFile.Offset(codePos)
+	if codeOff <= l.tokFile.Offset(l.tokFile.LineStart(slash)) {
+		return lift{}, false // code is at column 1
+	}
+	return lift{cg: cg, codeOff: codeOff, decl: l.docAt[codePos]}, true
 }
 
 // continuesLine reports whether the code on line continues what the line above
