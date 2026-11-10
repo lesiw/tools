@@ -91,6 +91,7 @@ import (
 	"lesiw.io/tools/analyzers/makezero"
 	"lesiw.io/tools/analyzers/newderef"
 	"lesiw.io/tools/analyzers/nilreturn"
+	"lesiw.io/tools/analyzers/preferfprint"
 	"lesiw.io/tools/analyzers/recvname"
 	"lesiw.io/tools/analyzers/recvtype"
 	"lesiw.io/tools/analyzers/regexpmust"
@@ -190,6 +191,7 @@ var (
 		nilfunc.Analyzer,
 		nilness.Analyzer,
 		nilreturn.Analyzer,
+		preferfprint.Analyzer,
 		printf.Analyzer,
 		recvname.Analyzer,
 		recvtype.Analyzer,

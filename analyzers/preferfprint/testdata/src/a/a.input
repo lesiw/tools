@@ -1,0 +1,31 @@
+package a
+
+import (
+	"bytes"
+	"fmt"
+	"io"
+)
+
+func f(b *bytes.Buffer, w *bytes.Buffer, n int) {
+	b.Write([]byte(fmt.Sprintf("%d", n))) // want `formatted string written to a writer`
+	b.WriteString(fmt.Sprintf("%d", n))   // want `formatted string written to a writer`
+	w.WriteString(fmt.Sprint(n))          // want `formatted string written to a writer`
+	io.WriteString(b, fmt.Sprintln(n))    // want `formatted string written to a writer`
+}
+
+func ok(b *bytes.Buffer, n int) {
+	fmt.Fprintf(b, "%d", n)
+}
+
+func plain(b *bytes.Buffer, s string) {
+	b.Write([]byte(s))
+}
+
+type fakefmt struct{}
+
+func (fakefmt) Sprintf(...any) string { return "" }
+
+func shadow(b *bytes.Buffer) {
+	var fmt fakefmt
+	b.WriteString(fmt.Sprintf())
+}
