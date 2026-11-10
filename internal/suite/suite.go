@@ -52,6 +52,7 @@ import (
 	"golang.org/x/tools/go/analysis/passes/waitgroup"
 
 	"lesiw.io/errcheck/errcheck"
+	"lesiw.io/tools/analyzers/afterhttperror"
 	"lesiw.io/tools/analyzers/bookends"
 	"lesiw.io/tools/analyzers/boolset"
 	"lesiw.io/tools/analyzers/containscut"
@@ -97,6 +98,7 @@ func Analyzers() []*analysis.Analyzer { return analyzers }
 var (
 	analyzers = slices.Concat(list, modernize.Suite)
 	list      = []*analysis.Analyzer{
+		afterhttperror.Analyzer,
 		appends.Analyzer,
 		asmdecl.Analyzer,
 		assign.Analyzer,
