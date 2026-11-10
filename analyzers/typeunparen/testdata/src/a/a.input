@@ -1,0 +1,28 @@
+package a
+
+type S struct{}
+
+var x (int) = 1 // want `redundant parentheses around a type`
+
+var y (struct{}) // want `redundant parentheses around a type`
+
+var z (*S) // want `redundant parentheses around a type`
+
+type T (int) // want `redundant parentheses around a type`
+
+var m map[string](int) // want `redundant parentheses around a type`
+
+func g(n int) int {
+	return (n + 1)
+}
+
+func h(n int) int64 {
+	return int64(n)
+}
+
+// A method expression needs its parentheses.
+type Builder struct{}
+
+func (*Builder) install() {}
+
+var method = (*Builder).install

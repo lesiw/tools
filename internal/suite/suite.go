@@ -93,6 +93,7 @@ import (
 	"lesiw.io/tools/analyzers/testlabel"
 	"lesiw.io/tools/analyzers/tidytypes"
 	"lesiw.io/tools/analyzers/timeafter"
+	"lesiw.io/tools/analyzers/typeunparen"
 	"lesiw.io/tools/analyzers/unlambda"
 	"lesiw.io/tools/analyzers/unslice"
 	"lesiw.io/tools/analyzers/unwrap"
@@ -190,6 +191,7 @@ var (
 		tidytypes.Analyzer,
 		timeafter.Analyzer,
 		timeformat.Analyzer,
+		typeunparen.Analyzer,
 		unlambda.Analyzer,
 		unmarshal.Analyzer,
 		unreachable.Analyzer,
