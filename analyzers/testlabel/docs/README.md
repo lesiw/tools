@@ -7,7 +7,7 @@
 [![Discord](https://img.shields.io/discord/1145827224516300971?logo=discord&logoColor=white&color=5865F2&label=discord)](https://lesiw.dev/discord)
 [![License](https://img.shields.io/github/license/lesiw/tools)](../../../LICENSE)
 
-An `analysis.Analyzer` that reports a subtest name is string literal.
+An `analysis.Analyzer` that reports subtests with string literal names.
 
 A subtest names a case in a family: it exists so a table's rows can be told
 apart in a failure message, or so a loop's iterations can. A literal name
@@ -29,5 +29,4 @@ Or run it as part of the suite:
 
 ```sh
 go tool lesiw.io/tools/cmd/vet -testlabel ./...
-go tool lesiw.io/tools/cmd/fix -testlabel ./...
 ```
