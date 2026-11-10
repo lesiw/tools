@@ -1,0 +1,25 @@
+package a
+
+func f(err error) bool {
+	return err == nil // want `constant on the left`
+}
+
+func g(n int) bool {
+	return n == 0 // want `constant on the left`
+}
+
+func h(s string) bool {
+	return s != "x" // want `constant on the left`
+}
+
+func ok(err error) bool {
+	return err == nil
+}
+
+func both() bool {
+	return 1 == 1
+}
+
+func ordered(n int) bool {
+	return 0 < n
+}

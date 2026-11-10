@@ -91,6 +91,7 @@ import (
 	"lesiw.io/tools/analyzers/uselessconcat"
 	"lesiw.io/tools/analyzers/uuid"
 	"lesiw.io/tools/analyzers/whitespace"
+	"lesiw.io/tools/analyzers/yoda"
 )
 
 // Analyzers returns the suite: the x/tools passes, including the modernize
@@ -184,5 +185,6 @@ var (
 		uuid.Analyzer,
 		waitgroup.Analyzer,
 		whitespace.Analyzer,
+		yoda.Analyzer,
 	}
 )
