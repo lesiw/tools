@@ -111,6 +111,7 @@ import (
 	"lesiw.io/tools/analyzers/valswap"
 	"lesiw.io/tools/analyzers/whitespace"
 	"lesiw.io/tools/analyzers/yoda"
+	"lesiw.io/tools/analyzers/zerorepeat"
 )
 
 // Analyzers returns the suite: the x/tools passes, including the modernize
@@ -224,5 +225,6 @@ var (
 		waitgroup.Analyzer,
 		whitespace.Analyzer,
 		yoda.Analyzer,
+		zerorepeat.Analyzer,
 	}
 )
