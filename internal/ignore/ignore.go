@@ -123,36 +123,35 @@ func newIgnoreRange(comment *ast.Comment, analyzers map[string]struct{}, file *a
 		return ignoreRange{file.FileStart, file.End(), analyzers}
 	}
 	node := findCommentNode(comment, cmap)
-	if node != nil && group != nil {
+	switch {
+	case node != nil && group != nil:
 		if isInlineComment(comment, pass) {
 			// Ignore this comment's associated line.
 			return ignoreCommentLine(comment, pass, analyzers)
-		} else {
-			// Ignore analyzers on this comment group and its associated node.
-			return ignoreRange{
-				lineStart(pass, min(group.Pos(), node.Pos())),
-				lineEnd(pass, max(group.End(), node.End())),
-				analyzers,
-			}
 		}
-	} else if node != nil {
+		// Ignore analyzers on this comment group and its associated node.
+		return ignoreRange{
+			lineStart(pass, min(group.Pos(), node.Pos())),
+			lineEnd(pass, max(group.End(), node.End())),
+			analyzers,
+		}
+	case node != nil:
 		// Ignore analyzers on this node.
 		return ignoreRange{
 			lineStart(pass, node.Pos()),
 			lineEnd(pass, node.End()),
 			analyzers,
 		}
-	} else if group != nil {
+	case group != nil:
 		// Ignore analyzers on this comment group.
 		return ignoreRange{
 			lineStart(pass, group.Pos()),
 			lineEnd(pass, group.End()),
 			analyzers,
 		}
-	} else {
-		// Ignore analyzers on the current line.
-		return ignoreCommentLine(comment, pass, analyzers)
 	}
+	// Ignore analyzers on the current line.
+	return ignoreCommentLine(comment, pass, analyzers)
 }
 
 var commentRe = regexp.MustCompile(`^\s*\/$`)
