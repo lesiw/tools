@@ -201,7 +201,7 @@ func (f *file) zeroCall(name string, e *ast.CallExpr) (string, bool) {
 
 // zeroArg reports whether the single argument of a conversion is that type's
 // zero value. error(nil) is the interface zero value.
-func (f *file) zeroArg(e *ast.CallExpr, tv types.TypeAndValue, info *types.Info) bool {
+func (*file) zeroArg(e *ast.CallExpr, tv types.TypeAndValue, info *types.Info) bool {
 	if types.IsInterface(tv.Type) {
 		return isNil(e.Args[0], info)
 	}

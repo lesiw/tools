@@ -113,6 +113,7 @@ import (
 	"lesiw.io/tools/analyzers/typeunparen"
 	"lesiw.io/tools/analyzers/unlambda"
 	"lesiw.io/tools/analyzers/unslice"
+	"lesiw.io/tools/analyzers/unusedrecv"
 	"lesiw.io/tools/analyzers/unwrap"
 	"lesiw.io/tools/analyzers/uselessconcat"
 	"lesiw.io/tools/analyzers/uuid"
@@ -232,6 +233,7 @@ var (
 		unreachable.Analyzer,
 		unsafeptr.Analyzer,
 		unslice.Analyzer,
+		unusedrecv.Analyzer,
 		unusedresult.Analyzer,
 		unusedwrite.Analyzer,
 		unwrap.Analyzer,

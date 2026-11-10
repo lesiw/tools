@@ -1,0 +1,35 @@
+package a
+
+type T struct{ n int }
+
+func (t *T) Read() int { // want `receiver t is unused`
+	return 0
+}
+
+func (t *T) Set(n int) {
+	t.n = n
+}
+
+// A receiver read only inside a closure is still read.
+func (t *T) Later() func() int {
+	return func() int { return t.n }
+}
+
+// The blank name is already the statement.
+func (_ *T) Blank() {}
+
+// An anonymous receiver says the same thing.
+func (*T) Anon() {}
+
+// A value receiver drops its name the same way.
+func (t T) Value() int { // want `receiver t is unused`
+	return 0
+}
+
+// A name that is shadowed in the body is still unused.
+func (t *T) Shadow() { // want `receiver t is unused`
+	{
+		t := 1
+		_ = t
+	}
+}

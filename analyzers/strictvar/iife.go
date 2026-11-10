@@ -303,7 +303,7 @@ func (f *file) inlineReturn(lit *ast.FuncLit, value ast.Expr) ([]analysis.TextEd
 
 // resultField returns the single unnamed result a body can be moved into an
 // init function with.
-func (f *file) resultField(lit *ast.FuncLit) (*ast.Field, bool) {
+func (*file) resultField(lit *ast.FuncLit) (*ast.Field, bool) {
 	if lit.Type.Results == nil || len(lit.Type.Results.List) != 1 {
 		return nil, false
 	}
@@ -316,7 +316,7 @@ func (f *file) resultField(lit *ast.FuncLit) (*ast.Field, bool) {
 
 // returns returns the returns of a body, in order, and whether each of them
 // carries one result.
-func (f *file) returns(lit *ast.FuncLit) (rets []*ast.ReturnStmt, ok bool) {
+func (*file) returns(lit *ast.FuncLit) (rets []*ast.ReturnStmt, ok bool) {
 	ok = true
 	ast.Inspect(lit.Body, func(n ast.Node) bool {
 		if !ok {

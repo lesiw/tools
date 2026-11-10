@@ -9,6 +9,6 @@ func gather(first *Alpha, second *Beta, third map[string]*Gamma, fourth map[stri
 	_ = first
 }
 
-func (r *record) submit(pos, end int, msg string) {
+func (*record) submit(pos, end int, msg string) {
 	_ = pos
 }
