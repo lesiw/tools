@@ -70,6 +70,7 @@ import (
 	"lesiw.io/tools/analyzers/flagderef"
 	"lesiw.io/tools/analyzers/gospell"
 	"lesiw.io/tools/analyzers/importshadow"
+	"lesiw.io/tools/analyzers/initialisms"
 	"lesiw.io/tools/analyzers/ipliteral"
 	"lesiw.io/tools/analyzers/lenzero"
 	"lesiw.io/tools/analyzers/linelen"
@@ -142,6 +143,7 @@ var (
 		httpresponse.Analyzer,
 		ifaceassert.Analyzer,
 		importshadow.Analyzer,
+		initialisms.Analyzer,
 		ipliteral.Analyzer,
 		lenzero.Analyzer,
 		linelen.Analyzer,
