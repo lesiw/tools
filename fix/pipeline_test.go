@@ -7,84 +7,133 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
+
 	"lesiw.io/tools/analyzers/linelen"
 )
 
 // update writes the golden files instead of comparing them.
 var update = flag.Bool("update", false, "rewrite the case goldens")
 
-// TestPipeline runs the whole pipeline over each case and compares the result
-// with the golden beside it.
+// pipelineCase is one case: its name, the file it starts from, and the golden
+// it has to end at.
+type pipelineCase struct {
+	name   string
+	input  string
+	golden string
+}
+
+// TestPipeline runs the whole pipeline over every case and compares each
+// result with the golden beside it.
 //
 // A case is one file that builds, named .input so a formatter run over the
-// repository leaves it alone. It is copied into a module of its own, settled
-// by the same code the command runs, and compared byte for byte.
+// repository leaves it alone. Every case goes into one module, one package
+// per case, so the whole corpus is settled by one load. A case that does not
+// settle stops neither the load nor the other cases' comparisons.
 func TestPipeline(t *testing.T) {
 	// The cases are what the tools produce, and a command sets the width
 	// it runs with. The library default is no limit.
 	linelen.Config.Len = 79
+	var (
+		cases = readCases(t)
+		work  = buildModule(t, cases)
+	)
+	// Chdir is process-wide, so this test stays serial.
+	t.Chdir(work)
+	if err := run([]string{"./..."}); err != nil {
+		// This is setup for every case, so the comparisons still run.
+		t.Errorf("fix ./...: %v", err)
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) { compare(t, work, c) })
+	}
+}
+
+// readCases returns the cases, in the order their files sort.
+func readCases(t *testing.T) (cases []pipelineCase) {
+	t.Helper()
 	inputs, err := filepath.Glob("testdata/*.input")
 	if err != nil {
 		t.Fatal(err)
 	}
-	// The cases are read before any case changes directory, so every path
-	// below is absolute.
-	for i, input := range inputs {
-		if inputs[i], err = filepath.Abs(input); err != nil {
+	for _, input := range inputs {
+		if input, err = filepath.Abs(input); err != nil {
 			t.Fatal(err)
 		}
-	}
-	for _, input := range inputs {
-		name := strings.TrimSuffix(filepath.Base(input), ".input")
-		t.Run(name, func(t *testing.T) {
-			work := copyCase(t, input)
-			t.Chdir(work)
-			if err := run([]string{"."}); err != nil {
-				t.Fatalf("fix: %v", err)
-			}
-			compare(t, work, strings.TrimSuffix(input, ".input")+".golden")
+		cases = append(cases, pipelineCase{
+			name:   strings.TrimSuffix(filepath.Base(input), ".input"),
+			input:  input,
+			golden: strings.TrimSuffix(input, ".input") + ".golden",
 		})
 	}
+	return cases
 }
 
-// copyCase copies a case into a temporary module and returns it.
-func copyCase(t *testing.T, input string) string {
+// buildModule copies every case into one temporary module, one package per
+// case, and returns the module's directory.
+func buildModule(t *testing.T, cases []pipelineCase) string {
 	t.Helper()
-	work := t.TempDir()
-	src, err := os.ReadFile(input)
-	if err != nil {
+	var (
+		work      = t.TempDir()
+		gomod     = filepath.Join(work, "go.mod")
+		directive = "module cases\n\ngo " + goDirective(t) + "\n"
+	)
+	if err := os.WriteFile(gomod, []byte(directive), 0o666); err != nil {
 		t.Fatal(err)
 	}
-	out := filepath.Join(work, "main.go")
-	if err := os.WriteFile(out, src, 0o666); err != nil {
-		t.Fatal(err)
-	}
-	gomod := "module case\n\ngo 1.26.0\n"
-	mod := filepath.Join(work, "go.mod")
-	if err := os.WriteFile(mod, []byte(gomod), 0o666); err != nil {
-		t.Fatal(err)
+	for _, c := range cases {
+		src, err := os.ReadFile(c.input)
+		if err != nil {
+			t.Fatal(err)
+		}
+		dir := filepath.Join(work, c.name)
+		if err := os.MkdirAll(dir, 0o777); err != nil {
+			t.Fatal(err)
+		}
+		out := filepath.Join(dir, "main.go")
+		if err := os.WriteFile(out, src, 0o666); err != nil {
+			t.Fatal(err)
+		}
 	}
 	return work
 }
 
 // compare checks the file the pipeline produced against its golden.
-func compare(t *testing.T, work, golden string) {
+func compare(t *testing.T, work string, c pipelineCase) {
 	t.Helper()
-	got, err := os.ReadFile(filepath.Join(work, "main.go"))
+	got, err := os.ReadFile(filepath.Join(work, c.name, "main.go"))
 	if err != nil {
 		t.Fatal(err)
 	}
 	if *update {
-		if err := os.WriteFile(golden, got, 0o666); err != nil {
+		if err := os.WriteFile(c.golden, got, 0o666); err != nil {
 			t.Fatal(err)
 		}
 		return
 	}
-	want, err := os.ReadFile(golden)
+	want, err := os.ReadFile(c.golden)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if string(got) != string(want) {
-		t.Errorf("--- got ---\n%s\n--- want ---\n%s", got, want)
+	if diff := cmp.Diff(string(want), string(got)); diff != "" {
+		t.Errorf("fix ./... (-want +got):\n%s", diff)
 	}
+}
+
+// goDirective returns the go directive for the generated module. It reads the
+// directive this module promises, so a case cannot use syntax that a supported
+// toolchain rejects.
+func goDirective(t *testing.T) string {
+	t.Helper()
+	data, err := os.ReadFile("../go.mod")
+	if err != nil {
+		t.Fatal("could not read go.mod:", err)
+	}
+	for line := range strings.Lines(string(data)) {
+		if v, ok := strings.CutPrefix(line, "go "); ok {
+			return strings.TrimSpace(v)
+		}
+	}
+	t.Fatal("../go.mod has no go directive")
+	return ""
 }
