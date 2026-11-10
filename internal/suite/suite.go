@@ -61,6 +61,7 @@ import (
 	"lesiw.io/tools/analyzers/ctxname"
 	"lesiw.io/tools/analyzers/cyclo"
 	"lesiw.io/tools/analyzers/docsyntax"
+	"lesiw.io/tools/analyzers/dupbranch"
 	"lesiw.io/tools/analyzers/dupcase"
 	"lesiw.io/tools/analyzers/errflow"
 	"lesiw.io/tools/analyzers/errfmt"
@@ -115,6 +116,7 @@ var (
 		defers.Analyzer,
 		directive.Analyzer,
 		docsyntax.Analyzer,
+		dupbranch.Analyzer,
 		dupcase.Analyzer,
 		errcheck.Analyzer,
 		errflow.Analyzer,
