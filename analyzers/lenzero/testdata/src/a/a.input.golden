@@ -1,0 +1,25 @@
+package a
+
+func f(xs []int) bool {
+	return false // want `len is never negative; this is always false`
+}
+
+func g(xs []int) bool {
+	return true // want `len is never negative; this is always true`
+}
+
+func h(xs []int) bool {
+	return false // want `len is never negative; this is always false`
+}
+
+func i(xs []int) bool {
+	return true // want `len is never negative; this is always true`
+}
+
+func ok(xs []int) bool {
+	return len(xs) == 0
+}
+
+func ok2(xs []int) bool {
+	return len(xs) > 0
+}

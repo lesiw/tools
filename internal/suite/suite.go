@@ -69,6 +69,7 @@ import (
 	"lesiw.io/tools/analyzers/gospell"
 	"lesiw.io/tools/analyzers/importshadow"
 	"lesiw.io/tools/analyzers/ipliteral"
+	"lesiw.io/tools/analyzers/lenzero"
 	"lesiw.io/tools/analyzers/linelen"
 	"lesiw.io/tools/analyzers/linewrap"
 	"lesiw.io/tools/analyzers/makezero"
@@ -133,6 +134,7 @@ var (
 		ifaceassert.Analyzer,
 		importshadow.Analyzer,
 		ipliteral.Analyzer,
+		lenzero.Analyzer,
 		linelen.Analyzer,
 		linewrap.Analyzer,
 		loopclosure.Analyzer,
