@@ -66,6 +66,7 @@ import (
 	"lesiw.io/tools/analyzers/errflow"
 	"lesiw.io/tools/analyzers/errfmt"
 	"lesiw.io/tools/analyzers/errstrings"
+	"lesiw.io/tools/analyzers/flagderef"
 	"lesiw.io/tools/analyzers/gospell"
 	"lesiw.io/tools/analyzers/importshadow"
 	"lesiw.io/tools/analyzers/ipliteral"
@@ -126,6 +127,7 @@ var (
 		errname.New(),
 		errorsas.Analyzer,
 		errstrings.Analyzer,
+		flagderef.Analyzer,
 		framepointer.Analyzer,
 		gofix.Analyzer,
 		gospell.Analyzer,
