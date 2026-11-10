@@ -90,6 +90,7 @@ import (
 	"lesiw.io/tools/analyzers/unwrap"
 	"lesiw.io/tools/analyzers/uselessconcat"
 	"lesiw.io/tools/analyzers/uuid"
+	"lesiw.io/tools/analyzers/valswap"
 	"lesiw.io/tools/analyzers/whitespace"
 	"lesiw.io/tools/analyzers/yoda"
 )
@@ -183,6 +184,7 @@ var (
 		unwrap.Analyzer,
 		uselessconcat.Analyzer,
 		uuid.Analyzer,
+		valswap.Analyzer,
 		waitgroup.Analyzer,
 		whitespace.Analyzer,
 		yoda.Analyzer,
