@@ -64,6 +64,7 @@ import (
 	"lesiw.io/tools/analyzers/errflow"
 	"lesiw.io/tools/analyzers/errfmt"
 	"lesiw.io/tools/analyzers/gospell"
+	"lesiw.io/tools/analyzers/importshadow"
 	"lesiw.io/tools/analyzers/ipliteral"
 	"lesiw.io/tools/analyzers/linelen"
 	"lesiw.io/tools/analyzers/linewrap"
@@ -123,6 +124,7 @@ var (
 		httpmux.Analyzer,
 		httpresponse.Analyzer,
 		ifaceassert.Analyzer,
+		importshadow.Analyzer,
 		ipliteral.Analyzer,
 		linelen.Analyzer,
 		linewrap.Analyzer,
