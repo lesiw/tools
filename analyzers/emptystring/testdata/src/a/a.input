@@ -1,0 +1,25 @@
+package a
+
+func f(s string) bool {
+	return len(s) == 0 // want `compare the string with "" instead`
+}
+
+func g(s string) bool {
+	return len(s) > 0 // want `compare the string with "" instead`
+}
+
+func h(s string) bool {
+	return 0 != len(s) // want `compare the string with "" instead`
+}
+
+func ok(s string) bool {
+	return s == "" || s != ""
+}
+
+func slice(xs []int) bool {
+	return len(xs) == 0
+}
+
+func other(s string) bool {
+	return len(s) == 3
+}
