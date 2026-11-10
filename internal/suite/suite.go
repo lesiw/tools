@@ -82,6 +82,7 @@ import (
 	"lesiw.io/tools/analyzers/gospell"
 	"lesiw.io/tools/analyzers/ifelsechain"
 	"lesiw.io/tools/analyzers/importshadow"
+	"lesiw.io/tools/analyzers/indexalloc"
 	"lesiw.io/tools/analyzers/initialisms"
 	"lesiw.io/tools/analyzers/ipliteral"
 	"lesiw.io/tools/analyzers/lenzero"
@@ -176,6 +177,7 @@ var (
 		ifaceassert.Analyzer,
 		ifelsechain.Analyzer,
 		importshadow.Analyzer,
+		indexalloc.Analyzer,
 		initialisms.Analyzer,
 		ipliteral.Analyzer,
 		lenzero.Analyzer,
