@@ -53,6 +53,7 @@ import (
 
 	"lesiw.io/errcheck/errcheck"
 	"lesiw.io/tools/analyzers/afterhttperror"
+	"lesiw.io/tools/analyzers/appendcombine"
 	"lesiw.io/tools/analyzers/assignop"
 	"lesiw.io/tools/analyzers/bookends"
 	"lesiw.io/tools/analyzers/boolset"
@@ -118,6 +119,7 @@ var (
 	analyzers = slices.Concat(list, modernize.Suite)
 	list      = []*analysis.Analyzer{
 		afterhttperror.Analyzer,
+		appendcombine.Analyzer,
 		appends.Analyzer,
 		asmdecl.Analyzer,
 		assign.Analyzer,
