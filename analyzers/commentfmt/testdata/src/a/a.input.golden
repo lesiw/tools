@@ -1,0 +1,35 @@
+package a
+
+// good is not how a comment starts. // want `comment has no space after //`
+
+// Fine is a normal comment.
+func Fine() {}
+
+//go:generate echo hi
+
+//nolint:foo
+
+//lint:ignore
+
+// ---------- separator ----------
+
+// x // want `comment has no space after //`
+
+func bad2() {} // trailing // want `comment has no space after //`
+
+//line other.go:10
+func directive() {}
+
+//export Exported
+func exported() {}
+
+//sysnb getgroups(ngid int, gid *_Gid_t) (n int, err error)
+
+func sysnb() {}
+
+// doc word
+func docWord() {}
+
+//.....a separator drawn with dots is not prose
+//---- neither is one drawn with dashes
+//.data is a section name

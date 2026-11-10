@@ -57,6 +57,7 @@ import (
 	"lesiw.io/tools/analyzers/assignop"
 	"lesiw.io/tools/analyzers/bookends"
 	"lesiw.io/tools/analyzers/boolset"
+	"lesiw.io/tools/analyzers/commentfmt"
 	"lesiw.io/tools/analyzers/containscut"
 	"lesiw.io/tools/analyzers/ctxfield"
 	"lesiw.io/tools/analyzers/ctxfirst"
@@ -127,6 +128,7 @@ var (
 		atomic.Analyzer,
 		atomicalign.Analyzer,
 		bookends.Analyzer,
+		commentfmt.Analyzer,
 		containscut.Analyzer,
 		ctxfield.Analyzer,
 		ctxfirst.Analyzer,
