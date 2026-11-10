@@ -53,6 +53,7 @@ var words = map[string]string{
 	"honour":     "honor",
 	"humour":     "humor",
 	"initialise": "initialize",
+	"judgement":  "judgment",
 	"labour":     "labor",
 	"licence":    "license",
 	"metre":      "meter",
