@@ -68,6 +68,7 @@ import (
 	"lesiw.io/tools/analyzers/linelen"
 	"lesiw.io/tools/analyzers/linewrap"
 	"lesiw.io/tools/analyzers/recvname"
+	"lesiw.io/tools/analyzers/recvtype"
 	"lesiw.io/tools/analyzers/singlefield"
 	"lesiw.io/tools/analyzers/strictvar"
 	"lesiw.io/tools/analyzers/testcmp"
@@ -131,6 +132,7 @@ var (
 		nilness.Analyzer,
 		printf.Analyzer,
 		recvname.Analyzer,
+		recvtype.Analyzer,
 		reflectvaluecompare.Analyzer,
 		shift.Analyzer,
 		sigchanyzer.Analyzer,
