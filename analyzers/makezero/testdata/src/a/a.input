@@ -1,0 +1,27 @@
+package a
+
+func f() []int {
+	s := make([]int, 10) // want `slice made with a length, then appended to`
+	return append(s, 1)
+}
+
+func g() []int {
+	s := make([]int, 0, 10)
+	return append(s, 1)
+}
+
+func h() []int {
+	s := make([]int, 10)
+	s[0] = 1
+	return s
+}
+
+func i(n int) []int {
+	s := make([]int, n)
+	return append(s, 1)
+}
+
+func j() []int {
+	var s []int
+	return append(s, 1)
+}

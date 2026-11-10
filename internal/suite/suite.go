@@ -69,6 +69,7 @@ import (
 	"lesiw.io/tools/analyzers/ipliteral"
 	"lesiw.io/tools/analyzers/linelen"
 	"lesiw.io/tools/analyzers/linewrap"
+	"lesiw.io/tools/analyzers/makezero"
 	"lesiw.io/tools/analyzers/recvname"
 	"lesiw.io/tools/analyzers/recvtype"
 	"lesiw.io/tools/analyzers/singlefield"
@@ -132,6 +133,7 @@ var (
 		linewrap.Analyzer,
 		loopclosure.Analyzer,
 		lostcancel.Analyzer,
+		makezero.Analyzer,
 		nilfunc.Analyzer,
 		nilness.Analyzer,
 		printf.Analyzer,
