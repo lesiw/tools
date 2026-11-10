@@ -1,0 +1,13 @@
+package a
+
+var () // want `empty var block`
+
+const () // want `empty const block`
+
+type () // want `empty type block`
+
+var x = 1
+
+const y = 2
+
+type S struct{}

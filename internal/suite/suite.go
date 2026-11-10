@@ -67,6 +67,7 @@ import (
 	"lesiw.io/tools/analyzers/docsyntax"
 	"lesiw.io/tools/analyzers/dupbranch"
 	"lesiw.io/tools/analyzers/dupcase"
+	"lesiw.io/tools/analyzers/emptydecl"
 	"lesiw.io/tools/analyzers/emptystring"
 	"lesiw.io/tools/analyzers/errflow"
 	"lesiw.io/tools/analyzers/errfmt"
@@ -140,6 +141,7 @@ var (
 		docsyntax.Analyzer,
 		dupbranch.Analyzer,
 		dupcase.Analyzer,
+		emptydecl.Analyzer,
 		emptystring.Analyzer,
 		errcheck.Analyzer,
 		errflow.Analyzer,

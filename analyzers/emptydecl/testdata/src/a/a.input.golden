@@ -1,0 +1,7 @@
+package a
+
+var x = 1
+
+const y = 2
+
+type S struct{}
