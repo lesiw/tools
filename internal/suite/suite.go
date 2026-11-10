@@ -84,6 +84,7 @@ import (
 	"lesiw.io/tools/analyzers/recvname"
 	"lesiw.io/tools/analyzers/recvtype"
 	"lesiw.io/tools/analyzers/regexpmust"
+	"lesiw.io/tools/analyzers/selfassert"
 	"lesiw.io/tools/analyzers/singlefield"
 	"lesiw.io/tools/analyzers/strcompare"
 	"lesiw.io/tools/analyzers/strictvar"
@@ -171,6 +172,7 @@ var (
 		recvtype.Analyzer,
 		reflectvaluecompare.Analyzer,
 		regexpmust.Analyzer,
+		selfassert.Analyzer,
 		shift.Analyzer,
 		sigchanyzer.Analyzer,
 		singlefield.Analyzer,
