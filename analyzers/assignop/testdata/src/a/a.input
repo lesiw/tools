@@ -1,0 +1,23 @@
+package a
+
+func f(x, y int) int {
+	x = x + 1 // want `assignment writes x in terms of itself`
+	x = x * y // want `assignment writes x in terms of itself`
+	x += 1
+	return x
+}
+
+func g(x, y int) int {
+	x = y + 1
+	return x
+}
+
+func h(x int, next func() int) int {
+	x = next() + x
+	return x
+}
+
+func i(s []int) []int {
+	s[0] = s[0] + 1
+	return s
+}

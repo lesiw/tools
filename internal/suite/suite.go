@@ -53,6 +53,7 @@ import (
 
 	"lesiw.io/errcheck/errcheck"
 	"lesiw.io/tools/analyzers/afterhttperror"
+	"lesiw.io/tools/analyzers/assignop"
 	"lesiw.io/tools/analyzers/bookends"
 	"lesiw.io/tools/analyzers/boolset"
 	"lesiw.io/tools/analyzers/containscut"
@@ -111,6 +112,7 @@ var (
 		appends.Analyzer,
 		asmdecl.Analyzer,
 		assign.Analyzer,
+		assignop.Analyzer,
 		atomic.Analyzer,
 		atomicalign.Analyzer,
 		bookends.Analyzer,
