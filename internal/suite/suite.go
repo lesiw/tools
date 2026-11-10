@@ -55,6 +55,7 @@ import (
 	"lesiw.io/tools/analyzers/bookends"
 	"lesiw.io/tools/analyzers/boolset"
 	"lesiw.io/tools/analyzers/containscut"
+	"lesiw.io/tools/analyzers/ctxfirst"
 	"lesiw.io/tools/analyzers/ctxguard"
 	"lesiw.io/tools/analyzers/ctxname"
 	"lesiw.io/tools/analyzers/cyclo"
@@ -92,6 +93,7 @@ var (
 		atomicalign.Analyzer,
 		bookends.Analyzer,
 		containscut.Analyzer,
+		ctxfirst.Analyzer,
 		cyclo.Analyzer,
 		bools.Analyzer,
 		boolset.Analyzer,
