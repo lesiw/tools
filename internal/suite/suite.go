@@ -69,6 +69,7 @@ import (
 	"lesiw.io/tools/analyzers/dupcase"
 	"lesiw.io/tools/analyzers/elseif"
 	"lesiw.io/tools/analyzers/emptydecl"
+	"lesiw.io/tools/analyzers/emptyfallthrough"
 	"lesiw.io/tools/analyzers/emptystring"
 	"lesiw.io/tools/analyzers/errflow"
 	"lesiw.io/tools/analyzers/errfmt"
@@ -145,6 +146,7 @@ var (
 		dupcase.Analyzer,
 		elseif.Analyzer,
 		emptydecl.Analyzer,
+		emptyfallthrough.Analyzer,
 		emptystring.Analyzer,
 		errcheck.Analyzer,
 		errflow.Analyzer,
