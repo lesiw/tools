@@ -16,10 +16,10 @@ go run lesiw.io/tools/cmd/fix@latest ./...
 ## cmd/vet
 
 Vet checks Go packages with the golang.org/x/tools analysis passes. It adds
-analyzers for error handling, line length, testing practice, declaration
-style, and code modernization. A //ignore directive suppresses a diagnostic,
-for one analyzer or for all of them. Each analyzer can be selected or
-disabled by name:
+analyzers for error handling, line length, layout, naming, testing practice,
+declaration style, and code modernization. A //ignore directive suppresses a
+diagnostic, for one analyzer or for all of them. Each analyzer can be selected
+or disabled by name:
 
 ```sh
 go tool lesiw.io/tools/cmd/vet -printf=false ./...
@@ -56,8 +56,8 @@ edit the same span, one of them waits for the next round.
 A package that does not load stops the run, because the next round cannot
 check a fix applied to a tree that does not compile.
 
-Analyzer flags mean what they mean to the analyzer: `-stringsseq` runs one
-analyzer, `-stringsseq=false` turns one off, and `-linelen.len=100` sets one of
+Analyzer flags mean what they mean to the analyzer: `-errfmt` runs one
+analyzer, `-errfmt=false` turns one off, and `-linelen.len=100` sets one of
 its own. Build flags are passed to the load.
 
 ## cmd/reflow
