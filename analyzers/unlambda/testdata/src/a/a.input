@@ -1,0 +1,29 @@
+package a
+
+import "strings"
+
+func f(s string) []string {
+	return strings.Fields(s)
+}
+
+func use(fn func(string) []string) {}
+
+func g() {
+	use(func(s string) []string { return strings.Fields(s) }) // want `literal only forwards its arguments`
+	use(strings.Fields)
+}
+
+func h() {
+	use(func(s string) []string { return strings.Fields(strings.TrimSpace(s)) })
+}
+
+func i() {
+	use(func(s string) []string { return strings.Split(s, " ") })
+}
+
+func j() {
+	use(func(s string) []string {
+		s = strings.TrimSpace(s)
+		return strings.Fields(s)
+	})
+}
