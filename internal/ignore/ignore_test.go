@@ -67,15 +67,16 @@ func TestParseIgnore(t *testing.T) {
 	)
 	for _, tt := range tests {
 		gotAnalyzers, gotIn := parseIgnore(tt.input)
-		if tt.want == nil && gotAnalyzers != nil {
+		switch {
+		case tt.want == nil && gotAnalyzers != nil:
 			t.Errorf("parseIgnore(%q) = %v, want nil", tt.input, gotAnalyzers)
-		} else if gotAnalyzers == nil && tt.want != nil {
+		case gotAnalyzers == nil && tt.want != nil:
 			t.Errorf("parseIgnore(%q) = nil, want %v", tt.input, tt.want)
-		} else if !cmp.Equal(gotAnalyzers, tt.want) {
+		case !cmp.Equal(gotAnalyzers, tt.want):
 			t.Errorf("parseIgnore(%q) mismatch (-want +got):\n%s",
 				tt.input, cmp.Diff(tt.want, gotAnalyzers),
 			)
-		} else if gotIn != tt.in {
+		case gotIn != tt.in:
 			t.Errorf("parseIgnore(%q) in = %t, want %t",
 				tt.input, gotIn, tt.in,
 			)

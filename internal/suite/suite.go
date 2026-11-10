@@ -76,6 +76,7 @@ import (
 	"lesiw.io/tools/analyzers/errstrings"
 	"lesiw.io/tools/analyzers/flagderef"
 	"lesiw.io/tools/analyzers/gospell"
+	"lesiw.io/tools/analyzers/ifelsechain"
 	"lesiw.io/tools/analyzers/importshadow"
 	"lesiw.io/tools/analyzers/initialisms"
 	"lesiw.io/tools/analyzers/ipliteral"
@@ -162,6 +163,7 @@ var (
 		httpmux.Analyzer,
 		httpresponse.Analyzer,
 		ifaceassert.Analyzer,
+		ifelsechain.Analyzer,
 		importshadow.Analyzer,
 		initialisms.Analyzer,
 		ipliteral.Analyzer,
