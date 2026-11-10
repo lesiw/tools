@@ -94,6 +94,7 @@ import (
 	"lesiw.io/tools/analyzers/selfassert"
 	"lesiw.io/tools/analyzers/singlefield"
 	"lesiw.io/tools/analyzers/strcompare"
+	"lesiw.io/tools/analyzers/strconcat"
 	"lesiw.io/tools/analyzers/strictvar"
 	"lesiw.io/tools/analyzers/switchtrue"
 	"lesiw.io/tools/analyzers/testcmp"
@@ -197,6 +198,7 @@ var (
 		stdmethods.Analyzer,
 		stdversion.Analyzer,
 		strcompare.Analyzer,
+		strconcat.Analyzer,
 		strictvar.Analyzer,
 		stringintconv.Analyzer,
 		structtag.Analyzer,

@@ -1,0 +1,27 @@
+package a
+
+import "strings"
+
+func f(a, b string) string {
+	return strings.Join([]string{a, b}, "-") // want `Join of 2 parts`
+}
+
+func g(a, b, c string) string {
+	return strings.Join([]string{a, b, c}, "") // want `Join of 3 parts`
+}
+
+func ok(a, b, c, d string) string {
+	return strings.Join([]string{a, b, c, d}, "-")
+}
+
+func sep(a, b, s string) string {
+	return strings.Join([]string{a, b}, s)
+}
+
+func named(xs []string) string {
+	return strings.Join(xs, "-")
+}
+
+func keyed(a, b string) string {
+	return strings.Join([]string{0: a, 1: b}, "-")
+}
