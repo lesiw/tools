@@ -87,6 +87,7 @@ import (
 	"lesiw.io/tools/analyzers/linelen"
 	"lesiw.io/tools/analyzers/linewrap"
 	"lesiw.io/tools/analyzers/makezero"
+	"lesiw.io/tools/analyzers/newderef"
 	"lesiw.io/tools/analyzers/nilreturn"
 	"lesiw.io/tools/analyzers/recvname"
 	"lesiw.io/tools/analyzers/recvtype"
@@ -181,6 +182,7 @@ var (
 		loopclosure.Analyzer,
 		lostcancel.Analyzer,
 		makezero.Analyzer,
+		newderef.Analyzer,
 		nilfunc.Analyzer,
 		nilness.Analyzer,
 		nilreturn.Analyzer,
