@@ -1,0 +1,33 @@
+package a
+
+func f(n int) int {
+	if n == 0 {
+		return 0
+	} else { // want `if nested in an else; write else if`
+		if n == 1 {
+			return 1
+		}
+	}
+	return -1
+}
+
+func ok(n int) int {
+	if n == 0 {
+		return 0
+	} else if n == 1 {
+		return 1
+	}
+	return -1
+}
+
+func g(n int) int {
+	if n == 0 {
+		return 0
+	} else {
+		println("not zero")
+		if n == 1 {
+			return 1
+		}
+	}
+	return -1
+}

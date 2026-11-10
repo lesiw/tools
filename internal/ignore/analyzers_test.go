@@ -147,17 +147,19 @@ var dependentAnalyzer = &analysis.Analyzer{
 	Requires: []*analysis.Analyzer{publicNames},
 	Run: func(pass *analysis.Pass) (any, error) {
 		// This should have access to publicNames results via pass.ResultOf
-		if result, ok := pass.ResultOf[publicNames]; ok {
-			// Use the result somehow - report on the first file's package
-			// declaration
-			_ = result
+		result, ok := pass.ResultOf[publicNames]
+		if !ok {
 			if len(pass.Files) > 0 {
-				pass.Reportf(pass.Files[0].Package, "dependent analyzer ran")
+				// The result the analyzer needs is missing.
+				pass.Reportf(pass.Files[0].Package, "missing result")
 			}
-		} else {
-			if len(pass.Files) > 0 {
-				pass.Reportf(pass.Files[0].Package, "dependent analyzer missing required result")
-			}
+			return "dependent result", nil
+		}
+		// Use the result somehow - report on the first file's package
+		// declaration
+		_ = result
+		if len(pass.Files) > 0 {
+			pass.Reportf(pass.Files[0].Package, "dependent analyzer ran")
 		}
 		return "dependent result", nil
 	},
