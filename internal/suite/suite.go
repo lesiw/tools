@@ -80,6 +80,7 @@ import (
 	"lesiw.io/tools/analyzers/nilreturn"
 	"lesiw.io/tools/analyzers/recvname"
 	"lesiw.io/tools/analyzers/recvtype"
+	"lesiw.io/tools/analyzers/regexpmust"
 	"lesiw.io/tools/analyzers/singlefield"
 	"lesiw.io/tools/analyzers/strictvar"
 	"lesiw.io/tools/analyzers/switchtrue"
@@ -160,6 +161,7 @@ var (
 		recvname.Analyzer,
 		recvtype.Analyzer,
 		reflectvaluecompare.Analyzer,
+		regexpmust.Analyzer,
 		shift.Analyzer,
 		sigchanyzer.Analyzer,
 		singlefield.Analyzer,
