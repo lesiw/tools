@@ -1,0 +1,25 @@
+package a
+
+func close1() {}
+
+func f() {
+	defer func() { close1() }() // want `deferred literal only calls a function`
+}
+
+func ok() {
+	defer close1()
+}
+
+func g() {
+	defer func() { close1(); close1() }()
+}
+
+func h(x int) {
+	defer func() { println(x) }()
+}
+
+// recover stops a panic only when a deferred function calls it, and
+// defer recover() does not recover.
+func recovering() {
+	defer func() { recover() }()
+}
