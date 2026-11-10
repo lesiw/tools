@@ -80,6 +80,7 @@ import (
 	"lesiw.io/tools/analyzers/recvtype"
 	"lesiw.io/tools/analyzers/singlefield"
 	"lesiw.io/tools/analyzers/strictvar"
+	"lesiw.io/tools/analyzers/switchtrue"
 	"lesiw.io/tools/analyzers/testcmp"
 	"lesiw.io/tools/analyzers/testhelpers"
 	"lesiw.io/tools/analyzers/testlabel"
@@ -162,6 +163,7 @@ var (
 		strictvar.Analyzer,
 		stringintconv.Analyzer,
 		structtag.Analyzer,
+		switchtrue.Analyzer,
 		testcmp.Analyzer,
 		testhelpers.Analyzer,
 		testinggoroutine.Analyzer,

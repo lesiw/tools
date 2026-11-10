@@ -1,0 +1,34 @@
+package a
+
+func f(n int) int {
+	switch true { // want `switch on true; drop the tag`
+	case n > 0:
+		return 1
+	default:
+		return 0
+	}
+}
+
+func g(n int) int {
+	switch {
+	case n > 0:
+		return 1
+	}
+	return 0
+}
+
+func h(ok bool) int {
+	switch ok {
+	case true:
+		return 1
+	}
+	return 0
+}
+
+func i(n int) int {
+	switch m := n; true { // want `switch on true; drop the tag`
+	case m > 0:
+		return 1
+	}
+	return 0
+}
