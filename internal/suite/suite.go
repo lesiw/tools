@@ -83,6 +83,7 @@ import (
 	"lesiw.io/tools/analyzers/recvtype"
 	"lesiw.io/tools/analyzers/regexpmust"
 	"lesiw.io/tools/analyzers/singlefield"
+	"lesiw.io/tools/analyzers/strcompare"
 	"lesiw.io/tools/analyzers/strictvar"
 	"lesiw.io/tools/analyzers/switchtrue"
 	"lesiw.io/tools/analyzers/testcmp"
@@ -171,6 +172,7 @@ var (
 		sortslice.Analyzer,
 		stdmethods.Analyzer,
 		stdversion.Analyzer,
+		strcompare.Analyzer,
 		strictvar.Analyzer,
 		stringintconv.Analyzer,
 		structtag.Analyzer,
