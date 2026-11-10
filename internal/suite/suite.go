@@ -94,6 +94,7 @@ import (
 	"lesiw.io/tools/analyzers/tidytypes"
 	"lesiw.io/tools/analyzers/timeafter"
 	"lesiw.io/tools/analyzers/unlambda"
+	"lesiw.io/tools/analyzers/unslice"
 	"lesiw.io/tools/analyzers/unwrap"
 	"lesiw.io/tools/analyzers/uselessconcat"
 	"lesiw.io/tools/analyzers/uuid"
@@ -193,6 +194,7 @@ var (
 		unmarshal.Analyzer,
 		unreachable.Analyzer,
 		unsafeptr.Analyzer,
+		unslice.Analyzer,
 		unusedresult.Analyzer,
 		unusedwrite.Analyzer,
 		unwrap.Analyzer,

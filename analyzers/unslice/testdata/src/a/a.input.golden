@@ -1,0 +1,26 @@
+package a
+
+func f(s []int) []int {
+	return s // want `unnecessary full slice`
+}
+
+func g(s string) string {
+	return s // want `unnecessary full slice`
+}
+
+func ok(s []int) []int {
+	return s
+}
+
+func partial(s []int) []int {
+	return s[1:]
+}
+
+func capped(s []int) []int {
+	return s[:2:3]
+}
+
+func array() []int {
+	var xs [3]int
+	return xs[:]
+}
