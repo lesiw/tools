@@ -26,6 +26,11 @@ type pipelineCase struct {
 // TestPipeline runs the whole pipeline over every case and compares each
 // result with the golden beside it.
 //
+// The pipeline is the whole suite, so a golden records the output of every
+// analyzer: this module's, the x/tools passes, and modernize. A new check
+// that fires on a case changes that case's golden, and a change in
+// golang.org/x/tools can change several at once.
+//
 // A case is one file that builds, named .input so a formatter run over the
 // repository leaves it alone. Every case goes into one module, one package
 // per case, so the whole corpus is settled by one load. A case that does not
