@@ -108,6 +108,7 @@ import (
 	"lesiw.io/tools/analyzers/testlabel"
 	"lesiw.io/tools/analyzers/tidytypes"
 	"lesiw.io/tools/analyzers/timeafter"
+	"lesiw.io/tools/analyzers/todocomment"
 	"lesiw.io/tools/analyzers/typeswitchvar"
 	"lesiw.io/tools/analyzers/typeunparen"
 	"lesiw.io/tools/analyzers/unlambda"
@@ -223,6 +224,7 @@ var (
 		tidytypes.Analyzer,
 		timeafter.Analyzer,
 		timeformat.Analyzer,
+		todocomment.Analyzer,
 		typeswitchvar.Analyzer,
 		typeunparen.Analyzer,
 		unlambda.Analyzer,
