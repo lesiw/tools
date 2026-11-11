@@ -64,7 +64,6 @@ import (
 	"lesiw.io/tools/analyzers/ctxguard"
 	"lesiw.io/tools/analyzers/ctxname"
 	"lesiw.io/tools/analyzers/cyclo"
-	"lesiw.io/tools/analyzers/deferredexit"
 	"lesiw.io/tools/analyzers/deferunlambda"
 	"lesiw.io/tools/analyzers/deprecated"
 	"lesiw.io/tools/analyzers/docsyntax"
@@ -154,7 +153,6 @@ var (
 		ctxname.Analyzer,
 		cyclo.Analyzer,
 		deepequalerrors.Analyzer,
-		deferredexit.Analyzer,
 		defers.Analyzer,
 		deferunlambda.Analyzer,
 		deprecated.Analyzer,
