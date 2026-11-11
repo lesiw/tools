@@ -100,7 +100,8 @@ func liftOverlongComments(r *renderer) {
 		}
 		if prev := groupAbove(tokFile, file, group); prev != nil {
 			prev.List = append(prev.List, group.List...)
-			file.Comments = slices.DeleteFunc(file.Comments,
+			file.Comments = slices.DeleteFunc(
+				file.Comments,
 				func(cg *ast.CommentGroup) bool { return cg == group },
 			)
 			group = prev

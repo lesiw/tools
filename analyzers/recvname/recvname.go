@@ -39,8 +39,9 @@ func run(pass *analysis.Pass) (any, error) {
 				continue
 			}
 			if _, ok := banned[id.Name]; ok {
-				pass.Reportf(id.Pos(), "receiver %q; use the type's initial",
-					id.Name,
+				pass.Reportf(
+					id.Pos(),
+					"receiver %q; use the type's initial", id.Name,
 				)
 				continue
 			}

@@ -7,7 +7,8 @@ import (
 )
 
 func TestSuggestedFixes(t *testing.T) {
-	analysistest.RunWithSuggestedFixes(t, analysistest.TestData(),
+	analysistest.RunWithSuggestedFixes(
+		t, analysistest.TestData(),
 		Analyzer, "a",
 	)
 }

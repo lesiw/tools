@@ -44,7 +44,8 @@ func (f *file) checkBlockPairs(gd *ast.GenDecl) {
 	lines, fixOK := f.pairLines(gd, pairs)
 	indent := f.indent(gd.Pos())
 	text := "(" + strings.TrimRight(
-		f.text(gd.Lparen+1, f.lineEnd(gd.Lparen)), " \t",
+		f.text(gd.Lparen+1, f.lineEnd(gd.Lparen)),
+		" \t",
 	) + "\n"
 	text += blockText(indent, lines) + indent + ")"
 	var edits []analysis.TextEdit

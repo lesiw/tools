@@ -9,7 +9,9 @@ func f() {
 	first()
 	second()
 
-	g("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+	g(
+		"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
 		"ccccccccccccccccccccccccccccccccc",
 	)
 }

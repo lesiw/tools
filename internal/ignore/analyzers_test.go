@@ -128,7 +128,8 @@ var (
 				for _, cg := range file.Comments {
 					for _, c := range cg.List {
 						if !strings.HasSuffix(c.Text, ".") {
-							pass.Reportf(c.End()-1,
+							pass.Reportf(
+								c.End()-1,
 								"comment does not end in a period",
 							)
 						}

@@ -233,7 +233,8 @@ func astLits(fset *token.FileSet, f *ast.File) map[int][]span {
 				to = min(to, file.Offset(file.LineStart(line+1)))
 			}
 			if to > from {
-				out[line] = append(out[line],
+				out[line] = append(
+					out[line],
 					span{pos: from - start, end: to - start},
 				)
 			}

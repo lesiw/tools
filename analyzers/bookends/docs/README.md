@@ -7,15 +7,22 @@
 [![Discord](https://img.shields.io/discord/1145827224516300971?logo=discord&logoColor=white&color=5865F2&label=discord)](https://lesiw.dev/discord)
 [![License](https://img.shields.io/github/license/lesiw/tools)](../../../LICENSE)
 
-An `analysis.Analyzer` for bracket layout. Three shapes are reported, and each
-fix moves the brace rather than the code around it:
+An `analysis.Analyzer` for bracket layout. Four shapes are reported, and each
+fix moves a bracket or a line break rather than an element:
 
 - a closing bracket that is not at the indent of its opening bracket;
 - an elided-type literal whose opening brace shares a line with its first
-  element, so the rows of it start at different columns;
-- a table whose rows disagree about their shape, where one row on a line and
-  another across lines is neither a table on one line nor a table to read
-  down.
+  element, so its rows start at different columns;
+- a table whose rows are not all one shape, where one row is on a line and
+  another spans lines, which is neither a table on one line nor a table to
+  read down;
+- a list indented across two lines to carry one line of elements. The layout
+  has the least raggedness, so elements spread across lines by width rather
+  than by count. Two indented lines are a group the author drew, and the rule
+  leaves them alone. The list keeps one element per line when its elements are
+  keyed, are composite literals, are names, or are a literal's constants, and
+  when a comment sits among them. A `slog` call is the exception: its trailing
+  arguments are key-value pairs, so each key keeps the value it labels.
 
 ## Usage
 

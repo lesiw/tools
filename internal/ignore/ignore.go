@@ -132,22 +132,19 @@ func newIgnoreRange(comment *ast.Comment, analyzers map[string]struct{}, file *a
 		// Ignore analyzers on this comment group and its associated node.
 		return ignoreRange{
 			lineStart(pass, min(group.Pos(), node.Pos())),
-			lineEnd(pass, max(group.End(), node.End())),
-			analyzers,
+			lineEnd(pass, max(group.End(), node.End())), analyzers,
 		}
 	case node != nil:
 		// Ignore analyzers on this node.
 		return ignoreRange{
 			lineStart(pass, node.Pos()),
-			lineEnd(pass, node.End()),
-			analyzers,
+			lineEnd(pass, node.End()), analyzers,
 		}
 	case group != nil:
 		// Ignore analyzers on this comment group.
 		return ignoreRange{
 			lineStart(pass, group.Pos()),
-			lineEnd(pass, group.End()),
-			analyzers,
+			lineEnd(pass, group.End()), analyzers,
 		}
 	}
 	// Ignore analyzers on the current line.

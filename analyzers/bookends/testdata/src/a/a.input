@@ -1,5 +1,13 @@
 package a
 
+import (
+	"image/color"
+	"log/slog"
+	"net/http"
+)
+
+type image struct{ Alpha, Beta string }
+
 type pair struct {
 	a int
 	b int
@@ -11,8 +19,6 @@ var table = []pair{ // want `table mixes one-line and multi-line rows`
 		4},
 }
 
-// emptyRow has a row with no elements. An empty row cannot be expanded, so it
-// keeps its braces on one line.
 var emptyRow = []pair{ // want `table mixes one-line and multi-line rows`
 	{1, 2},
 	{},
@@ -20,9 +26,6 @@ var emptyRow = []pair{ // want `table mixes one-line and multi-line rows`
 		4},
 }
 
-// trailingCloser mixes a one-line row with a multi-line one and puts the
-// closer on the last row's line, which is the shape where the literal's own
-// delimiters pair opens on the same brace as the table.
 var trailingCloser = []pair{ // want `table mixes one-line and multi-line rows`
 	{1, 2},
 	{3,
@@ -62,7 +65,7 @@ func spread(xs []int) []int {
 func indented(g func(int, int) int) int {
 	return g(1,
 		2,
-		)
+	)
 }
 
 func comment(g func(int, int) int) int {
@@ -74,10 +77,148 @@ type row struct {
 	first, second, third, fourth, fifth, sixth, seventh, eighth int
 }
 
-// wideTable puts the first row on the opener's line and the second across
-// lines. Measuring the first row appends to its indent, and that indent is
-// the line the table starts on, so a fix that builds the line on the source's
-// own bytes corrupts the text it is about to write.
+type triple struct{ a, b, c int }
+
 var wideTable = []row{{1, 2, 3, 4, 5, 6, 7, 8}, { // want `table mixes one-line and multi-line rows`
 	1, 2, 3, 4, 5, 6, 7, 8,
 }}
+
+func splitByWidth(w http.ResponseWriter, err error) {
+	registerFourArgsWithString(w, http.StatusNotFound, "MANIFEST_UNKNOWN", // want `elements fit on 2 lines`
+		err.Error(),
+	)
+}
+
+func grouped(w http.ResponseWriter, err error) {
+	registerFourArgsWithString(w, http.StatusNotFound,
+		"MANIFEST_UNKNOWN",
+		err.Error(),
+	)
+}
+
+func keyedArgs(log *slog.Logger, img image, err error) {
+	log.Warn( // want `each key and its value take a line`
+		"true-up pull failed", "repo",
+		img.Alpha, "tag", img.Beta, "err", err,
+	)
+}
+
+func packable(w http.ResponseWriter, err error) {
+	registerFourArgsWithString( // want `elements fit on 2 lines`
+		w, http.StatusInternalServerError, "err-one", err.Error(),
+	)
+}
+
+func multiLine(w http.ResponseWriter, err error) {
+	registerFourArgsWithString(
+		w,
+		http.StatusInternalServerError,
+		"err-one",
+		err.Error(),
+	)
+}
+
+func registerFourArgsWithString(w http.ResponseWriter, status int, msg, err string) {
+}
+
+var keyed = payloadUnderTest{
+	Alpha:   "value-one",
+	Beta:    "value-two",
+	Gamma: "value-three",
+	Delta: "value-four",
+}
+
+type payloadUnderTest struct {
+	Alpha, Beta, Gamma, Delta string
+}
+
+var tableRows = []row{
+	{1, 2, 3, 4, 5, 6, 7, 8},
+	{9, 10, 11, 12, 13, 14, 15, 16},
+	{1, 2, 3, 4, 5, 6, 7, 8},
+	{9, 10, 11, 12, 13, 14, 15, 16},
+}
+
+var coefficients = []float64{
+	1.5e-05,
+	2.5e-04,
+	3.5e-04,
+	4.5e-05,
+}
+
+var palette = []color.Color{
+	color.RGBA{0x11, 0x22, 0x33, 0xff},
+	color.RGBA{0x44, 0x55, 0x66, 0xff},
+	color.RGBA{0x77, 0x88, 0x99, 0xff},
+	color.RGBA{0xaa, 0xbb, 0xcc, 0xff},
+}
+
+var abuttingComment = []triple{
+	{1, 2,
+		3},
+	{4, 5, 6} /* keep me */}
+
+func headComment(w http.ResponseWriter, err error) {
+	registerFourArgsWithString(
+		// a note
+		w,
+		http.StatusInternalServerError,
+		"err-one",
+		err.Error(),
+	)
+}
+
+func commentedList(w http.ResponseWriter, err error) {
+	registerFourArgsWithString(
+		w,
+		// a note
+		http.StatusInternalServerError,
+		"err-one",
+		err.Error(),
+	)
+}
+
+func balanced(w http.ResponseWriter, err error) {
+	registerFiveLongArgs( // want `elements fit on 3 lines`
+		pad("aaaaaaaaaaaaaaaaaaaa"), pad("bbbbbbbbbbbbbbbbbbbb"), pad("cccccccccccccccccccc"), pad("dddddddddddddddddddd"), pad("eeeeeeeeeeeeeeeeeeee"),
+	)
+}
+
+func orphan(w http.ResponseWriter, err error) {
+	registerThreeLongArgs( // want `elements fit on 2 lines`
+		wrap(alphaAlphaAlphaAlphaAlphaAlphaAlphaAlphaAlphaAlphaAlphaAlpha), wrap(beta), wrap(gamma),
+	)
+}
+
+func tooWide(w http.ResponseWriter, err error) {
+	registerThreeLongArgs(
+		wrap(alphaAlphaAlphaAlphaAlphaAlphaAlphaAlphaAlphaAlphaAlphaAlphaAlphaAlphaAlphaAlphaAlphaAlphaAlphaAlpha), wrap(beta), wrap(gamma),
+	)
+}
+
+func registerFiveLongArgs(a, b, c, d, e string) {}
+
+func registerThreeLongArgs(a, b, c any) {}
+
+var (
+	alphaAlphaAlphaAlphaAlphaAlphaAlphaAlphaAlphaAlphaAlphaAlpha int
+
+	alphaAlphaAlphaAlphaAlphaAlphaAlphaAlphaAlphaAlphaAlphaAlphaAlphaAlphaAlphaAlphaAlphaAlphaAlphaAlpha int
+	beta                                                                                                 int
+	gamma                                                                                                int
+)
+
+func wrap(a any) any { return a }
+
+func pad(s string) string { return s }
+
+func nameList() {
+	registerFourErrors(
+		http.ErrBodyReadAfterClose,
+		http.ErrMissingBoundary,
+		http.ErrSkipAltProtocol,
+		http.ErrHandlerTimeout,
+	)
+}
+
+func registerFourErrors(a, b, c, d error) {}

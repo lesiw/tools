@@ -77,10 +77,8 @@ func run(args []string, analyzers []*analysis.Analyzer) error {
 	if err != nil {
 		return err
 	}
-	var (
-		seen     = make(map[string]struct{}, maxRounds)
-		unloaded int
-	)
+	seen := make(map[string]struct{}, maxRounds)
+	var unloaded int
 	for round := 1; round <= maxRounds; round++ {
 		pending, bad, err := collect(opts)
 		if err != nil {
@@ -100,10 +98,8 @@ func run(args []string, analyzers []*analysis.Analyzer) error {
 			}
 			return nil
 		}
-		var (
-			names    = make([]string, 0, len(pending))
-			seenName = make(map[string]struct{})
-		)
+		names := make([]string, 0, len(pending))
+		seenName := make(map[string]struct{})
 		for _, f := range pending {
 			if _, ok := seenName[f.name]; ok {
 				continue
@@ -111,8 +107,9 @@ func run(args []string, analyzers []*analysis.Analyzer) error {
 			seenName[f.name] = struct{}{}
 			names = append(names, f.name)
 		}
-		fmt.Fprintf(os.Stderr, "fix: round %d: %s\n", round,
-			strings.Join(names, ", "),
+		fmt.Fprintf(
+			os.Stderr, "fix: round %d: %s\n",
+			round, strings.Join(names, ", "),
 		)
 		// A round that proposes what an earlier round proposed cannot
 		// make progress: two analyzers are undoing each other.
@@ -133,7 +130,8 @@ func run(args []string, analyzers []*analysis.Analyzer) error {
 			fmt.Fprintf(os.Stderr, "fix: conflicting fixes in %s\n", name)
 		}
 		if n == 0 {
-			return fmt.Errorf("no fix could be applied: %s",
+			return fmt.Errorf(
+				"no fix could be applied: %s",
 				strings.Join(names, ", "),
 			)
 		}
@@ -314,8 +312,9 @@ func (p *argParser) toggle(name, value string, hasValue bool) error {
 func (p *argParser) setFlag(args []string, i int, base, sub, value string, hasValue bool) (int, error) {
 	if !hasValue {
 		if i+1 >= len(args) {
-			return i, fmt.Errorf("%w: -%s needs a value", errUsage,
-				base+"."+sub,
+			return i, fmt.Errorf(
+				"%w: -%s needs a value",
+				errUsage, base+"."+sub,
 			)
 		}
 		value = args[i+1]
@@ -421,7 +420,8 @@ func load(opts options) ([]*packages.Package, int, error) {
 		return nil, 0, err
 	}
 	if len(loaded) == 0 {
-		return nil, 0, fmt.Errorf("%s matched no packages",
+		return nil, 0, fmt.Errorf(
+			"%s matched no packages",
 			strings.Join(opts.patterns, " "),
 		)
 	}

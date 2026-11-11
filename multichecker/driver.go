@@ -129,10 +129,8 @@ func vet(analyzers []*analysis.Analyzer, args []string) int {
 		fmt.Fprintf(os.Stderr, "vet: %v\n", err)
 		return exitFailed
 	}
-	var (
-		failed = bad > 0
-		found  bool
-	)
+	failed := bad > 0
+	var found bool
 	for _, act := range graph.Roots {
 		if act.Err != nil {
 			failed = true

@@ -32,10 +32,8 @@ func Dir(t *testing.T, testdata fs.FS) string {
 			if err != nil {
 				return err
 			}
-			var (
-				repoPath, _ = strings.CutPrefix(path, "testdata/")
-				name, ok    = strings.CutSuffix(repoPath, ".input.golden")
-			)
+			repoPath, _ := strings.CutPrefix(path, "testdata/")
+			name, ok := strings.CutSuffix(repoPath, ".input.golden")
 			if ok {
 				name += ".go.golden"
 			} else {

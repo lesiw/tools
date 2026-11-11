@@ -40,11 +40,9 @@ func run(pass *analysis.Pass) (any, error) {
 			if !constant(bin.X) || constant(bin.Y) {
 				return true
 			}
-			var (
-				left  = types.ExprString(bin.Y)
-				right = types.ExprString(bin.X)
-				op    = " " + bin.Op.String() + " "
-			)
+			left := types.ExprString(bin.Y)
+			right := types.ExprString(bin.X)
+			op := " " + bin.Op.String() + " "
 			pass.Report(analysis.Diagnostic{
 				Pos:     bin.Pos(),
 				End:     bin.End(),

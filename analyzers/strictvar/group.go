@@ -31,7 +31,8 @@ func blockText(indent string, lines []string) (text string) {
 // A rebuilt block that fails to parse is withheld: a span bug must yield a
 // false negative, never corrupt code.
 func parses(text string) bool {
-	_, err := parser.ParseFile(token.NewFileSet(), "p.go",
+	_, err := parser.ParseFile(
+		token.NewFileSet(), "p.go",
 		"package p\nfunc _() {\n"+text+"\n}\n", 0,
 	)
 	return err == nil

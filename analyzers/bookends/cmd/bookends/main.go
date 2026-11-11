@@ -1,5 +1,5 @@
-// Command bookends reports a closing bracket that is not at the indent of its
-// opening bracket.
+// Command bookends reports bracket layout that does not match the shape of the
+// list.
 package main
 
 import (

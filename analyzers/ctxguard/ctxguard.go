@@ -59,11 +59,9 @@ func checkPrecheck(pass *analysis.Pass, stmt ast.Stmt) {
 	if !errPrecheck(pass, ifStmt) {
 		return
 	}
-	var (
-		edits []analysis.TextEdit
-		file  = pass.Fset.File(stmt.Pos())
-		line  = file.Line(stmt.End())
-	)
+	var edits []analysis.TextEdit
+	file := pass.Fset.File(stmt.Pos())
+	line := file.Line(stmt.End())
 	if line < file.LineCount() {
 		edits = []analysis.TextEdit{{
 			Pos: file.LineStart(file.Line(stmt.Pos())),

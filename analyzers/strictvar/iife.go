@@ -347,7 +347,8 @@ func (f *file) initBody(name string, lit *ast.FuncLit, rets []*ast.ReturnStmt, r
 	)
 	for _, ret := range rets {
 		body.WriteString(f.textRenamed(pos, ret.Pos(), renames))
-		fmt.Fprintf(&body, "%s = %s", name,
+		fmt.Fprintf(
+			&body, "%s = %s", name,
 			f.textRenamed(ret.Results[0].Pos(), ret.Results[0].End(), renames),
 		)
 		if ret != last {

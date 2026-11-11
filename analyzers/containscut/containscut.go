@@ -114,10 +114,8 @@ func same(pass *analysis.Pass, a, b ast.Expr) bool {
 		// prints.
 		return objA == objB
 	}
-	var (
-		x, y bytes.Buffer
-		cfg  = printer.Config{Mode: printer.RawFormat}
-	)
+	var x, y bytes.Buffer
+	cfg := printer.Config{Mode: printer.RawFormat}
 	if err := cfg.Fprint(&x, pass.Fset, a); err != nil {
 		return false
 	}

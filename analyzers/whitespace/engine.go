@@ -55,7 +55,8 @@ var printerCfg = printer.Config{
 // parse returns the parsed file and the file set it belongs to.
 func parse(name string, src []byte) (*token.FileSet, *ast.File, error) {
 	fset := token.NewFileSet()
-	syntax, err := parser.ParseFile(fset, name, src,
+	syntax, err := parser.ParseFile(
+		fset, name, src,
 		parser.ParseComments|parser.SkipObjectResolution,
 	)
 	if err != nil {

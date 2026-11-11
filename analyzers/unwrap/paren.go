@@ -28,7 +28,8 @@ func collectDelimited(fset *token.FileSet, tokFile *token.File, file *ast.File) 
 	ast.Inspect(file, func(n ast.Node) bool {
 		switch n := n.(type) {
 		case *ast.CallExpr:
-			result = append(result,
+			result = append(
+				result,
 				callDelimited(file, tokFile, headers, n)...,
 			)
 		case *ast.FuncType:

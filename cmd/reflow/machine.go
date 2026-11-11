@@ -136,7 +136,8 @@ func canonical(name string, fset *token.FileSet, file *ast.File) (*token.FileSet
 // parse parses src as Go source.
 func parse(name string, src []byte) (*token.FileSet, *ast.File, error) {
 	fset := token.NewFileSet()
-	file, err := parser.ParseFile(fset, name, src,
+	file, err := parser.ParseFile(
+		fset, name, src,
 		parser.ParseComments|parser.SkipObjectResolution,
 	)
 	if err != nil {

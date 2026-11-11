@@ -153,10 +153,8 @@ func (c *checker) checkFile(f *ast.File) {
 			c.cands = append(c.cands, cand)
 			return true
 		}
-		var (
-			obj  = info.Uses[id]
-			cand = c.byObj[obj]
-		)
+		obj := info.Uses[id]
+		cand := c.byObj[obj]
 		if cand == nil {
 			return true
 		}

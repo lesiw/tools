@@ -42,7 +42,8 @@ func run(pass *analysis.Pass) (any, error) {
 				return true
 			}
 			if addr, ok := addressIn(value); ok {
-				pass.Reportf(lit.Pos(),
+				pass.Reportf(
+					lit.Pos(),
 					"IP address %s written into source", addr,
 				)
 			}

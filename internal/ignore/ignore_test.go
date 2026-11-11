@@ -35,7 +35,8 @@ var analysistestCases = []struct {
 func TestAnalyzers(t *testing.T) {
 	for _, tt := range analysistestCases {
 		t.Run(tt.name, func(t *testing.T) {
-			analysistest.Run(t, analysistest.TestData(),
+			analysistest.Run(
+				t, analysistest.TestData(),
 				combined(tt.analyzers...), tt.dir,
 			)
 		})
@@ -73,11 +74,13 @@ func TestParseIgnore(t *testing.T) {
 		case gotAnalyzers == nil && tt.want != nil:
 			t.Errorf("parseIgnore(%q) = nil, want %v", tt.input, tt.want)
 		case !cmp.Equal(gotAnalyzers, tt.want):
-			t.Errorf("parseIgnore(%q) mismatch (-want +got):\n%s",
+			t.Errorf(
+				"parseIgnore(%q) mismatch (-want +got):\n%s",
 				tt.input, cmp.Diff(tt.want, gotAnalyzers),
 			)
 		case gotIn != tt.in:
-			t.Errorf("parseIgnore(%q) in = %t, want %t",
+			t.Errorf(
+				"parseIgnore(%q) in = %t, want %t",
 				tt.input, gotIn, tt.in,
 			)
 		}
@@ -107,7 +110,8 @@ func TestFilterKeepsAnalyzers(t *testing.T) {
 		t.Fatalf("Apply(a) = %d analyzers, want 1", len(got))
 	}
 	if got[0].Name != a.Name || got[0].Doc != a.Doc {
-		t.Errorf("Apply(a)[0] = %q, %q, want %q, %q",
+		t.Errorf(
+			"Apply(a)[0] = %q, %q, want %q, %q",
 			got[0].Name, got[0].Doc, a.Name, a.Doc,
 		)
 	}
@@ -115,7 +119,8 @@ func TestFilterKeepsAnalyzers(t *testing.T) {
 		t.Error(`Apply(a)[0].Flags.Lookup("flag") = nil, want flag`)
 	}
 	if !slices.Equal(got[0].FactTypes, a.FactTypes) {
-		t.Errorf("Apply(a)[0].FactTypes = %v, want %v",
+		t.Errorf(
+			"Apply(a)[0].FactTypes = %v, want %v",
 			got[0].FactTypes, a.FactTypes,
 		)
 	}
