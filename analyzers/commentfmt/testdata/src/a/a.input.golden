@@ -11,19 +11,22 @@ func Fine() {}
 
 //lint:ignore
 
+//nolint
+
 // ---------- separator ----------
 
 // x // want `comment has no space after //`
 
-func bad2() {} // trailing // want `comment has no space after //`
+// TODO: handle the empty case // want `comment has no space after //`
 
-//line other.go:10
-func directive() {}
+func bad2() {} // trailing // want `comment has no space after //`
 
 //export Exported
 func exported() {}
 
 //sysnb getgroups(ngid int, gid *_Gid_t) (n int, err error)
+
+//sys	ioctl(fd int, req uint, arg uintptr) (err error)
 
 func sysnb() {}
 
@@ -33,3 +36,6 @@ func docWord() {}
 //.....a separator drawn with dots is not prose
 //---- neither is one drawn with dashes
 //.data is a section name
+
+//line other.go:10
+func directive() {}

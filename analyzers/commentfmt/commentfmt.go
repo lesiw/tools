@@ -1,11 +1,16 @@
 // Package commentfmt provides an analysis.Analyzer that reports a comment with
 // no space after its slashes.
 //
-// //comment reads as code that was commented out, and every editor highlights
-// it as such. A space after the slashes is what makes it prose. A directive
-// such as //go:generate or //nolint:foo has no space by design, so a comment
-// whose first word carries a colon is left alone. Like go-critic's
-// commentFormatting.
+// //comment looks like code that was commented out, and every editor
+// highlights it that way. A space after the slashes makes it prose. The rule
+// matches go-critic's commentFormatting.
+//
+// A directive is left alone, and the definition is the printer's: "line ",
+// "extern " or "export ", or a word of lowercase letters and digits, a colon,
+// and a lowercase letter or digit. Three bare words a tool reads with no colon
+// — //sys, //sysnb and //nolint — are kept as well. The printer writes the
+// space in a doc comment, so only a body or trailing comment is reported, and
+// one that must keep another //word prefix needs an //ignore.
 package commentfmt
 
 import (
@@ -89,14 +94,42 @@ func docGroups(file *ast.File) map[*ast.CommentGroup]bool {
 	return docs
 }
 
-// directives are the bare words a line comment may open with.
-var directives = map[string]bool{
-	"line":   true,
-	"export": true,
-	"extern": true,
-	"sys":    true,
-	"sysnb":  true,
-	"nolint": true,
+// bare are the words a tool reads with no colon, which the printer's rule does
+// not cover: mksyscall reads //sys and //sysnb, and linters read //nolint.
+var bare = map[string]struct{}{"nolint": {}, "sys": {}, "sysnb": {}}
+
+// directive reports whether text, with its slashes removed, is a comment
+// directive: the printer's rule, plus the bare words in bare. The rule is
+// copied from go/ast's isDirective, which is not exported, so that this check
+// and the formatter agree about which comments are prose.
+func directive(text string) bool {
+	// A directive's argument follows a space or a tab; mksyscall
+	// writes a tab.
+	fields := strings.Fields(text)
+	if len(fields) > 0 {
+		if _, ok := bare[fields[0]]; ok {
+			return true
+		}
+	}
+	for _, prefix := range []string{"line ", "extern ", "export "} {
+		if strings.HasPrefix(text, prefix) {
+			return true
+		}
+	}
+	colon := strings.Index(text, ":")
+	if colon <= 0 || colon+1 >= len(text) {
+		return false
+	}
+	for i := 0; i <= colon+1; i++ {
+		if i == colon {
+			continue
+		}
+		b := text[i]
+		if !('a' <= b && b <= 'z' || '0' <= b && b <= '9') {
+			return false
+		}
+	}
+	return true
 }
 
 // bad reports whether text is a line comment that should have a space.
@@ -111,13 +144,7 @@ func bad(text string) bool {
 	if strings.HasPrefix(rest, "\t") {
 		return false
 	}
-	// A directive names a tool and ends in a colon before any space, or is
-	// one of the bare words the toolchain reads.
-	word := rest
-	if i := strings.IndexAny(rest, " \t"); i >= 0 {
-		word = rest[:i]
-	}
-	if strings.Contains(word, ":") || directives[word] {
+	if directive(rest) {
 		return false
 	}
 	// A comment that opens with punctuation is a separator someone drew,

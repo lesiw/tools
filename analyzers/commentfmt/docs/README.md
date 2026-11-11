@@ -50,8 +50,14 @@ func docWord() {}
 A comment with no space after its slashes looks like code that was commented
 out, and editors highlight it that way. A space makes it prose.
 
-A directive such as //go:generate, //line or //nolint has no space by design.
-gofmt writes the space in a doc comment itself.
+A directive has no space by design. The definition is the printer's:
+"line ", "extern " or "export ", or a word of lowercase letters and digits, a
+colon, and a lowercase letter or digit. //sys, //sysnb and //nolint have no
+colon, and the toolchain and linters read them, so they are kept as well.
+
+gofmt writes the space in a doc comment itself, so only body and trailing
+comments are reported, and a comment that must keep another //word prefix
+needs an //ignore.
 
 The idea comes from go-critic's commentFormatting.
 
