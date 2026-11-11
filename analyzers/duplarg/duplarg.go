@@ -21,24 +21,24 @@ var Analyzer = &analysis.Analyzer{
 
 // known are the functions whose answer cannot depend on two identical
 // arguments.
-var known = map[string]bool{
-	"bytes.Equal":       true,
-	"cmp.Compare":       true,
-	"copy":              true,
-	"math.Dim":          true,
-	"math.Max":          true,
-	"math.Min":          true,
-	"reflect.Copy":      true,
-	"reflect.DeepEqual": true,
-	"slices.Compare":    true,
-	"slices.Equal":      true,
-	"strings.Compare":   true,
-	"strings.Contains":  true,
-	"strings.EqualFold": true,
-	"strings.HasPrefix": true,
-	"strings.HasSuffix": true,
-	"strings.Index":     true,
-	"strings.LastIndex": true,
+var known = map[string]struct{}{
+	"bytes.Equal":       {},
+	"cmp.Compare":       {},
+	"copy":              {},
+	"math.Dim":          {},
+	"math.Max":          {},
+	"math.Min":          {},
+	"reflect.Copy":      {},
+	"reflect.DeepEqual": {},
+	"slices.Compare":    {},
+	"slices.Equal":      {},
+	"strings.Compare":   {},
+	"strings.Contains":  {},
+	"strings.EqualFold": {},
+	"strings.HasPrefix": {},
+	"strings.HasSuffix": {},
+	"strings.Index":     {},
+	"strings.LastIndex": {},
 }
 
 func run(pass *analysis.Pass) (any, error) {
@@ -51,7 +51,7 @@ func run(pass *analysis.Pass) (any, error) {
 			if !same(pass, call.Args[0], call.Args[1]) {
 				return true
 			}
-			if !known[name(pass, call)] {
+			if _, ok := known[name(pass, call)]; !ok {
 				return true
 			}
 			pass.Reportf(call.Pos(), "both arguments are the same value")

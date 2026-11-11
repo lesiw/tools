@@ -22,16 +22,19 @@ var Analyzer = &analysis.Analyzer{
 
 // comparisons are the operators whose sides can be swapped without changing
 // the answer.
-var comparisons = map[token.Token]bool{
-	token.EQL: true,
-	token.NEQ: true,
+var comparisons = map[token.Token]struct{}{
+	token.EQL: {},
+	token.NEQ: {},
 }
 
 func run(pass *analysis.Pass) (any, error) {
 	for _, file := range pass.Files {
 		ast.Inspect(file, func(n ast.Node) bool {
 			bin, ok := n.(*ast.BinaryExpr)
-			if !ok || !comparisons[bin.Op] {
+			if !ok {
+				return true
+			}
+			if _, known := comparisons[bin.Op]; !known {
 				return true
 			}
 			if !constant(bin.X) || constant(bin.Y) {

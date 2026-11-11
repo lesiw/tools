@@ -16,3 +16,5 @@ var (
 func init() { flag.IntVar(&count, "count", 0, "count docs") }
 
 func g(p *int) int { return *p }
+
+func h() int { return *new(int) }

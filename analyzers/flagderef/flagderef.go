@@ -20,16 +20,16 @@ var Analyzer = &analysis.Analyzer{
 }
 
 // constructors are the flag functions that return a pointer to a value.
-var constructors = map[string]bool{
-	"Bool":     true,
-	"Duration": true,
-	"Float64":  true,
-	"Func":     true,
-	"Int":      true,
-	"Int64":    true,
-	"String":   true,
-	"Uint":     true,
-	"Uint64":   true,
+var constructors = map[string]struct{}{
+	"Bool":     {},
+	"Duration": {},
+	"Float64":  {},
+	"Func":     {},
+	"Int":      {},
+	"Int64":    {},
+	"String":   {},
+	"Uint":     {},
+	"Uint64":   {},
 }
 
 func run(pass *analysis.Pass) (any, error) {
@@ -53,7 +53,10 @@ func isConstructor(pass *analysis.Pass, e ast.Expr) bool {
 		return false
 	}
 	sel, ok := call.Fun.(*ast.SelectorExpr)
-	if !ok || !constructors[sel.Sel.Name] {
+	if !ok {
+		return false
+	}
+	if _, known := constructors[sel.Sel.Name]; !known {
 		return false
 	}
 	ident, ok := sel.X.(*ast.Ident)

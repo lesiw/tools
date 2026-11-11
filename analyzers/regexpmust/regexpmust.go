@@ -21,7 +21,7 @@ var Analyzer = &analysis.Analyzer{
 }
 
 // compiled are the functions whose error is dropped when a constant fails.
-var compiled = map[string]bool{"Compile": true, "CompilePOSIX": true}
+var compiled = map[string]struct{}{"Compile": {}, "CompilePOSIX": {}}
 
 func run(pass *analysis.Pass) (any, error) {
 	for _, file := range pass.Files {
@@ -40,7 +40,10 @@ func run(pass *analysis.Pass) (any, error) {
 // isCompile reports whether call is regexp.Compile or regexp.CompilePOSIX.
 func isCompile(pass *analysis.Pass, call *ast.CallExpr) bool {
 	sel, ok := call.Fun.(*ast.SelectorExpr)
-	if !ok || !compiled[sel.Sel.Name] {
+	if !ok {
+		return false
+	}
+	if _, known := compiled[sel.Sel.Name]; !known {
 		return false
 	}
 	ident, ok := sel.X.(*ast.Ident)

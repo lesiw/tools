@@ -30,20 +30,23 @@ var calls = map[string]bool{
 }
 
 // operators are the comparisons whose answer a Compare call can express.
-var operators = map[token.Token]bool{
-	token.EQL: true,
-	token.NEQ: true,
-	token.LSS: true,
-	token.LEQ: true,
-	token.GTR: true,
-	token.GEQ: true,
+var operators = map[token.Token]struct{}{
+	token.EQL: {},
+	token.NEQ: {},
+	token.LSS: {},
+	token.LEQ: {},
+	token.GTR: {},
+	token.GEQ: {},
 }
 
 func run(pass *analysis.Pass) (any, error) {
 	for _, file := range pass.Files {
 		ast.Inspect(file, func(n ast.Node) bool {
 			bin, ok := n.(*ast.BinaryExpr)
-			if !ok || !operators[bin.Op] {
+			if !ok {
+				return true
+			}
+			if _, known := operators[bin.Op]; !known {
 				return true
 			}
 			report(pass, bin)

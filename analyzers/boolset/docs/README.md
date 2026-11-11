@@ -25,18 +25,20 @@ if !m["k"] {
 
 `delete`, `clear`, and `len` mean the same thing for a set, so they
 do not disqualify a map. Each variable is reported once, at its
-declaration. Only maps created inside a function — by `make`
-or a composite literal — are examined, since only there is every
-store in view.
+declaration. The rule examines a map created by `make` or a
+composite literal, at package scope only when the variable is
+unexported. The package is analyzed as a whole. A file that a build
+constraint excludes is not part of that whole, so a store there is not
+seen.
 
 Silent, deliberately: storing anything but literal `true` — `false`,
 a variable, a computed value, whether by assignment or as a
 composite-literal element — marks the value as meaningful state,
 as does reading it as one (a consumed comma-ok value, a range over
 values). A map that arrives from
-elsewhere — a parameter, a struct field, a package variable, an
-aliased value — or escapes into a call is not examined: its stores
-are not all in view.
+elsewhere — a parameter, a struct field, an exported package
+variable, an aliased value — or escapes into a call is not examined:
+its stores are not all in this package.
 
 ## Usage
 

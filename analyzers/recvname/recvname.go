@@ -19,7 +19,7 @@ var Analyzer = &analysis.Analyzer{
 }
 
 // banned are the receiver names that belong to another language's idiom.
-var banned = map[string]bool{"this": true, "self": true, "me": true}
+var banned = map[string]struct{}{"this": {}, "self": {}, "me": {}}
 
 func run(pass *analysis.Pass) (any, error) {
 	var (
@@ -38,7 +38,7 @@ func run(pass *analysis.Pass) (any, error) {
 			if !ok {
 				continue
 			}
-			if banned[id.Name] {
+			if _, ok := banned[id.Name]; ok {
 				pass.Reportf(id.Pos(), "receiver %q; use the type's initial",
 					id.Name,
 				)

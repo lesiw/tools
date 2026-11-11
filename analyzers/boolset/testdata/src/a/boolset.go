@@ -141,7 +141,7 @@ func outflow(p *stringSet) {
 	*p = m
 }
 
-var pkgSet = map[string]bool{"a": true}
+var pkgSet = map[string]bool{"a": true} // want `pkgSet is a set and can be map\[T\]struct\{\}`
 
 func packageScope() {
 	if !pkgSet["a"] {
@@ -244,4 +244,27 @@ func keysOnly() {
 	for k := range m {
 		use(k)
 	}
+}
+
+var ExportedSet = map[string]bool{"a": true}
+
+var mixed = map[string]bool{"a": true}
+
+func storeFalse() {
+	mixed["b"] = false
+}
+
+func readCross() bool { return crossFile["a"] }
+
+func declaredEmpty() {
+	var s map[string]bool
+	delete(s, "a")
+	_ = len(s)
+	if _, ok := s["a"]; ok {
+		println("x")
+	}
+}
+
+func storeCross() {
+	crossFile["b"] = false
 }
