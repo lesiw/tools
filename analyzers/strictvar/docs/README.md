@@ -193,10 +193,11 @@ var (
   declaration each end the run. So does a `:=` declaring an `error`
   variable: error handling follows, and the call stays beside its
   check.
-- The run starts at the first declaration in the list, so a guard or
-  other statement ahead of it does not end the preamble. A run that
-  stops and starts again takes no part: declarations past the first
-  run stay standalone, though same-type zeros still combine.
+- The run starts at the first variable declaration in the list, so a
+  guard, a call, a `const` or a `type` ahead of it does not end the
+  preamble. A run that stops and starts again takes no part:
+  declarations past the first run stay standalone, though same-type
+  zeros still combine.
 
 ### Var blocks outside the preamble dissolve
 
@@ -221,8 +222,9 @@ use(b)
 - Zero values keep `var`, initialized values take `:=`, and a spec
   whose type does work `:=` cannot express keeps `var` with its
   type.
-- A block holding a run of two or more stays: dissolving it would
-  only build it again, so the two rules would undo each other.
+- A block holding two or more specs, counting the declarations after
+  it, stays: it is the form the grouping rules build, so dissolving it
+  would only build it again.
 - A block immediately following the preamble still merges into it,
   and `const` blocks are untouched.
 

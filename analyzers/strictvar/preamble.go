@@ -25,37 +25,61 @@ func (f *file) checkPreamble() {
 	})
 }
 
-// collectRun gathers the consecutive declaration units of a statement list:
-// var declarations without doc comments, and := statements the preamble rules
-// admit. The run starts at the first declaration in the list, so a guard or
-// other statement ahead of it does not end the preamble. A run that stops and
-// starts again takes no part, and mid-scope declarations stay standalone.
+// collectRun gathers the declaration units of the one run a statement list
+// may group. Any number of statements that set up no variable may precede it,
+// so a guard, a call, a const or a type declaration does not end the preamble
+// before it starts.
+//
+// The run opens at the first statement that declares a variable, by var or by
+// :=, and that statement decides the whole list: if it cannot join a block, no
+// later run can either. An assignment further down therefore starts nothing,
+// which is what keeps a block out of the middle of a function.
 func (f *file) collectRun(list []ast.Stmt) (units []ast.Stmt) {
 	for _, stmt := range list {
-		if len(units) == 0 {
-			// Nothing runs before setup, so a statement that
-			// declares nothing does not open the run.
-			if !f.declares(stmt) {
-				continue
+		if !declaresVar(stmt) {
+			if len(units) == 0 {
+				continue // a statement ahead of the run sets up no variable
 			}
-		} else {
+			return units
+		}
+		if len(units) > 0 {
 			var (
 				prev = units[len(units)-1]
 				lo   = f.lineEnd(prev.End()) + 1
 			)
 			if f.hasComment(lo, f.lineStart(stmt.Pos())) {
-				// A comment on its own line between declarations
-				// marks them deliberately separate, whatever their
-				// form. A trailing comment rides its line.
-				break
+				// A comment on its own line between
+				// declarations keeps them apart, whatever
+				// their form. A trailing comment stays on
+				// the line it ends.
+				return units
 			}
 		}
 		if !f.declares(stmt) {
-			break
+			// The first declaration decides the list: a
+			// statement that cannot join a block ends the
+			// preamble outright.
+			return units
 		}
 		units = append(units, stmt)
 	}
 	return units
+}
+
+// declaresVar reports whether stmt declares a variable, by a := statement or
+// a var declaration. Such a statement opens the one run a list may group,
+// whether or not the block can hold it. A const or type declaration sets up no
+// variable, so it is skipped ahead of the run and ends it like any other
+// statement once the run has opened.
+func declaresVar(stmt ast.Stmt) bool {
+	switch stmt := stmt.(type) {
+	case *ast.AssignStmt:
+		return stmt.Tok == token.DEFINE
+	case *ast.DeclStmt:
+		gd, ok := stmt.Decl.(*ast.GenDecl)
+		return ok && gd.Tok == token.VAR
+	}
+	return false
 }
 
 // declares reports whether stmt declares a variable in this scope: a var
@@ -90,7 +114,8 @@ func (f *file) checkRun(units []ast.Stmt) {
 	first, last := units[0], units[len(units)-1]
 	f.spans = append(f.spans, [2]token.Pos{first.Pos(), last.End()})
 	f.report(first.Pos(), last.End(), fmt.Sprintf(
-		"%d adjacent declarations can be grouped into a var block", len(units),
+		"%d adjacent declarations can be grouped into a var block",
+		len(units),
 	),
 		"Group the declarations into one block",
 		f.preambleEdits(units),
@@ -152,10 +177,10 @@ func (f *file) checkStrayBlocks(list []ast.Stmt) {
 	}
 }
 
-// preambleAnchored reports whether the block at index i is the form the
-// grouping rules build: it opens the list, or its specs plus the declarations
-// after it make a run of two or more. A block the rules would rebuild stays
-// where it is, so dissolving it cannot start a loop.
+// preambleAnchored reports whether the block at index i opens the list, or
+// holds two or more specs counting the declarations after it. A block of
+// either shape stays: it is the form the grouping rules build, so dissolving
+// it would only build it again.
 func (f *file) preambleAnchored(list []ast.Stmt, i int, gd *ast.GenDecl) bool {
 	if i == 0 {
 		return true
@@ -374,7 +399,8 @@ func (f *file) preambleEdits(units []ast.Stmt) []analysis.TextEdit {
 					return nil
 				}
 				kept = append(kept, [2]token.Pos{
-					spec.Pos(), f.lineEnd(spec.End()),
+					spec.Pos(),
+					f.lineEnd(spec.End()),
 				})
 				lines = append(lines, f.lineText(spec))
 			}

@@ -132,3 +132,67 @@ func forMid() {
 		use(a)
 	}
 }
+
+func afterCall() {
+	use()
+	var (
+		a = f() // want `2 adjacent declarations can be grouped into a var block`
+		b = f()
+	)
+	use(a, b)
+	c := f()
+	d := f()
+	use(c, d)
+}
+
+func callBeforeFirst() {
+	use()
+	a := f()
+	use()
+	use()
+	b := f()
+	c := f()
+	use(a, b, c)
+}
+
+func loneFirst() {
+	a := f()
+	use()
+	use()
+	b := f()
+	c := f()
+	use(a, b, c)
+}
+
+func errorFirst() error {
+	_, err := use2()
+	if err != nil {
+		return err
+	}
+	host := f()
+	port := f()
+	use(host, port)
+	return nil
+}
+
+func use2() (int, error) { return 0, nil }
+
+// A const ahead of the run sets up no variable, so it does not end the
+// preamble.
+func constAhead() {
+	const n = 3
+	var (
+		a = n // want `2 adjacent declarations can be grouped into a var block`
+		b = n
+	)
+	use(a, b)
+}
+
+func typeAhead() {
+	type t int
+	var (
+		a = f() // want `2 adjacent declarations can be grouped into a var block`
+		b = f()
+	)
+	use(a, b)
+}
