@@ -3,7 +3,7 @@ package main
 
 import (
 	"lesiw.io/tools/analyzers/errflow"
-	"lesiw.io/tools/singlechecker"
+	"lesiw.io/tools/multichecker"
 )
 
-func main() { singlechecker.Main(errflow.Analyzer) }
+func main() { multichecker.Main(errflow.Analyzer) }

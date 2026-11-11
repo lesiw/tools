@@ -1,4 +1,4 @@
-package fix
+package multichecker
 
 import (
 	"flag"
@@ -10,6 +10,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 
 	"lesiw.io/tools/analyzers/linelen"
+	"lesiw.io/tools/internal/suite"
 )
 
 // update writes the golden files instead of comparing them.
@@ -45,7 +46,7 @@ func TestPipeline(t *testing.T) {
 	)
 	// Chdir is process-wide, so this test stays serial.
 	t.Chdir(work)
-	if err := run([]string{"./..."}); err != nil {
+	if err := run([]string{"./..."}, suite.Analyzers()); err != nil {
 		// This is setup for every case, so the comparisons still run.
 		t.Errorf("fix ./...: %v", err)
 	}

@@ -3,7 +3,7 @@ package main
 
 import (
 	"lesiw.io/tools/analyzers/deferunlambda"
-	"lesiw.io/tools/singlechecker"
+	"lesiw.io/tools/multichecker"
 )
 
-func main() { singlechecker.Main(deferunlambda.Analyzer) }
+func main() { multichecker.Main(deferunlambda.Analyzer) }

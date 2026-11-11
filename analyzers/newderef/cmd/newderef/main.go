@@ -3,7 +3,7 @@ package main
 
 import (
 	"lesiw.io/tools/analyzers/newderef"
-	"lesiw.io/tools/singlechecker"
+	"lesiw.io/tools/multichecker"
 )
 
-func main() { singlechecker.Main(newderef.Analyzer) }
+func main() { multichecker.Main(newderef.Analyzer) }

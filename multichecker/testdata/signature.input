@@ -6,9 +6,9 @@ type Gamma struct{}
 type record struct{}
 
 func gather(first *Alpha, second *Beta, third map[string]*Gamma, fourth map[string][]int) {
-	_ = first
+	_, _, _, _ = first, second, third, fourth
 }
 
-func (*record) submit(pos, end int, msg string) {
-	_ = pos
+func (r *record) submit(pos, end int, msg string) {
+	_, _, _ = pos, end, msg
 }

@@ -3,7 +3,7 @@ package main
 
 import (
 	"lesiw.io/tools/analyzers/indexalloc"
-	"lesiw.io/tools/singlechecker"
+	"lesiw.io/tools/multichecker"
 )
 
-func main() { singlechecker.Main(indexalloc.Analyzer) }
+func main() { multichecker.Main(indexalloc.Analyzer) }

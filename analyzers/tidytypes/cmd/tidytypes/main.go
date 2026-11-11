@@ -4,7 +4,7 @@ package main
 
 import (
 	"lesiw.io/tools/analyzers/tidytypes"
-	"lesiw.io/tools/singlechecker"
+	"lesiw.io/tools/multichecker"
 )
 
-func main() { singlechecker.Main(tidytypes.Analyzer) }
+func main() { multichecker.Main(tidytypes.Analyzer) }

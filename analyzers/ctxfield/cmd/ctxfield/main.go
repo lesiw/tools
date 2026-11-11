@@ -3,7 +3,7 @@ package main
 
 import (
 	"lesiw.io/tools/analyzers/ctxfield"
-	"lesiw.io/tools/singlechecker"
+	"lesiw.io/tools/multichecker"
 )
 
-func main() { singlechecker.Main(ctxfield.Analyzer) }
+func main() { multichecker.Main(ctxfield.Analyzer) }

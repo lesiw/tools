@@ -3,7 +3,7 @@ package main
 
 import (
 	"lesiw.io/tools/analyzers/emptyfallthrough"
-	"lesiw.io/tools/singlechecker"
+	"lesiw.io/tools/multichecker"
 )
 
-func main() { singlechecker.Main(emptyfallthrough.Analyzer) }
+func main() { multichecker.Main(emptyfallthrough.Analyzer) }

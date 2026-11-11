@@ -4,7 +4,7 @@ package main
 
 import (
 	"lesiw.io/tools/analyzers/assignop"
-	"lesiw.io/tools/singlechecker"
+	"lesiw.io/tools/multichecker"
 )
 
-func main() { singlechecker.Main(assignop.Analyzer) }
+func main() { multichecker.Main(assignop.Analyzer) }

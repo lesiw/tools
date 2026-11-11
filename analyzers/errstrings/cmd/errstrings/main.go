@@ -4,7 +4,7 @@ package main
 
 import (
 	"lesiw.io/tools/analyzers/errstrings"
-	"lesiw.io/tools/singlechecker"
+	"lesiw.io/tools/multichecker"
 )
 
-func main() { singlechecker.Main(errstrings.Analyzer) }
+func main() { multichecker.Main(errstrings.Analyzer) }

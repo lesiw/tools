@@ -3,7 +3,7 @@ package main
 
 import (
 	"lesiw.io/tools/analyzers/flagderef"
-	"lesiw.io/tools/singlechecker"
+	"lesiw.io/tools/multichecker"
 )
 
-func main() { singlechecker.Main(flagderef.Analyzer) }
+func main() { multichecker.Main(flagderef.Analyzer) }

@@ -4,7 +4,7 @@ package main
 
 import (
 	"lesiw.io/tools/analyzers/strictvar"
-	"lesiw.io/tools/singlechecker"
+	"lesiw.io/tools/multichecker"
 )
 
-func main() { singlechecker.Main(strictvar.Analyzer) }
+func main() { multichecker.Main(strictvar.Analyzer) }

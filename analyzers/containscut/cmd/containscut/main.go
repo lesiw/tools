@@ -4,7 +4,7 @@ package main
 
 import (
 	"lesiw.io/tools/analyzers/containscut"
-	"lesiw.io/tools/singlechecker"
+	"lesiw.io/tools/multichecker"
 )
 
-func main() { singlechecker.Main(containscut.Analyzer) }
+func main() { multichecker.Main(containscut.Analyzer) }

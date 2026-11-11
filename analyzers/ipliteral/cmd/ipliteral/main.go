@@ -3,7 +3,7 @@ package main
 
 import (
 	"lesiw.io/tools/analyzers/ipliteral"
-	"lesiw.io/tools/singlechecker"
+	"lesiw.io/tools/multichecker"
 )
 
-func main() { singlechecker.Main(ipliteral.Analyzer) }
+func main() { multichecker.Main(ipliteral.Analyzer) }

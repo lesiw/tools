@@ -4,7 +4,7 @@ package main
 
 import (
 	"lesiw.io/tools/analyzers/afterhttperror"
-	"lesiw.io/tools/singlechecker"
+	"lesiw.io/tools/multichecker"
 )
 
-func main() { singlechecker.Main(afterhttperror.Analyzer) }
+func main() { multichecker.Main(afterhttperror.Analyzer) }

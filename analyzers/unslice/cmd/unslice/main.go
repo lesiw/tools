@@ -3,7 +3,7 @@ package main
 
 import (
 	"lesiw.io/tools/analyzers/unslice"
-	"lesiw.io/tools/singlechecker"
+	"lesiw.io/tools/multichecker"
 )
 
-func main() { singlechecker.Main(unslice.Analyzer) }
+func main() { multichecker.Main(unslice.Analyzer) }

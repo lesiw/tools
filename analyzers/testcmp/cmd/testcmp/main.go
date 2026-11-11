@@ -3,7 +3,7 @@ package main
 
 import (
 	"lesiw.io/tools/analyzers/testcmp"
-	"lesiw.io/tools/singlechecker"
+	"lesiw.io/tools/multichecker"
 )
 
-func main() { singlechecker.Main(testcmp.Analyzer) }
+func main() { multichecker.Main(testcmp.Analyzer) }

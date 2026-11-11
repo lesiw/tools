@@ -3,7 +3,7 @@ package main
 
 import (
 	"lesiw.io/tools/analyzers/ifelsechain"
-	"lesiw.io/tools/singlechecker"
+	"lesiw.io/tools/multichecker"
 )
 
-func main() { singlechecker.Main(ifelsechain.Analyzer) }
+func main() { multichecker.Main(ifelsechain.Analyzer) }

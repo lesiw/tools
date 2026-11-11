@@ -3,7 +3,7 @@ package main
 
 import (
 	"lesiw.io/tools/analyzers/switchtrue"
-	"lesiw.io/tools/singlechecker"
+	"lesiw.io/tools/multichecker"
 )
 
-func main() { singlechecker.Main(switchtrue.Analyzer) }
+func main() { multichecker.Main(switchtrue.Analyzer) }

@@ -3,7 +3,7 @@ package main
 
 import (
 	"lesiw.io/tools/analyzers/dupimport"
-	"lesiw.io/tools/singlechecker"
+	"lesiw.io/tools/multichecker"
 )
 
-func main() { singlechecker.Main(dupimport.Analyzer) }
+func main() { multichecker.Main(dupimport.Analyzer) }

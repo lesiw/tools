@@ -1,5 +1,5 @@
-// Command fix applies the analyzer suite's fixes, repeating until the suite
-// has nothing left to suggest.
+// Command fix applies the analyzer suite's fixes, repeating until no fix is
+// left.
 //
 //	go run lesiw.io/tools/cmd/fix@latest [flags] [packages]
 //
@@ -11,12 +11,11 @@
 package main
 
 import (
-	"os"
-
 	"lesiw.io/tools/analyzers/linelen"
-	"lesiw.io/tools/fix"
+	"lesiw.io/tools/internal/suite"
+	"lesiw.io/tools/multichecker"
 )
 
 // A command sets the width it runs with; the library default is no limit.
 func init() { linelen.Config.Len = 79 }
-func main() { os.Exit(fix.Main(os.Args[1:])) }
+func main() { multichecker.Fix(suite.Analyzers()...) }

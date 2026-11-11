@@ -3,7 +3,7 @@ package main
 
 import (
 	"lesiw.io/tools/analyzers/emptystring"
-	"lesiw.io/tools/singlechecker"
+	"lesiw.io/tools/multichecker"
 )
 
-func main() { singlechecker.Main(emptystring.Analyzer) }
+func main() { multichecker.Main(emptystring.Analyzer) }

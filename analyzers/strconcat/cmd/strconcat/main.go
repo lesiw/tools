@@ -4,7 +4,7 @@ package main
 
 import (
 	"lesiw.io/tools/analyzers/strconcat"
-	"lesiw.io/tools/singlechecker"
+	"lesiw.io/tools/multichecker"
 )
 
-func main() { singlechecker.Main(strconcat.Analyzer) }
+func main() { multichecker.Main(strconcat.Analyzer) }

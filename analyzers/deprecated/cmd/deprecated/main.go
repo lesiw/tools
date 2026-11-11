@@ -3,7 +3,7 @@ package main
 
 import (
 	"lesiw.io/tools/analyzers/deprecated"
-	"lesiw.io/tools/singlechecker"
+	"lesiw.io/tools/multichecker"
 )
 
-func main() { singlechecker.Main(deprecated.Analyzer) }
+func main() { multichecker.Main(deprecated.Analyzer) }

@@ -4,7 +4,7 @@ package main
 
 import (
 	"lesiw.io/tools/analyzers/regexpmust"
-	"lesiw.io/tools/singlechecker"
+	"lesiw.io/tools/multichecker"
 )
 
-func main() { singlechecker.Main(regexpmust.Analyzer) }
+func main() { multichecker.Main(regexpmust.Analyzer) }

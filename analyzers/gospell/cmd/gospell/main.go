@@ -3,7 +3,7 @@ package main
 
 import (
 	"lesiw.io/tools/analyzers/gospell"
-	"lesiw.io/tools/singlechecker"
+	"lesiw.io/tools/multichecker"
 )
 
-func main() { singlechecker.Main(gospell.Analyzer) }
+func main() { multichecker.Main(gospell.Analyzer) }

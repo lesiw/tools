@@ -4,7 +4,7 @@ package main
 
 import (
 	"lesiw.io/tools/analyzers/recvname"
-	"lesiw.io/tools/singlechecker"
+	"lesiw.io/tools/multichecker"
 )
 
-func main() { singlechecker.Main(recvname.Analyzer) }
+func main() { multichecker.Main(recvname.Analyzer) }

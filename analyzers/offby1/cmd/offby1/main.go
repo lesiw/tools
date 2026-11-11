@@ -3,7 +3,7 @@ package main
 
 import (
 	"lesiw.io/tools/analyzers/offby1"
-	"lesiw.io/tools/singlechecker"
+	"lesiw.io/tools/multichecker"
 )
 
-func main() { singlechecker.Main(offby1.Analyzer) }
+func main() { multichecker.Main(offby1.Analyzer) }

@@ -3,7 +3,7 @@ package main
 
 import (
 	"lesiw.io/tools/analyzers/typeunparen"
-	"lesiw.io/tools/singlechecker"
+	"lesiw.io/tools/multichecker"
 )
 
-func main() { singlechecker.Main(typeunparen.Analyzer) }
+func main() { multichecker.Main(typeunparen.Analyzer) }

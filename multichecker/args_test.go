@@ -1,4 +1,4 @@
-package fix
+package multichecker
 
 import (
 	"slices"
@@ -34,7 +34,7 @@ var buildFlagCases = []struct {
 func TestParseArgsBuildFlags(t *testing.T) {
 	for _, tt := range buildFlagCases {
 		t.Run(tt.name, func(t *testing.T) {
-			opts, err := parseArgs(tt.args)
+			opts, err := parseArgs(tt.args, suite.Analyzers())
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -49,7 +49,8 @@ func TestParseArgsBuildFlags(t *testing.T) {
 }
 
 func TestParseArgsRejectsVettool(t *testing.T) {
-	if _, err := parseArgs([]string{"-vettool=x", "."}); err == nil {
+	args := []string{"-vettool=x", "."}
+	if _, err := parseArgs(args, suite.Analyzers()); err == nil {
 		t.Fatal("-vettool was accepted")
 	}
 }
@@ -58,7 +59,8 @@ func TestParseArgsRejectsVettool(t *testing.T) {
 // flag does not narrow the run: a flag names a setting, and only a bare
 // analyzer name selects one.
 func TestParseArgsAnalyzerFlagKeepsSuite(t *testing.T) {
-	opts, err := parseArgs([]string{"-linelen.len=100", "."})
+	args := []string{"-linelen.len=100", "."}
+	opts, err := parseArgs(args, suite.Analyzers())
 	if err != nil {
 		t.Fatal(err)
 	}

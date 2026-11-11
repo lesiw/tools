@@ -4,7 +4,7 @@ package main
 
 import (
 	"lesiw.io/tools/analyzers/strcompare"
-	"lesiw.io/tools/singlechecker"
+	"lesiw.io/tools/multichecker"
 )
 
-func main() { singlechecker.Main(strcompare.Analyzer) }
+func main() { multichecker.Main(strcompare.Analyzer) }

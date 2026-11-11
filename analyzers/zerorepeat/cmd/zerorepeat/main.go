@@ -3,7 +3,7 @@ package main
 
 import (
 	"lesiw.io/tools/analyzers/zerorepeat"
-	"lesiw.io/tools/singlechecker"
+	"lesiw.io/tools/multichecker"
 )
 
-func main() { singlechecker.Main(zerorepeat.Analyzer) }
+func main() { multichecker.Main(zerorepeat.Analyzer) }

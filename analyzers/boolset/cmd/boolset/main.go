@@ -3,7 +3,7 @@ package main
 
 import (
 	"lesiw.io/tools/analyzers/boolset"
-	"lesiw.io/tools/singlechecker"
+	"lesiw.io/tools/multichecker"
 )
 
-func main() { singlechecker.Main(boolset.Analyzer) }
+func main() { multichecker.Main(boolset.Analyzer) }

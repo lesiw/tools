@@ -3,7 +3,7 @@ package main
 
 import (
 	"lesiw.io/tools/analyzers/linewrap"
-	"lesiw.io/tools/singlechecker"
+	"lesiw.io/tools/multichecker"
 )
 
-func main() { singlechecker.Main(linewrap.Analyzer) }
+func main() { multichecker.Main(linewrap.Analyzer) }

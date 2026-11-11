@@ -1,10 +1,12 @@
-package fix
+package multichecker
 
 import (
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"lesiw.io/tools/internal/suite"
 )
 
 // TestWritePrunesImports checks that a fix which removes the last use of an
@@ -56,8 +58,8 @@ func smallest(xs []int) int {
 	}
 }
 
-// TestLoadReportsBuildErrors checks that a package which does not compile
-// stops the run. A fix applied to a tree that does not build cannot be
+// TestLoadReportsBuildErrors checks that a package which does not compile ends
+// the run with an error. A fix applied to a tree that does not build cannot be
 // checked by the next round, so reporting a fixed point would be a lie.
 func TestLoadReportsBuildErrors(t *testing.T) {
 	var (
@@ -71,13 +73,13 @@ func f() { undefined() }
 	if err != nil {
 		t.Fatal(err)
 	}
-	mod := []byte("module p\n\ngo 1.27\n")
+	mod := []byte("module p\n\ngo " + goDirective(t) + "\n")
 	modfile := filepath.Join(dir, "go.mod")
 	if err := os.WriteFile(modfile, mod, 0o666); err != nil {
 		t.Fatal(err)
 	}
 	t.Chdir(dir)
-	if err := run([]string{"."}); err == nil {
+	if err := run([]string{"."}, suite.Analyzers()); err == nil {
 		t.Fatal("a package with a build error was reported as fixed")
 	}
 }

@@ -3,7 +3,7 @@ package main
 
 import (
 	"lesiw.io/tools/analyzers/preferfprint"
-	"lesiw.io/tools/singlechecker"
+	"lesiw.io/tools/multichecker"
 )
 
-func main() { singlechecker.Main(preferfprint.Analyzer) }
+func main() { multichecker.Main(preferfprint.Analyzer) }

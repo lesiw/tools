@@ -16,8 +16,9 @@ go run lesiw.io/tools/cmd/fix@latest ./...
 ## cmd/vet
 
 Vet checks Go packages with the golang.org/x/tools analysis passes. It adds
-analyzers for error handling, line length, layout, naming, testing practice,
-declaration style, and code modernization. A //ignore directive suppresses a
+analyzers for error handling, import grouping, line length, layout, naming,
+testing practice, declaration style, and code modernization, including
+parameters a function never reads. A //ignore directive suppresses a
 diagnostic, for one analyzer or for all of them. Each analyzer can be selected
 or disabled by name:
 
@@ -42,19 +43,25 @@ The -fix flag applies the suite's suggested fixes:
 go tool lesiw.io/tools/cmd/vet -fix ./...
 ```
 
+Run directly, cmd/vet prints plain text and takes no -json, -c or -diff. Under
+go vet -vettool it takes all three.
+
 ## cmd/fix
 
 Fix applies the analyzer suite's fixes over the packages named on the command
 line, and repeats until nothing is left to suggest.
 
 The analyzers run in this process. A round loads the packages, runs the suite
-over them, and writes the edits every analyzer suggested, then formats the
-result and prunes the imports the fixes orphaned. A round that finds nothing is
-a fixed point. A fix is applied whole or not at all: when two analyzers would
-edit the same span, one of them waits for the next round.
+over them, and writes the edits every analyzer suggested, then runs goimports
+over each file it wrote: an import the fixes orphaned is dropped, one a fix
+needs is added, and the block is regrouped with the standard library first. A
+round that finds nothing is a fixed point. A fix is applied whole or not at
+all: when two analyzers would edit the same span, one of them waits for the
+next round.
 
-A package that does not load stops the run, because the next round cannot
-check a fix applied to a tree that does not compile.
+A package that does not load is left alone, and the run ends with a non-zero
+status naming it: the fixes that could be applied were applied, but a tree
+with a package that does not build is not fixed.
 
 Analyzer flags mean what they mean to the analyzer: `-errfmt` runs one
 analyzer, `-errfmt=false` turns one off, and `-linelen.len=100` sets one of
@@ -108,7 +115,10 @@ installed, a project can bind these commands to go verbs in its
 go.rc:
 
 ```
-vet go tool lesiw.io/tools/cmd/vet $GOARGS $GOFLAGS
-fix go tool lesiw.io/tools/cmd/fix $GOARGS $GOFLAGS
+vet go tool lesiw.io/tools/cmd/vet -importgroup.local=example.com $GOARGS $GOFLAGS
+fix go tool lesiw.io/tools/cmd/fix -importgroup.local=example.com $GOARGS $GOFLAGS
 clerk go tool lesiw.io/tools/cmd/clerk app
 ```
+
+`-importgroup.local` names the prefixes whose packages take the last import
+group. Without it, a block groups as standard library and everything else.

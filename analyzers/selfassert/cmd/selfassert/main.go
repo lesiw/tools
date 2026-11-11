@@ -3,7 +3,7 @@ package main
 
 import (
 	"lesiw.io/tools/analyzers/selfassert"
-	"lesiw.io/tools/singlechecker"
+	"lesiw.io/tools/multichecker"
 )
 
-func main() { singlechecker.Main(selfassert.Analyzer) }
+func main() { multichecker.Main(selfassert.Analyzer) }

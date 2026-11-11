@@ -3,8 +3,8 @@ package main
 
 import (
 	"lesiw.io/tools/analyzers/linelen"
-	"lesiw.io/tools/singlechecker"
+	"lesiw.io/tools/multichecker"
 )
 
-func main() { singlechecker.Main(linelen.Analyzer) }
 func init() { linelen.Config.Len = 79 }
+func main() { multichecker.Main(linelen.Analyzer) }

@@ -3,7 +3,7 @@ package main
 
 import (
 	"lesiw.io/tools/analyzers/timeafter"
-	"lesiw.io/tools/singlechecker"
+	"lesiw.io/tools/multichecker"
 )
 
-func main() { singlechecker.Main(timeafter.Analyzer) }
+func main() { multichecker.Main(timeafter.Analyzer) }

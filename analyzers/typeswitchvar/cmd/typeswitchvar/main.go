@@ -4,7 +4,7 @@ package main
 
 import (
 	"lesiw.io/tools/analyzers/typeswitchvar"
-	"lesiw.io/tools/singlechecker"
+	"lesiw.io/tools/multichecker"
 )
 
-func main() { singlechecker.Main(typeswitchvar.Analyzer) }
+func main() { multichecker.Main(typeswitchvar.Analyzer) }

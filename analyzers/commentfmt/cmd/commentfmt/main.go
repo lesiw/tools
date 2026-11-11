@@ -3,7 +3,7 @@ package main
 
 import (
 	"lesiw.io/tools/analyzers/commentfmt"
-	"lesiw.io/tools/singlechecker"
+	"lesiw.io/tools/multichecker"
 )
 
-func main() { singlechecker.Main(commentfmt.Analyzer) }
+func main() { multichecker.Main(commentfmt.Analyzer) }

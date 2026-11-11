@@ -3,7 +3,7 @@ package main
 
 import (
 	"lesiw.io/tools/analyzers/yoda"
-	"lesiw.io/tools/singlechecker"
+	"lesiw.io/tools/multichecker"
 )
 
-func main() { singlechecker.Main(yoda.Analyzer) }
+func main() { multichecker.Main(yoda.Analyzer) }

@@ -4,7 +4,7 @@ package main
 
 import (
 	"lesiw.io/tools/analyzers/nilreturn"
-	"lesiw.io/tools/singlechecker"
+	"lesiw.io/tools/multichecker"
 )
 
-func main() { singlechecker.Main(nilreturn.Analyzer) }
+func main() { multichecker.Main(nilreturn.Analyzer) }

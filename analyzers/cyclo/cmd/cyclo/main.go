@@ -4,7 +4,7 @@ package main
 
 import (
 	"lesiw.io/tools/analyzers/cyclo"
-	"lesiw.io/tools/singlechecker"
+	"lesiw.io/tools/multichecker"
 )
 
-func main() { singlechecker.Main(cyclo.Analyzer) }
+func main() { multichecker.Main(cyclo.Analyzer) }

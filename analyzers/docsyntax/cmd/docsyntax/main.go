@@ -3,7 +3,7 @@ package main
 
 import (
 	"lesiw.io/tools/analyzers/docsyntax"
-	"lesiw.io/tools/singlechecker"
+	"lesiw.io/tools/multichecker"
 )
 
-func main() { singlechecker.Main(docsyntax.Analyzer) }
+func main() { multichecker.Main(docsyntax.Analyzer) }

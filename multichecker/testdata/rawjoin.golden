@@ -2,7 +2,10 @@ package p
 
 import "context"
 
-func run(ctx context.Context, script, a, b, c string) error { return nil }
+func run(ctx context.Context, script, a, b, c string) error {
+	_, _, _, _, _ = ctx, script, a, b, c
+	return nil
+}
 
 func f(ctx context.Context) error {
 	return run(ctx, `

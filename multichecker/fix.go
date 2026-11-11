@@ -1,12 +1,4 @@
-// Package fix applies the analyzer suite's fixes until the suite has nothing
-// left to suggest.
-//
-// The analyzers run in this process. A round loads the packages, runs the
-// suite over them, and writes the edits every analyzer suggested; a round that
-// finds nothing is a fixed point. Nothing is shelled out to, so there is no
-// tool to build, no archive to lose, and no round that has to be run one
-// analyzer at a time.
-package fix
+package multichecker
 
 import (
 	"errors"
@@ -23,7 +15,6 @@ import (
 	"golang.org/x/tools/imports"
 
 	"lesiw.io/tools/internal/ignore"
-	"lesiw.io/tools/internal/suite"
 )
 
 // maxRounds bounds the loop. A tree that does not settle is reported as a
@@ -31,48 +22,58 @@ import (
 const maxRounds = 100
 
 // errUsage marks a command line this command cannot act on.
-var errUsage = fmt.Errorf("usage: fix [build flags] [analyzer flags] [packages]")
+var errUsage = fmt.Errorf("usage: [build flags] [analyzer flags] [packages]")
+
+// unsupported are the flags this command does not take: go vet's output and
+// tool flags, the profiler's, and the help flags.
+var unsupported = map[string]struct{}{
+	"h": {}, "help": {}, "json": {}, "c": {}, "diff": {},
+	"vettool": {}, "fix": {}, "debug": {}, "cpuprofile": {},
+	"memprofile": {}, "trace": {},
+}
 
 // buildValueFlags are the go build flags that take their value as the next
 // argument. A flag in this set and its value belong to the load together.
-var buildValueFlags = map[string]bool{
-	"-asmflags":      true,
-	"-buildmode":     true,
-	"-compiler":      true,
-	"-covermode":     true,
-	"-coverpkg":      true,
-	"-gccgoflags":    true,
-	"-gcflags":       true,
-	"-installsuffix": true,
-	"-ldflags":       true,
-	"-mod":           true,
-	"-modfile":       true,
-	"-overlay":       true,
-	"-p":             true,
-	"-pgo":           true,
-	"-pkgdir":        true,
-	"-tags":          true,
-	"-toolexec":      true,
+var buildValueFlags = map[string]struct{}{
+	"asmflags":      {},
+	"buildmode":     {},
+	"compiler":      {},
+	"covermode":     {},
+	"coverpkg":      {},
+	"gccgoflags":    {},
+	"gcflags":       {},
+	"installsuffix": {},
+	"ldflags":       {},
+	"mod":           {},
+	"modfile":       {},
+	"overlay":       {},
+	"p":             {},
+	"pgo":           {},
+	"pkgdir":        {},
+	"tags":          {},
+	"toolexec":      {},
 }
 
-// Main runs the command with args and returns its exit status.
-func Main(args []string) int {
-	err := run(args)
+// fixRun applies the suite's fixes until no fix is left, and returns an exit
+// status. A round loads the packages, runs the suite over them, and writes the
+// edits every analyzer suggested; a round that finds nothing is a fixed point.
+func fixRun(args []string, analyzers []*analysis.Analyzer) int {
+	err := run(args, analyzers)
 	if err == nil {
-		return 0
+		return exitOK
 	}
 	if msg := err.Error(); msg != "" {
 		fmt.Fprintln(os.Stderr, "fix:", msg)
 	}
 	if errors.Is(err, errUsage) {
-		return 2
+		return exitUsage
 	}
-	return 1
+	return exitFailed
 }
 
 // run is the command.
-func run(args []string) error {
-	opts, err := parseArgs(args)
+func run(args []string, analyzers []*analysis.Analyzer) error {
+	opts, err := parseArgs(args, analyzers)
 	if err != nil {
 		return err
 	}
@@ -89,12 +90,15 @@ func run(args []string) error {
 			unloaded = bad
 		}
 		if len(pending) == 0 {
+			if unloaded > 0 {
+				return unloadedError(unloaded)
+			}
 			if round == 1 {
 				fmt.Fprintln(os.Stderr, "fix: nothing to fix")
 			} else {
 				fmt.Fprintf(os.Stderr, "fix: settled in %s\n", rounds(round-1))
 			}
-			return unloadedError(unloaded)
+			return nil
 		}
 		var (
 			names    = make([]string, 0, len(pending))
@@ -112,16 +116,15 @@ func run(args []string) error {
 		)
 		// A round that proposes what an earlier round proposed cannot
 		// make progress: two analyzers are undoing each other.
-		if key := pendingKey(pending); key != "" {
-			if _, ok := seen[key]; ok {
-				return fmt.Errorf(
-					"the same fixes are still pending after %s: %s in %s",
-					rounds(round-1), strings.Join(names, ", "),
-					strings.Join(pendingFiles(pending, 3), ", "),
-				)
-			}
-			seen[key] = struct{}{}
+		key := pendingKey(pending)
+		if _, ok := seen[key]; ok {
+			return fmt.Errorf(
+				"the same fixes are still pending after %s: %s in %s",
+				rounds(round-1), strings.Join(names, ", "),
+				strings.Join(pendingFiles(pending, 3), ", "),
+			)
 		}
+		seen[key] = struct{}{}
 		n, conflicts, err := write(pending)
 		if err != nil {
 			return err
@@ -151,8 +154,8 @@ type options struct {
 // the go command selects one for vet: -NAME runs it, -NAME=false turns it off,
 // and -NAME.flag=value sets one of its own flags. Everything else that starts
 // with a dash is a build flag.
-func parseArgs(args []string) (options, error) {
-	p := newArgParser()
+func parseArgs(args []string, analyzers []*analysis.Analyzer) (options, error) {
+	p := newArgParser(analyzers)
 	p.enable(args)
 	for i := 0; i < len(args); i++ {
 		next, err := p.arg(args, i)
@@ -170,6 +173,13 @@ func parseArgs(args []string) (options, error) {
 	return p.opts, nil
 }
 
+// help prints the analyzers and what each one reports.
+func help(analyzers []*analysis.Analyzer) {
+	for _, a := range analyzers {
+		fmt.Printf("%s: %s\n", a.Name, a.Doc)
+	}
+}
+
 // argParser is the state one command line is read into.
 type argParser struct {
 	opts      options
@@ -179,9 +189,9 @@ type argParser struct {
 }
 
 // newArgParser returns a parser whose analyzers all start enabled.
-func newArgParser() *argParser {
+func newArgParser(analyzers []*analysis.Analyzer) *argParser {
 	p := &argParser{
-		opts:      options{analyzers: suite.Analyzers()},
+		opts:      options{analyzers: analyzers},
 		byName:    make(map[string]*analysis.Analyzer),
 		setByName: make(map[string]*flag.FlagSet),
 		enabled:   make(map[string]bool),
@@ -247,14 +257,19 @@ func (p *argParser) arg(args []string, i int) (int, error) {
 			return p.setFlag(args, i, base, sub, value, hasValue)
 		}
 	}
-	// There is no tool to point at: the analyzers run in this process.
-	if name == "vettool" {
-		return i, fmt.Errorf("%w: -vettool has no meaning here", errUsage)
+	// A flag in unsupported means nothing to the load, so forwarding it
+	// would print a usage message about the wrong tool.
+	if _, ok := unsupported[name]; ok {
+		if name == "h" || name == "help" {
+			help(p.opts.analyzers)
+			os.Exit(exitOK)
+		}
+		return i, fmt.Errorf("%w: -%s is not supported", errUsage, name)
 	}
 	// A build flag that takes a separate value needs both halves. Left
 	// alone, the value reads as a package pattern and the load fails on a
 	// path that was never a path.
-	if buildValueFlags["-"+name] && !hasValue {
+	if _, takes := buildValueFlags[name]; takes && !hasValue {
 		return p.twoPart(args, i, arg)
 	}
 	p.opts.build = append(p.opts.build, arg)
@@ -345,11 +360,11 @@ func collect(opts options) ([]fixes, int, error) {
 	if len(opts.analyzers) == 0 {
 		return nil, 0, nil
 	}
-	pkgs, bad, err := load(opts)
+	loaded, bad, err := load(opts)
 	if err != nil {
 		return nil, 0, err
 	}
-	graph, err := checker.Analyze(ignore.Apply(opts.analyzers...), pkgs, nil)
+	graph, err := checker.Analyze(ignore.Apply(opts.analyzers...), loaded, nil)
 	if err != nil {
 		return nil, bad, err
 	}
@@ -392,7 +407,7 @@ func collect(opts options) ([]fixes, int, error) {
 // load reads the packages the analyzers will see.
 func load(opts options) ([]*packages.Package, int, error) {
 	mode := packages.LoadSyntax
-	if needFacts(opts.analyzers) {
+	if needsFacts(opts.analyzers) {
 		mode = packages.LoadAllSyntax
 	}
 	cfg := &packages.Config{
@@ -401,11 +416,11 @@ func load(opts options) ([]*packages.Package, int, error) {
 		BuildFlags: opts.build,
 		Dir:        opts.dir,
 	}
-	pkgs, err := packages.Load(cfg, opts.patterns...)
+	loaded, err := packages.Load(cfg, opts.patterns...)
 	if err != nil {
 		return nil, 0, err
 	}
-	if len(pkgs) == 0 {
+	if len(loaded) == 0 {
 		return nil, 0, fmt.Errorf("%s matched no packages",
 			strings.Join(opts.patterns, " "),
 		)
@@ -414,28 +429,15 @@ func load(opts options) ([]*packages.Package, int, error) {
 	// need a compiler that the run may not have. The go command prints
 	// why, and the run ends with a non-zero status, so a tree that does not
 	// build is never reported as fixed.
-	bad := packages.PrintErrors(pkgs)
-	return pkgs, bad, nil
-}
-
-// needFacts reports whether any analyzer produces or consumes facts, which
-// needs the syntax of every dependency.
-func needFacts(analyzers []*analysis.Analyzer) bool {
-	var (
-		seen  = make(map[*analysis.Analyzer]struct{})
-		visit func(*analysis.Analyzer) bool
-	)
-	visit = func(a *analysis.Analyzer) bool {
-		if _, ok := seen[a]; ok {
-			return false
+	loaded = roots(loaded)
+	packages.PrintErrors(loaded)
+	var bad int
+	for _, p := range loaded {
+		if len(p.Errors) > 0 {
+			bad++
 		}
-		seen[a] = struct{}{}
-		if a.FactTypes != nil {
-			return true
-		}
-		return slices.ContainsFunc(a.Requires, visit)
 	}
-	return slices.ContainsFunc(analyzers, visit)
+	return loaded, bad, nil
 }
 
 // write applies the round's edits a fix at a time, in suite order. A fix
@@ -446,23 +448,14 @@ func write(pending []fixes) (int, []string, error) {
 	var (
 		accepted = make(map[string][]edit)
 		taken    = make(map[string][]span)
-		seen     = make(map[string]struct{})
-		held     = make(map[string]struct{})
 		applied  int
 	)
 	for _, f := range pending {
 		for name, edits := range f.files {
 			for _, group := range groups(edits) {
-				// A package with tests is analyzed more than once,
-				// so the same fix arrives from each variant.
-				if seenFix(name, group, seen) {
+				if conflicts(taken[name], group) {
 					continue
 				}
-				if _, ok := held[name]; ok || conflicts(taken[name], group) {
-					held[name] = struct{}{}
-					continue
-				}
-				markFix(name, group, seen)
 				accepted[name] = append(accepted[name], group...)
 				for _, e := range group {
 					taken[name] = append(taken[name], span{e.lo, e.hi})
@@ -481,27 +474,29 @@ func write(pending []fixes) (int, []string, error) {
 	for name, edits := range accepted {
 		accepted[name] = dedupe(edits)
 	}
-	var conflicts []string
+	var clashed []string
 	for _, name := range names {
 		src, err := os.ReadFile(name)
 		if err != nil {
-			return applied, conflicts, err
+			return applied, clashed, err
 		}
 		out, ok := apply(src, accepted[name])
 		if !ok {
-			conflicts = append(conflicts, name)
+			clashed = append(clashed, name)
 			continue
 		}
 		// A fix that drops a use leaves the import behind, and the next
 		// round cannot type-check a package with an unused import.
 		if fixed, err := imports.Process(name, out, nil); err == nil {
 			out = fixed
+		} else {
+			fmt.Fprintf(os.Stderr, "fix: %s: %v\n", name, err)
 		}
 		if err := os.WriteFile(name, out, 0o666); err != nil {
-			return applied, conflicts, err
+			return applied, clashed, err
 		}
 	}
-	return applied, conflicts, nil
+	return applied, clashed, nil
 }
 
 // dedupe drops edits that repeat one already taken.
@@ -563,18 +558,6 @@ func groups(edits []edit) (out [][]edit) {
 		out[len(out)-1] = append(out[len(out)-1], e)
 	}
 	return out
-}
-
-// seenFix reports whether a fix has already been taken this round. The key is
-// the fix's own edits, so the same fix from another package variant matches.
-func seenFix(name string, group []edit, seen map[string]struct{}) bool {
-	_, ok := seen[fixKey(name, group)]
-	return ok
-}
-
-// markFix records a fix as taken.
-func markFix(name string, group []edit, seen map[string]struct{}) {
-	seen[fixKey(name, group)] = struct{}{}
 }
 
 // fixKey is the identity of one fix: its file and every edit in it.
@@ -645,11 +628,11 @@ func rounds(n int) string {
 }
 
 // unloadedError reports packages that did not load. The fixes that could be
-// applied were applied, but a tree with a package that does not build is not
-// a tree the loop reached a fixed point on.
+// applied were applied, but the loop did not reach a fixed point: a package in
+// the tree does not build.
 func unloadedError(n int) error {
-	if n == 0 {
-		return nil
+	if n == 1 {
+		return fmt.Errorf("1 package did not load")
 	}
 	return fmt.Errorf("%d packages did not load", n)
 }
