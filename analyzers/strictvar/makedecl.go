@@ -97,8 +97,9 @@ func (f *file) checkFirstUse(rest []ast.Stmt, gd *ast.GenDecl, obj types.Object)
 				NewText: []byte(":="),
 			}}
 		}
-		f.report(assign.Pos(), assign.End(), obj.Name()+
-			" can be declared where it is "+assignKind(info, rhs),
+		f.report(
+			assign.Pos(), assign.End(),
+			obj.Name()+" can be declared where it is "+assignKind(info, rhs),
 			"Fold the declaration into the assignment", edits,
 		)
 		return

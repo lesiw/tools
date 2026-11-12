@@ -103,6 +103,14 @@ func keyedArgs(log *slog.Logger, img image, err error) {
 	)
 }
 
+func longLiteral(w http.ResponseWriter, err error) {
+	registerLongArgs(w, http.StatusNotFound, "MANIFEST_UNKNOWN", struct { // want `elements fit on 2 lines`
+		A, B string
+	}{"a", "b"})
+}
+
+func registerLongArgs(w http.ResponseWriter, status int, msg string, v any) {}
+
 func packable(w http.ResponseWriter, err error) {
 	registerFourArgsWithString( // want `elements fit on 2 lines`
 		w, http.StatusInternalServerError, "err-one", err.Error(),

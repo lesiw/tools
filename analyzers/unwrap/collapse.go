@@ -73,6 +73,9 @@ func collapseWrappedLines(r *renderer) {
 		if indentedLines(tokFile, call.Lparen, call.Args) > 1 {
 			return true
 		}
+		if groupedWithin(tokFile, enclosingNode(stack)) {
+			return true
+		}
 		if nestedInLit(lits, call.Pos()) {
 			return true
 		}
@@ -91,6 +94,37 @@ func collapseWrappedLines(r *renderer) {
 		join(r, pos, end)
 		return true
 	})
+}
+
+// enclosingNode returns the innermost statement in stack. It returns the
+// innermost node when no statement encloses it.
+func enclosingNode(stack []ast.Node) ast.Node {
+	for _, node := range slices.Backward(stack) {
+		if _, ok := node.(ast.Stmt); ok {
+			return node
+		}
+	}
+	return stack[len(stack)-1]
+}
+
+// groupedWithin reports whether n holds a bracketed list the author broke into
+// two or more indented lines. Joining the span would reprint that list on one
+// line and erase the grouping, so the join is refused.
+func groupedWithin(tokFile *token.File, n ast.Node) bool {
+	var grouped bool
+	ast.Inspect(n, func(node ast.Node) bool {
+		if grouped {
+			return false
+		}
+		switch node := node.(type) {
+		case *ast.CallExpr:
+			grouped = indentedLines(tokFile, node.Lparen, node.Args) > 1
+		case *ast.CompositeLit:
+			grouped = indentedLines(tokFile, node.Lbrace, node.Elts) > 1
+		}
+		return !grouped
+	})
+	return grouped
 }
 
 // enclosingStmt returns the span of the innermost statement in stack. It

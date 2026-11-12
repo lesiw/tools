@@ -94,7 +94,10 @@ func run(args []string, analyzers []*analysis.Analyzer) error {
 			if round == 1 {
 				fmt.Fprintln(os.Stderr, "fix: nothing to fix")
 			} else {
-				fmt.Fprintf(os.Stderr, "fix: settled in %s\n", rounds(round-1))
+				fmt.Fprintf(
+					os.Stderr, "fix: settled in %s\n",
+					rounds(round-1),
+				)
 			}
 			return nil
 		}
