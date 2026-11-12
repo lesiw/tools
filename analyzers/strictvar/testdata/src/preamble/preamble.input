@@ -181,8 +181,6 @@ func errorFirst() error {
 
 func use2() (int, error) { return 0, nil }
 
-// A const ahead of the run sets up no variable, so it does not end the
-// preamble.
 func constAhead() {
 	const n = 3
 	a := n // want `2 adjacent declarations can be grouped into a var block`
@@ -195,4 +193,13 @@ func typeAhead() {
 	a := f() // want `2 adjacent declarations can be grouped into a var block`
 	b := f()
 	use(a, b)
+}
+
+func docBlockMid() {
+	use(1)
+	// a note
+	var (
+		a = f()
+	)
+	use(a)
 }

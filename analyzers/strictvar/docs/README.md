@@ -222,9 +222,11 @@ use(b)
 - Zero values keep `var`, initialized values take `:=`, and a spec
   whose type does work `:=` cannot express keeps `var` with its
   type.
-- A block holding two or more specs, counting the declarations after
-  it, stays: it is the form the grouping rules build, so dissolving it
-  would only build it again.
+- A block that opens the list, or that sits in the run with two or more
+  specs counting the declarations after it, stays: it is the form the
+  grouping rules build, so dissolving it would only build it again.
+- A block with a doc comment stays: the comment marks structure the
+  author wrote around it.
 - A block immediately following the preamble still merges into it,
   and `const` blocks are untouched.
 

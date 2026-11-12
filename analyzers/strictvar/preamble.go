@@ -38,7 +38,7 @@ func (f *file) collectRun(list []ast.Stmt) (units []ast.Stmt) {
 	for _, stmt := range list {
 		if !declaresVar(stmt) {
 			if len(units) == 0 {
-				continue // a statement ahead of the run sets up no variable
+				continue
 			}
 			return units
 		}
@@ -67,10 +67,7 @@ func (f *file) collectRun(list []ast.Stmt) (units []ast.Stmt) {
 }
 
 // declaresVar reports whether stmt declares a variable, by a := statement or
-// a var declaration. Such a statement opens the one run a list may group,
-// whether or not the block can hold it. A const or type declaration sets up no
-// variable, so it is skipped ahead of the run and ends it like any other
-// statement once the run has opened.
+// a var declaration.
 func declaresVar(stmt ast.Stmt) bool {
 	switch stmt := stmt.(type) {
 	case *ast.AssignStmt:
@@ -177,22 +174,27 @@ func (f *file) checkStrayBlocks(list []ast.Stmt) {
 	}
 }
 
-// preambleAnchored reports whether the block at index i opens the list, or
-// holds two or more specs counting the declarations after it. A block of
-// either shape stays: it is the form the grouping rules build, so dissolving
-// it would only build it again.
+// preambleAnchored reports whether the block at index i is one the grouping
+// rules build: it opens the list, or it sits in the run with two or more specs
+// counting the declarations after it. A block of either shape stays, since
+// dissolving it would only build it again. A block past the
+// run dissolves: no later run can open, because the first declaration decided
+// the list.
 func (f *file) preambleAnchored(list []ast.Stmt, i int, gd *ast.GenDecl) bool {
-	if i == 0 {
+	if i == 0 || gd.Doc != nil {
+		// The block opens the list, or a doc comment marks it as
+		// deliberate structure the author wrote around.
 		return true
 	}
-	n := len(gd.Specs)
-	for _, stmt := range list[i+1:] {
-		if !f.declares(stmt) {
-			break
+	run := f.collectRun(list)
+	for j, unit := range run {
+		ds, ok := unit.(*ast.DeclStmt)
+		if !ok || ds.Decl != gd {
+			continue
 		}
-		n++
+		return len(gd.Specs)+len(run)-j-1 >= 2
 	}
-	return n >= 2
+	return false
 }
 
 // reportStrayBlock reports a var block outside the preamble and suggests
