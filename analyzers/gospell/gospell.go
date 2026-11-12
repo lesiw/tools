@@ -45,6 +45,7 @@ var words = map[string]string{
 	"behaviour":  "behavior",
 	"cancelled":  "canceled",
 	"cancelling": "canceling",
+	"catalogue":  "catalog",
 	"centre":     "center",
 	"colour":     "color",
 	"defence":    "defense",
