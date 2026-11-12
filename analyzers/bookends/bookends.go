@@ -1077,13 +1077,15 @@ func (pk *packer) line(i, j int) []byte {
 			text = shiftLines(text, pk.shift[k])
 		}
 		out = append(out, text...)
+		if hi == len(pk.texts) && pk.spread && k == hi-1 {
+			out = append(out, "..."...)
+		}
 		if pk.trail[k] != nil {
+			// The comma comes before the comment, which ends the
+			// line.
 			out = append(out, ", "...)
 			out = append(out, pk.trail[k]...)
 		}
-	}
-	if hi == len(pk.texts) && pk.spread {
-		out = append(out, "..."...)
 	}
 	if pk.trail[hi-1] != nil {
 		return out // the comment took the comma
