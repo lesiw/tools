@@ -68,6 +68,11 @@ func collapseWrappedLines(r *renderer) {
 		if !call.Lparen.IsValid() || !call.Rparen.IsValid() {
 			return true
 		}
+		// A list the author broke into two or more lines may be a
+		// grouping, and joining it would erase the grouping.
+		if indentedLines(tokFile, call.Lparen, call.Args) > 1 {
+			return true
+		}
 		if nestedInLit(lits, call.Pos()) {
 			return true
 		}

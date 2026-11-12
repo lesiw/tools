@@ -66,6 +66,9 @@ func callDelimited(file *ast.File, tokFile *token.File, headers [][2]token.Pos, 
 	if spansLines(tokFile, n.Args) {
 		return nil
 	}
+	if indentedLines(tokFile, n.Lparen, n.Args) > 1 {
+		return nil
+	}
 	return []delimited{{open: n.Lparen, close: n.Rparen}}
 }
 
@@ -110,6 +113,21 @@ func allOnOneLine(tokFile *token.File, exprs []ast.Expr) bool {
 		}
 	}
 	return true
+}
+
+// indentedLines returns the number of lines a bracketed list holds beyond the
+// opener's line. One such line is the width's wrap, and joining it is this
+// analyzer's work. Two or more are a grouping the author chose, and the
+// layout is the only place it is written down, so it is left alone.
+func indentedLines(tokFile *token.File, open token.Pos, exprs []ast.Expr) (n int) {
+	prev := tokFile.Line(open)
+	for _, e := range exprs {
+		if line := tokFile.Line(e.Pos()); line != prev {
+			n++
+			prev = line
+		}
+	}
+	return n
 }
 
 // spansLines reports whether any expression is written across more than one

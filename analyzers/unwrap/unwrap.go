@@ -4,6 +4,9 @@
 // a wrapped signature, call, binary expression, header or single-spec block
 // goes back on one line when the line it produces fits. The width is
 // linelen's, so a driver that sets none joins everything it can.
+//
+// An argument list the author broke into two or more indented lines may be a
+// grouping, and nothing but the layout says so, so it is left alone.
 package unwrap
 
 import (

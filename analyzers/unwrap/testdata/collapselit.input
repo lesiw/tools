@@ -13,7 +13,16 @@ func f() {
 		// the comment keeps this one open
 		1, 2,
 	}
+	f2("x", "y", A{
+		X: 2,
+	})
+	f2("x", "y", A{
+		X: 3,
+		Y: 4,
+	})
 	_ = a
 	_ = b
 	_ = c
 }
+
+func f2(a, b string, x A) {}
