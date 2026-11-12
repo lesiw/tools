@@ -5,6 +5,8 @@ import (
 	"go/ast"
 	"go/token"
 	"slices"
+
+	"lesiw.io/tools/internal/header"
 )
 
 // delimited is one bracketed list: a call's arguments, a function type's
@@ -23,7 +25,7 @@ type delimited struct {
 func collectDelimited(fset *token.FileSet, tokFile *token.File, file *ast.File) (result []delimited) {
 	var (
 		sigs    = signatures(file)
-		headers = headerSpans(file)
+		headers = header.Spans(file)
 	)
 	ast.Inspect(file, func(n ast.Node) bool {
 		switch n := n.(type) {
@@ -55,7 +57,7 @@ func callDelimited(file *ast.File, tokFile *token.File, headers [][2]token.Pos, 
 		return nil
 	}
 	// A header is single-line-or-nothing; joining across one would wrap it.
-	if inHeader(headers, n.Pos()) {
+	if header.In(headers, n.Pos()) {
 		return nil
 	}
 	// Rewriting the span between the delimiters would drop every comment

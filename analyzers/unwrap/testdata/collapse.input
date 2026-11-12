@@ -18,3 +18,11 @@ const (
 var (
 	debug = false // toggled in tests
 )
+
+func g(a, b, c int) {}
+
+func h() {
+	g(1,
+		2,
+		3)
+}

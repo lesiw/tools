@@ -5,6 +5,8 @@ import (
 	"go/token"
 	"slices"
 	"strings"
+
+	"lesiw.io/tools/internal/header"
 )
 
 // collapseWrappedLines merges a wrapped binary expression or call. It keeps
@@ -15,7 +17,7 @@ func collapseWrappedLines(r *renderer) {
 		file    = r.file
 
 		sigs    = signatures(file)
-		headers = headerSpans(file)
+		headers = header.Spans(file)
 		lits    = multiLineLits(tokFile, file)
 
 		// consider reports whether the merge rules look at this span
@@ -24,7 +26,7 @@ func collapseWrappedLines(r *renderer) {
 			if sameLine(tokFile, pos, end) {
 				return false
 			}
-			if inHeader(headers, pos) {
+			if header.In(headers, pos) {
 				// A header stays on one line. collapseHeaders
 				// owns it.
 				return false
@@ -66,11 +68,6 @@ func collapseWrappedLines(r *renderer) {
 			return true
 		}
 		if !call.Lparen.IsValid() || !call.Rparen.IsValid() {
-			return true
-		}
-		// A list the author broke into two or more lines may be a
-		// grouping, and joining it would erase the grouping.
-		if indentedLines(tokFile, call.Lparen, call.Args) > 1 {
 			return true
 		}
 		if groupedWithin(tokFile, enclosingNode(stack)) {
@@ -127,16 +124,10 @@ func groupedWithin(tokFile *token.File, n ast.Node) bool {
 	return grouped
 }
 
-// enclosingStmt returns the span of the innermost statement in stack. It
-// returns the innermost node when no statement encloses it.
+// enclosingStmt returns the span of the innermost statement in stack.
 func enclosingStmt(stack []ast.Node) (pos, end token.Pos) {
-	for _, node := range slices.Backward(stack) {
-		if stmt, ok := node.(ast.Stmt); ok {
-			return stmt.Pos(), stmt.End()
-		}
-	}
-	innermost := stack[len(stack)-1]
-	return innermost.Pos(), innermost.End()
+	n := enclosingNode(stack)
+	return n.Pos(), n.End()
 }
 
 // collapseSingleDecls removes the parentheses from a declaration block that

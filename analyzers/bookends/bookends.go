@@ -43,6 +43,7 @@ import (
 	"golang.org/x/tools/go/analysis"
 
 	"lesiw.io/tools/analyzers/linelen"
+	"lesiw.io/tools/internal/header"
 )
 
 // Analyzer reports bracket layout that does not match the list's shape.
@@ -64,18 +65,21 @@ func run(pass *analysis.Pass) (any, error) {
 	return nil, nil
 }
 
-// markInner marks each pair that sits inside another pair on the same line.
-// The outer pair lays that line out, and packing the inner one first would
-// leave the outer line over the width with no rule left to fix it.
-func markInner(l *layout, pairs []pair) {
-	for i := range pairs {
-		for _, outer := range pairs {
-			if !contains(outer, pairs[i]) {
-				continue
-			}
-			if l.line(outer.open) == l.line(pairs[i].open) {
-				pairs[i].inner = true
-				break
+// markInner marks each pair that an outer pair lays out. Packing the inner
+// pair first would leave the outer line over the width with no rule left to
+// fix it, so the outermost pair is decided first and a pair with no layout to
+// write lays out nothing.
+func markInner(pass *analysis.Pass, l *layout, file *ast.File, pairs []pair) {
+	for i := range slices.Backward(pairs) {
+		if pairs[i].inner {
+			continue
+		}
+		if _, _, ok := packPlan(pass, l, file, pairs[i]); !ok {
+			continue
+		}
+		for j := range pairs {
+			if contains(pairs[i], pairs[j]) {
+				pairs[j].inner = true
 			}
 		}
 	}
@@ -97,7 +101,7 @@ func check(pass *analysis.Pass, file *ast.File, src []byte) {
 	slices.SortFunc(pairs, func(a, b pair) int {
 		return cmp.Compare(b.open, a.open)
 	})
-	markInner(l, pairs)
+	markInner(pass, l, file, pairs)
 	for _, p := range pairs {
 		if !p.table && inTable(tables, p.open) {
 			continue
@@ -258,12 +262,11 @@ type pair struct {
 	first       token.Pos // first element, for an opener pair
 	elts        []ast.Expr
 	lit         *ast.CompositeLit
-	opener      bool      // the pair guards an opener, not a closer
-	table       bool      // the pair guards a whole table
-	spread      bool      // a call whose last argument is a spread
-	ellipsis    token.Pos // the ellipsis of a spread, which the edit spans
+	opener      bool // the pair guards an opener, not a closer
+	table       bool // the pair guards a whole table
+	spread      bool // a call whose last argument is a spread
 	call        *ast.CallExpr
-	inner       bool // the pair sits inside another pair on the same line
+	inner       bool // the pair around this one lays the line out
 }
 
 // sourceLineStart returns the offset of the newline that ends the line before
@@ -453,11 +456,10 @@ func delimiters(n ast.Node) (pair, bool) {
 			return pair{}, false
 		}
 		return pair{open: n.Lparen, close: n.Rparen,
-			lastEnd:  n.Args[len(n.Args)-1].End(),
-			elts:     n.Args,
-			spread:   n.Ellipsis.IsValid(),
-			ellipsis: n.Ellipsis,
-			call:     n,
+			lastEnd: n.Args[len(n.Args)-1].End(),
+			elts:    n.Args,
+			spread:  n.Ellipsis.IsValid(),
+			call:    n,
 		}, true
 	case *ast.CompositeLit:
 		if len(n.Elts) == 0 {
@@ -571,32 +573,11 @@ func leadingSpace(src []byte, start int) []byte {
 // A list holding two or more indented lines is otherwise a group the author
 // drew, and the rule leaves the group alone.
 func reportPack(pass *analysis.Pass, l *layout, file *ast.File, p pair) bool {
-	if len(p.elts) < 2 {
-		return false
-	}
-	if p.inner {
-		return false // the pair around this one lays the line out
-	}
-	if !packable(pass, l, p) {
-		return false
-	}
-	// A comment inside the list stops the join rule, so a list that would
-	// fit on one line without the comment is still this rule's to lay out.
-	if len(commentsIn(file, p.open, p.close)) == 0 && joinFits(pass, l, p) {
-		return false // a list that fits on one line is the join rule's work
-	}
-	if hasComment(l, file, p) {
-		return false // a packed line would move it, or outgrow the width
-	}
-	f, ok := fill(pass, l, file, p)
+	f, indented, ok := packPlan(pass, l, file, p)
 	if !ok {
-		return false // no layout fits, so there is nothing to suggest
-	}
-	indented := l.indented(p)
-	if !wanted(l, file, p, f, indented) {
 		return false
 	}
-	msg := "elements fit on " + lineCount(f.lines)
+	msg := fmt.Sprintf("elements fit on %d lines", f.lines)
 	if f.keyed {
 		msg = "each key and its value take a line"
 	} else if cur := indented; cur > f.lines {
@@ -623,6 +604,38 @@ func reportPack(pass *analysis.Pass, l *layout, file *ast.File, p pair) bool {
 		}},
 	})
 	return true
+}
+
+// packPlan returns the layout the pack rule would write for the list, the
+// number of lines the list holds now, and whether the rule would write one. A
+// list the pair around it lays out is not this rule's to pack.
+func packPlan(pass *analysis.Pass, l *layout, file *ast.File, p pair) (layoutFill, int, bool) {
+	if len(p.elts) < 2 || p.inner || !packable(pass, l, p) {
+		return layoutFill{}, 0, false
+	}
+	// A header stays on one line, so a list inside one is not this rule's
+	// to lay out. Wrapping it would put the body's brace on a line of its
+	// own.
+	if header.In(header.Spans(file), p.open) {
+		return layoutFill{}, 0, false
+	}
+	// A comment inside the list stops the join rule, so a list that would
+	// fit on one line without the comment is still this rule's to lay out.
+	if len(commentsIn(file, p.open, p.close)) == 0 && joinFits(pass, l, p) {
+		return layoutFill{}, 0, false // the join rule's work
+	}
+	if hasComment(l, file, p) {
+		return layoutFill{}, 0, false // a packed line would move it
+	}
+	f, ok := fill(pass, l, file, p)
+	if !ok {
+		return layoutFill{}, 0, false // no layout fits
+	}
+	indented := l.indented(p)
+	if !wanted(l, file, p, f, indented) {
+		return layoutFill{}, 0, false
+	}
+	return f, indented, true
 }
 
 // indented returns the number of lines the list holds under its opener's line.
@@ -652,8 +665,7 @@ func wanted(l *layout, file *ast.File, p pair, f layoutFill, indented int) bool 
 }
 
 // packable reports whether the list is one this rule may pack: the elements
-// are not keyed, are not table rows, are not names, and are not a literal's
-// constants.
+// are not keyed, are not names, and are not a literal's rows or constants.
 func packable(pass *analysis.Pass, l *layout, p pair) bool {
 	// A literal's elements are its rows or its column, and either is read
 	// down; a call's arguments are neither, so both guards apply only to a
@@ -670,17 +682,6 @@ func packable(pass *analysis.Pass, l *layout, p pair) bool {
 func constant(pass *analysis.Pass, elts []ast.Expr) bool {
 	for _, e := range elts {
 		if pass.TypesInfo.Types[e].Value == nil {
-			return false
-		}
-	}
-	return true
-}
-
-// oneLine reports whether every element stays on one line, so packing one
-// cannot disturb a break inside it.
-func oneLine(l *layout, elts []ast.Expr) bool {
-	for _, e := range elts {
-		if l.line(e.Pos()) != l.line(e.End()) {
 			return false
 		}
 	}
@@ -763,24 +764,21 @@ func joinFits(pass *analysis.Pass, l *layout, p pair) bool {
 // hasComment reports whether a comment sits among the elements. A comment
 // between two of them is inside the edit that rewrites the list, and one ahead
 // of the first explains that element alone. A comment on the opener's line
-// stays on that line, as it does in a table.
+// stays on that line, as it does in a table, unless it sits inside an element:
+// an element is written from its own text, which does not carry a comment.
 func hasComment(l *layout, file *ast.File, p pair) bool {
 	open := l.line(p.open)
 	for _, c := range commentsIn(file, p.open, p.close) {
 		if l.line(c.Pos()) != open {
 			return true
 		}
+		for _, e := range p.elts {
+			if c.Pos() >= e.Pos() && c.End() <= e.End() {
+				return true
+			}
+		}
 	}
 	return false
-}
-
-// end returns the position the edit stops at: the end of the last element, or
-// the end of the ellipsis that follows it.
-func (p pair) end() token.Pos {
-	if p.spread {
-		return p.ellipsis + 3
-	}
-	return p.lastEnd
 }
 
 // openerComments returns the text of the comments on the opener's line, each
@@ -820,11 +818,6 @@ type layoutFill struct {
 	keyed  bool // the elements are key-value pairs, which take a line each
 }
 
-// lineCount writes a line count for a message.
-func lineCount(n int) string {
-	return fmt.Sprintf("%d lines", n)
-}
-
 // overWide reports whether a line of the list's own layout is longer than the
 // width allows. Lines inside an element are the element's business, so only
 // the lines an element starts on are measured, and a line linelen exempts is
@@ -850,7 +843,9 @@ func overWide(l *layout, file *ast.File, p pair) bool {
 
 // inSignature reports whether pos falls in a span linelen exempts as a
 // signature: a function or method declaration up to its body, or a method in
-// an interface.
+// an interface. A signature holds a list only in an array length, as in
+// func f(x [len([]int{1, 2, 3})]int), and measuring that line would leave the
+// join rule restoring the wrap forever.
 func inSignature(file *ast.File, pos token.Pos) bool {
 	var found bool
 	ast.Inspect(file, func(n ast.Node) bool {
@@ -902,7 +897,6 @@ func fill(pass *analysis.Pass, l *layout, file *ast.File, p pair) (layoutFill, b
 		texts:       make([][]byte, len(p.elts)),
 		starts:      make([]int, len(p.elts)),
 		solo:        make([]bool, len(p.elts)),
-		shift:       make([]int, len(p.elts)),
 		trail:       make([][]byte, len(p.elts)),
 		spread:      p.spread,
 		limit:       linelen.Config.Len,
@@ -916,7 +910,6 @@ func fill(pass *analysis.Pass, l *layout, file *ast.File, p pair) (layoutFill, b
 			// wrote, comments included, and takes a line of its own.
 			pk.solo[i] = true
 			pk.texts[i] = l.src[int(e.Pos())-l.base : int(e.End())-l.base]
-			pk.shift[i] = len(indent) - len(l.indentAt(e.Pos()))
 			continue
 		}
 		text, ok := render(pass, e)
@@ -925,29 +918,12 @@ func fill(pass *analysis.Pass, l *layout, file *ast.File, p pair) (layoutFill, b
 		}
 		pk.texts[i] = text
 	}
-	// A comment that follows an element on the opener's line rides that
-	// element, and the element takes a line of its own so the comment ends
-	// the line it trails.
-	for _, c := range commentsIn(file, p.elts[0].Pos(), p.close) {
-		if l.line(c.Pos()) != l.line(p.open) {
-			continue
-		}
-		// The comment trails the last element that ends before it.
-		trailed := -1
-		for i, e := range p.elts {
-			if c.Pos() > e.End() {
-				trailed = i
-			}
-		}
-		if trailed < 0 {
-			continue
-		}
-		pk.solo[trailed] = true
-		pk.trail[trailed] = l.src[int(c.Pos())-l.base : int(c.End())-l.base]
-	}
 	var keyed bool
 	if starts, ok := keyedArgs(pass, p.call); ok {
 		pk.starts, pk.oneGroup, keyed = starts, true, true
+	}
+	if !pk.trailComments(l, file, p, keyed) {
+		return layoutFill{}, false
 	}
 	next, ok := pk.cheapest()
 	if !ok {
@@ -956,6 +932,39 @@ func fill(pass *analysis.Pass, l *layout, file *ast.File, p pair) (layoutFill, b
 	f := pk.layout(next)
 	f.keyed = keyed
 	return f, true
+}
+
+// trailComments marks every element that a comment on the opener's line
+// follows, and keeps the comment's text, so the element ends the line the
+// comment ends. It reports whether the list can hold the comments at all: a
+// key that trails a comment cannot keep the value it labels on the line, so
+// such a list has no layout.
+func (pk *packer) trailComments(l *layout, file *ast.File, p pair, keyed bool) bool {
+	for _, c := range commentsIn(file, p.elts[0].Pos(), p.close) {
+		if l.line(c.Pos()) != l.line(p.open) {
+			continue
+		}
+		// The comment trails the last element that ends before it.
+		trailed := -1
+		for i, e := range p.elts {
+			if c.Pos() >= e.End() {
+				trailed = i
+			}
+		}
+		if trailed < 0 {
+			continue
+		}
+		if keyed && !slices.Contains(pk.starts, trailed+1) {
+			return false
+		}
+		pk.solo[trailed] = true
+		text := l.src[int(c.Pos())-l.base : int(c.End())-l.base]
+		if pk.trail[trailed] != nil {
+			pk.trail[trailed] = append(pk.trail[trailed], ' ')
+		}
+		pk.trail[trailed] = append(pk.trail[trailed], text...)
+	}
+	return true
 }
 
 // keyedArgs returns the first element index of each group in a slog call: the
@@ -1002,7 +1011,6 @@ type packer struct {
 	starts      []int    // the first element of each group; starts[0] is 0
 	closeIndent []byte   // the indent the closer sits at
 	solo        []bool   // the element spans lines, so it takes a line alone
-	shift       []int    // tabs to add to a spanning element's later lines
 	trail       [][]byte // the comment that follows an element on its line
 	oneGroup    bool     // each group takes a line of its own
 	spread      bool     // the last element is followed by an ellipsis
@@ -1021,25 +1029,6 @@ func (pk *packer) alone(i, j int) bool {
 		}
 	}
 	return false
-}
-
-// shiftLines adds tabs after every newline in text, so a spanning element's
-// later lines sit at the indent its first line moved to.
-func shiftLines(text []byte, tabs int) (out []byte) {
-	if tabs == 0 {
-		return text
-	}
-	for i, c := range text {
-		if c == '\n' && i > 0 {
-			out = append(out, '\n')
-			for range tabs {
-				out = append(out, '\t')
-			}
-			continue
-		}
-		out = append(out, c)
-	}
-	return out
 }
 
 // firstLine returns text up to its first newline, which is the line that has
@@ -1072,11 +1061,7 @@ func (pk *packer) line(i, j int) []byte {
 		if k > lo {
 			out = append(out, ", "...)
 		}
-		text := pk.texts[k]
-		if pk.solo[k] {
-			text = shiftLines(text, pk.shift[k])
-		}
-		out = append(out, text...)
+		out = append(out, pk.texts[k]...)
 		if hi == len(pk.texts) && pk.spread && k == hi-1 {
 			out = append(out, "..."...)
 		}
@@ -1095,7 +1080,7 @@ func (pk *packer) line(i, j int) []byte {
 
 // width returns the width of the line holding groups i through j-1. The width
 // is linelen's, since a tab counts for more than one column, and it covers the
-// first line only, since a spanning element ends its line with its opener.
+// first line only: the lines inside a spanning element are the element's own.
 func (pk *packer) width(i, j int) int {
 	return linelen.Width(firstLine(pk.line(i, j)))
 }

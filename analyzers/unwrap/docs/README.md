@@ -28,3 +28,7 @@ fits:
 
 The fix joins the lines. The width is analyzers/linelen; with none set, every
 construct that can be joined is joined.
+
+A bracketed list the author broke into two or more indented lines is left
+alone: the grouping is written nowhere but the layout, and joining it would
+erase the grouping.

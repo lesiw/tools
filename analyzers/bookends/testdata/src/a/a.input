@@ -110,6 +110,35 @@ func longLiteral(w http.ResponseWriter, err error) {
 
 func registerLongArgs(w http.ResponseWriter, status int, msg string, v any) {}
 
+func nestedLists(w http.ResponseWriter, err error) {
+	registerLongArgs(
+		w, http.StatusNotFound, "MANIFEST_UNKNOWN", inner( // want `elements fit on 2 lines`
+			"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"),
+	)
+}
+
+func trailingComments() {
+	registerThreeStrings("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" /* one */ /* two */, "cccc") // want `elements fit on 3 lines`
+}
+
+func headerList(w http.ResponseWriter, err error) {
+	if err := check(w, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"); err != nil {
+		panic(err)
+	}
+}
+
+func rawString() {
+	registerThreeStrings( // want `elements fit on 2 lines`
+		"aaaa", "bbbb", "cccc", "dddd", "eeee", "ffff", "gggg", "hhhh", `x
+y`)
+}
+
+func inner(a, b string) string { return "" }
+
+func registerThreeStrings(a ...string) {}
+
+func check(w http.ResponseWriter, a, b string) error { return nil }
+
 func packable(w http.ResponseWriter, err error) {
 	registerFourArgsWithString( // want `elements fit on 2 lines`
 		w, http.StatusInternalServerError, "err-one", err.Error(),
