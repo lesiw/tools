@@ -64,6 +64,28 @@ func run(pass *analysis.Pass) (any, error) {
 	return nil, nil
 }
 
+// markInner marks each pair that sits inside another pair on the same line.
+// The outer pair lays that line out, and packing the inner one first would
+// leave the outer line over the width with no rule left to fix it.
+func markInner(l *layout, pairs []pair) {
+	for i := range pairs {
+		for _, outer := range pairs {
+			if !contains(outer, pairs[i]) {
+				continue
+			}
+			if l.line(outer.open) == l.line(pairs[i].open) {
+				pairs[i].inner = true
+				break
+			}
+		}
+	}
+}
+
+// contains reports whether inner sits inside outer on the same line.
+func contains(outer, inner pair) bool {
+	return outer.open < inner.open && inner.close < outer.close
+}
+
 func check(pass *analysis.Pass, file *ast.File, src []byte) {
 	var (
 		l      = newLayout(pass.Fset.File(file.FileStart), src)
@@ -75,6 +97,7 @@ func check(pass *analysis.Pass, file *ast.File, src []byte) {
 	slices.SortFunc(pairs, func(a, b pair) int {
 		return cmp.Compare(b.open, a.open)
 	})
+	markInner(l, pairs)
 	for _, p := range pairs {
 		if !p.table && inTable(tables, p.open) {
 			continue
@@ -240,6 +263,7 @@ type pair struct {
 	spread      bool      // a call whose last argument is a spread
 	ellipsis    token.Pos // the ellipsis of a spread, which the edit spans
 	call        *ast.CallExpr
+	inner       bool // the pair sits inside another pair on the same line
 }
 
 // sourceLineStart returns the offset of the newline that ends the line before
@@ -547,6 +571,9 @@ func leadingSpace(src []byte, start int) []byte {
 func reportPack(pass *analysis.Pass, l *layout, file *ast.File, p pair) bool {
 	if len(p.elts) < 2 {
 		return false
+	}
+	if p.inner {
+		return false // the pair around this one lays the line out
 	}
 	if !packable(pass, l, p) {
 		return false
