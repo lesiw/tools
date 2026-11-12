@@ -1,6 +1,10 @@
 // Package unlambda provides an analysis.Analyzer that reports a function
 // literal that only forwards its arguments to another function.
 //
+// A literal whose type is wider than the function's is left alone: a literal
+// that returns an interface where the function returns a concrete type cannot
+// name the function instead.
+//
 // A literal whose body is one call, with its own parameters in order, adds
 // nothing to the call. Passing the function value is shorter, and it puts the
 // name of the function at the call site.
@@ -59,6 +63,15 @@ func forwards(pass *analysis.Pass, lit *ast.FuncLit) bool {
 	}
 	call, ok := ret.Results[0].(*ast.CallExpr)
 	if !ok || !callable(pass, call.Fun) {
+		return false
+	}
+	// A literal is assignable to any func type it satisfies, so a literal
+	// that forwards can still have a wider type than the function's.
+	var (
+		litType = pass.TypesInfo.TypeOf(lit)
+		fnType  = pass.TypesInfo.TypeOf(call.Fun)
+	)
+	if !types.Identical(litType, fnType) {
 		return false
 	}
 	params := names(lit.Type.Params)

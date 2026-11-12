@@ -27,3 +27,17 @@ func j() {
 		return strings.Fields(s)
 	})
 }
+
+type coll interface{ Len() int }
+
+func newBuiltin(size int) *builtin { return &builtin{size} }
+
+type builtin struct{ size int }
+
+func (b *builtin) Len() int { return b.size }
+
+func useColl(fn func(int) coll) {}
+
+func k() {
+	useColl(func(size int) coll { return newBuiltin(size) })
+}

@@ -20,6 +20,10 @@ The literal passes its arguments through in order and returns the result.
 Naming the function does the same with less code. A method value closes over
 its receiver, so the check skips one.
 
+A literal whose type is wider than the function's is left alone: returning an
+interface where the function returns a concrete type cannot be shortened to the
+name.
+
 The idea comes from go-critic's unlambda.
 
 Fixable: the literal becomes the function.
