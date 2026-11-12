@@ -1,0 +1,12 @@
+package g
+
+import (
+	"fmt"
+
+	// a note about the environment
+	"os"
+)
+
+func f() {
+	_, _ = fmt.Println, os.Getenv
+}

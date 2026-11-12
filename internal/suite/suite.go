@@ -82,6 +82,7 @@ import (
 	"lesiw.io/tools/analyzers/flagderef"
 	"lesiw.io/tools/analyzers/gospell"
 	"lesiw.io/tools/analyzers/ifelsechain"
+	"lesiw.io/tools/analyzers/importgroup"
 	"lesiw.io/tools/analyzers/importshadow"
 	"lesiw.io/tools/analyzers/indexalloc"
 	"lesiw.io/tools/analyzers/initialisms"
@@ -182,6 +183,7 @@ var (
 		httpresponse.Analyzer,
 		ifaceassert.Analyzer,
 		ifelsechain.Analyzer,
+		importgroup.Analyzer,
 		importshadow.Analyzer,
 		indexalloc.Analyzer,
 		initialisms.Analyzer,

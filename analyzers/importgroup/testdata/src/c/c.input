@@ -1,0 +1,11 @@
+package c
+
+import (
+	"os" // want `import block is not grouped standard, other, local`
+	// a note at the end
+	"fmt"
+)
+
+func f() {
+	_, _ = fmt.Println, os.Getenv
+}

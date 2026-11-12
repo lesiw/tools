@@ -1,0 +1,13 @@
+package e
+
+import (
+	"os"
+
+	"example.com/other"
+
+	"lesiw.io/tools/pkg" // want `import block is not grouped standard, other, local`
+)
+
+func f() {
+	_, _, _ = os.Getenv, pkg.Config, other.Value
+}

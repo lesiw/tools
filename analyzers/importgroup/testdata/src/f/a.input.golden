@@ -1,0 +1,13 @@
+package f
+
+import (
+	/*
+		a note
+	*/
+	"fmt"
+	"os" // want `import block is not grouped standard, other, local`
+)
+
+func f() {
+	_, _ = fmt.Println, os.Getenv
+}
