@@ -1,0 +1,61 @@
+package a
+
+func unread(a int, b string) string { // want `parameter a is never read`
+	return b
+}
+
+func blank(_ int, b string) string {
+	return b
+}
+
+func Exported(a int, b string) string {
+	return b
+}
+
+func held(a int, b string) string {
+	return b
+}
+
+var heldValue = held
+
+type reader interface {
+	read(a int, b string) string
+}
+
+type impl struct{}
+
+func (impl) read(a int, b string) string {
+	return b
+}
+
+func (impl) other(a int, b string) string { // want `parameter a is never read`
+	return b
+}
+
+func read(a int, b string) string { // want `parameter a is never read`
+	return b
+}
+
+func generic[T any](x T, y int) T { // want `parameter y is never read`
+	return x
+}
+
+func literal() func(int, string) string {
+	return func(a int, b string) string { return b }
+}
+
+func stub(a int, b string) {}
+
+func panics(a int, b string) { panic("later") }
+
+func use() {
+	_ = unread(1, "b")
+	_ = Exported(1, "b")
+	_ = heldValue(1, "b")
+	_ = impl{}.read(1, "b")
+	_ = impl{}.other(1, "b")
+	_ = read(1, "b")
+	_ = literal()(1, "b")
+	_ = generic[int](1, 2)
+	stub(1, "b")
+}

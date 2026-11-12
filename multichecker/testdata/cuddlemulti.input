@@ -5,7 +5,7 @@ type Edit struct {
 	End int
 }
 
-func f(a, b, c, d int, v string) []Edit {
+func f(a, b, c, d int, _ string) []Edit {
 	return []Edit{{
 		Pos: a,
 		End: b,

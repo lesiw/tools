@@ -1,3 +1,5 @@
+//ignore:unusedparams
+
 package p
 
 import "context"

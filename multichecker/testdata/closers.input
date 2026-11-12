@@ -6,7 +6,7 @@ type entry struct {
 	comment string
 }
 
-func add(entries []entry, name string, value int, comment string, values map[string]int, keys []string) []entry {
+func add(entries []entry, name, comment string, values map[string]int, keys []string) []entry {
 	entries = append(entries, entry{name: name,
 		value: values[keys[0]], comment: comment})
 	return entries

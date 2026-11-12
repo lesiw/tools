@@ -22,7 +22,7 @@ type delimited struct {
 // collectDelimited returns every bracketed list whose items are on one line,
 // in source order. A list whose items already span lines is the author's
 // layout and is left alone.
-func collectDelimited(fset *token.FileSet, tokFile *token.File, file *ast.File) (result []delimited) {
+func collectDelimited(tokFile *token.File, file *ast.File) (result []delimited) {
 	var (
 		sigs    = signatures(file)
 		headers = header.Spans(file)
@@ -152,7 +152,7 @@ func collapseDelimited(r *renderer) {
 		lits    = multiLineLits(tokFile, file)
 		snap    = r.snapshot()
 	)
-	for _, d := range collectDelimited(r.fset, tokFile, file) {
+	for _, d := range collectDelimited(tokFile, file) {
 		if sameLine(tokFile, d.open, d.close) {
 			continue
 		}
