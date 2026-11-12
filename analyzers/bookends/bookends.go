@@ -85,16 +85,17 @@ func markInner(pass *analysis.Pass, l *layout, file *ast.File, pairs []pair) {
 	}
 }
 
-// contains reports whether inner sits inside outer on the same line.
+// contains reports whether inner sits inside outer.
 func contains(outer, inner pair) bool {
 	return outer.open < inner.open && inner.close < outer.close
 }
 
 func check(pass *analysis.Pass, file *ast.File, src []byte) {
 	var (
-		l      = newLayout(pass.Fset.File(file.FileStart), src)
-		pairs  = collectPairs(pass, file, l)
-		tables = tablePairs(pairs)
+		l       = newLayout(pass.Fset.File(file.FileStart), src)
+		pairs   = collectPairs(pass, file, l)
+		tables  = tablePairs(pairs)
+		headers = header.Spans(file)
 	)
 	// Innermost first: a closer that moves is in place before the pair
 	// around it is measured.
@@ -103,6 +104,9 @@ func check(pass *analysis.Pass, file *ast.File, src []byte) {
 	})
 	markInner(pass, l, file, pairs)
 	for _, p := range pairs {
+		if header.In(headers, p.open) {
+			continue // a header takes the lines it already has
+		}
 		if !p.table && inTable(tables, p.open) {
 			continue
 		}
@@ -233,10 +237,10 @@ func reportCloser(pass *analysis.Pass, l *layout, src []byte, p pair) {
 	// the comma follows it.
 	tail := string(src[int(p.lastEnd)-l.base : int(p.close)-l.base])
 	var at int
-	if strings.HasPrefix(tail, "...") {
-		at = len("...")
+	if p.ellipsis.IsValid() {
+		at = int(p.ellipsis) - int(p.lastEnd) + len("...")
 	}
-	if !strings.Contains(tail[at:], ",") {
+	if !commaBeforeComment(tail[at:]) {
 		tail = tail[:at] + "," + tail[at:]
 	}
 	pass.Report(analysis.Diagnostic{
@@ -254,6 +258,20 @@ func reportCloser(pass *analysis.Pass, l *layout, src []byte, p pair) {
 	l.breakAt(p.close, want)
 }
 
+// commaBeforeComment reports whether a comma comes before the first comment in
+// tail. A comma inside a comment is the comment's text, not the list's.
+func commaBeforeComment(tail string) bool {
+	for i := 0; i < len(tail); i++ {
+		if tail[i] == ',' {
+			return true
+		}
+		if tail[i] == '/' {
+			return false
+		}
+	}
+	return false
+}
+
 // pair is one bracket pair: where it opens, where it closes, and the end of
 // the last item before the closer.
 type pair struct {
@@ -262,9 +280,10 @@ type pair struct {
 	first       token.Pos // first element, for an opener pair
 	elts        []ast.Expr
 	lit         *ast.CompositeLit
-	opener      bool // the pair guards an opener, not a closer
-	table       bool // the pair guards a whole table
-	spread      bool // a call whose last argument is a spread
+	opener      bool      // the pair guards an opener, not a closer
+	table       bool      // the pair guards a whole table
+	spread      bool      // a call whose last argument is a spread
+	ellipsis    token.Pos // the ellipsis of a spread
 	call        *ast.CallExpr
 	inner       bool // the pair around this one lays the line out
 }
@@ -358,8 +377,9 @@ func tableDone(l *layout, lit *ast.CompositeLit) bool {
 	return true
 }
 
-// trailingComments returns the comments that sit on the table's opening line.
-// The rebuild replaces that line, so they are written back explicitly.
+// trailingComments returns the comments that sit on the table's opening line
+// ahead of the first row. The rebuild replaces that line, so they are written
+// back explicitly.
 func trailingComments(l *layout, file *ast.File, lit *ast.CompositeLit) (out []*ast.Comment) {
 	open := l.line(lit.Lbrace)
 	for _, c := range commentsIn(file, lit.Lbrace, lit.Rbrace) {
@@ -383,7 +403,7 @@ func tableText(pass *analysis.Pass, l *layout, src []byte, lit *ast.CompositeLit
 		comments = trailingComments(l, file, lit)
 		written  bool
 	)
-	// A comment on the opener's line is written back after the first row's
+	// A comment ahead of the first row is written back after that row's
 	// brace, which is where the author put it.
 	writeComments := func() {
 		if written {
@@ -456,10 +476,11 @@ func delimiters(n ast.Node) (pair, bool) {
 			return pair{}, false
 		}
 		return pair{open: n.Lparen, close: n.Rparen,
-			lastEnd: n.Args[len(n.Args)-1].End(),
-			elts:    n.Args,
-			spread:  n.Ellipsis.IsValid(),
-			call:    n,
+			lastEnd:  n.Args[len(n.Args)-1].End(),
+			elts:     n.Args,
+			spread:   n.Ellipsis.IsValid(),
+			ellipsis: n.Ellipsis,
+			call:     n,
 		}, true
 	case *ast.CompositeLit:
 		if len(n.Elts) == 0 {
@@ -533,7 +554,7 @@ func (l *layout) lineText(pos token.Pos) []byte {
 		i     = l.line(pos)
 	)
 	if i < len(l.starts) {
-		return l.src[start:l.starts[i]]
+		return bytes.TrimSuffix(l.src[start:l.starts[i]], []byte("\n"))
 	}
 	return l.src[start:]
 }
@@ -613,15 +634,13 @@ func packPlan(pass *analysis.Pass, l *layout, file *ast.File, p pair) (layoutFil
 	if len(p.elts) < 2 || p.inner || !packable(pass, l, p) {
 		return layoutFill{}, 0, false
 	}
-	// A header stays on one line, so a list inside one is not this rule's
-	// to lay out. Wrapping it would put the body's brace on a line of its
-	// own.
-	if header.In(header.Spans(file), p.open) {
-		return layoutFill{}, 0, false
-	}
 	// A comment inside the list stops the join rule, so a list that would
 	// fit on one line without the comment is still this rule's to lay out.
-	if len(commentsIn(file, p.open, p.close)) == 0 && joinFits(pass, l, p) {
+	// The join rule also refuses a list broken into two indented lines, so
+	// such a list is this rule's when the elements are pairs.
+	joinable := l.indented(p) < 2 &&
+		len(commentsIn(file, p.open, p.close)) == 0
+	if joinable && joinFits(pass, l, p) {
 		return layoutFill{}, 0, false // the join rule's work
 	}
 	if hasComment(l, file, p) {
@@ -867,7 +886,9 @@ func inSignature(file *ast.File, pos token.Pos) bool {
 				if _, ok := field.Type.(*ast.FuncType); !ok {
 					continue
 				}
-				found = pos >= field.Pos() && pos <= field.End()
+				if pos >= field.Pos() && pos <= field.End() {
+					found = true
+				}
 			}
 		}
 		return !found
@@ -954,7 +975,10 @@ func (pk *packer) trailComments(l *layout, file *ast.File, p pair, keyed bool) b
 		if trailed < 0 {
 			continue
 		}
-		if keyed && !slices.Contains(pk.starts, trailed+1) {
+		// A comment between a key and its value would part the two,
+		// but one after the last value leaves the pair whole.
+		last := trailed+1 == len(p.elts)
+		if keyed && !last && !slices.Contains(pk.starts, trailed+1) {
 			return false
 		}
 		pk.solo[trailed] = true

@@ -19,7 +19,9 @@ fix moves a bracket or a line break rather than an element:
 - a list indented across two lines to carry one line of elements, and a list
   with a line past the width. The layout has the least raggedness, so elements
   spread across lines by width rather than by count. Two indented lines within
-  the width are a group the author drew, and the rule leaves them alone. The
+  the width are a group the author drew, and the rule leaves them alone. An
+  element written across lines keeps its text and takes a line of its own, and
+  a list inside an `if`, `for`, `range`, or `switch` header is left alone. The
   list keeps one element per line when its elements are keyed, are composite
   literals, are names, or are a literal's constants, and when a comment sits
   among them. A `slog` call is the exception: its trailing arguments are
