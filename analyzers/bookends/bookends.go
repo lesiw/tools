@@ -12,15 +12,15 @@
 // literals, is rewritten as one edit: when a row does not fit, every row goes
 // on a line of its own, and each row's braces go on the lines their elements
 // are on. A list that holds a single indented line is packed: indenting a list
-// across two lines to carry one line of elements wastes the indentation. The
-// layout is the one with the least raggedness, the sum of the squared space
-// left at the end of each line, so elements spread by width rather than by
-// count and a short element joins a long one instead of taking a line of its
-// own.
+// across two lines to carry one line of elements wastes the indentation. So is
+// a list with a line past the width, which cannot stand as written. The layout
+// is the one with the least raggedness, the sum of the squared space left at
+// the end of each line, so elements spread by width rather than by count and a
+// short element joins a long one instead of taking a line of its own.
 //
-// Two indented lines are a group the author drew. Nothing but the layout says
-// so, and a rule that rewrote the group would erase the only place the
-// grouping is written down, so the list is left alone.
+// Two indented lines within the width are a group the author drew. Nothing but
+// the layout says so, and a rule that rewrote the group would erase the only
+// place the grouping is written down, so the list is left alone.
 //
 // The list keeps one element per line when its elements are keyed, are
 // composite literals, are names, or are a literal's constants, and when a
@@ -564,10 +564,12 @@ func leadingSpace(src []byte, start int) []byte {
 }
 
 // reportPack reports a list whose elements are not laid out the way the width
-// asks for. One indented line is the shape to remove: indenting a list across
-// two lines to hold one line of elements wastes the indentation. Two or more
-// indented lines are a group the author drew, and the rule leaves them alone
-// unless the elements spread better.
+// asks for. Three shapes are reported. A list holding one indented line is
+// packed, since indenting a list across two lines to carry one line of
+// elements wastes the indentation. A key-value list takes one pair per line. A
+// list with a line past the width is packed, since it cannot stand as written.
+// A list holding two or more indented lines is otherwise a group the author
+// drew, and the rule leaves the group alone.
 func reportPack(pass *analysis.Pass, l *layout, file *ast.File, p pair) bool {
 	if len(p.elts) < 2 {
 		return false
@@ -578,42 +580,27 @@ func reportPack(pass *analysis.Pass, l *layout, file *ast.File, p pair) bool {
 	if !packable(pass, l, p) {
 		return false
 	}
-	if joinFits(pass, l, p) {
+	// A comment inside the list stops the join rule, so a list that would
+	// fit on one line without the comment is still this rule's to lay out.
+	if len(commentsIn(file, p.open, p.close)) == 0 && joinFits(pass, l, p) {
 		return false // a list that fits on one line is the join rule's work
 	}
 	if hasComment(l, file, p) {
 		return false // a packed line would move it, or outgrow the width
 	}
-	var (
-		head     = l.line(p.open) == l.line(p.elts[0].Pos())
-		indented = len(breaks(l, p))
-	)
-	if !head {
-		indented++
-	}
-	f, ok := fill(pass, l, p)
+	f, ok := fill(pass, l, file, p)
 	if !ok {
 		return false // no layout fits, so there is nothing to suggest
 	}
-	// One indented line is the wrap the width made. Two or more are a group
-	// the author drew, and the rule leaves the group alone. A key-value
-	// list is the exception: the pairs are the structure, so there is
-	// nothing to guess at. So is a line the width does not allow, since
-	// the group cannot stand as written.
-	if indented != 1 && !f.keyed && !overWide(l, p) {
+	indented := l.indented(p)
+	if !wanted(l, file, p, f, indented) {
 		return false
 	}
-	if slices.Equal(f.breaks, breaks(l, p)) {
-		return false // the layout is already the one the rule asks for
-	}
-	var msg string
+	msg := "elements fit on " + lineCount(f.lines)
 	if f.keyed {
 		msg = "each key and its value take a line"
-	} else {
-		msg = "elements fit on " + lineCount(f.lines)
-		if cur := indented; cur > f.lines {
-			msg += fmt.Sprintf(", not %d", cur)
-		}
+	} else if cur := indented; cur > f.lines {
+		msg += fmt.Sprintf(", not %d", cur)
 	}
 	fixMsg := "Pack the elements"
 	if f.keyed {
@@ -638,17 +625,43 @@ func reportPack(pass *analysis.Pass, l *layout, file *ast.File, p pair) bool {
 	return true
 }
 
-// packable reports whether the list is one this rule may pack: the closer
-// begins a line, every element stays on one line, and the elements are not
-// keyed, not table rows, not names, and not a literal's constants.
-func packable(pass *analysis.Pass, l *layout, p pair) bool {
-	// A literal's elements are its rows or its column; a call's
-	// arguments are neither, so the constant and row guards apply only to
-	// a literal.
-	if p.lit != nil && constant(pass, p.elts) {
+// indented returns the number of lines the list holds under its opener's line.
+func (l *layout) indented(p pair) int {
+	indented := len(breaks(l, p)) + 1 // spanning ends count as a line
+	if l.line(p.open) == l.line(p.elts[0].Pos()) {
+		indented-- // the first line is the opener's
+	}
+	return indented
+}
+
+// wanted reports whether the list's layout is not the one the rule asks for.
+// One indented line is the wrap the width made. Two or more are a group the
+// author drew, and the rule leaves the group alone. A key-value list is the
+// exception, since the pairs are the structure, and so is a line the width
+// does not allow, since the group cannot stand as written.
+func wanted(l *layout, file *ast.File, p pair, f layoutFill, indented int) bool {
+	if indented != 1 && !f.keyed && !overWide(l, file, p) {
 		return false
 	}
-	return !keyed(p.elts) && !rows(p.elts) && !names(p.elts)
+	// The fill starts every line at the element indent, so a list whose
+	// opener shares its line with elements is never already laid out.
+	if l.line(p.open) == l.line(p.elts[0].Pos()) {
+		return true
+	}
+	return !slices.Equal(f.breaks, breaks(l, p))
+}
+
+// packable reports whether the list is one this rule may pack: the elements
+// are not keyed, are not table rows, are not names, and are not a literal's
+// constants.
+func packable(pass *analysis.Pass, l *layout, p pair) bool {
+	// A literal's elements are its rows or its column, and either is read
+	// down; a call's arguments are neither, so both guards apply only to a
+	// literal.
+	if p.lit != nil && (constant(pass, p.elts) || rows(p.elts)) {
+		return false
+	}
+	return !keyed(p.elts) && !names(p.elts)
 }
 
 // constant reports whether every element is a constant. A table of names,
@@ -809,16 +822,15 @@ type layoutFill struct {
 
 // lineCount writes a line count for a message.
 func lineCount(n int) string {
-	if n == 1 {
-		return "1 line"
-	}
 	return fmt.Sprintf("%d lines", n)
 }
 
 // overWide reports whether a line of the list's own layout is longer than the
 // width allows. Lines inside an element are the element's business, so only
-// the lines an element starts on are measured.
-func overWide(l *layout, p pair) bool {
+// the lines an element starts on are measured, and a line linelen exempts is
+// not measured at all: a declared signature wraps as its author chose, and the
+// join rule restores that wrap whatever its width.
+func overWide(l *layout, file *ast.File, p pair) bool {
 	seen := make(map[int]struct{}, len(p.elts))
 	for _, e := range p.elts {
 		line := l.line(e.Pos())
@@ -826,11 +838,46 @@ func overWide(l *layout, p pair) bool {
 			continue
 		}
 		seen[line] = struct{}{}
+		if inSignature(file, e.Pos()) {
+			continue
+		}
 		if !linelen.CheckLine(l.lineText(e.Pos())) {
 			return true
 		}
 	}
 	return false
+}
+
+// inSignature reports whether pos falls in a span linelen exempts as a
+// signature: a function or method declaration up to its body, or a method in
+// an interface.
+func inSignature(file *ast.File, pos token.Pos) bool {
+	var found bool
+	ast.Inspect(file, func(n ast.Node) bool {
+		if found {
+			return false
+		}
+		switch n := n.(type) {
+		case *ast.FuncDecl:
+			if n.Type == nil {
+				return true
+			}
+			end := n.Type.End()
+			if n.Body != nil {
+				end = n.Body.Lbrace
+			}
+			found = pos >= n.Pos() && pos <= end
+		case *ast.InterfaceType:
+			for _, field := range n.Methods.List {
+				if _, ok := field.Type.(*ast.FuncType); !ok {
+					continue
+				}
+				found = pos >= field.Pos() && pos <= field.End()
+			}
+		}
+		return !found
+	})
+	return found
 }
 
 // fill returns the layout of the element list with the least raggedness: the
@@ -844,7 +891,7 @@ func overWide(l *layout, p pair) bool {
 // Elements are grouped first. A key-value argument list groups each key with
 // its value, and the groups take a line each, so a key never parts from the
 // value it labels.
-func fill(pass *analysis.Pass, l *layout, p pair) (layoutFill, bool) {
+func fill(pass *analysis.Pass, l *layout, file *ast.File, p pair) (layoutFill, bool) {
 	indent := l.indentAt(p.elts[0].Pos())
 	if l.line(p.open) == l.line(p.elts[0].Pos()) {
 		indent = append(slices.Clone(l.indentAt(p.open)), '\t')
@@ -856,6 +903,7 @@ func fill(pass *analysis.Pass, l *layout, p pair) (layoutFill, bool) {
 		starts:      make([]int, len(p.elts)),
 		solo:        make([]bool, len(p.elts)),
 		shift:       make([]int, len(p.elts)),
+		trail:       make([][]byte, len(p.elts)),
 		spread:      p.spread,
 		limit:       linelen.Config.Len,
 	}
@@ -876,6 +924,26 @@ func fill(pass *analysis.Pass, l *layout, p pair) (layoutFill, bool) {
 			return layoutFill{}, false
 		}
 		pk.texts[i] = text
+	}
+	// A comment that follows an element on the opener's line rides that
+	// element, and the element takes a line of its own so the comment ends
+	// the line it trails.
+	for _, c := range commentsIn(file, p.elts[0].Pos(), p.close) {
+		if l.line(c.Pos()) != l.line(p.open) {
+			continue
+		}
+		// The comment trails the last element that ends before it.
+		trailed := -1
+		for i, e := range p.elts {
+			if c.Pos() > e.End() {
+				trailed = i
+			}
+		}
+		if trailed < 0 {
+			continue
+		}
+		pk.solo[trailed] = true
+		pk.trail[trailed] = l.src[int(c.Pos())-l.base : int(c.End())-l.base]
 	}
 	var keyed bool
 	if starts, ok := keyedArgs(pass, p.call); ok {
@@ -931,12 +999,13 @@ func keyedArgs(pass *analysis.Pass, call *ast.CallExpr) (starts []int, ok bool) 
 type packer struct {
 	indent      []byte
 	texts       [][]byte
-	starts      []int  // the first element of each group; starts[0] is 0
-	closeIndent []byte // the indent the closer sits at
-	solo        []bool // the element spans lines, so it takes a line alone
-	shift       []int  // tabs to add to a spanning element's later lines
-	oneGroup    bool   // each group takes a line of its own
-	spread      bool   // the last element is followed by an ellipsis
+	starts      []int    // the first element of each group; starts[0] is 0
+	closeIndent []byte   // the indent the closer sits at
+	solo        []bool   // the element spans lines, so it takes a line alone
+	shift       []int    // tabs to add to a spanning element's later lines
+	trail       [][]byte // the comment that follows an element on its line
+	oneGroup    bool     // each group takes a line of its own
+	spread      bool     // the last element is followed by an ellipsis
 	limit       int
 }
 
@@ -1008,9 +1077,16 @@ func (pk *packer) line(i, j int) []byte {
 			text = shiftLines(text, pk.shift[k])
 		}
 		out = append(out, text...)
+		if pk.trail[k] != nil {
+			out = append(out, ", "...)
+			out = append(out, pk.trail[k]...)
+		}
 	}
 	if hi == len(pk.texts) && pk.spread {
 		out = append(out, "..."...)
+	}
+	if pk.trail[hi-1] != nil {
+		return out // the comment took the comma
 	}
 	return append(out, ',')
 }

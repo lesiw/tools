@@ -16,13 +16,14 @@ fix moves a bracket or a line break rather than an element:
 - a table whose rows are not all one shape, where one row is on a line and
   another spans lines, which is neither a table on one line nor a table to
   read down;
-- a list indented across two lines to carry one line of elements. The layout
-  has the least raggedness, so elements spread across lines by width rather
-  than by count. Two indented lines are a group the author drew, and the rule
-  leaves them alone. The list keeps one element per line when its elements are
-  keyed, are composite literals, are names, or are a literal's constants, and
-  when a comment sits among them. A `slog` call is the exception: its trailing
-  arguments are key-value pairs, so each key keeps the value it labels.
+- a list indented across two lines to carry one line of elements, and a list
+  with a line past the width. The layout has the least raggedness, so elements
+  spread across lines by width rather than by count. Two indented lines within
+  the width are a group the author drew, and the rule leaves them alone. The
+  list keeps one element per line when its elements are keyed, are composite
+  literals, are names, or are a literal's constants, and when a comment sits
+  among them. A `slog` call is the exception: its trailing arguments are
+  key-value pairs, so each key keeps the value it labels.
 
 ## Usage
 

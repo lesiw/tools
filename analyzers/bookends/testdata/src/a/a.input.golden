@@ -111,7 +111,7 @@ var wideTable = []row{{ // want `table mixes one-line and multi-line rows`
 }}
 
 func splitByWidth(w http.ResponseWriter, err error) {
-	registerFourArgsWithString(
+	registerFourArgsWithString( // want `elements fit on 2 lines`
 		w, http.StatusNotFound,
 		"MANIFEST_UNKNOWN", err.Error(),
 	)
@@ -135,10 +135,9 @@ func keyedArgs(log *slog.Logger, img image, err error) {
 
 func longLiteral(w http.ResponseWriter, err error) {
 	registerLongArgs(
-		w, http.StatusNotFound, "MANIFEST_UNKNOWN",
-		struct { // want `elements fit on 2 lines`
-			A, B string
-		}{"a", "b"},
+		w, http.StatusNotFound,
+		"MANIFEST_UNKNOWN", // want `elements fit on 3 lines`
+		struct{ A, B string }{"a", "b"},
 	)
 }
 

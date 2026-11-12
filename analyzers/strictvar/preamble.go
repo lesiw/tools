@@ -379,7 +379,8 @@ func (f *file) preambleEdits(units []ast.Stmt) []analysis.TextEdit {
 				stmt.Pos(), f.lineEnd(stmt.End()),
 			})
 			tail := f.lineText(span{node.TokPos + 2, node.End()})
-			lines = append(lines,
+			lines = append(
+				lines,
 				f.text(node.Pos(), node.TokPos)+"= "+
 					strings.TrimLeft(tail, " \t"),
 			)
