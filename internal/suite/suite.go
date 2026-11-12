@@ -71,6 +71,7 @@ import (
 	"lesiw.io/tools/analyzers/dupcase"
 	"lesiw.io/tools/analyzers/dupimport"
 	"lesiw.io/tools/analyzers/duplarg"
+	"lesiw.io/tools/analyzers/earlyreturn"
 	"lesiw.io/tools/analyzers/elseif"
 	"lesiw.io/tools/analyzers/emptydecl"
 	"lesiw.io/tools/analyzers/emptyfallthrough"
@@ -162,6 +163,7 @@ var (
 		dupcase.Analyzer,
 		dupimport.Analyzer,
 		duplarg.Analyzer,
+		earlyreturn.Analyzer,
 		elseif.Analyzer,
 		emptydecl.Analyzer,
 		emptyfallthrough.Analyzer,
