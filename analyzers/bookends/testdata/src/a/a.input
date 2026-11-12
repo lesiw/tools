@@ -1,12 +1,13 @@
 package a
 
 import (
+	"context"
 	"image/color"
 	"log/slog"
 	"net/http"
 )
 
-type image struct{ Alpha, Beta string }
+type item struct{ ID, Kind string }
 
 type pair struct {
 	a int
@@ -85,26 +86,26 @@ var wideTable = []row{{1, 2, 3, 4, 5, 6, 7, 8}, { // want `table mixes one-line 
 
 func splitByWidth(w http.ResponseWriter, err error) {
 	registerFourArgsWithString( // want `elements fit on 2 lines`
-		w, http.StatusNotFound, "MANIFEST_UNKNOWN", err.Error(),
+		w, http.StatusNotFound, "some-kind", err.Error(),
 	)
 }
 
 func grouped(w http.ResponseWriter, err error) {
 	registerFourArgsWithString(w, http.StatusNotFound,
-		"MANIFEST_UNKNOWN",
+		"some-kind",
 		err.Error(),
 	)
 }
 
-func keyedArgs(log *slog.Logger, img image, err error) {
+func keyedArgs(log *slog.Logger, item item, err error) {
 	log.Warn( // want `each key and its value take a line`
-		"true-up pull failed", "repo",
-		img.Alpha, "tag", img.Beta, "err", err,
+		"fetch failed", "id",
+		item.ID, "kind", item.Kind, "err", err,
 	)
 }
 
 func longLiteral(w http.ResponseWriter, err error) {
-	registerLongArgs(w, http.StatusNotFound, "MANIFEST_UNKNOWN", // want `elements fit on 3 lines`
+	registerLongArgs(w, http.StatusNotFound, "some-kind", // want `elements fit on 3 lines`
 		struct{ A, B string }{"a", "b"})
 }
 
@@ -112,13 +113,40 @@ func registerLongArgs(w http.ResponseWriter, status int, msg string, v any) {}
 
 func nestedLists(w http.ResponseWriter, err error) {
 	registerLongArgs(
-		w, http.StatusNotFound, "MANIFEST_UNKNOWN", inner( // want `elements fit on 2 lines`
+		w, http.StatusNotFound, "some-kind", inner( // want `elements fit on 2 lines`
 			"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"),
 	)
 }
 
 func trailingComments() {
 	registerThreeStrings("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" /* one */ /* two */, "cccc") // want `elements fit on 3 lines`
+}
+
+func pullUp() {
+	registerFunc(
+		func() { // want `element fits on the opener's line`
+			registerThreeStrings("aaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+			registerThreeStrings("bbbbbbbbbbbbbbbbbbbbbbbbbbbbb")
+		},
+	)
+}
+
+func registerFunc(fn func()) {}
+
+var wideKeyed = payloadUnderTest{Alpha: "value-one", Beta: "value-two", Gamma: "value-three", Delta: "value-four", Epsilon: "value-five"} // want `keyed literal runs past the width`
+
+func overWideGroup(w http.ResponseWriter, err error) {
+	registerLongArgs( // want `elements fit on 3 lines`
+		w, http.StatusNotFound,
+		"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+	)
+}
+
+func keyedContext(log *slog.Logger, ctx context.Context) {
+	log.InfoContext( // want `each key and its value take a line`
+		ctx, "fetch failed",
+		"id", "a", "kind", "b", "err", nil,
+	)
 }
 
 func headerList(w http.ResponseWriter, err error) {
@@ -128,9 +156,10 @@ func headerList(w http.ResponseWriter, err error) {
 }
 
 func rawString() {
-	registerThreeStrings( // want `elements fit on 2 lines`
+	registerThreeStrings(
 		"aaaa", "bbbb", "cccc", "dddd", "eeee", "ffff", "gggg", "hhhh", `x
-y`)
+y`,
+	)
 }
 
 func inner(a, b string) string { return "" }
@@ -165,7 +194,7 @@ var keyed = payloadUnderTest{
 }
 
 type payloadUnderTest struct {
-	Alpha, Beta, Gamma, Delta string
+	Alpha, Beta, Gamma, Delta, Epsilon string
 }
 
 var tableRows = []row{

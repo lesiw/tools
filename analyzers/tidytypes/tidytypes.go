@@ -82,7 +82,8 @@ func reportRedundantTypes(pass *analysis.Pass, fields []*ast.Field, kind string,
 			SuggestedFixes: []analysis.SuggestedFix{{
 				Message: "remove redundant type",
 				TextEdits: createUnnamedFieldFix(
-					fields, allFields, allRedundantGroups,
+					fields, allFields,
+					allRedundantGroups,
 				),
 			}},
 		})

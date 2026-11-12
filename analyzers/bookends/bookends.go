@@ -6,7 +6,7 @@
 // different columns. The fix breaks the line before the closer and leaves the
 // printer to place it.
 //
-// The package also reports three shapes that depend on the same braces. A
+// The package also reports four shapes that depend on the same braces. A
 // literal whose type is elided ends its first line with the opening brace, so
 // every row starts at one column. A table, a literal whose elements are elided
 // literals, is rewritten as one edit: when a row does not fit, every row goes
@@ -15,18 +15,19 @@
 // across two lines to carry one line of elements wastes the indentation. So is
 // a list with a line past the width, which cannot stand as written. The layout
 // is the one with the least raggedness, the sum of the squared space left at
-// the end of each line, so elements spread by width rather than by count and a
-// short element joins a long one instead of taking a line of its own.
+// the end of each line, so elements spread by width: a short element joins a
+// long one.
 //
 // Two indented lines within the width are a group the author drew. Nothing but
 // the layout says so, and a rule that rewrote the group would erase the only
 // place the grouping is written down, so the list is left alone.
 //
 // The list keeps one element per line when its elements are keyed, are
-// composite literals, are names, or are a literal's constants, and when a
-// comment sits among them. A slog call is the exception to the count: its
-// trailing arguments are key-value pairs, so each key keeps the value it
-// labels on one line.
+// composite literals, or are a literal's constants, and when a comment sits
+// among them. A slog call is the exception to the count: its trailing
+// arguments are key-value pairs, so each key keeps the value it labels on one
+// line. A keyed literal on one line past the width takes one key per line,
+// which is the shape it takes once it no longer fits.
 package bookends
 
 import (
@@ -115,6 +116,8 @@ func check(pass *analysis.Pass, file *ast.File, src []byte) {
 			reportTable(pass, l, src, file, p)
 		case p.opener:
 			reportOpener(pass, l, p)
+		case overWideKeyed(l, file, p):
+			reportExpand(pass, l, p)
 		default:
 			// Pack measures the source, so it runs before the closer
 			// rewrites the break it would measure. A pack moves the
@@ -586,34 +589,89 @@ func leadingSpace(src []byte, start int) []byte {
 	return src[start:end]
 }
 
-// reportPack reports a list whose elements are not laid out the way the width
-// asks for. Three shapes are reported. A list holding one indented line is
-// packed, since indenting a list across two lines to carry one line of
-// elements wastes the indentation. A key-value list takes one pair per line. A
-// list with a line past the width is packed, since it cannot stand as written.
-// A list holding two or more indented lines is otherwise a group the author
-// drew, and the rule leaves the group alone.
+// overWideKeyed reports whether the literal holds keys and sits on one line
+// that runs past the width, which is the shape that takes one key per line.
+func overWideKeyed(l *layout, file *ast.File, p pair) bool {
+	if p.lit == nil || !keyed(p.elts) {
+		return false
+	}
+	if l.line(p.open) != l.line(p.close) {
+		return false // the literal already holds more than one line
+	}
+	if len(commentsIn(file, p.open, p.close)) > 0 {
+		return false // a comment would be moved by the rewrite
+	}
+	return !linelen.CheckLine(l.lineText(p.open))
+}
+
+// reportExpand reports a keyed literal that runs past the width and suggests
+// one key per line, which is the shape a keyed literal takes once it no longer
+// fits.
+func reportExpand(pass *analysis.Pass, l *layout, p pair) {
+	var (
+		indent = l.indentAt(p.open)
+		inner  = append(slices.Clone(indent), '\t')
+		out    []byte
+	)
+	out = append(out, "{\n"...)
+	for _, e := range p.elts {
+		text, ok := render(pass, e)
+		if !ok {
+			return
+		}
+		out = append(out, inner...)
+		out = append(out, text...)
+		out = append(out, ",\n"...)
+	}
+	out = append(out, indent...)
+	out = append(out, '}')
+	pass.Report(analysis.Diagnostic{
+		Pos:     p.open,
+		End:     p.close + 1,
+		Message: "keyed literal runs past the width",
+		SuggestedFixes: []analysis.SuggestedFix{{
+			Message: "Put one key per line",
+			TextEdits: []analysis.TextEdit{{
+				Pos:     p.open,
+				End:     p.close + 1,
+				NewText: out,
+			}},
+		}},
+	})
+}
+
+// reportPack reports a list whose elements are not laid out as the width
+// allows.
 func reportPack(pass *analysis.Pass, l *layout, file *ast.File, p pair) bool {
 	f, indented, ok := packPlan(pass, l, file, p)
 	if !ok {
 		return false
 	}
-	msg := fmt.Sprintf("elements fit on %d lines", f.lines)
-	if f.keyed {
+	var msg, fixMsg string
+	switch {
+	case f.pulled:
+		msg = "element fits on the opener's line"
+		fixMsg = "Pull the element up"
+	case f.keyed:
 		msg = "each key and its value take a line"
-	} else if cur := indented; cur > f.lines {
-		msg += fmt.Sprintf(", not %d", cur)
-	}
-	fixMsg := "Pack the elements"
-	if f.keyed {
 		fixMsg = "Split the key-value arguments"
+	default:
+		msg = fmt.Sprintf("elements fit on %d lines", f.lines)
+		if cur := indented; cur > f.lines {
+			msg += fmt.Sprintf(", not %d", cur)
+		}
+		fixMsg = "Pack the elements"
 	}
 	// The edit starts just after the opener, so a comment on that line is
 	// replaced by it and is written back first.
 	text := openerComments(l, file, p)
 	text = append(text, f.text...)
+	pos := p.open
+	if f.pulled {
+		pos = f.pos
+	}
 	pass.Report(analysis.Diagnostic{
-		Pos:     p.open,
+		Pos:     pos,
 		Message: msg,
 		SuggestedFixes: []analysis.SuggestedFix{{
 			Message: fixMsg,
@@ -631,7 +689,16 @@ func reportPack(pass *analysis.Pass, l *layout, file *ast.File, p pair) bool {
 // number of lines the list holds now, and whether the rule would write one. A
 // list the pair around it lays out is not this rule's to pack.
 func packPlan(pass *analysis.Pass, l *layout, file *ast.File, p pair) (layoutFill, int, bool) {
-	if len(p.elts) < 2 || p.inner || !packable(pass, l, p) {
+	if p.inner || !packable(pass, p) {
+		return layoutFill{}, 0, false
+	}
+	// A list whose one element line holds a single element written across
+	// lines moves that element up to the opener's line, which holds one line
+	// at an indent level either way and takes fewer lines.
+	if up, ok := pullUp(l, file, p); ok && l.elementLines(p) == 1 {
+		return up, 1, true
+	}
+	if len(p.elts) < 2 {
 		return layoutFill{}, 0, false
 	}
 	// A comment inside the list stops the join rule, so a list that would
@@ -657,22 +724,100 @@ func packPlan(pass *analysis.Pass, l *layout, file *ast.File, p pair) (layoutFil
 	return f, indented, true
 }
 
-// indented returns the number of lines the list holds under its opener's line.
-func (l *layout) indented(p pair) int {
-	indented := len(breaks(l, p)) + 1 // spanning ends count as a line
-	if l.line(p.open) == l.line(p.elts[0].Pos()) {
-		indented-- // the first line is the opener's
+// pullUp returns the layout that moves a lone element up to the opener's line,
+// for a list whose one element line holds a single element written across
+// lines. Both layouts hold one line at an indent level, so the rule prefers
+// the one with fewer lines.
+func pullUp(l *layout, file *ast.File, p pair) (layoutFill, bool) {
+	if len(p.elts) == 0 {
+		return layoutFill{}, false
 	}
-	return indented
+	var (
+		open = l.line(p.open)
+		line = l.line(p.elts[0].Pos())
+	)
+	if open == line {
+		return layoutFill{}, false // the element is on the opener's line
+	}
+	if !l.beginsLine(p.close) {
+		return layoutFill{}, false // the closer shares the element's last line
+	}
+	// The element line holds one element, and that element spans lines.
+	var on []ast.Expr
+	for _, e := range p.elts {
+		if l.line(e.Pos()) == line {
+			on = append(on, e)
+		}
+	}
+	if len(on) != 1 || l.line(on[0].Pos()) == l.line(on[0].End()) {
+		return layoutFill{}, false
+	}
+	// A comment either side of the element is not part of its text, so the
+	// edit would drop it.
+	ahead := commentsIn(file, p.open, on[0].Pos())
+	behind := commentsIn(file, on[0].End(), p.close)
+	if len(ahead) > 0 || len(behind) > 0 {
+		return layoutFill{}, false
+	}
+	text := l.src[int(on[0].Pos())-l.base : int(on[0].End())-l.base]
+	if p.spread {
+		text = append(slices.Clone(text), "..."...)
+	}
+	head := l.src[l.lineStart(p.open) : int(p.open)-l.base+1]
+	if !linelen.CheckLine(append(slices.Clone(head), firstLine(text)...)) {
+		return layoutFill{}, false // the pulled line would run past the width
+	}
+	return layoutFill{
+		text:   slices.Clone(text),
+		lines:  l.indented(p),
+		pulled: true,
+		pos:    on[0].Pos(),
+	}, true
+}
+
+// elementLines returns the number of lines below the opener's line on which an
+// element starts.
+func (l *layout) elementLines(p pair) int {
+	var (
+		open = l.line(p.open)
+		seen = make(map[int]struct{}, len(p.elts))
+	)
+	for _, e := range p.elts {
+		if line := l.line(e.Pos()); line != open {
+			seen[line] = struct{}{}
+		}
+	}
+	return len(seen)
+}
+
+// indented returns the number of lines the list holds under its opener's line.
+// A line an element spans counts, so a list whose argument is a func literal
+// holds every line the literal holds.
+func (l *layout) indented(p pair) int {
+	var (
+		open = l.line(p.open)
+		cl   = l.line(p.close)
+		n    = cl - open - 1
+	)
+	if !l.beginsLine(p.close) {
+		n++ // the closer shares the last element's line, which counts
+	}
+	return max(n, 0)
 }
 
 // wanted reports whether the list's layout is not the one the rule asks for.
-// One indented line is the wrap the width made. Two or more are a group the
-// author drew, and the rule leaves the group alone. A key-value list is the
+// One indented line is the width's wrap. Two or more are a group the author
+// drew, and the rule leaves the group alone. A key-value list is the
 // exception, since the pairs are the structure, and so is a line the width
 // does not allow, since the group cannot stand as written.
 func wanted(l *layout, file *ast.File, p pair, f layoutFill, indented int) bool {
 	if indented != 1 && !f.keyed && !overWide(l, file, p) {
+		return false
+	}
+	// An element that spans lines and sits alone on its line is the fault
+	// again, one level down: the line holds nothing but an opener. A list
+	// with no line to share has no layout to offer.
+	if f.alone && !f.shared && !f.keyed {
 		return false
 	}
 	// The fill starts every line at the element indent, so a list whose
@@ -685,7 +830,7 @@ func wanted(l *layout, file *ast.File, p pair, f layoutFill, indented int) bool 
 
 // packable reports whether the list is one this rule may pack: the elements
 // are not keyed, are not names, and are not a literal's rows or constants.
-func packable(pass *analysis.Pass, l *layout, p pair) bool {
+func packable(pass *analysis.Pass, p pair) bool {
 	// A literal's elements are its rows or its column, and either is read
 	// down; a call's arguments are neither, so both guards apply only to a
 	// literal.
@@ -693,6 +838,27 @@ func packable(pass *analysis.Pass, l *layout, p pair) bool {
 		return false
 	}
 	return !keyed(p.elts) && !names(p.elts)
+}
+
+// names reports whether every element is a name. A list of names is a catalog,
+// and the column of names is the order a reader scans it in.
+func names(elts []ast.Expr) bool {
+	for _, e := range elts {
+		switch e := e.(type) {
+		case *ast.Ident:
+		case *ast.SelectorExpr:
+			if _, ok := e.X.(*ast.Ident); !ok {
+				return false
+			}
+		case *ast.CallExpr:
+			if len(e.Args) != 0 || !names([]ast.Expr{e.Fun}) {
+				return false
+			}
+		default:
+			return false
+		}
+	}
+	return true
 }
 
 // constant reports whether every element is a constant. A table of names,
@@ -713,29 +879,6 @@ func constant(pass *analysis.Pass, elts []ast.Expr) bool {
 func rows(elts []ast.Expr) bool {
 	for _, e := range elts {
 		if _, ok := e.(*ast.CompositeLit); !ok {
-			return false
-		}
-	}
-	return true
-}
-
-// names reports whether every element is a name. A list of names is a catalog,
-// and the column of names is the order a reader scans it in.
-func names(elts []ast.Expr) bool {
-	for _, e := range elts {
-		switch e := e.(type) {
-		case *ast.Ident:
-		case *ast.SelectorExpr:
-			if _, ok := e.X.(*ast.Ident); !ok {
-				return false
-			}
-		case *ast.CallExpr:
-			// A constructor with no arguments stands in for a name,
-			// as errors.New does: one entry, one line.
-			if len(e.Args) != 0 || !names([]ast.Expr{e.Fun}) {
-				return false
-			}
-		default:
 			return false
 		}
 	}
@@ -834,7 +977,11 @@ type layoutFill struct {
 	text   []byte
 	breaks []int // breaks[i] is the index of the first element on line i+1
 	lines  int
-	keyed  bool // the elements are key-value pairs, which take a line each
+	keyed  bool      // the elements are key-value pairs, one per line
+	shared bool      // some line holds two elements or more
+	alone  bool      // some line holds one element that spans lines
+	pulled bool      // the element moved up to the opener's line
+	pos    token.Pos // where the diagnostic anchors
 }
 
 // overWide reports whether a line of the list's own layout is longer than the
@@ -898,11 +1045,10 @@ func inSignature(file *ast.File, pos token.Pos) bool {
 
 // fill returns the layout of the element list with the least raggedness: the
 // sum of the squared space left at the end of each line, which is the line
-// breaker TeX uses. Elements spread across lines by width rather than by
-// count, so a short element joins a long one instead of taking a line of its
-// own. A layout holds two lines or more, since a list that fits on one line is
-// the join rule's work, and every line must fit the width; when none does,
-// fill reports no layout.
+// breaker TeX uses. Elements spread across lines by width, so a short element
+// joins a long one. A layout holds two lines or more, since a list that fits
+// on one line is the join rule's work, and every line must fit the width; when
+// none does, fill reports no layout.
 //
 // Elements are grouped first. A key-value argument list groups each key with
 // its value, and the groups take a line each, so a key never parts from the
@@ -918,6 +1064,7 @@ func fill(pass *analysis.Pass, l *layout, file *ast.File, p pair) (layoutFill, b
 		texts:       make([][]byte, len(p.elts)),
 		starts:      make([]int, len(p.elts)),
 		solo:        make([]bool, len(p.elts)),
+		spans:       make([]bool, len(p.elts)),
 		trail:       make([][]byte, len(p.elts)),
 		spread:      p.spread,
 		limit:       linelen.Config.Len,
@@ -930,6 +1077,7 @@ func fill(pass *analysis.Pass, l *layout, file *ast.File, p pair) (layoutFill, b
 			// An element that spans lines keeps the text the author
 			// wrote, comments included, and takes a line of its own.
 			pk.solo[i] = true
+			pk.spans[i] = true
 			pk.texts[i] = l.src[int(e.Pos())-l.base : int(e.End())-l.base]
 			continue
 		}
@@ -1011,6 +1159,8 @@ func keyedArgs(pass *analysis.Pass, call *ast.CallExpr) (starts []int, ok bool) 
 	switch fn.Name() {
 	case "Debug", "Info", "Warn", "Error", "Group":
 		head = 1
+	case "DebugContext", "InfoContext", "WarnContext", "ErrorContext":
+		head = 2
 	case "Log":
 		head = 3
 	case "With":
@@ -1034,7 +1184,8 @@ type packer struct {
 	texts       [][]byte
 	starts      []int    // the first element of each group; starts[0] is 0
 	closeIndent []byte   // the indent the closer sits at
-	solo        []bool   // the element spans lines, so it takes a line alone
+	solo        []bool   // the element takes a line of its own
+	spans       []bool   // the element is written across lines
 	trail       [][]byte // the comment that follows an element on its line
 	oneGroup    bool     // each group takes a line of its own
 	spread      bool     // the last element is followed by an ellipsis
@@ -1156,9 +1307,10 @@ func (pk *packer) cheapest() (next []int, ok bool) {
 // and each ending with a comma but the last, whose comma the source keeps.
 func (pk *packer) layout(next []int) layoutFill {
 	var (
-		out    []byte
-		breaks []int
-		n      = len(pk.starts)
+		out           []byte
+		breaks        []int
+		shared, alone bool
+		n             = len(pk.starts)
 	)
 	for i := 0; i < n; {
 		var (
@@ -1172,12 +1324,24 @@ func (pk *packer) layout(next []int) layoutFill {
 		if j < n {
 			breaks = append(breaks, pk.starts[j])
 		}
+		if j > i+1 {
+			shared = true
+		}
+		if j == i+1 && pk.spans[pk.starts[i]] {
+			alone = true
+		}
 		i = j
 	}
 	// The closer takes a line of its own at the opener's indent.
 	out = append(out, '\n')
 	out = append(out, pk.closeIndent...)
-	return layoutFill{text: out, breaks: breaks, lines: len(breaks) + 1}
+	return layoutFill{
+		text:   out,
+		breaks: breaks,
+		lines:  len(breaks) + 1,
+		shared: shared,
+		alone:  alone,
+	}
 }
 
 // breaks returns the element index at which each line of the list's current

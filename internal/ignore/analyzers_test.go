@@ -170,7 +170,8 @@ var (
 	names = []*analysis.Analyzer{publicNames, numberedNames}
 	short = []*analysis.Analyzer{shortNames, underscoreNames}
 	all   = []*analysis.Analyzer{
-		publicNames, numberedNames, shortNames, underscoreNames,
+		publicNames, numberedNames,
+		shortNames, underscoreNames,
 	}
 	todos = []*analysis.Analyzer{todoAnalyzer}
 )

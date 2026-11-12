@@ -23,9 +23,9 @@ fix moves a bracket or a line break rather than an element:
   element written across lines keeps its text and takes a line of its own, and
   a list inside an `if`, `for`, `range`, or `switch` header is left alone. The
   list keeps one element per line when its elements are keyed, are composite
-  literals, are names, or are a literal's constants, and when a comment sits
-  among them. A `slog` call is the exception: its trailing arguments are
-  key-value pairs, so each key keeps the value it labels.
+  literals, or are a literal's constants, and when a comment sits among them.
+  A `slog` call is the exception: its trailing arguments are key-value pairs,
+  so each key keeps the value it labels.
 
 ## Usage
 
