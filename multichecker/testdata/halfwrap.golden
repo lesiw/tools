@@ -8,8 +8,9 @@ var (
 )
 
 func g() {
-	someFunc(someVeryLongArgumentName,
-		moreArguments, andMoreArguments, andEvenMoreArguments,
+	someFunc(
+		someVeryLongArgumentName, moreArguments,
+		andMoreArguments, andEvenMoreArguments,
 	)
 
 	short(1, 2)

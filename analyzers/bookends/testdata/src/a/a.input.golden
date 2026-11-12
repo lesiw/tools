@@ -2,9 +2,12 @@ package a
 
 import (
 	"context"
+	"fmt"
 	"image/color"
+	"io"
 	"log/slog"
 	"net/http"
+	"strings"
 )
 
 type item struct{ ID, Kind string }
@@ -173,9 +176,9 @@ func registerFunc(fn func()) {}
 var wideKeyed = payloadUnderTest{
 	Alpha:   "value-one",
 	Beta:    "value-two",
-	Gamma: "value-three",
-	Delta: "value-four",
-	Epsilon:  "value-five",
+	Gamma:   "value-three",
+	Delta:   "value-four",
+	Epsilon: "value-five",
 } // want `keyed literal runs past the width`
 
 func overWideGroup(w http.ResponseWriter, err error) {
@@ -234,8 +237,8 @@ func registerFourArgsWithString(w http.ResponseWriter, status int, msg, err stri
 }
 
 var keyed = payloadUnderTest{
-	Alpha:   "value-one",
-	Beta:    "value-two",
+	Alpha: "value-one",
+	Beta:  "value-two",
 	Gamma: "value-three",
 	Delta: "value-four",
 }
@@ -269,26 +272,6 @@ var abuttingComment = []triple{
 	{1, 2,
 		3},
 	{4, 5, 6} /* keep me */}
-
-func headComment(w http.ResponseWriter, err error) {
-	registerFourArgsWithString(
-		// a note
-		w,
-		http.StatusInternalServerError,
-		"err-one",
-		err.Error(),
-	)
-}
-
-func commentedList(w http.ResponseWriter, err error) {
-	registerFourArgsWithString(
-		w,
-		// a note
-		http.StatusInternalServerError,
-		"err-one",
-		err.Error(),
-	)
-}
 
 func balanced(w http.ResponseWriter, err error) {
 	registerFiveLongArgs( // want `elements fit on 3 lines`
@@ -327,13 +310,137 @@ func wrap(a any) any { return a }
 
 func pad(s string) string { return s }
 
+var rowLine = []pairOfInts{
+	{1, 2}, {3, 4}, {5, 6}, {7, 8}, {9, 10}, {11, 12}, {13, 14}, {15, 16}, {17, 18}, {19, 20},
+}
+
+type pairOfInts struct{ a, b int }
+
+var numbers = []float64{
+	1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5, 10.5, 11.5, 12.5, 13.5, 14.5, 15.5, 16.5, 17.5,
+}
+
+func pullUpComment() {
+	registerFunc(
+		func() {
+			registerFunc(nil)
+			registerFunc(nil)
+		},
+		// a note
+	)
+}
+
+func commentInElement() {
+	registerThreeStrings(inner("aa", /* one */ "bb"),
+		"cccccccc", "dddddddd",
+	)
+}
+
+func pullSpread() []int {
+	return appendIt(makeSlice( // want `element fits on the opener's line`
+		1, 2,
+	)...)
+}
+
+func appendIt(xs ...int) []int { return xs }
+
+func makeSlice(a, b int) []int { return []int{a, b} }
+
+func commentComma(g func(int, int) int) int {
+	return g(1,
+		2, /* one, two */
+	) // want `closer is not at the indent of its opener`
+}
+
+func nestedPack(w io.Writer, found int, desc, text string) {
+	fmt.Fprintf(
+		w, "--- %d %s\n%s\n---\n", found, desc,
+		strings.Join(strings.Fields(text), "\n"),
+	) // want `elements fit on 2 lines`
+}
+
+var commentRow = []eightFields{ /* first */ { // want `table mixes one-line and multi-line rows`
+	1,
+	2,
+	3,
+	4,
+	5,
+	6,
+	7,
+	8,
+}, {
+	1,
+	2,
+	3,
+	4,
+	5,
+	6,
+	7,
+	8,
+}}
+
+type eightFields struct{ a, b, c, d, e, f, g, h int }
+
+var emptyFirstRow = []eightFields{ // a note
+	{},
+	{1, 2, 3, 4,
+		5, 6, 7, 8},
+}
+
+var commentAfterRow = []eightFields{{1, 2, 3, 4, 5, 6, 7, 8}, /* row */ {
+	1, 2, 3, 4,
+	5, 6, 7, 8},
+}
+
 func nameList() {
-	registerFourErrors(
-		http.ErrBodyReadAfterClose,
-		http.ErrMissingBoundary,
-		http.ErrSkipAltProtocol,
-		http.ErrHandlerTimeout,
+	registerFourErrors( // want `elements fit on 2 lines`
+		http.ErrBodyReadAfterClose, http.ErrMissingBoundary,
+		http.ErrSkipAltProtocol, http.ErrHandlerTimeout,
 	)
 }
 
 func registerFourErrors(a, b, c, d error) {}
+
+var doneEmptyRow = []pair{{}, {
+	1,
+	2,
+}}
+
+func openerShares(w http.ResponseWriter, err error) {
+	registerFourArgsWithString(
+		w,
+		http.StatusNotFound, // want `elements fit on 3 lines`
+		"some-kind", err.Error(),
+	)
+}
+
+var singleWideRow = []row{{1111111, 2222222, 3333333, 4444444, 5555555, 6666666, 7777777, 8888888}}
+
+var wideSingle = []row{{
+	1, 2, 3, 4, // want `opening bracket shares a line with its first element`
+	5, 6, 7, 8,
+}} // want `closer is not at the indent of its opener`
+
+func pullUpCloser() {
+	registerFunc(
+		func() {
+			registerThreeStrings("aaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+			registerThreeStrings("bbbbbbbbbbbbbbbbbbbbbbbbbbbbb")
+		},
+	) // want `closer is not at the indent of its opener`
+}
+
+func closerShares(g func(int, int) int) int {
+	return g(
+		1,
+		2,
+	) // want `closer is not at the indent of its opener`
+}
+
+func keyedGrouped(log *slog.Logger) {
+	log.Warn( // want `each key and its value take a line`
+		"fetch failed",
+		"id", 1,
+		"kind", 2,
+	)
+}

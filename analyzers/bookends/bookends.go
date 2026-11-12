@@ -7,27 +7,27 @@
 // printer to place it.
 //
 // The package also reports four shapes that depend on the same braces. A
-// literal whose type is elided ends its first line with the opening brace, so
-// every row starts at one column. A table, a literal whose elements are elided
-// literals, is rewritten as one edit: when a row does not fit, every row goes
-// on a line of its own, and each row's braces go on the lines their elements
-// are on. A list that holds a single indented line is packed: indenting a list
-// across two lines to carry one line of elements wastes the indentation. So is
-// a list with a line past the width, which cannot stand as written. The layout
-// is the one with the least raggedness, the sum of the squared space left at
-// the end of each line, so elements spread by width: a short element joins a
-// long one.
+// literal whose type is elided shares its first line with its opening brace,
+// so its elements start at different columns. A table, a literal whose
+// elements are elided literals, is rewritten as one edit: when a row does not
+// fit, every row goes on a line of its own, and each row's braces go on the
+// lines their elements are on. A list with a single indented line is packed:
+// indenting a list across two lines to carry one line of elements wastes the
+// indentation. So is a list with a line past the width, which cannot stand as
+// written. A keyed literal on one line past the width takes one key per line,
+// which is the shape it takes once it no longer fits. The layout is the one
+// with the least raggedness, the sum of the squared space left at the end of
+// each line, so elements spread by width: a short element joins a long one.
 //
-// Two indented lines within the width are a group the author drew. Nothing but
-// the layout says so, and a rule that rewrote the group would erase the only
-// place the grouping is written down, so the list is left alone.
+// Two indented lines within the width are a grouping the author chose. The
+// layout is the only place it is written down, so a rewrite would erase it,
+// and the list is left alone.
 //
-// The list keeps one element per line when its elements are keyed, are
-// composite literals, or are a literal's constants, and when a comment sits
+// The list keeps one element per line when its elements are keyed, when a
+// literal's elements are its rows or its constants, and when a comment sits
 // among them. A slog call is the exception to the count: its trailing
 // arguments are key-value pairs, so each key keeps the value it labels on one
-// line. A keyed literal on one line past the width takes one key per line,
-// which is the shape it takes once it no longer fits.
+// line.
 package bookends
 
 import (
@@ -66,31 +66,6 @@ func run(pass *analysis.Pass) (any, error) {
 	return nil, nil
 }
 
-// markInner marks each pair that an outer pair lays out. Packing the inner
-// pair first would leave the outer line over the width with no rule left to
-// fix it, so the outermost pair is decided first and a pair with no layout to
-// write lays out nothing.
-func markInner(pass *analysis.Pass, l *layout, file *ast.File, pairs []pair) {
-	for i := range slices.Backward(pairs) {
-		if pairs[i].inner {
-			continue
-		}
-		if _, _, ok := packPlan(pass, l, file, pairs[i]); !ok {
-			continue
-		}
-		for j := range pairs {
-			if contains(pairs[i], pairs[j]) {
-				pairs[j].inner = true
-			}
-		}
-	}
-}
-
-// contains reports whether inner sits inside outer.
-func contains(outer, inner pair) bool {
-	return outer.open < inner.open && inner.close < outer.close
-}
-
 func check(pass *analysis.Pass, file *ast.File, src []byte) {
 	var (
 		l       = newLayout(pass.Fset.File(file.FileStart), src)
@@ -119,15 +94,38 @@ func check(pass *analysis.Pass, file *ast.File, src []byte) {
 		case overWideKeyed(l, file, p):
 			reportExpand(pass, l, p)
 		default:
-			// Pack measures the source, so it runs before the closer
-			// rewrites the break it would measure. A pack moves the
-			// closer itself, so the closer rule only runs when the
-			// pack leaves the list alone.
+			// A pack moves the closer itself, so the closer rule
+			// runs only when the pack leaves the list alone.
 			if !reportPack(pass, l, file, p) {
 				reportCloser(pass, l, src, p)
 			}
 		}
 	}
+}
+
+// markInner marks each pair that an outer pair lays out. Packing the inner
+// pair first would leave the outer line over the width with no rule left to
+// fix it, so the outermost pair is decided first and a pair with no layout to
+// write lays out nothing.
+func markInner(pass *analysis.Pass, l *layout, file *ast.File, pairs []pair) {
+	for i := range slices.Backward(pairs) {
+		if pairs[i].inner {
+			continue
+		}
+		if _, _, ok := packPlan(pass, l, file, pairs[i]); !ok {
+			continue
+		}
+		for j := range pairs {
+			if contains(pairs[i], pairs[j]) {
+				pairs[j].inner = true
+			}
+		}
+	}
+}
+
+// contains reports whether inner sits inside outer.
+func contains(outer, inner pair) bool {
+	return outer.open < inner.open && inner.close < outer.close
 }
 
 // collectPairs returns every bracket pair the file holds.
@@ -171,8 +169,8 @@ func inTable(tables []pair, pos token.Pos) bool {
 }
 
 // reportTable reports a table that does not read as a table. A comment inside
-// it would not survive a rebuild from the elements, so the table is reported
-// and left alone.
+// it would not survive a rebuild from the elements, so the table is left
+// alone.
 func reportTable(pass *analysis.Pass, l *layout, src []byte, file *ast.File, p pair) {
 	if tableDone(l, p.lit) {
 		return // the table already reads as a table
@@ -262,7 +260,7 @@ func reportCloser(pass *analysis.Pass, l *layout, src []byte, p pair) {
 }
 
 // commaBeforeComment reports whether a comma comes before the first comment in
-// tail. A comma inside a comment is the comment's text, not the list's.
+// tail. A comma inside a comment is part of its text.
 func commaBeforeComment(tail string) bool {
 	for i := 0; i < len(tail); i++ {
 		if tail[i] == ',' {
@@ -380,9 +378,8 @@ func tableDone(l *layout, lit *ast.CompositeLit) bool {
 	return true
 }
 
-// trailingComments returns the comments that sit on the table's opening line
-// ahead of the first row. The rebuild replaces that line, so they are written
-// back explicitly.
+// trailingComments returns the comments that sit on the table's opening line.
+// The rebuild replaces that line, so they are written back explicitly.
 func trailingComments(l *layout, file *ast.File, lit *ast.CompositeLit) (out []*ast.Comment) {
 	open := l.line(lit.Lbrace)
 	for _, c := range commentsIn(file, lit.Lbrace, lit.Rbrace) {
@@ -404,18 +401,38 @@ func tableText(pass *analysis.Pass, l *layout, src []byte, lit *ast.CompositeLit
 		indent   = l.indentAt(lit.Lbrace)
 		inner    = append(slices.Clone(indent), '\t')
 		comments = trailingComments(l, file, lit)
-		written  bool
+		written  = make(map[bool]struct{}, 2)
 	)
-	// A comment ahead of the first row is written back after that row's
-	// brace, which is where the author put it.
-	writeComments := func() {
-		if written {
+	// A block comment stays before the row's brace, where the source put
+	// it, since a line comment cannot sit there and still allow the brace
+	// on the opener's line.
+	writeComments := func(isBlock bool) {
+		if _, ok := written[isBlock]; ok {
 			return
 		}
-		written = true
+		written[isBlock] = struct{}{}
 		for _, c := range comments {
+			text := src[int(c.Pos())-l.base : int(c.End())-l.base]
+			if strings.HasPrefix(string(text), "/*") != isBlock {
+				continue
+			}
 			b.WriteString(" ")
-			b.Write(src[int(c.Pos())-l.base : int(c.End())-l.base])
+			b.Write(text)
+		}
+	}
+	// The rebuild writes a block comment before the first row's brace and a
+	// line comment after it. An empty row has no brace to hang either on, and
+	// a block comment past that brace would move across the row it labels.
+	first := lit.Elts[0].(*ast.CompositeLit)
+	if len(first.Elts) == 0 && len(comments) > 0 {
+		return nil, false
+	}
+	for _, c := range comments {
+		if c.Pos() <= first.Lbrace {
+			continue
+		}
+		if !bytes.HasPrefix(src[int(c.Pos())-l.base:], []byte("//")) {
+			return nil, false
 		}
 	}
 	b.Write(head)
@@ -426,10 +443,11 @@ func tableText(pass *analysis.Pass, l *layout, src []byte, lit *ast.CompositeLit
 			// An empty row cannot be expanded, so it keeps its
 			// braces on the line they start on.
 			b.WriteString("{}")
-			writeComments()
+			writeComments(false)
 		} else {
+			writeComments(true)
 			b.WriteString("{")
-			writeComments()
+			writeComments(false)
 			b.WriteString("\n")
 			for _, e := range row.Elts {
 				var buf bytes.Buffer
@@ -452,10 +470,10 @@ func tableText(pass *analysis.Pass, l *layout, src []byte, lit *ast.CompositeLit
 	return []byte(b.String()), true
 }
 
-// openerPair returns the pair for a literal whose type is elided and which
-// spans more than one line. A row of a table wears its opening brace at the
-// end of a line, so every row starts at the same column. A literal that names
-// its type keeps its first element on the line the type is on.
+// openerPair returns the pair for a literal whose type is elided. A row of a
+// table wears its opening brace at the end of a line, so every row starts at
+// the same column. A literal that names its type keeps its first element on
+// the line the type is on.
 func openerPair(n ast.Node) (pair, bool) {
 	lit, ok := n.(*ast.CompositeLit)
 	if !ok || lit.Type != nil || len(lit.Elts) == 0 {
@@ -686,8 +704,8 @@ func reportPack(pass *analysis.Pass, l *layout, file *ast.File, p pair) bool {
 }
 
 // packPlan returns the layout the pack rule would write for the list, the
-// number of lines the list holds now, and whether the rule would write one. A
-// list the pair around it lays out is not this rule's to pack.
+// number of lines the list has now, and whether the rule would write one. The
+// rule skips a list the pair around it lays out.
 func packPlan(pass *analysis.Pass, l *layout, file *ast.File, p pair) (layoutFill, int, bool) {
 	if p.inner || !packable(pass, p) {
 		return layoutFill{}, 0, false
@@ -696,19 +714,19 @@ func packPlan(pass *analysis.Pass, l *layout, file *ast.File, p pair) (layoutFil
 	// lines moves that element up to the opener's line, which holds one line
 	// at an indent level either way and takes fewer lines.
 	if up, ok := pullUp(l, file, p); ok && l.elementLines(p) == 1 {
-		return up, 1, true
+		return up, up.lines, true
 	}
 	if len(p.elts) < 2 {
 		return layoutFill{}, 0, false
 	}
 	// A comment inside the list stops the join rule, so a list that would
-	// fit on one line without the comment is still this rule's to lay out.
+	// fit on one line without the comment is still laid out here.
 	// The join rule also refuses a list broken into two indented lines, so
 	// such a list is this rule's when the elements are pairs.
 	joinable := l.indented(p) < 2 &&
 		len(commentsIn(file, p.open, p.close)) == 0
 	if joinable && joinFits(pass, l, p) {
-		return layoutFill{}, 0, false // the join rule's work
+		return layoutFill{}, 0, false // the join rule joins it
 	}
 	if hasComment(l, file, p) {
 		return layoutFill{}, 0, false // a packed line would move it
@@ -726,8 +744,8 @@ func packPlan(pass *analysis.Pass, l *layout, file *ast.File, p pair) (layoutFil
 
 // pullUp returns the layout that moves a lone element up to the opener's line,
 // for a list whose one element line holds a single element written across
-// lines. Both layouts hold one line at an indent level, so the rule prefers
-// the one with fewer lines.
+// lines. Both layouts hold one line at an indent level, so the shorter one is
+// the layout to write.
 func pullUp(l *layout, file *ast.File, p pair) (layoutFill, bool) {
 	if len(p.elts) == 0 {
 		return layoutFill{}, false
@@ -805,9 +823,9 @@ func (l *layout) indented(p pair) int {
 	return max(n, 0)
 }
 
-// wanted reports whether the list's layout is not the one the rule asks for.
-// One indented line is the width's wrap. Two or more are a group the author
-// drew, and the rule leaves the group alone. A key-value list is the
+// wanted reports whether the list's layout is not the one the rule writes.
+// One indented line is the width's wrap. Two or more are a grouping the author
+// chose, and the rule leaves the group alone. A key-value list is the
 // exception, since the pairs are the structure, and so is a line the width
 // does not allow, since the group cannot stand as written.
 func wanted(l *layout, file *ast.File, p pair, f layoutFill, indented int) bool {
@@ -829,7 +847,7 @@ func wanted(l *layout, file *ast.File, p pair, f layoutFill, indented int) bool 
 }
 
 // packable reports whether the list is one this rule may pack: the elements
-// are not keyed, are not names, and are not a literal's rows or constants.
+// are not keyed and are not a literal's rows or constants.
 func packable(pass *analysis.Pass, p pair) bool {
 	// A literal's elements are its rows or its column, and either is read
 	// down; a call's arguments are neither, so both guards apply only to a
@@ -837,28 +855,7 @@ func packable(pass *analysis.Pass, p pair) bool {
 	if p.lit != nil && (constant(pass, p.elts) || rows(p.elts)) {
 		return false
 	}
-	return !keyed(p.elts) && !names(p.elts)
-}
-
-// names reports whether every element is a name. A list of names is a catalog,
-// and the column of names is the order a reader scans it in.
-func names(elts []ast.Expr) bool {
-	for _, e := range elts {
-		switch e := e.(type) {
-		case *ast.Ident:
-		case *ast.SelectorExpr:
-			if _, ok := e.X.(*ast.Ident); !ok {
-				return false
-			}
-		case *ast.CallExpr:
-			if len(e.Args) != 0 || !names([]ast.Expr{e.Fun}) {
-				return false
-			}
-		default:
-			return false
-		}
-	}
-	return true
+	return !keyed(p.elts)
 }
 
 // constant reports whether every element is a constant. A table of names,
@@ -885,7 +882,7 @@ func rows(elts []ast.Expr) bool {
 	return true
 }
 
-// keyed reports whether any element names itself, as in a struct literal.
+// keyed reports whether any element is a key, as in a struct literal.
 func keyed(elts []ast.Expr) bool {
 	for _, e := range elts {
 		if _, ok := e.(*ast.KeyValueExpr); ok {
@@ -895,8 +892,8 @@ func keyed(elts []ast.Expr) bool {
 	return false
 }
 
-// joinFits reports whether the whole list would fit on one line, which is the
-// join rule's work rather than this one's.
+// joinFits reports whether the whole list would fit on one line, which the
+// join rule handles.
 func joinFits(pass *analysis.Pass, l *layout, p pair) bool {
 	if linelen.Config.Len <= 0 {
 		return true // without a width there is nothing to pack against
@@ -927,7 +924,7 @@ func joinFits(pass *analysis.Pass, l *layout, p pair) bool {
 // between two of them is inside the edit that rewrites the list, and one ahead
 // of the first explains that element alone. A comment on the opener's line
 // stays on that line, as it does in a table, unless it sits inside an element:
-// an element is written from its own text, which does not carry a comment.
+// an element is written from its text, which does not carry a comment.
 func hasComment(l *layout, file *ast.File, p pair) bool {
 	open := l.line(p.open)
 	for _, c := range commentsIn(file, p.open, p.close) {
@@ -985,10 +982,9 @@ type layoutFill struct {
 }
 
 // overWide reports whether a line of the list's own layout is longer than the
-// width allows. Lines inside an element are the element's business, so only
-// the lines an element starts on are measured, and a line linelen exempts is
-// not measured at all: a declared signature wraps as its author chose, and the
-// join rule restores that wrap whatever its width.
+// width allows. Only the lines an element starts on are measured, and a line
+// linelen exempts is not measured at all: a declared signature wraps as it was
+// written, and the join rule restores that wrap whatever its width.
 func overWide(l *layout, file *ast.File, p pair) bool {
 	seen := make(map[int]struct{}, len(p.elts))
 	for _, e := range p.elts {
@@ -1009,7 +1005,7 @@ func overWide(l *layout, file *ast.File, p pair) bool {
 
 // inSignature reports whether pos falls in a span linelen exempts as a
 // signature: a function or method declaration up to its body, or a method in
-// an interface. A signature holds a list only in an array length, as in
+// an interface. A signature has a list only in an array length, as in
 // func f(x [len([]int{1, 2, 3})]int), and measuring that line would leave the
 // join rule restoring the wrap forever.
 func inSignature(file *ast.File, pos token.Pos) bool {
@@ -1046,8 +1042,8 @@ func inSignature(file *ast.File, pos token.Pos) bool {
 // fill returns the layout of the element list with the least raggedness: the
 // sum of the squared space left at the end of each line, which is the line
 // breaker TeX uses. Elements spread across lines by width, so a short element
-// joins a long one. A layout holds two lines or more, since a list that fits
-// on one line is the join rule's work, and every line must fit the width; when
+// joins a long one. A layout holds two lines or more, since the join rule
+// takes a list that fits on one line, and every line must fit the width; when
 // none does, fill reports no layout.
 //
 // Elements are grouped first. A key-value argument list groups each key with
@@ -1255,15 +1251,15 @@ func (pk *packer) line(i, j int) []byte {
 
 // width returns the width of the line holding groups i through j-1. The width
 // is linelen's, since a tab counts for more than one column, and it covers the
-// first line only: the lines inside a spanning element are the element's own.
+// first line only: the lines inside a spanning element are not measured.
 func (pk *packer) width(i, j int) int {
 	return linelen.Width(firstLine(pk.line(i, j)))
 }
 
 // cheapest returns where each line ends in the layout with the least
 // raggedness: the sum of the squared space left at the end of every line. A
-// layout holds two lines or more, since a list that fits on one line is the
-// join rule's work.
+// layout holds two lines or more, since the join rule takes a list that fits
+// on one line.
 func (pk *packer) cheapest() (next []int, ok bool) {
 	var (
 		n     = len(pk.starts)
@@ -1304,7 +1300,7 @@ func (pk *packer) cheapest() (next []int, ok bool) {
 }
 
 // layout renders the lines the plan breaks at, each beginning with the indent
-// and each ending with a comma but the last, whose comma the source keeps.
+// and each ending with a comma, then the closer on a line of its own.
 func (pk *packer) layout(next []int) layoutFill {
 	var (
 		out           []byte
