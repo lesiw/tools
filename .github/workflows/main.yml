@@ -26,7 +26,7 @@ jobs:
       - uses: actions/setup-go@v7
         with:
           go-version: stable
-      - run: go tool lesiw.io/tools/cmd/vet ./...
+      - run: go run lesiw.io/gorc/go@latest vet ./...
   test:
     needs: [fmt, vet]
     strategy:
