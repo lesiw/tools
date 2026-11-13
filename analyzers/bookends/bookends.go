@@ -36,6 +36,7 @@ import (
 	"fmt"
 	"go/ast"
 	"go/format"
+	"go/scanner"
 	"go/token"
 	"go/types"
 	"slices"
@@ -232,59 +233,54 @@ func reportCloser(pass *analysis.Pass, l *layout, src []byte, p pair) {
 	if slices.Equal(want, l.indentAt(p.close)) {
 		return
 	}
-	// The text between the last item and the closer is kept: a comment
-	// there stays where the author put it, with the comma ahead of it and
-	// the break behind it. A spread ends the argument it belongs to, so
-	// the comma follows it.
-	tail := string(src[int(p.lastEnd)-l.base : int(p.close)-l.base])
-	var at int
-	if p.ellipsis.IsValid() {
-		at = int(p.ellipsis) - int(p.lastEnd) + len("...")
-	}
-	if !commaBeforeComment(tail[at:]) {
-		tail = tail[:at] + "," + tail[at:]
-	}
+	// A line comment runs to the end of its line, so the comma is written
+	// ahead of every comment in the gap.
+	gap := string(src[int(p.gapStart)-l.base : int(p.close)-l.base])
+	text := "," + strings.TrimRight(withoutComma(gap), " \t\n")
 	pass.Report(analysis.Diagnostic{
 		Pos:     p.close,
 		Message: "closer is not at the indent of its opener",
 		SuggestedFixes: []analysis.SuggestedFix{{
 			Message: "Move the closer onto its own line",
 			TextEdits: []analysis.TextEdit{{
-				Pos:     p.lastEnd,
+				Pos:     p.gapStart,
 				End:     p.close,
-				NewText: append([]byte(tail+"\n"), want...),
+				NewText: append([]byte(text+"\n"), want...),
 			}},
 		}},
 	})
 	l.breakAt(p.close, want)
 }
 
-// commaBeforeComment reports whether a comma comes before the first comment in
-// tail. A comma inside a comment is part of its text.
-func commaBeforeComment(tail string) bool {
-	for i := 0; i < len(tail); i++ {
-		if tail[i] == ',' {
-			return true
-		}
-		if tail[i] == '/' {
-			return false
-		}
+// withoutComma returns gap without the comma that follows the last item. A
+// comment can come before the comma, and the scanner skips comments, so the
+// comma is the first token.
+func withoutComma(gap string) string {
+	var (
+		fset = token.NewFileSet()
+		file = fset.AddFile("", fset.Base(), len(gap))
+		s    scanner.Scanner
+	)
+	s.Init(file, []byte(gap), nil, 0)
+	pos, tok, _ := s.Scan()
+	if tok != token.COMMA {
+		return gap
 	}
-	return false
+	at := file.Offset(pos)
+	return gap[:at] + gap[at+1:]
 }
 
-// pair is one bracket pair: where it opens, where it closes, and the end of
-// the last item before the closer.
+// pair is one bracket pair: where it opens, where it closes, and where the
+// gap before the closer starts.
 type pair struct {
 	open, close token.Pos
-	lastEnd     token.Pos
+	gapStart    token.Pos
 	first       token.Pos // first element, for an opener pair
 	elts        []ast.Expr
 	lit         *ast.CompositeLit
-	opener      bool      // the pair guards an opener, not a closer
-	table       bool      // the pair guards a whole table
-	spread      bool      // a call whose last argument is a spread
-	ellipsis    token.Pos // the ellipsis of a spread
+	opener      bool // the pair guards an opener, not a closer
+	table       bool // the pair guards a whole table
+	spread      bool // a call whose last argument is a spread
 	call        *ast.CallExpr
 	inner       bool // the pair around this one lays the line out
 }
@@ -486,21 +482,28 @@ func openerPair(n ast.Node) (pair, bool) {
 
 // delimiters returns the bracket pair in n, if n has one.
 //
-// Only a pair that takes a trailing comma is returned. A closer that begins a
-// line must follow a comma: any other token at the end of a line takes a
-// semicolon with it, so an index, a slice, a paren and a type assertion
-// cannot break before their closer at all.
+// Only a pair whose closer can begin a line is returned: a call, a literal,
+// and an index list, the pairs that take a trailing comma. A line ending in an
+// element gets a semicolon, so the closer needs that comma ahead of it.
 func delimiters(n ast.Node) (pair, bool) {
 	switch n := n.(type) {
 	case *ast.CallExpr:
 		if len(n.Args) == 0 {
 			return pair{}, false
 		}
+		var (
+			spread = n.Ellipsis.IsValid()
+			end    = n.Args[len(n.Args)-1].End()
+		)
+		if spread {
+			// The ellipsis is not part of the last argument, so the gap
+			// before the closer starts after it.
+			end = n.Ellipsis + token.Pos(len("..."))
+		}
 		return pair{open: n.Lparen, close: n.Rparen,
-			lastEnd:  n.Args[len(n.Args)-1].End(),
+			gapStart: end,
 			elts:     n.Args,
-			spread:   n.Ellipsis.IsValid(),
-			ellipsis: n.Ellipsis,
+			spread:   spread,
 			call:     n,
 		}, true
 	case *ast.CompositeLit:
@@ -508,17 +511,17 @@ func delimiters(n ast.Node) (pair, bool) {
 			return pair{}, false
 		}
 		return pair{open: n.Lbrace, close: n.Rbrace,
-			lastEnd: n.Elts[len(n.Elts)-1].End(),
-			elts:    n.Elts,
-			lit:     n,
+			gapStart: n.Elts[len(n.Elts)-1].End(),
+			elts:     n.Elts,
+			lit:      n,
 		}, true
 	case *ast.IndexListExpr:
 		if len(n.Indices) == 0 {
 			return pair{}, false
 		}
 		return pair{open: n.Lbrack, close: n.Rbrack,
-			lastEnd: n.Indices[len(n.Indices)-1].End(),
-			elts:    n.Indices,
+			gapStart: n.Indices[len(n.Indices)-1].End(),
+			elts:     n.Indices,
 		}, true
 	}
 	return pair{}, false

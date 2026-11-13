@@ -46,20 +46,19 @@ the two ends of one pair land at different columns.
     xs = append(xs, T{a: 1,
         b: 2}) // closer is not at the indent of its opener
 
-The fix starts a new line before the closer and adds the comma that line
-needs. The printer then places the closer under its opener.
+The fix writes the trailing comma, then starts a new line before the closer.
+The printer then places the closer under its opener.
 
-- Only a pair that takes a trailing comma is reported. A closer on its own
-  line must follow a comma: any other token at the end of a line takes a
-  semicolon with it, so an index, a slice, a paren and a type assertion
-  cannot break before their closer at all.
+- Only a pair whose closer can begin a line is reported: a call, a literal,
+  and an index list, the pairs that take a trailing comma. A line ending in an
+  element gets a semicolon, so the closer needs that comma ahead of it.
 - A closer that already starts a line is left alone. The printer places it
   at the opener's indent whatever the source says, so the pair is already
   balanced.
 - A parameter list is left alone. A signature stays on one line or wraps
   as its author chose, the same exemption the width check makes.
-- A comment between the last item and the closer stays where the author put
-  it. The comma goes in front of the comment and the new line goes after it.
+- The comments between the last item and the closer are kept, with the comma
+  ahead of them and the new line behind them.
 
 ### An opener that shares its line
 

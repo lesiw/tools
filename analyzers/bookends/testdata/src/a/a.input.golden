@@ -82,12 +82,6 @@ func indented(g func(int, int) int) int {
 	)
 }
 
-func comment(g func(int, int) int) int {
-	return g(1,
-		2, /* why */
-	) // want `closer is not at the indent of its opener`
-}
-
 type row struct {
 	first, second, third, fourth, fifth, sixth, seventh, eighth int
 }
@@ -346,9 +340,34 @@ func appendIt(xs ...int) []int { return xs }
 
 func makeSlice(a, b int) []int { return []int{a, b} }
 
-func commentComma(g func(int, int) int) int {
+func commaInComment(g func(int, int) int) int {
 	return g(1,
 		2, /* one, two */
+	) // want `closer is not at the indent of its opener`
+}
+
+func commaAfterElement(g func(int, int) int) int {
+	return g(1,
+		2,
+	) // want `closer is not at the indent of its opener`
+}
+
+func commaAfterComment(g func(int, int) int) int {
+	return g(1,
+		2, /* why */
+	) // want `closer is not at the indent of its opener`
+}
+
+func spreadCommaAfterLineComment(xs, ys []int) []int {
+	return append(xs,
+		ys..., // note
+	) // want `closer is not at the indent of its opener`
+}
+
+func spreadCommaBeforeBlockComment(xs, ys []int) []int {
+	return append(xs,
+		ys..., // note
+	/* x */
 	) // want `closer is not at the indent of its opener`
 }
 
