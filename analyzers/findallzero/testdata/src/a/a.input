@@ -1,0 +1,75 @@
+package a
+
+import "regexp"
+
+var re = regexp.MustCompile(`a+`)
+
+func findalls(s string) {
+	var b []byte
+	_ = re.FindAll(b, 0)                    // want `a count of zero always returns no matches`
+	_ = re.FindAllIndex(b, 0)               // want `a count of zero always returns no matches`
+	_ = re.FindAllString(s, 0)              // want `a count of zero always returns no matches`
+	_ = re.FindAllStringIndex(s, 0)         // want `a count of zero always returns no matches`
+	_ = re.FindAllStringSubmatch(s, 0)      // want `a count of zero always returns no matches`
+	_ = re.FindAllStringSubmatchIndex(s, 0) // want `a count of zero always returns no matches`
+	_ = re.FindAllSubmatch(b, 0)            // want `a count of zero always returns no matches`
+	_ = re.FindAllSubmatchIndex(b, 0)       // want `a count of zero always returns no matches`
+}
+
+func chained(s string) {
+	_ = regexp.MustCompile(`a+`).FindAllString(s, 0) // want `a count of zero always returns no matches`
+}
+
+func folded(s string) {
+	const zero = 0
+	_ = re.FindAllString(s, zero) // want `a count of zero always returns no matches`
+	_ = re.FindAllString(s, 1-1)  // want `a count of zero always returns no matches`
+}
+
+func parens(s string) {
+	_ = (re.FindAllString)(s, 0) // want `a count of zero always returns no matches`
+}
+
+func methodExpr() {
+	_ = (*regexp.Regexp).FindAllString(re, "aaa", 0) // want `a count of zero always returns no matches`
+}
+
+func nonzero(s string) {
+	_ = re.FindAllString(s, -1)
+	_ = re.FindAllString(s, 3)
+}
+
+func variable(s string) {
+	held := 0
+	_ = re.FindAllString(s, held)
+}
+
+func split(s string) {
+	_ = re.Split(s, 0)
+}
+
+type finder struct{}
+
+func (finder) FindAllString(s string, n int) []string { return nil }
+
+func notRegexp(s string) {
+	var f finder
+	_ = f.FindAllString(s, 0)
+}
+
+type matcher interface {
+	FindAllString(s string, n int) []string
+}
+
+func throughInterface(s string, m matcher) {
+	_ = m.FindAllString(s, 0)
+}
+
+func methodValue(s string) {
+	find := re.FindAllString
+	_ = find(s, 0)
+}
+
+func predeclared(err error) {
+	_ = err.Error()
+}
