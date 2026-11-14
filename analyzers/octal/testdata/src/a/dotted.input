@@ -1,0 +1,7 @@
+package a
+
+import . "time"
+
+func dotted() Time {
+	return Date(2001, 03, 04, 05, 06, 07, 0, UTC)
+}

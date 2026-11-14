@@ -1,0 +1,3 @@
+package a
+
+const mode = 0755 // want `0755 can be replaced by 0o755`

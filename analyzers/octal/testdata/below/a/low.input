@@ -1,0 +1,5 @@
+//go:build go1.12
+
+package a
+
+const low = 0755 // want `0755 can be replaced by 0o755`

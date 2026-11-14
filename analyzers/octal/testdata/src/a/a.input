@@ -1,0 +1,64 @@
+package a
+
+import (
+	"os"
+	"time"
+)
+
+const (
+	mode    = 0755     // want `0755 can be replaced by 0o755`
+	grouped = 0755_000 // want `0755_000 can be replaced by 0o755_000`
+	padded  = 0077     // want `0077 can be replaced by 0o077`
+	sep     = 0_755
+	zero    = 0
+	zeros   = 00
+	ten     = 10
+	hex     = 0x10
+	bin     = 0b10
+	oct     = 0o10
+	imag    = 0123i
+	real    = 0755.0
+)
+
+func f() (int, string) {
+	return 0755, "0755" // want `0755 can be replaced by 0o755`
+}
+
+func chmod(path string) error {
+	return os.Chmod(path, 0644) // want `0644 can be replaced by 0o644`
+}
+
+func month(n int) time.Month { return time.Month(n) }
+
+func date() time.Time {
+	return time.Date(2001, 03, 04, 05, 06, 07, 0, time.UTC)
+}
+
+func octalFields() time.Time {
+	return time.Date(02001, 01, 02, 03, 04, 05, 0755, time.UTC)
+}
+
+func parenthesized() time.Time {
+	return time.Date(2001, (03), 04, 05, 06, 07, 0, time.UTC)
+}
+
+func parenCallee() time.Time {
+	return (time.Date)(2001, 03, 04, 05, 06, 07, 0, time.UTC)
+}
+
+func computed() time.Time {
+	return time.Date(2001, month(0644), 04, 05, 06, 07, 0, time.UTC) // want `0644 can be replaced by 0o644`
+}
+
+func viaValue() time.Time {
+	f := time.Date
+	return f(2001, 03, 04, 12, 30, 45, 0, time.UTC) // want `03 can be replaced by 0o3` `04 can be replaced by 0o4`
+}
+
+type day struct{}
+
+func (day) Date(y, m, d int) int { return y + m + d }
+
+func methodDate() int {
+	return day{}.Date(2001, 03, 04) // want `03 can be replaced by 0o3` `04 can be replaced by 0o4`
+}
