@@ -1,0 +1,370 @@
+package a
+
+func trailingTrue(ok bool) bool {
+	// want +1 `two returns of opposite constants; write return ok`
+	return ok
+}
+
+func trailingFalse(ok bool) bool {
+	// want +1 `write return !ok`
+	return !ok
+}
+
+func elseTrue(ok bool) bool {
+	// want +1 `write return ok`
+	return ok
+}
+
+func elseFalse(ok bool) bool {
+	// want +1 `write return !ok`
+	return !ok
+}
+
+func comparison(n int) bool {
+	// want +1 `write return n != 0`
+	return n != 0
+}
+
+func negatedIdent(ok bool) bool {
+	// want +1 `write return ok`
+	return ok
+}
+
+func doubleNegation(n int) bool {
+	// want +1 `write return n == 0`
+	return n == 0
+}
+
+func positive(n int) bool { return n > 0 }
+
+func negatedCall(n int) bool {
+	// want +1 `write return !positive\(n\)`
+	return !positive(n)
+}
+
+type server struct{ ready bool }
+
+func (s *server) negatedSelector() bool {
+	// want +1 `write return !s.ready`
+	return !s.ready
+}
+
+type bit bool
+
+func namedTypeResult(ok bool) bit {
+	if ok {
+		return true
+	}
+	return false
+}
+
+var literalInVar = func(ok bool) bool {
+	// want +1 `write return ok`
+	return ok
+}
+
+func nestedBlock(a, b bool) bool {
+	if a {
+		// want +1 `write return b`
+		return b
+	}
+	return true
+}
+
+func literalInFunc(ok bool) bool {
+	inner := func(inner bool) bool {
+		// want +1 `write return inner`
+		return inner
+	}
+	return inner(ok)
+}
+
+func withInit(ok bool) bool {
+	if check := ok; check {
+		return true
+	}
+	return false
+}
+
+func extraStatement(ok bool) bool {
+	if ok {
+		println("set")
+		return true
+	}
+	return false
+}
+
+func sameConstant(ok bool) bool {
+	if ok {
+		return true
+	}
+	return true
+}
+
+func commentInside(ok bool) bool {
+	// want +1 `write return ok`
+	// the flag was set earlier
+	return ok
+}
+
+func conjunction(a, b bool) bool {
+	// want +1 `write return a && b`
+	return a && b
+}
+
+func conjunctionFalseFirst(a, b bool) bool {
+	if a && b {
+		return false
+	}
+	return true
+}
+
+func negatedConjunction(a, b bool) bool {
+	// want +1 `write return a && b`
+	return a && b
+}
+
+func disjunction(a, b bool) bool {
+	// want +1 `write return a || b`
+	return a || b
+}
+
+func disjunctionFalseFirst(a, b bool) bool {
+	if a || b {
+		return false
+	}
+	return true
+}
+
+func guardChain(a, b bool) bool {
+	if a {
+		return true
+	}
+	// want +1 `write return b`
+	return b
+}
+
+func elseIfChain(a, b bool) bool {
+	if a {
+		return true
+	} else if b {
+		return false
+	} else {
+		return true
+	}
+}
+
+func nestedInElse(a, b bool) bool {
+	if a {
+		return true
+	} else {
+		// want +1 `write return !b`
+		return !b
+	}
+}
+
+func switchCase(n int, ok bool) bool {
+	switch n {
+	case 1:
+		// want +1 `write return ok`
+		return ok
+	}
+	return false
+}
+
+func selectClause(ch chan bool) bool {
+	select {
+	case ok := <-ch:
+		// want +1 `write return ok`
+		return ok
+	default:
+		return false
+	}
+}
+
+func commentBeforeReturn(ok bool) bool {
+	// want +1 `write return ok`
+	// the caller reads this as "no"
+	return ok
+}
+
+func parenthesizedConstants(ok bool) bool {
+	// want +1 `write return ok`
+	return ok
+}
+
+func constantCondition() bool {
+	// want +1 `write return false`
+	return false
+}
+
+func shadowedConstants(ok bool) bool {
+	true, false := ok, !ok
+	if ok {
+		return true
+	}
+	return false
+}
+
+func indexExpression(xs []bool, i int) bool {
+	// want +1 `write return !xs\[i\]`
+	return !xs[i]
+}
+
+func indexArithmetic(path string) bool {
+	// want +1 `path\[len\(path\)-1\]`
+	return path[len(path)-1] == '/'
+}
+
+func pointerDeref(flag *bool) bool {
+	// want +1 `write return !\*flag`
+	return !*flag
+}
+
+func typeAssertion(v any) bool {
+	// want +1 `write return !v\.\(bool\)`
+	return !v.(bool)
+}
+
+func notEqual(n int) bool {
+	// want +1 `write return n == 0`
+	return n == 0
+}
+
+func nonReturnTail(ok bool) {
+	if ok {
+		return
+	}
+	println("done")
+}
+
+func elseNotConstant(a, b bool) bool {
+	if a {
+		return b
+	} else {
+		return false
+	}
+}
+
+func twoResults(ok bool) (bool, bool) {
+	if ok {
+		return true, false
+	}
+	return false, true
+}
+
+func nonConstantReturn(ok bool) bool {
+	if ok {
+		return 1 > 0
+	}
+	return false
+}
+
+func voidReturn(ok bool) {
+	if ok {
+		return
+	}
+	return
+}
+
+func falseCondition() bool {
+	// want +1 `write return true`
+	return true
+}
+
+func channelReceive(ch chan bool) bool {
+	// want +1 `write return !<-ch`
+	return !<-ch
+}
+
+func floatComparison(x float64) bool {
+	// want +1 `write return !\(x < 0\)`
+	return !(x < 0)
+}
+
+func length(s string) bool {
+	// want +1 `write return len\(s\) == 0`
+	return len(s) == 0
+}
+
+func capacity(xs []int) bool {
+	// want +1 `write return cap\(xs\) == 0`
+	return cap(xs) == 0
+}
+
+func wideCondition(firstCondition, secondCondition, thirdCondition bool) bool {
+	// want +1 `write return firstCondition && secondCondition || thirdCondition && firstCondition && secondCondition`
+	if firstCondition && secondCondition || thirdCondition && firstCondition && secondCondition {
+		return true
+	}
+	return false
+}
+
+func interfaceEquality(err, target error) bool {
+	// want +1 `write return err != target`
+	return err != target
+}
+
+func funcLiteral(ok bool) bool {
+	// want +1 `write return !func\(\) bool { return ok }\(\)`
+	return !func() bool { return ok }()
+}
+
+func rawString(s string) bool {
+	if s == `one
+	two` {
+		return false
+	}
+	return true
+}
+
+func trailingComment(ok bool) bool {
+	// want +1 `write return ok`
+	// the caller reads this as "no"
+	return ok
+}
+
+func copyCount(dst, src []byte) bool {
+	// want +1 `write return copy\(dst, src\) == 0`
+	return copy(dst, src) == 0
+}
+
+func mirroredCount(s string) bool {
+	// want +1 `write return 0 == len\(s\)`
+	return 0 == len(s)
+}
+
+func lessThan(n int) bool {
+	// want +1 `write return n >= 0`
+	return n >= 0
+}
+
+func lessThanOrEqual(n int) bool {
+	// want +1 `write return n > 0`
+	return n > 0
+}
+
+func greaterThan(n int) bool {
+	// want +1 `write return n <= 0`
+	return n <= 0
+}
+
+func greaterThanOrEqual(n int) bool {
+	// want +1 `write return n < 1`
+	return n < 1
+}
+
+func namedResults(ok bool) (a, b bool) {
+	if ok {
+		return true, false
+	}
+	return false, true
+}
+
+func elseComment(ok bool) bool {
+	// want +1 `write return ok`
+	// the flag was set earlier
+	return ok
+}
+
+func bodyless()

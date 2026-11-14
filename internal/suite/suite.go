@@ -56,6 +56,7 @@ import (
 	"lesiw.io/tools/analyzers/appendcombine"
 	"lesiw.io/tools/analyzers/assignop"
 	"lesiw.io/tools/analyzers/bookends"
+	"lesiw.io/tools/analyzers/boolreturn"
 	"lesiw.io/tools/analyzers/boolset"
 	"lesiw.io/tools/analyzers/commentfmt"
 	"lesiw.io/tools/analyzers/containscut"
@@ -145,6 +146,7 @@ var (
 		atomic.Analyzer,
 		atomicalign.Analyzer,
 		bookends.Analyzer,
+		boolreturn.Analyzer,
 		bools.Analyzer,
 		boolset.Analyzer,
 		buildtag.Analyzer,
