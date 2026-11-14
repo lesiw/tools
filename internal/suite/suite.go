@@ -52,6 +52,7 @@ import (
 	"golang.org/x/tools/go/analysis/passes/waitgroup"
 
 	"lesiw.io/errcheck/errcheck"
+	"lesiw.io/tools/analyzers/addrnil"
 	"lesiw.io/tools/analyzers/afterhttperror"
 	"lesiw.io/tools/analyzers/appendcombine"
 	"lesiw.io/tools/analyzers/assignop"
@@ -137,6 +138,7 @@ func Analyzers() []*analysis.Analyzer { return analyzers }
 var (
 	analyzers = slices.Concat(list, modernize.Suite)
 	list      = []*analysis.Analyzer{
+		addrnil.Analyzer,
 		afterhttperror.Analyzer,
 		appendcombine.Analyzer,
 		appends.Analyzer,
