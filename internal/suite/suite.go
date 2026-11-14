@@ -97,6 +97,7 @@ import (
 	"lesiw.io/tools/analyzers/linewrap"
 	"lesiw.io/tools/analyzers/makezero"
 	"lesiw.io/tools/analyzers/newderef"
+	"lesiw.io/tools/analyzers/nilchecklen"
 	"lesiw.io/tools/analyzers/nilreturn"
 	"lesiw.io/tools/analyzers/offby1"
 	"lesiw.io/tools/analyzers/preferfprint"
@@ -208,6 +209,7 @@ var (
 		lostcancel.Analyzer,
 		makezero.Analyzer,
 		newderef.Analyzer,
+		nilchecklen.Analyzer,
 		nilfunc.Analyzer,
 		nilness.Analyzer,
 		nilreturn.Analyzer,

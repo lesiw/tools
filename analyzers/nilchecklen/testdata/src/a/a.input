@@ -1,0 +1,217 @@
+package a
+
+type box struct {
+	items []int
+}
+
+type numbers []int
+
+type filter interface{ ~[]int | ~[]byte }
+
+type composed interface{ filter }
+
+func nonEmpty(xs []int) bool {
+	return xs != nil && len(xs) > 0 // want `redundant nil check; len is zero for a nil slice`
+}
+
+func nilAndNonEmpty(xs []int) bool {
+	return xs == nil && len(xs) > 0
+}
+
+func nonNilOrNonEmpty(xs []int) bool {
+	return xs != nil || len(xs) > 0
+}
+
+func nilOrNonEmpty(xs []int) bool {
+	return xs == nil || len(xs) > 0
+}
+
+func isEmpty(xs []int) bool {
+	return xs == nil || len(xs) == 0 // want `redundant nil check; len is zero for a nil slice`
+}
+
+func nonNilAndEmpty(xs []int) bool {
+	return xs != nil && len(xs) == 0
+}
+
+func nonEmptyCount(xs []int) bool {
+	return xs != nil && len(xs) != 0 // want `redundant nil check; len is zero for a nil slice`
+}
+
+func notThree(xs []int) bool {
+	return xs != nil && len(xs) != 3
+}
+
+func keys(m map[string]int) bool {
+	return m != nil && len(m) > 0 // want `redundant nil check; len is zero for a nil map`
+}
+
+func buffered(c chan int) bool {
+	return c != nil && len(c) > 0 // want `redundant nil check; len is zero for a nil channel`
+}
+
+func constantFirst(xs []int) bool {
+	return xs != nil && 0 < len(xs) // want `redundant nil check; len is zero for a nil slice`
+}
+
+func atLeastOne(xs []int) bool {
+	return xs != nil && 1 <= len(xs) // want `redundant nil check; len is zero for a nil slice`
+}
+
+func atMostThree(xs []int) bool {
+	return xs != nil && 3 >= len(xs)
+}
+
+func zeroFirst(xs []int) bool {
+	return xs == nil || 0 == len(xs) // want `redundant nil check; len is zero for a nil slice`
+}
+
+func shortOrNil(xs []int) bool {
+	return xs == nil || 0 < len(xs)
+}
+
+func exactlyThree(xs []int) bool {
+	return xs != nil && len(xs) == 3 // want `redundant nil check; len is zero for a nil slice`
+}
+
+func fewerThanTwo(xs []int) bool {
+	return xs == nil || len(xs) < 2 // want `redundant nil check; len is zero for a nil slice`
+}
+
+func field(b box) bool {
+	return b.items != nil && len(b.items) > 0 // want `redundant nil check; len is zero for a nil slice`
+}
+
+func indexed(rows [][]int, i int) bool {
+	return rows[i] != nil && len(rows[i]) > 0 // want `redundant nil check; len is zero for a nil slice`
+}
+
+func converted(xs []int) bool {
+	return numbers(xs) != nil && len(numbers(xs)) > 0 // want `redundant nil check; len is zero for a nil slice`
+}
+
+func call(next func() []int) bool {
+	return next() != nil && len(next()) > 0
+}
+
+func receive(ch chan []int) bool {
+	return (<-ch) != nil && len(<-ch) > 0
+}
+
+func parenthesized(xs []int) bool {
+	return (xs != nil) && len(xs) > 0 // want `redundant nil check; len is zero for a nil slice`
+}
+
+func grouped(xs []int, ok bool) bool {
+	return xs != nil && (len(xs) > 0 && ok)
+}
+
+func parenComparison(xs []int) bool {
+	return xs != nil && (len(xs) > 0) // want `redundant nil check; len is zero for a nil slice`
+}
+
+func parenComparisonFirst(xs []int) bool {
+	return (len(xs) > 0) && xs != nil // want `redundant nil check; len is zero for a nil slice`
+}
+
+func mirrored(xs []int) bool {
+	return nil != xs && len(xs) > 0 // want `redundant nil check; len is zero for a nil slice`
+}
+
+func lenFirst(xs []int) bool {
+	return len(xs) > 0 && xs != nil // want `redundant nil check; len is zero for a nil slice`
+}
+
+func constantFirstNilSecond(xs []int) bool {
+	return 0 < len(xs) && xs != nil // want `redundant nil check; len is zero for a nil slice`
+}
+
+func orFirst(xs []int) bool {
+	return len(xs) == 0 || xs == nil // want `redundant nil check; len is zero for a nil slice`
+}
+
+func commentSameLine(xs []int) bool {
+	return len(xs) > 0 && xs != nil /* only when set */ // want `redundant nil check; len is zero for a nil slice`
+}
+
+func commentAfterLaterOperand(xs []int) bool {
+	return len(xs) > 0 &&
+		xs != nil && len(xs) > 1 // want `redundant nil check; len is zero for a nil slice`
+}
+
+func commentSplitPair(xs []int) bool {
+	return len(xs) > 0 &&
+		xs != nil /* only when set */ // want `redundant nil check; len is zero for a nil slice`
+}
+
+func commentInside(xs []int) bool {
+	return xs != nil /* only when set */ && len(xs) > 0 // want `redundant nil check; len is zero for a nil slice`
+}
+
+func chain(xs, ys []int) bool {
+	return xs != nil && len(xs) > 0 && ys != nil && len(ys) > 0 // want `nil slice` `nil slice`
+}
+
+func between(xs []int) bool {
+	return len(xs) > 0 && xs != nil && len(xs) > 1 // want `redundant nil check; len is zero for a nil slice`
+}
+
+func apart(ok bool, xs []int) bool {
+	return xs != nil && ok && len(xs) > 0
+}
+
+func apartAfter(next func() bool, xs []int) bool {
+	return len(xs) > 0 && next() && xs != nil
+}
+
+func generic[T ~[]int](xs T) bool {
+	return xs != nil && len(xs) > 0 // want `redundant nil check; len is zero for a nil value`
+}
+
+func namedConstraint[T numbers](xs T) bool {
+	return xs != nil && len(xs) > 0 // want `redundant nil check; len is zero for a nil value`
+}
+
+func anyTerm[T interface {
+	~[]int
+	any
+}](xs T) bool {
+	return xs != nil && len(xs) > 0 // want `redundant nil check; len is zero for a nil value`
+}
+
+func genericTwo[T ~[]int | ~map[string]int](xs T) bool {
+	return xs != nil && len(xs) > 0 // want `redundant nil check; len is zero for a nil value`
+}
+
+func unionTerm[T filter | ~map[string]int](xs T) bool {
+	return xs != nil && len(xs) > 0 // want `redundant nil check; len is zero for a nil value`
+}
+
+func nested[T composed](xs T) bool {
+	return xs != nil && len(xs) > 0 // want `redundant nil check; len is zero for a nil value`
+}
+
+func genericArray[T ~[]int | ~*[3]int](xs T) bool {
+	return xs != nil && len(xs) > 0
+}
+
+func array(p *[3]int) bool {
+	return p != nil && len(p) > 0
+}
+
+func namedBound(xs []int, n int) bool {
+	return xs != nil && len(xs) == n
+}
+
+func differentValue(xs, ys []int) bool {
+	return xs != nil && len(ys) > 0
+}
+
+func shadow(xs []int) bool {
+	len := func([]int) int { return 1 }
+	return xs != nil && len(xs) > 0
+}
+
+func indexGuard(xs []int) bool {
+	return xs != nil && xs[0] != 0 && len(xs) > 0
+}
