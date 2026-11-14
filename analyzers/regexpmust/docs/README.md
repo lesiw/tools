@@ -29,7 +29,9 @@ fixing the pattern.
 
 The rule is adapted from go-critic's regexpMust.
 
-Report only.
+Fixable, where the pattern is bound and the second result is blank. A report
+where the caller reads the error, both results are discarded, or a comment sits
+between the targets has no fix.
 
 ## Usage
 
@@ -42,4 +44,5 @@ Or run it as part of the suite:
 
 ```sh
 go tool lesiw.io/tools/cmd/vet -regexpmust ./...
+go tool lesiw.io/tools/cmd/fix -regexpmust ./...
 ```
