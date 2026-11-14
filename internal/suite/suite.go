@@ -85,6 +85,7 @@ import (
 	"lesiw.io/tools/analyzers/ifelsechain"
 	"lesiw.io/tools/analyzers/importgroup"
 	"lesiw.io/tools/analyzers/importshadow"
+	"lesiw.io/tools/analyzers/increment"
 	"lesiw.io/tools/analyzers/indexalloc"
 	"lesiw.io/tools/analyzers/initialisms"
 	"lesiw.io/tools/analyzers/ipliteral"
@@ -190,6 +191,7 @@ var (
 		ifelsechain.Analyzer,
 		importgroup.Analyzer,
 		importshadow.Analyzer,
+		increment.Analyzer,
 		indexalloc.Analyzer,
 		initialisms.Analyzer,
 		ipliteral.Analyzer,

@@ -1,0 +1,6 @@
+package p
+
+func steps(i int) int {
+	i++
+	return i
+}

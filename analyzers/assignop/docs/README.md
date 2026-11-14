@@ -11,9 +11,8 @@ An `analysis.Analyzer` that reports an assignment that writes a variable in term
 
 ```go
 func f(x, y int) int {
-	x = x + 1 // assignment writes x in terms of itself
+	x = x + y // assignment writes x in terms of itself
 	x = x * y // assignment writes x in terms of itself
-	x += 1
 	return x
 }
 ```
@@ -24,6 +23,9 @@ form names each once.
 ```go
 x += y
 ```
+
+For an integer operand, [`increment`](../../increment/docs) rewrites `x += 1` as
+`x++`, so `x = x + 1` takes two fix rounds.
 
 The idea comes from go-critic's assignOp.
 
