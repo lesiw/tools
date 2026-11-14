@@ -1,0 +1,85 @@
+package a
+
+import (
+	"bytes"
+	"strings"
+	"unicode"
+)
+
+func lower(a, b string) bool {
+	return strings.ToLower(a) == strings.ToLower(b) // want `^strings.ToLower on both sides; use strings.EqualFold if folding is intended$`
+}
+
+func upper(a, b string) bool {
+	return strings.ToUpper(a) != strings.ToUpper(b) // want `^strings.ToUpper on both sides; use !strings.EqualFold if folding is intended$`
+}
+
+func parens(a, b string) bool {
+	return (strings.ToLower(a)) == (strings.ToLower(b)) // want `use strings.EqualFold if folding is intended$`
+}
+
+func parenCallee(a, b string) bool {
+	return (strings.ToLower)(a) == (strings.ToLower)(b) // want `use strings.EqualFold if folding is intended$`
+}
+
+func negated(a, b string) bool {
+	return !(strings.ToLower(a) == strings.ToLower(b)) // want `use !strings.EqualFold if folding is intended$`
+}
+
+func notDifferent(a, b string) bool {
+	return !(strings.ToLower(a) != strings.ToLower(b)) // want `use strings.EqualFold if folding is intended$`
+}
+
+func bytesEqual(a, b []byte) bool {
+	return bytes.Equal(bytes.ToLower(a), bytes.ToLower(b)) // want `^bytes.ToLower on both sides; use bytes.EqualFold if folding is intended$`
+}
+
+func bytesNegated(a, b []byte) bool {
+	return !bytes.Equal(bytes.ToUpper(a), bytes.ToUpper(b)) // want `^bytes.ToUpper on both sides; use !bytes.EqualFold if folding is intended$`
+}
+
+func mixed(a, b string) bool {
+	return strings.ToLower(a) == strings.ToUpper(b)
+}
+
+func oneSide(a, b string) bool {
+	return strings.ToLower(a) == b
+}
+
+func runeLower(a, b rune) bool {
+	return unicode.ToLower(a) == unicode.ToLower(b)
+}
+
+func trimmed(a, b string) bool {
+	return strings.TrimSpace(a) == strings.TrimSpace(b)
+}
+
+func ordered(a, b string) bool {
+	return strings.ToLower(a) < strings.ToLower(b)
+}
+
+func switched(a, b string) bool {
+	switch strings.ToLower(a) {
+	case strings.ToLower(b):
+		return true
+	}
+	return false
+}
+
+func alreadyFolded(a, b string) bool {
+	return strings.EqualFold(a, b)
+}
+
+type converter struct{}
+
+func (converter) ToLower(s string) string { return s }
+
+func method(a, b string) bool {
+	var c converter
+	return c.ToLower(a) == c.ToLower(b)
+}
+
+func throughValue(a, b string) bool {
+	lower := strings.ToLower
+	return lower(a) == lower(b)
+}

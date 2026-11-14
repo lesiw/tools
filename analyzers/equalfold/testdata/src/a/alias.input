@@ -1,0 +1,14 @@
+package a
+
+import (
+	bs "bytes"
+	text "strings"
+)
+
+func aliased(a, b string) bool {
+	return text.ToLower(a) == text.ToLower(b) // want `^text.ToLower on both sides; use text.EqualFold if folding is intended$`
+}
+
+func aliasedBytes(a, b []byte) bool {
+	return bs.Equal(bs.ToLower(a), bs.ToLower(b)) // want `^bs.ToLower on both sides; use bs.EqualFold if folding is intended$`
+}

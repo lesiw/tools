@@ -1,0 +1,7 @@
+package a
+
+import . "strings"
+
+func dotted(a, b string) bool {
+	return ToLower(a) == ToLower(b)
+}

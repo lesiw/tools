@@ -1,0 +1,7 @@
+package a
+
+import . "bytes"
+
+func dottedBytes(a, b []byte) bool {
+	return Equal(ToLower(a), ToLower(b))
+}

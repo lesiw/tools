@@ -83,6 +83,7 @@ import (
 	"lesiw.io/tools/analyzers/emptydecl"
 	"lesiw.io/tools/analyzers/emptyfallthrough"
 	"lesiw.io/tools/analyzers/emptystring"
+	"lesiw.io/tools/analyzers/equalfold"
 	"lesiw.io/tools/analyzers/errflow"
 	"lesiw.io/tools/analyzers/errfmt"
 	"lesiw.io/tools/analyzers/errorlast"
@@ -193,6 +194,7 @@ var (
 		emptydecl.Analyzer,
 		emptyfallthrough.Analyzer,
 		emptystring.Analyzer,
+		equalfold.Analyzer,
 		errcheck.Analyzer,
 		errflow.Analyzer,
 		errfmt.Analyzer,
