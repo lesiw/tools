@@ -1,0 +1,5 @@
+package a
+
+func localTest(s *sink, v string) {
+	s.Write([]byte(v))
+}

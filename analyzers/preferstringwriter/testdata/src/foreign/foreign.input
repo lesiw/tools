@@ -1,0 +1,28 @@
+package foreign
+
+import "bytes"
+
+type Odd struct{}
+
+func (Odd) Write(p []byte) int { return len(p) }
+
+func (Odd) WriteString(v string) (int, error) { return len(v), nil }
+
+type Fielded struct{ Write func([]byte) (int, error) }
+
+func (Fielded) WriteString(v string) (int, error) { return len(v), nil }
+
+type Mixed struct{}
+
+func (Mixed) Write(p []byte) (int, error) { return len(p), nil }
+
+func (*Mixed) WriteString(v string) (int, error) { return len(v), nil }
+
+type Shadow struct{ *bytes.Buffer }
+
+func (Shadow) WriteString(v string) (int, error) { return 0, nil }
+
+type Both interface {
+	Write(p []byte) (int, error)
+	WriteString(s string) (int, error)
+}

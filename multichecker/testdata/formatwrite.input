@@ -1,0 +1,11 @@
+package p
+
+import (
+	"bytes"
+	"fmt"
+)
+
+func write(b *bytes.Buffer, name string, n int, s string) {
+	b.Write([]byte(fmt.Sprintf("%s %d", name, n)))
+	b.Write([]byte(s))
+}

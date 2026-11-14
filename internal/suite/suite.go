@@ -109,6 +109,7 @@ import (
 	"lesiw.io/tools/analyzers/octal"
 	"lesiw.io/tools/analyzers/offby1"
 	"lesiw.io/tools/analyzers/preferfprint"
+	"lesiw.io/tools/analyzers/preferstringwriter"
 	"lesiw.io/tools/analyzers/recvname"
 	"lesiw.io/tools/analyzers/recvtype"
 	"lesiw.io/tools/analyzers/redundantalias"
@@ -239,6 +240,7 @@ var (
 		octal.Analyzer,
 		offby1.Analyzer,
 		preferfprint.Analyzer,
+		preferstringwriter.Analyzer,
 		printf.Analyzer,
 		recvname.Analyzer,
 		recvtype.Analyzer,

@@ -1,0 +1,11 @@
+package p
+
+import (
+	"bytes"
+	"fmt"
+)
+
+func write(b *bytes.Buffer, name string, n int, s string) {
+	fmt.Fprintf(b, "%s %d", name, n)
+	b.WriteString(s)
+}

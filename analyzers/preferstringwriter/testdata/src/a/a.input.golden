@@ -1,0 +1,127 @@
+package a
+
+import (
+	"bytes"
+	"fmt"
+	"io"
+
+	"foreign"
+)
+
+func pointer(b *bytes.Buffer, s string) {
+	b.WriteString(s)              // want `converted string written to a writer; use WriteString`
+	b.WriteString("some message") // want `converted string written to a writer; use WriteString`
+	b.WriteString(s)              // want `converted string written to a writer; use WriteString`
+	b.WriteString(s)              // want `converted string written to a writer; use WriteString`
+}
+
+func value(b bytes.Buffer, s string) {
+	b.WriteString(s) // want `converted string written to a writer; use WriteString`
+}
+
+type plain struct{ *bytes.Buffer }
+
+func promoted(p plain, s string) {
+	p.WriteString(s) // want `converted string written to a writer; use WriteString`
+}
+
+type raw []byte
+
+func namedSlice(b *bytes.Buffer, s string) {
+	b.WriteString(s) // want `converted string written to a writer; use WriteString`
+}
+
+type kind string
+
+func defined(b *bytes.Buffer, k kind, s string) {
+	b.WriteString(string(k))      // want `converted string written to a writer; use WriteString`
+	b.Write([]byte(k /* keep */)) // want `converted string written to a writer; use WriteString`
+	b.WriteString(s)              // want `converted string written to a writer; use WriteString`
+}
+
+func inner(b *bytes.Buffer, s string) {
+	b.Write([]byte( /* keep */ s)) // want `converted string written to a writer; use WriteString`
+	b.Write([]byte(s /* keep */))  // want `converted string written to a writer; use WriteString`
+}
+
+func outer(b *bytes.Buffer, s string) {
+	b.WriteString( /* keep */ s) // want `converted string written to a writer; use WriteString`
+}
+
+func formatted(b *bytes.Buffer, n int) {
+	b.WriteString(fmt.Sprintf("%d", n)) // want `converted string written to a writer; use WriteString`
+}
+
+type embed struct{ *bytes.Buffer }
+
+func (e embed) WriteString(v string) (int, error) {
+	return e.Buffer.WriteString(v) // want `converted string written to a writer; use WriteString`
+}
+
+func mixedValue(m foreign.Mixed, s string) {
+	m.WriteString(s) // want `converted string written to a writer; use WriteString`
+}
+
+func generic[T ~string](b *bytes.Buffer, t T) {
+	b.WriteString(string(t)) // want `converted string written to a writer; use WriteString`
+}
+
+func foreignInterface(w foreign.Both, s string) {
+	w.WriteString(s) // want `converted string written to a writer; use WriteString`
+}
+
+func typeParam[T foreign.Both](w T, s string) {
+	w.WriteString(s) // want `converted string written to a writer; use WriteString`
+}
+
+type sink struct{}
+
+func (*sink) Write(p []byte) (int, error)         { return len(p), nil }
+func (s *sink) WriteString(v string) (int, error) { return s.Write([]byte(v)) }
+
+func localType(s *sink, v string) {
+	s.Write([]byte(v))
+}
+
+func inline(w interface {
+	Write(p []byte) (int, error)
+	WriteString(s string) (int, error)
+}, s string) {
+	w.Write([]byte(s))
+}
+
+type both interface {
+	io.Writer
+	io.StringWriter
+}
+
+func embeddedInterface(w both, s string) {
+	w.Write([]byte(s))
+}
+
+func shadowed(s foreign.Shadow, v string) {
+	s.Write([]byte(v))
+}
+
+func oddWriter(o foreign.Odd, s string) {
+	o.Write([]byte(s))
+}
+
+func fielded(f foreign.Fielded, s string) {
+	f.Write([]byte(s))
+}
+
+func mixedIndex(m map[string]foreign.Mixed, s string) {
+	m["a"].Write([]byte(s))
+}
+
+func plainWriter(w io.Writer, s string) {
+	w.Write([]byte(s))
+}
+
+func unconverted(b *bytes.Buffer, p []byte, s string) {
+	b.Write(p)
+	b.Write([]byte(p))
+	b.WriteString(s)
+	io.WriteString(b, s)
+}
