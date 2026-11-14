@@ -1,0 +1,5 @@
+package a
+
+import v2 "example.com/work/v2"
+
+var _ = v2.Level

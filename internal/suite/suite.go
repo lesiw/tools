@@ -98,6 +98,7 @@ import (
 	"lesiw.io/tools/analyzers/preferfprint"
 	"lesiw.io/tools/analyzers/recvname"
 	"lesiw.io/tools/analyzers/recvtype"
+	"lesiw.io/tools/analyzers/redundantalias"
 	"lesiw.io/tools/analyzers/regexpmust"
 	"lesiw.io/tools/analyzers/selfassert"
 	"lesiw.io/tools/analyzers/singlefield"
@@ -206,6 +207,7 @@ var (
 		printf.Analyzer,
 		recvname.Analyzer,
 		recvtype.Analyzer,
+		redundantalias.Analyzer,
 		reflectvaluecompare.Analyzer,
 		regexpmust.Analyzer,
 		selfassert.Analyzer,

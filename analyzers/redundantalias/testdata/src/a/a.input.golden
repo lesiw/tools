@@ -1,0 +1,16 @@
+package a
+
+import (
+	"bytes"
+	"encoding/json" /* the codec */ /* also */ // want `redundant import alias "json"`
+	"fmt" // want `redundant import alias "fmt"`
+
+	task "example.com/work/v2"
+)
+
+var (
+	_ = bytes.Buffer{}
+	_ = json.Valid
+	_ = fmt.Sprint("x")
+	_ = task.Level
+)
