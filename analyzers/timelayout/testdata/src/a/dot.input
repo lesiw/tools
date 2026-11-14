@@ -1,0 +1,9 @@
+package a
+
+import . "time"
+
+func dot(layout string) (Time, error) {
+	_, _ = Parse("yyyy-mm-dd", "2000-05-01") // want `layout names no reference element`
+	_, err := Parse(layout, "2000-05-01")
+	return Now(), err
+}

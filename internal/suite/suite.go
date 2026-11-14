@@ -123,6 +123,7 @@ import (
 	"lesiw.io/tools/analyzers/tidytypes"
 	"lesiw.io/tools/analyzers/timeafter"
 	"lesiw.io/tools/analyzers/timeequal"
+	"lesiw.io/tools/analyzers/timelayout"
 	"lesiw.io/tools/analyzers/todocomment"
 	"lesiw.io/tools/analyzers/typeswitchvar"
 	"lesiw.io/tools/analyzers/typeunparen"
@@ -256,6 +257,7 @@ var (
 		timeafter.Analyzer,
 		timeequal.Analyzer,
 		timeformat.Analyzer,
+		timelayout.Analyzer,
 		todocomment.Analyzer,
 		typeswitchvar.Analyzer,
 		typeunparen.Analyzer,

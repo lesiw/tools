@@ -1,0 +1,118 @@
+package a
+
+import "time"
+
+func notation(t time.Time) {
+	_ = t.Format("yyyy-mm-dd")                    // want `layout names no reference element`
+	_ = t.Format("%Y-%m-%d")                      // want `layout names no reference element`
+	_ = t.Format("Monitor")                       // want `layout names no reference element`
+	_ = t.Format(".09")                           // want `layout names no reference element`
+	_, _ = time.Parse("MM/dd/yyyy", "05/01/2000") // want `layout names no reference element`
+}
+
+func marks(t time.Time) {
+	_ = t.Format("3:04")                        // want `layout prints the hour of a 12-hour clock with no PM or pm`
+	_ = t.Format("2006-01-02 03:04:05")         // want `layout prints the hour of a 12-hour clock with no PM or pm`
+	_ = t.Format("3:04 AM")                     // want `layout prints the hour of a 12-hour clock with no PM or pm`
+	_ = t.Format("3:04") + " " + t.Format("PM") // want `layout prints the hour of a 12-hour clock with no PM or pm`
+	_ = t.Format("2006-01-02 15:04:05 +0300")   // want `layout prints the hour of a 12-hour clock with no PM or pm`
+	_ = t.Format("2024-01-02 3:04")             // want `layout prints the hour of a 12-hour clock with no PM or pm` `layout does not parse back the text it prints`
+	_ = t.AppendFormat(nil, "3:04")             // want `layout prints the hour of a 12-hour clock with no PM or pm`
+}
+
+func years(t time.Time) {
+	_ = t.Format("2024-01-02")  // want `layout does not parse back the text it prints`
+	_ = t.Format("Jan 2, 2024") // want `layout does not parse back the text it prints`
+}
+
+const (
+	stamp = "2006/01/02"
+	bad   = "yyyy-mm-dd"
+)
+
+func constants(t time.Time) {
+	_ = t.Format(stamp)
+	_ = t.Format(bad)               // want `layout names no reference element`
+	_ = t.Format("yyyy" + "/mm/dd") // want `layout names no reference element`
+	_ = t.Format(time.RFC3339)
+	_ = t.Format(time.Kitchen)
+}
+
+func valid(t time.Time) {
+	_ = t.Format("January")
+	_ = t.Format("Monday")
+	_ = t.Format("January 2, 2006")
+	_ = t.Format("002")
+	_ = t.Format("__2")
+	_ = t.Format("_2")
+	_ = t.Format("Z07:00:00")
+	_ = t.Format("Z070000")
+	_ = t.Format("15")
+	_ = t.Format("Jan")
+	_ = t.Format("MST")
+	_ = t.Format("3:04pm")
+	_ = t.Format(".000")
+	_ = t.Format("2006-01-02 15:04:05")
+	_ = t.Format("Mon Jan _2 15:04:05 MST 2006")
+	_ = t.Format("2006-01-02T15:04:05.999999999Z07:00")
+	_ = t.Format("02 Jan 06 15:04 MST")
+	_ = t.Format("01/02 03:04:05PM '06 -0700")
+	_ = t.Format("Monday, 02-Jan-06 15:04:05 MST")
+	_ = t.Format("Mon 15:04")
+	_ = t.Format("Monitor 15:04")
+	_ = t.Format("Jan 2")
+	_ = t.Format("15:04")
+	_ = t.Format("2006-002")
+	_ = t.Format("2006-__2")
+	_ = t.Format("2006-01-02T15:04:05Z0700")
+	_ = t.Format("2006-01-02T15:04:05+0000")
+	_ = t.Format("3:04PM")
+	_ = t.Format("2006-01-02 15:04:05 -0700")
+	_ = t.Format("2006-01-02 15:04:05 PM")
+	_ = t.Format("15:04 AM")
+	_ = t.Format("AM 15:04")
+	_ = t.Format("2006-01-02 03:04:05 PM")
+	_ = t.Format("2006-02-01")
+	_ = t.Format("2006-08-02")
+	_ = t.Format("2006-DD-02")
+	_ = t.Format("2006-01-02 15:04:05 yyyy")
+}
+
+func parsing(layout string) (time.Time, error) {
+	a, _ := time.Parse("3:04", "8:09")
+	_, err := time.ParseInLocation("15:04", "8:09", time.UTC)
+	_, err = time.Parse(layout, "8:09")
+	return a, err
+}
+
+func variables(t time.Time, layout string) (time.Time, error) {
+	_ = t.Format(layout)
+	method := t.Format
+	_ = method("yyyy-mm-dd")
+	_, err := time.Parse(layout, "2006-01-02")
+	return t, err
+}
+
+func calls(t time.Time) {
+	_ = t.AppendFormat(nil, "2006/01/02")
+	_ = t.AppendFormat(nil, "yyyy/mm/dd")            // want `layout names no reference element`
+	_ = time.Time.Format(t, "yyyy-mm-dd")            // want `layout names no reference element`
+	_ = time.Time.AppendFormat(t, nil, "yyyy/mm/dd") // want `layout names no reference element`
+	_, _ = time.ParseInLocation("2006-01-02", "2000-05-01", time.UTC)
+	_, _ = time.ParseInLocation("yyyy-mm-dd", "2000-05-01", time.UTC) // want `layout names no reference element`
+	_, _ = (time.Parse)("yyyy-mm-dd", "2000-05-01")                   // want `layout names no reference element`
+}
+
+type formatter interface{ Format(string) string }
+
+func viaInterface(f formatter) string {
+	return f.Format("yyyy-mm-dd")
+}
+
+type other struct{}
+
+func (other) Format(string) string { return "" }
+
+func notTime(o other) string {
+	return o.Format("yyyy-mm-dd")
+}
