@@ -1,0 +1,25 @@
+package a
+
+func differentPair() bool { return point{1, 2} == point{3, 4} }
+
+func addressed() bool { return &point{1, 2} == &point{1, 2} }
+
+func addressedElement() bool { return &[]int{1}[0] == &[]int{1}[0] }
+
+type counter int
+
+func (c counter) next() counter { return c }
+
+func methodCall(c counter) bool { return c.next() == c.next() }
+
+func roll() int { return 1 }
+
+func twoRolls() bool { return roll() == roll() }
+
+func negatedRolls() bool { return -roll() == -roll() }
+
+func impureArgument() bool { return min(roll(), 1) == min(roll(), 1) }
+
+func appended(a []int) bool { return len(append(a, 1)) == len(append(a, 1)) }
+
+func twoReads(ch chan int) bool { return <-ch == <-ch }

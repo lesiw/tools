@@ -1,0 +1,48 @@
+package a
+
+func isNaN(f float64) bool    { return f != f }
+func isNotNaN(f float64) bool { return f == f }
+
+func nanAtMost(f float64) bool  { return f <= f }
+func nanAtLeast(f float64) bool { return f >= f }
+
+func nanDifference(f float64) float64 { return f - f }
+
+func nanQuotient(f float64) float64 { return f / f }
+
+func pointed(p *float64) bool { return *p == *p }
+
+func sameComplex(z complex128) bool { return z == z }
+
+type reading float64
+
+func nanReading(r reading) bool { return r == r }
+
+func nanReadingDifference(r reading) reading { return r - r }
+
+func genericZero[T ~int](v T) bool {
+	var zero T
+	return v == zero
+}
+
+type pair struct{ x float64 }
+
+func nanPair(p pair) bool { return p == p }
+
+type inner struct{ x float64 }
+
+type outer struct{ inner }
+
+func nanOuter(o outer) bool { return o == o }
+
+type holder struct{ v any }
+
+func nanHolder(h holder) bool { return h == h }
+
+func grid(g [2]float64) bool { return g == g }
+
+func reflexive(v any) bool { return v == v }
+
+func genericComparable[T comparable](v T) bool { return v != v }
+
+func genericUnion[T ~int | ~float64](v T) bool { return v != v }

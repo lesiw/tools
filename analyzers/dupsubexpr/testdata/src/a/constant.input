@@ -1,0 +1,5 @@
+package a
+
+const size = 2
+
+func ratio() [size / size]byte { return [size / size]byte{} }

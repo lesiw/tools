@@ -1,0 +1,119 @@
+package a
+
+import "time"
+
+type row struct{ n int }
+
+type point struct{ x, y int }
+
+func quotient(n int) int { return n / n } // want `both operands are the same value`
+
+func difference(n int) int { return n - n } // want `both operands are the same value`
+
+func remainder(n int) int { return n % n } // want `both operands are the same value`
+
+func less(n int) bool { return n < n } // want `both operands are the same value`
+
+func greater(n int) bool { return n > n } // want `both operands are the same value`
+
+func atMost(n int) bool { return n <= n } // want `both operands are the same value`
+
+func atLeast(n int) bool { return n >= n } // want `both operands are the same value`
+
+func equal(n int) bool { return n == n } // want `both operands are the same value`
+
+func unequal(n int) bool { return n != n } // want `both operands are the same value`
+
+func sameStruct(r row) bool { return r == r } // want `both operands are the same value`
+
+func intArray(g [2]int) bool { return g == g } // want `both operands are the same value`
+
+func deref(p *int) bool { return *p == *p } // want `both operands are the same value`
+
+func nested(a, b int) int { return (a + b) - (a + b) } // want `both operands are the same value`
+
+func nestedRepeat(n int) int { return (n - n) - (n - n) } // want `both operands are the same value`
+
+func converted(n int) bool { return int64(n) == int64(n) } // want `both operands are the same value`
+
+func convertedQualified(d time.Duration) bool {
+	return time.Duration(d) == time.Duration(d) // want `both operands are the same value`
+}
+
+func asserted(v any) bool { return v.(int) == v.(int) } // want `both operands are the same value`
+
+func sameLength(s string) bool { return len(s) == len(s) } // want `both operands are the same value`
+
+func sameCapacity(s []int) bool { return cap(s) == cap(s) } // want `both operands are the same value`
+
+func sameMaximum(x, y int) int { return max(x, y) - max(x, y) } // want `both operands are the same value`
+
+func sameMinimum(x, y int) int { return min(x, y) - min(x, y) } // want `both operands are the same value`
+
+func sameReal(z complex128) bool { return real(z) < real(z) } // want `both operands are the same value`
+
+func sameImag(z complex128) bool { return imag(z) < imag(z) } // want `both operands are the same value`
+
+func sameComplexConstant() bool { return complex(1, 2) == complex(1, 2) } // want `both operands are the same value`
+
+func parenthesized(s string) bool { return (len)(s) == (len)(s) } // want `both operands are the same value`
+
+func parenthesizedConversion(n int) bool {
+	return (int64)(n) == (int64)(n) // want `both operands are the same value`
+}
+
+func constantComparison() bool { return 1 == 1 } // want `both operands are the same value`
+
+func floatConstantComparison() bool { return 1.0 == 1.0 } // want `both operands are the same value`
+
+func literalPair() bool { return point{1, 2} == point{1, 2} } // want `both operands are the same value`
+
+func builtArgument() bool { return len([]int{1}) == len([]int{1}) } // want `both operands are the same value`
+
+func indexedField(rows []row, k int) bool { return rows[k].n < rows[k].n } // want `both operands are the same value`
+
+func addressOfVariable(n int) bool { return &n == &n } // want `both operands are the same value`
+
+type intTerms interface{ ~int | ~int64 }
+
+type intTermsStringer interface {
+	intTerms
+	String() string
+}
+
+func genericInt[T ~int](v T) bool { return v != v } // want `both operands are the same value`
+
+func genericIntDifference[T ~int](v T) T { return v - v } // want `both operands are the same value`
+
+func genericIntLess[T ~int](v T) bool { return v < v } // want `both operands are the same value`
+
+func genericInterval[T interface{ ~int }](v T) T { return v - v } // want `both operands are the same value`
+
+func genericNamed[T intTerms](v T) T { return v - v } // want `both operands are the same value`
+
+func genericIntersection[T interface {
+	comparable
+	~int
+}](v T) bool {
+	return v != v // want `both operands are the same value`
+}
+
+func genericStringer[T intTermsStringer](v T) T { return v - v } // want `both operands are the same value`
+
+func genericStructTerm[T interface{ struct{ a int } }](v T) bool {
+	return v == v // want `both operands are the same value`
+}
+
+func floatLess(f float64) bool { return f < f } // want `both operands are the same value`
+
+func floatGreater(f float64) bool { return f > f } // want `both operands are the same value`
+
+func wrapped(rows []row, k int) bool {
+	return rows[k].n < // want `both operands are the same value`
+		rows[k].n
+}
+
+func wrappedOperand(a, b int) bool {
+	return (a + b) == (a + // want `both operands are the same value`
+		b)
+}

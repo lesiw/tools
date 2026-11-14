@@ -1,0 +1,19 @@
+package a
+
+func distinct(x, y int) int { return x - y }
+
+func ordered(rows []row, k, m int) bool { return rows[k].n < rows[m].n }
+
+func doubling(n int) int      { return n + n }
+func squaring(n int) int      { return n * n }
+func padding(s string) string { return s + s }
+
+func masked(n int) int       { return n & n }
+func joined(n int) int       { return n | n }
+func xored(n int) int        { return n ^ n }
+func cleared(n int) int      { return n &^ n }
+func shifted(n int) int      { return n << n }
+func shiftedRight(n int) int { return n >> n }
+
+func conjunct(a bool) bool { return a && a }
+func disjunct(a bool) bool { return a || a }
