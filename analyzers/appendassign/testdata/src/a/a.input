@@ -1,0 +1,81 @@
+package a
+
+func savedElsewhere(xs, ys []int, v int) ([]int, []int) {
+	ys = append(xs, v) // want `append to xs is assigned to ys, so xs keeps its length`
+	return xs, ys
+}
+
+func tuple(n int, xs, ys []int, v int) (int, []int) {
+	n, ys = 0, append(xs, v) // want `append to xs is assigned to ys, so xs keeps its length`
+	return n, xs
+}
+
+func unread(xs, ys []int, v int) []int {
+	ys = append(xs, v)
+	return ys
+}
+
+func written(xs, ys []int, v int) []int {
+	ys = append(xs, v)
+	xs = nil
+	return ys
+}
+
+func looped(xs, ys []int, v int) []int {
+	for range xs {
+		ys = append(xs, v)
+	}
+	return ys
+}
+
+func literal(xs, ys []int, v int) ([]int, []int) {
+	f := func() {
+		ys = append(xs, v)
+	}
+	f()
+	return xs, ys
+}
+
+func same(xs []int, v int) []int {
+	xs = append(xs, v)
+	return xs
+}
+
+func dropped(xs []int, v int) []int {
+	_ = append(xs, v)
+	return xs
+}
+
+func declared(xs []int, v int) ([]int, []int) {
+	ys := append(xs, v)
+	return xs, ys
+}
+
+func joined(xs, more []int) ([]int, []int) {
+	var out []int
+	out = append(xs, more...)
+	return xs, out
+}
+
+func prefix(xs, ys []int, v int) ([]int, []int) {
+	ys = append(xs[:1], v)
+	return xs, ys
+}
+
+type holder struct{ items []int }
+
+func (h *holder) appendTo(ys []int, v int) []int {
+	ys = append(h.items, v)
+	return h.items
+}
+
+func keyed(m map[string][]int, xs []int, v int) []int {
+	m["k"] = append(xs, v)
+	return xs
+}
+
+func shadowed(xs, ys []int, v int) []int {
+	append := func(s []int, v int) []int { return s }
+	ys = append(xs, v)
+	return xs
+}

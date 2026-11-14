@@ -54,6 +54,7 @@ import (
 	"lesiw.io/errcheck/errcheck"
 	"lesiw.io/tools/analyzers/addrnil"
 	"lesiw.io/tools/analyzers/afterhttperror"
+	"lesiw.io/tools/analyzers/appendassign"
 	"lesiw.io/tools/analyzers/appendcombine"
 	"lesiw.io/tools/analyzers/assertnil"
 	"lesiw.io/tools/analyzers/assignop"
@@ -145,6 +146,7 @@ var (
 	list      = []*analysis.Analyzer{
 		addrnil.Analyzer,
 		afterhttperror.Analyzer,
+		appendassign.Analyzer,
 		appendcombine.Analyzer,
 		appends.Analyzer,
 		asmdecl.Analyzer,
