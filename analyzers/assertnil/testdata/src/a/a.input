@@ -1,0 +1,258 @@
+package a
+
+type sink interface {
+	Use()
+}
+
+type item struct{}
+
+func guardFirst(x any) {
+	if s, ok := x.(sink); ok && s != nil { // want `s is never nil when ok is true`
+		s.Use()
+	}
+}
+
+func grouped(x any, flag bool) {
+	if s, ok := x.(sink); (ok && flag) && s != nil { // want `s is never nil when ok is true`
+		s.Use()
+	}
+}
+
+func groupRight(x any, flag bool) {
+	if s, ok := x.(sink); ok && (s != nil && flag) { // want `s is never nil when ok is true`
+		s.Use()
+	}
+}
+
+func readInClosure(x any) {
+	if s, ok := x.(sink); (func() bool { return s != nil })() && ok && s != nil { // want `s is never nil when ok is true`
+		s.Use()
+	}
+}
+
+func checkFirst(x any) {
+	if s, ok := x.(sink); s != nil && ok { // want `s is never nil when ok is true`
+		s.Use()
+	}
+}
+
+func checkMiddle(x any, flag bool) {
+	if s, ok := x.(sink); ok && s != nil && flag { // want `s is never nil when ok is true`
+		s.Use()
+	}
+}
+
+func nilFirst(x any) {
+	if s, ok := x.(sink); nil != s && ok { // want `s is never nil when ok is true`
+		s.Use()
+	}
+}
+
+func parenthesized(x any) {
+	if s, ok := x.(sink); ok && (s != nil) { // want `s is never nil when ok is true`
+		s.Use()
+	}
+}
+
+func parenGuarded(x any) {
+	if s, ok := x.(sink); (ok) && s != nil { // want `s is never nil when ok is true`
+		s.Use()
+	}
+}
+
+func readAgain(x, y any) {
+	if s, ok := x.(sink); ok && s != nil && s != y { // want `s is never nil when ok is true`
+		return
+	}
+}
+
+func checkLast(x any, flag bool) {
+	if s, ok := x.(sink); ok &&
+		flag && s != nil { // want `s is never nil when ok is true`
+		s.Use()
+	}
+}
+
+func unread(x any) {
+	if s, ok := x.(sink); ok && s != nil { // want `s is never nil when ok is true`
+		return
+	}
+}
+
+func assignedAndRead(x any) {
+	if s, ok := x.(sink); ok && s != nil { // want `s is never nil when ok is true`
+		s = nil
+		s.Use()
+	}
+}
+
+func assignedOuterRead(x any) {
+	var (
+		held  sink
+		bound bool
+	)
+	if held, bound = x.(sink); bound && held != nil { // want `held is never nil when bound is true`
+		held.Use()
+	}
+}
+
+func assignedOuterAfter(x any) {
+	var (
+		held  sink
+		bound bool
+	)
+	if held, bound = x.(sink); bound && held != nil { // want `held is never nil when bound is true`
+		return
+	}
+	_, _ = held, bound
+}
+
+func betweenCheckAndGuard(x any, flag bool) {
+	if s, ok := x.(sink); s != nil && flag && ok {
+		s.Use()
+	}
+}
+
+func commentOutside(x any) {
+	if s, ok := x.(sink); ok && s != nil /* keep */ { // want `s is never nil when ok is true`
+		s.Use()
+	}
+}
+
+func commented(x any) {
+	if s, ok := x.(sink); ok && // keep me
+		s != nil { // want `s is never nil when ok is true`
+		s.Use()
+	}
+}
+
+func writtenOnly(x any) {
+	if s, ok := x.(sink); ok && s != nil { // want `s is never nil when ok is true`
+		s = nil
+	}
+}
+
+func parenthesizedTarget(x any) {
+	if s, ok := x.(sink); ok && s != nil { // want `s is never nil when ok is true`
+		(s) = nil
+	}
+}
+
+func assignedOuter(x any) {
+	var (
+		held  sink
+		bound bool
+	)
+	if held, bound = x.(sink); bound && held != nil { // want `held is never nil when bound is true`
+		return
+	}
+}
+
+func writerAfter(x any) {
+	if s, ok := x.(sink); ok && s != nil && wipe(&s) { // want `s is never nil when ok is true`
+		s.Use()
+	}
+}
+
+func wipe(p *sink) bool {
+	*p = nil
+	return true
+}
+
+func writerBetween(x any) {
+	if s, ok := x.(sink); s != nil && wipe(&s) && ok {
+		s.Use()
+	}
+}
+
+func wiped(x any, flag bool) {
+	if s, ok := x.(sink); wipe(&s) && !flag && ok && s != nil {
+		s.Use()
+	}
+}
+
+func force(b *bool) bool {
+	*b = false
+	return true
+}
+
+func forcedGuard(x any) {
+	if s, ok := x.(sink); force(&ok) && ok && s != nil {
+		s.Use()
+	}
+}
+
+func writeInClosure(x any) {
+	if s, ok := x.(sink); (func() bool {
+		s = nil
+		return true
+	})() && ok && s != nil {
+		s.Use()
+	}
+}
+
+func equalNil(x any) {
+	if s, ok := x.(sink); ok && s == nil {
+		return
+	}
+}
+
+func noGuard(x any) {
+	if s, ok := x.(sink); s != nil {
+		s.Use()
+		_ = ok
+	}
+}
+
+func negated(x any) {
+	if s, ok := x.(sink); !ok && s != nil {
+		return
+	}
+}
+
+func forInit(x any) {
+	for s, ok := x.(sink); ok && s != nil; {
+		s.Use()
+		return
+	}
+}
+
+func switchInit(x any) {
+	switch s, ok := x.(sink); {
+	case ok && s != nil:
+		s.Use()
+	}
+}
+
+func nestedCheck(x any) {
+	if s, ok := x.(sink); ok {
+		if s != nil {
+			s.Use()
+		}
+	}
+}
+
+func sequential(x any) {
+	s, ok := x.(sink)
+	if ok && s != nil {
+		s.Use()
+	}
+}
+
+func source(x any) {
+	if _, ok := x.(sink); ok && x != nil {
+		return
+	}
+}
+
+func pointerResult(x any) {
+	if p, ok := x.(*item); ok && p != nil {
+		return
+	}
+}
+
+func parameter[T ~*item](x any) {
+	if p, ok := x.(T); ok && p != nil {
+		return
+	}
+}
