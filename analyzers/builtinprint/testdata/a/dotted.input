@@ -1,0 +1,11 @@
+package a
+
+import (
+	. "fmt"
+	"os"
+)
+
+func dotted() {
+	print(os.Args[0]) // want `print is not guaranteed to stay in the language`
+	Sprintln(os.Args[0])
+}

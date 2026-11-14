@@ -1,0 +1,13 @@
+package a
+
+import (
+	"fmt"
+	"os"
+)
+
+func present() {
+	print("starting") // want `print can be replaced by fmt.Fprint`
+	println(1, "of")  // want `println can be replaced by fmt.Fprintln`
+	print(1, "x")     // want `print can be replaced by fmt.Fprint`
+	fmt.Println(os.Args[0])
+}

@@ -59,6 +59,7 @@ import (
 	"lesiw.io/tools/analyzers/bookends"
 	"lesiw.io/tools/analyzers/boolreturn"
 	"lesiw.io/tools/analyzers/boolset"
+	"lesiw.io/tools/analyzers/builtinprint"
 	"lesiw.io/tools/analyzers/commentfmt"
 	"lesiw.io/tools/analyzers/containscut"
 	"lesiw.io/tools/analyzers/ctxfield"
@@ -152,6 +153,7 @@ var (
 		bools.Analyzer,
 		boolset.Analyzer,
 		buildtag.Analyzer,
+		builtinprint.Analyzer,
 		cgocall.Analyzer,
 		commentfmt.Analyzer,
 		composite.Analyzer,

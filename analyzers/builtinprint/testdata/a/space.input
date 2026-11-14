@@ -1,0 +1,13 @@
+package a
+
+import (
+	"fmt"
+	"os"
+)
+
+func space() {
+	print(1, 2)        // want `print is not guaranteed to stay in the language`
+	print(true, false) // want `print is not guaranteed to stay in the language`
+	print("a", 1, 2)   // want `print is not guaranteed to stay in the language`
+	fmt.Println(os.Args[0])
+}

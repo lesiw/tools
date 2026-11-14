@@ -1,0 +1,7 @@
+package declared
+
+var os = struct{ Args []string }{Args: []string{"declared"}}
+
+func declared() {
+	println(os.Args[0]) // want `println is not guaranteed to stay in the language`
+}

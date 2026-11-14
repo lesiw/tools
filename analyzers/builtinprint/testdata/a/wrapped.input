@@ -1,0 +1,12 @@
+package a
+
+import (
+	"fmt"
+	"os"
+)
+
+func wrapped() {
+	println("a", // want `println can be replaced by fmt.Fprintln`
+		"b")
+	fmt.Println(os.Args[0])
+}

@@ -1,0 +1,10 @@
+package a
+
+import (
+	f "fmt"
+	e "os"
+)
+
+func aliased() {
+	print(f.Sprint("x"), e.Args[0]) // want `print can be replaced by f.Fprint\(e.Stderr, \.\.\.\)`
+}

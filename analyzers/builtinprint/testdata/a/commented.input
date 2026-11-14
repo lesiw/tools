@@ -1,0 +1,11 @@
+package a
+
+import (
+	"fmt"
+	"os"
+)
+
+func commented() {
+	print("a", /* second */ "b") // want `print can be replaced by fmt.Fprint`
+	fmt.Println(os.Args[0])
+}

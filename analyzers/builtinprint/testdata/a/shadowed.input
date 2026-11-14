@@ -1,0 +1,14 @@
+package a
+
+type logger struct{}
+
+func (logger) print(...any) {}
+
+func shadowed() {
+	print := func(...any) {}
+	println := func(...any) {}
+	print("local")
+	println("local")
+	var l logger
+	l.print("method")
+}

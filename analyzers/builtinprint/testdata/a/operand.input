@@ -1,0 +1,32 @@
+package a
+
+import (
+	"fmt"
+	"os"
+	"time"
+)
+
+type item struct{}
+
+type kind int
+
+func (kind) String() string { return "kind" }
+
+type code int
+
+func (code) Error() string { return "code" }
+
+type form int
+
+func (form) Format(s string) string { return s }
+
+func operand(err error, xs []int, p *item, k kind, c code, f form, d time.Duration) {
+	println(err) // want `println is not guaranteed to stay in the language`
+	print(xs)    // want `print is not guaranteed to stay in the language`
+	println(p)   // want `println is not guaranteed to stay in the language`
+	println(k)   // want `println is not guaranteed to stay in the language`
+	println(c)   // want `println is not guaranteed to stay in the language`
+	println(f)   // want `println is not guaranteed to stay in the language`
+	println(d)   // want `println is not guaranteed to stay in the language`
+	fmt.Println(os.Args[0])
+}

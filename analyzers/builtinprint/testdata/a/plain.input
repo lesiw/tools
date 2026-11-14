@@ -1,0 +1,8 @@
+package a
+
+func plain(n int) {
+	println("start")     // want `println can be replaced by fmt.Fprintln`
+	print("done")        // want `print can be replaced by fmt.Fprint`
+	print("n=", n, "\n") // want `print can be replaced by fmt.Fprint`
+	println(n, "of", 2)  // want `println can be replaced by fmt.Fprintln`
+}

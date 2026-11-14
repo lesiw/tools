@@ -1,0 +1,12 @@
+package a
+
+import (
+	"fmt"
+)
+
+import "os"
+
+func half() {
+	fmt.Fprintln(os.Stderr, os.Args[0]) // want `println can be replaced by fmt.Fprintln`
+	fmt.Fprint(os.Stderr)               // want `print can be replaced by fmt.Fprint`
+}

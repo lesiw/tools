@@ -1,0 +1,15 @@
+package a
+
+import (
+	"example.com/m/fmt"
+	"os"
+)
+
+func imported() {
+	print(fmt.Name(), os.Args[0]) // want `print is not guaranteed to stay in the language`
+}
+
+func localfmt() {
+	fmt := "value"
+	println(fmt, os.Args[0]) // want `println is not guaranteed to stay in the language`
+}

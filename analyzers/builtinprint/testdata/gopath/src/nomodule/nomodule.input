@@ -1,0 +1,6 @@
+package nomodule
+
+func plain() {
+	println("no module")
+	print("either")
+}

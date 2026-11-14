@@ -1,0 +1,12 @@
+package a
+
+import (
+	"fmt"
+	"os"
+)
+
+func paren() {
+	(print)("x")        // want `print can be replaced by fmt.Fprint`
+	println(os.Args[0]) // want `println can be replaced by fmt.Fprintln`
+	fmt.Println(os.Args[0])
+}

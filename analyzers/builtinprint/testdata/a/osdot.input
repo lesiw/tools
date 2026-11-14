@@ -1,0 +1,12 @@
+package a
+
+import (
+	"fmt"
+
+	. "os"
+)
+
+func osdot() {
+	println(Args[0]) // want `println is not guaranteed to stay in the language`
+	fmt.Println(Args[0])
+}

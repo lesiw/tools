@@ -1,0 +1,10 @@
+package a
+
+import (
+	_ "fmt"
+	"os"
+)
+
+func blank() {
+	println(os.Args[0]) // want `println is not guaranteed to stay in the language`
+}
