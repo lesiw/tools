@@ -1,0 +1,124 @@
+package a
+
+import "time"
+
+type When = time.Time
+
+func aliased(a When, b time.Time) bool {
+	return a == b // want `compares more than the instant`
+}
+
+func same(a, b time.Time) bool {
+	return a == b // want `compares more than the instant`
+}
+
+func different(a, b time.Time) bool {
+	return a != b // want `compares more than the instant`
+}
+
+func unset(t time.Time) bool {
+	return t == time.Time{} // want `compared with the zero value`
+}
+
+func set(t time.Time) bool {
+	return time.Time{} != t // want `compared with the zero value`
+}
+
+func zeroLeft(t time.Time) bool {
+	return time.Time{} == t // want `compared with the zero value`
+}
+
+func deref(p, q *time.Time) bool {
+	return *p == *q // want `compares more than the instant`
+}
+
+func received(ch chan time.Time, deadline time.Time) bool {
+	return <-ch == deadline // want `compares more than the instant`
+}
+
+func field(t struct{ At time.Time }, u time.Time) bool {
+	return t.At != u // want `compares more than the instant`
+}
+
+func zeroParen(t time.Time) bool {
+	if t == (time.Time{}) { // want `compared with the zero value`
+		return false
+	}
+	return true
+}
+
+func leftParen(a, b time.Time) bool {
+	return (a) == b // want `compares more than the instant`
+}
+
+func rightParen(a, b time.Time) bool {
+	return a == (b) // want `compares more than the instant`
+}
+
+func parens(a, b time.Time) bool {
+	return (a != b) // want `compares more than the instant`
+}
+
+func notUnset(t time.Time) bool {
+	return !(t == time.Time{}) // want `compared with the zero value`
+}
+
+func notDifferent(a, b time.Time) bool {
+	return !(a != b) // want `compares more than the instant`
+}
+
+func called(a time.Time) bool {
+	return func() time.Time { return a }() == a // want `compares more than the instant`
+}
+
+func conjunction(a, b time.Time) bool {
+	return a != b && b.After(a) // want `compares more than the instant`
+}
+
+func width(a, b time.Time) bool {
+	return a == b && a.After(b) && b.After(a) // want `more than the instant`
+}
+
+func split(a, b time.Time) bool {
+	return a == // want `^== on a time\.Time compares more than the instant; write a\.Equal\(b\)$`
+		b
+}
+
+func multiline(a time.Time, zone *time.Location) bool {
+	return a == time.Date(2020, 1, 1, // want `^== on a time\.Time compares more than the instant$`
+		0, 0, 0, 0, zone)
+}
+
+func commented(a, b time.Time) bool {
+	return a == /* note */ b // want `compares more than the instant`
+}
+
+type Defined time.Time
+
+func defined(a, b Defined) bool {
+	return a == b
+}
+
+func neither() bool {
+	return time.Time{} == time.Time{}
+}
+
+func switched(t, u time.Time) bool {
+	switch t {
+	case u:
+		return true
+	}
+	return false
+}
+
+func keyed(m map[time.Time]bool, t time.Time) bool {
+	return m[t]
+}
+
+func wrapped(a, b struct{ At time.Time }) bool {
+	return a == b
+}
+
+func pointers(p, q *time.Time) bool {
+	return p == q
+}
