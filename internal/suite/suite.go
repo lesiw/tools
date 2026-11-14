@@ -106,6 +106,7 @@ import (
 	"lesiw.io/tools/analyzers/redundantalias"
 	"lesiw.io/tools/analyzers/regexpmust"
 	"lesiw.io/tools/analyzers/selfassert"
+	"lesiw.io/tools/analyzers/shellcommand"
 	"lesiw.io/tools/analyzers/singlefield"
 	"lesiw.io/tools/analyzers/strcompare"
 	"lesiw.io/tools/analyzers/strconcat"
@@ -222,6 +223,7 @@ var (
 		reflectvaluecompare.Analyzer,
 		regexpmust.Analyzer,
 		selfassert.Analyzer,
+		shellcommand.Analyzer,
 		shift.Analyzer,
 		sigchanyzer.Analyzer,
 		singlefield.Analyzer,

@@ -1,0 +1,68 @@
+package a
+
+import (
+	"context"
+	"os/exec"
+	x "os/exec"
+)
+
+const spaced = "alpha --constant"
+
+func literal() {
+	exec.Command("alpha --literal") // want `program name contains whitespace; the whole string is one file name`
+}
+
+func constant() {
+	exec.Command(spaced) // want `program name contains whitespace; the whole string is one file name`
+}
+
+func concatenated() {
+	exec.Command("alpha" + " --concat") // want `program name contains whitespace; the whole string is one file name`
+}
+
+func tab() {
+	exec.Command("alpha\t--tab") // want `program name contains whitespace; the whole string is one file name`
+}
+
+func contextual(ctx context.Context) {
+	exec.CommandContext(ctx, "alpha --context") // want `program name contains whitespace; the whole string is one file name`
+}
+
+func aliased() {
+	x.Command("alpha --alias") // want `program name contains whitespace; the whole string is one file name`
+}
+
+func directory() {
+	exec.Command("/opt/my tools/alpha") // want `program name contains whitespace; the whole string is one file name`
+	exec.Command(`C:\my tools\alpha`)   // want `program name contains whitespace; the whole string is one file name`
+}
+
+func shell() {
+	exec.Command("/bin/ls -l") // want `program name contains whitespace; the whole string is one file name`
+	exec.Command("ls -l /tmp") // want `program name contains whitespace; the whole string is one file name`
+}
+
+func separated() {
+	exec.Command("alpha", "--one")
+	exec.Command("sh", "-c", "alpha --two")
+}
+
+func variable() {
+	name := "alpha --variable"
+	exec.Command(name)
+}
+
+type runner struct{}
+
+func (runner) Command(string) {}
+
+func shadowed() {
+	var exec runner
+	exec.Command("alpha --shadowed")
+}
+
+func Command(string) {}
+
+func othercommand() {
+	Command("alpha --other")
+}
