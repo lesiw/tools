@@ -1,0 +1,323 @@
+package a
+
+func plain(n int) {
+	{ // want `redundant block statement`
+		println(n)
+	}
+	{ // want `redundant block statement`
+		println("two")
+		println("lines")
+	}
+	{ // want `redundant block statement`
+		var ()
+		println("no spec")
+	}
+	{ // want `redundant block statement`
+		var _ = n
+		println("blank")
+	}
+	{ // want `redundant block statement`
+		n = 10
+		println(n)
+	}
+	// want +1 `redundant block statement`
+	{
+		println("alone")
+	}
+	// want +1 `redundant block statement`
+	{
+		// heading
+		println("commented")
+	}
+}
+
+func emptied(n int) {
+	// want +1 `redundant block statement`
+	{}
+	println(n)
+}
+
+func unfilled(n int) {
+	// want +1 `redundant block statement`
+	{
+	}
+	println(n)
+}
+
+func trailed(n int) {
+	// want +1 `redundant block statement`
+	{} // note
+	println(n)
+}
+
+func noted(n int) {
+	// want +1 `redundant block statement`
+	{
+		// nothing
+	}
+	println(n)
+}
+
+func keep(n int) {
+	{
+		x := n
+		println(x)
+	}
+	{
+		var y = n
+		println(y)
+	}
+	{
+		const z = 1
+		println(z)
+	}
+	{
+		type q int
+		println(q(1))
+	}
+}
+
+func inner(n int) {
+	{ // want `redundant block statement`
+		if n < 0 {
+			goto done
+		}
+		n++
+	done:
+		println(n)
+	}
+}
+
+func labeled(n int) {
+	if n < 0 {
+		goto done
+	}
+	n++
+done:
+	{ // want `redundant block statement`
+		n++
+		println(n)
+	}
+}
+
+func shadow(n int) {
+	g := func() {
+		goto x
+	x:
+		println(n)
+	}
+	{ // want `redundant block statement`
+		println(n)
+	}
+	g()
+	if n < 0 {
+		goto x
+	}
+x:
+	println("done")
+}
+
+func closure(n int) {
+	again := func() {
+		{ // want `redundant block statement`
+			println(n)
+		}
+	}
+	if n < 0 {
+		goto done
+	}
+	again()
+done:
+	println("done")
+}
+
+func again(n int) {
+	{ // want `redundant block statement`
+	top:
+		println(n)
+		if n > 0 {
+			n--
+			goto top
+		}
+	}
+}
+
+func keptClause(n int) {
+	switch n {
+	case 1:
+		goto done
+		{
+			var _ = n
+			println(n)
+		}
+	done:
+		println(n)
+	}
+}
+
+func keptLabeled(n int) {
+	if n < 0 {
+		goto done
+	}
+done:
+	{
+		x := n
+		println(x)
+	}
+}
+
+func nested(n int) {
+	if n > 0 {
+		goto done
+	}
+	if n < 0 {
+		{ // want `redundant block statement`
+			println("deeper")
+		}
+	}
+	switch n {
+	case 1:
+		{ // want `redundant block statement`
+			println("one")
+		}
+	}
+done:
+	println("done")
+}
+
+func emptyLabeled(n int) {
+	if n < 0 {
+		goto done
+	}
+done:
+	// want +1 `redundant block statement`
+	{
+	}
+	println(n)
+}
+
+func guarded(n int) {
+	for n > 0 {
+		{ // want `redundant block statement`
+			n--
+		}
+	}
+}
+
+func clauses(n int) {
+	switch n {
+	case 1:
+		{ // want `redundant block statement`
+			x := n
+			println(x)
+		}
+	case 2:
+		{ // want `redundant block statement`
+			println("no name")
+		}
+	case 3:
+		{
+			x := n
+			println(x)
+		}
+		println("after")
+	case 4: { // want `redundant block statement`
+		x := n
+		println(x)
+	}
+	case 5:
+		{ // want `redundant block statement`
+			println("no name")
+		}
+		println("after")
+	case 6: {} // want `redundant block statement`
+	case 7:
+		// want +1 `redundant block statement`
+		{
+		}
+	}
+}
+
+func typeSwitch(v any) {
+	switch x := v.(type) {
+	case int:
+		{
+			println(x)
+			x := 1
+			println(x)
+		}
+	}
+}
+
+func received(ch chan int) {
+	select {
+	case x := <-ch:
+		{
+			println(x)
+			var x int
+			println(x)
+		}
+	}
+}
+
+func rebinds(ch chan int) {
+	select {
+	case x := <-ch:
+		{
+			println(x)
+			x, y := 1, 2
+			println(x, y)
+		}
+	}
+}
+
+func initialized(n int) {
+	switch x := n; x {
+	case 1:
+		{ // want `redundant block statement`
+			x := 2
+			println(x)
+		}
+	}
+}
+
+func signals(ch chan int) {
+	select {
+	case ch <- 1:
+		{ // want `redundant block statement`
+			x := 1
+			println(x)
+		}
+	}
+}
+
+func blank(n int) {
+	if n > 0 {
+		goto done
+	}
+	{
+		var _ = n
+	}
+done:
+	println(n)
+}
+
+func over(n int) {
+	if n > 0 {
+		goto done
+	}
+	{
+		println(n)
+	}
+done:
+	println("done")
+}
+
+func after(n int) {
+	{ // want `redundant block statement`
+		println(n)
+	}
+	goto done
+done:
+	println("done")
+}
