@@ -132,6 +132,7 @@ import (
 	"lesiw.io/tools/analyzers/timeequal"
 	"lesiw.io/tools/analyzers/timelayout"
 	"lesiw.io/tools/analyzers/todocomment"
+	"lesiw.io/tools/analyzers/truncatecmp"
 	"lesiw.io/tools/analyzers/typeswitchvar"
 	"lesiw.io/tools/analyzers/typeunparen"
 	"lesiw.io/tools/analyzers/unlabelstmt"
@@ -274,6 +275,7 @@ var (
 		timeformat.Analyzer,
 		timelayout.Analyzer,
 		todocomment.Analyzer,
+		truncatecmp.Analyzer,
 		typeswitchvar.Analyzer,
 		typeunparen.Analyzer,
 		unlabelstmt.Analyzer,

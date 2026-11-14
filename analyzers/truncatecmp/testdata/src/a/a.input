@@ -1,0 +1,113 @@
+package a
+
+import "scale/inner"
+
+func foreign(level scale.Level, half int32) {
+	_ = int32(level) < half // want `comparison truncates scale.Level to int32`
+}
+
+func narrow(wide int64, half int32) {
+	_ = int32(wide) < half  // want `comparison truncates int64 to int32`
+	_ = int32(wide) <= half // want `comparison truncates int64 to int32`
+	_ = int32(wide) > half  // want `comparison truncates int64 to int32`
+	_ = int32(wide) >= half // want `comparison truncates int64 to int32`
+	_ = int32(wide) == half // want `comparison truncates int64 to int32`
+	_ = half != int32(wide) // want `comparison truncates int64 to int32`
+}
+
+func nested(wide int64, half int32) {
+	_ = int32(wide)+1 < half
+}
+
+func parens(wide int64, half int32) {
+	_ = (int32(wide)) < half // want `comparison truncates int64 to int32`
+}
+
+func literal(wide int64) {
+	_ = int8(wide) == 0 // want `comparison truncates int64 to int8`
+}
+
+func mixedSign(count int16, limit uint8) {
+	_ = uint8(count) < limit // want `comparison truncates int16 to uint8`
+}
+
+func crossSign(wide uint64, limit int8) {
+	_ = int8(wide) < limit // want `comparison truncates uint64 to int8`
+}
+
+func widen(half int32, wide int64) {
+	_ = int64(half) < wide
+	_ = wide > int64(half)
+}
+
+func sameWidth(first int32, second int32) {
+	_ = int32(first) < second
+}
+
+func signedSameWidth(signed int16, other uint16) {
+	_ = uint16(signed) < other
+}
+
+func toUnsigned(half int32, wide uint64) {
+	_ = uint64(half) < wide
+}
+
+func pair(wide, other int64) {
+	_ = int32(wide) < int32(other) // want `comparison truncates int64 to int32`
+}
+
+type count int64
+
+func namedSameWidth(wide int64, total count) {
+	_ = count(wide) < total
+}
+
+type small int16
+
+func namedNarrow(wide int32, level small) {
+	_ = small(wide) < level // want `comparison truncates int32 to small`
+}
+
+func namedSource(total count, half int32) {
+	_ = int32(total) < half // want `comparison truncates count to int32`
+}
+
+func hoisted(wide int64, half int32) {
+	narrowed := int32(wide)
+	_ = narrowed < half
+}
+
+const room int64 = 8
+
+func constantOperand(limit int8) {
+	_ = int8(room) < limit
+	_ = int8(3) < limit
+}
+
+func narrowFunc(v int64) int32 { return int32(v) }
+
+func call(wide int64, half int32) {
+	_ = narrowFunc(wide) < half
+}
+
+func floatSource(part float64, half int32) {
+	_ = int32(part) < half
+}
+
+func floatTarget(wide int64, part float32) {
+	_ = float32(wide) == part
+}
+
+func generic[P ~int64](wide P, half int32) {
+	_ = int32(wide) < half
+}
+
+func genericTarget[P ~int8](wide int64, size P) {
+	_ = P(wide) < size
+}
+
+func word(size uint, count int, distance uintptr) {
+	_ = uint8(size) == 0     // want `comparison truncates uint to uint8`
+	_ = int8(count) == 0     // want `comparison truncates int to int8`
+	_ = uint8(distance) != 0 // want `comparison truncates uintptr to uint8`
+}
