@@ -1,0 +1,19 @@
+package nowidth
+
+type wide struct {
+	aLongMapFieldNameThatRunsPastTheLimit map[string]int
+}
+
+func overflowing(w wide, aLongWantedKeyNameToLookUp string) int {
+	if v, ok := w.aLongMapFieldNameThatRunsPastTheLimit[aLongWantedKeyNameToLookUp]; ok { // want `map lookup`
+		return v
+	}
+	return 0
+}
+
+func lengthened(m map[string]string, want string, tail string) string {
+	if originalValue, ok := m[want]; ok { // want `map lookup`
+		return originalValue + originalValue + tail + "pppppppppppppppppppppppp"
+	}
+	return tail
+}

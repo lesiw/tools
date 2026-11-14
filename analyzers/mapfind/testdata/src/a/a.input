@@ -1,0 +1,964 @@
+package a
+
+import (
+	"errors"
+	"net/http"
+)
+
+type item struct {
+	id int
+}
+
+type label struct {
+	tag any
+}
+
+type wide struct {
+	aLongMapFieldNameThatRunsPastTheLimit map[string]int
+}
+
+type inner struct {
+	value int
+}
+
+type outer struct {
+	*inner
+}
+
+type packed struct {
+	inner
+}
+
+func keyAndValue(m map[string]int, want string) (int, bool) {
+	for k, v := range m { // want `map lookup`
+		if k == want {
+			return v, true
+		}
+	}
+	return 0, false
+}
+
+func keyAlone(m map[string]int, want string) int {
+	for k := range m { // want `map lookup`
+		if k == want {
+			return m[k]
+		}
+	}
+	return 0
+}
+
+func wantedFirst(m map[string]int, want string) (int, bool) {
+	for k, v := range m { // want `map lookup`
+		if want == k {
+			return v, true
+		}
+	}
+	return 0, false
+}
+
+func keyOnly(m map[string]int, want string) {
+	for k := range m { // want `map lookup`
+		if k == want {
+			return
+		}
+	}
+}
+
+func taken(m map[string]int, want string, v int) int {
+	for k := range m { // want `map lookup`
+		if k == want {
+			return m[k] + v
+		}
+	}
+	return v
+}
+
+func flagged(m map[string]int, want string) (int, bool) {
+	var ok bool
+	for k, v := range m { // want `map lookup`
+		if k == want {
+			return v, ok
+		}
+	}
+	return 0, ok
+}
+
+func naked(m map[string]int, want string) (n int, ok bool) {
+	for k := range m { // want `map lookup`
+		if k == want {
+			return
+		}
+	}
+	return
+}
+
+func named(m map[string]int, ok string) (int, bool) {
+	for k, v := range m { // want `map lookup`
+		if k == ok {
+			return v, true
+		}
+	}
+	return 0, false
+}
+
+func composite(m map[item]bool) bool {
+	for k := range m { // want `map lookup`
+		if k == (item{id: 7}) {
+			return m[k]
+		}
+	}
+	return false
+}
+
+func pointed(p *map[string]int, want string) int {
+	for k := range *p { // want `map lookup`
+		if k == want {
+			return (*p)[k]
+		}
+	}
+	return 0
+}
+
+func introduced(m map[string]int, want string) int {
+	for k := range m { // want `map lookup`
+		// the wanted key
+		if k == want {
+			return m[k]
+		}
+	}
+	return 0
+}
+
+func noted(m map[string]int, want string) int {
+	for k := range m { // want `map lookup`
+		if k == want { // the author's note
+			return m[k]
+		}
+	}
+	return 0
+}
+
+func arrays(m map[[2]int]bool, want [2]int) bool {
+	for k := range m { // want `map lookup`
+		if k == want {
+			return m[k]
+		}
+	}
+	return false
+}
+
+func reports(m map[string]bool, want string) error {
+	for k := range m { // want `map lookup`
+		if k == want {
+			return errors.New(want)
+		}
+	}
+	return nil
+}
+
+func literalMap(want string) int {
+	for k := range map[string]int{"alpha": 1} { // want `map lookup`
+		if k == want {
+			return 1
+		}
+	}
+	return 0
+}
+
+func calledMap(lookup func() map[string]int, want string) int {
+	for k := range lookup() { // want `map lookup`
+		if k == want {
+			return 1
+		}
+	}
+	return 0
+}
+
+func captured(m map[string]int, want string) func() int {
+	for k, v := range m { // want `map lookup`
+		if k == want {
+			return func() int { return v }
+		}
+	}
+	return nil
+}
+
+func detached(m map[string]int, want string) func() int {
+	for k := range m { // want `map lookup`
+		if k == want {
+			return func() int { return 0 }
+		}
+	}
+	return nil
+}
+
+func takenNames(m map[string]int, want string, v, val, value int) int {
+	for k := range m { // want `map lookup`
+		if k == want {
+			return m[k] + v + val + value
+		}
+	}
+	return v
+}
+
+func explained(m map[string]int, want string) int {
+	for k := range m { // want `map lookup`
+		if k == want {
+			// the wanted key
+			return m[k]
+		}
+	}
+	return 0
+}
+
+func counted(m map[string]int, want string, count func(map[string]int) int) int {
+	for k := range m { // want `map lookup`
+		if k == want {
+			return count(m) + m[k]
+		}
+	}
+	return 0
+}
+
+func flagCollision(m map[string]int, want string, ok, found, present, exists, seen int) (int, int) {
+	for k, ok1 := range m { // want `map lookup`
+		if k == want {
+			return ok1, ok + found
+		}
+	}
+	return 0, 0
+}
+
+func crowdedFlag(m map[string]int, want string, ok, found, present, exists, seen int) int {
+	for k := range m { // want `map lookup`
+		if k == want {
+			return m[k] + ok + found + present + exists + seen
+		}
+	}
+	return ok
+}
+
+func shadowFlag(m map[string]int, want string) (int, bool) {
+	for k, ok := range m { // want `map lookup`
+		if k == want {
+			return ok, true
+		}
+	}
+	return 0, false
+}
+
+func converted(m map[string]bool, b []byte) bool {
+	for k := range m { // want `map lookup`
+		if k == string(b) {
+			return true
+		}
+	}
+	return false
+}
+
+func inlineLong(countsByAlphaKeyName map[string]int, theWantedEntryKey string) int {
+	for k := range countsByAlphaKeyName { if k == theWantedEntryKey { return countsByAlphaKeyName[k] } } // want `map lookup`
+	return 0
+}
+
+func inline(m map[string]int, want string) int {
+	for k := range m { if k == want { return m[k] } } // want `map lookup`
+	return 0
+}
+
+func headnote(m map[string]int, want string) int {
+	for k := range /* the key */ m { // want `map lookup`
+		if k == want {
+			return m[k]
+		}
+	}
+	return 0
+}
+
+func tailnote(m map[string]int, want string) int {
+	for k := range m { // want `map lookup`
+		if k == want {
+			return m[k]
+		} // the inner brace
+	}
+	return 0
+}
+
+func blank(m map[string]int, want string) int {
+	for k, _ := range m { // want `map lookup`
+		if k == want {
+			return m[k]
+		}
+	}
+	return 0
+}
+
+func bothRead(m map[string]int, want string) (int, int) {
+	for k, v := range m { // want `map lookup`
+		if k == want {
+			return m[k], v
+		}
+	}
+	return 0, 0
+}
+
+func joinedLine(m map[string]int, want string) int {
+	for k := range m { // want `map lookup`
+		if k == want { return m[k]
+		}
+	}
+	return 0
+}
+
+func length(m map[string]int, want string) int {
+	for k := range m { // want `map lookup`
+		if k == want {
+			return len(m) + m[k]
+		}
+	}
+	return 0
+}
+
+func sized(m map[int]bool, counts []int) bool {
+	for k := range m { // want `map lookup`
+		if k == len(counts) {
+			return m[k]
+		}
+	}
+	return false
+}
+
+func capped(m map[int]string, xs []string) bool {
+	for k := range m { // want `map lookup`
+		if k == cap(xs) {
+			return true
+		}
+	}
+	return false
+}
+
+func largest(m map[int]bool, a, b int) bool {
+	for k := range m { // want `map lookup`
+		if k == max(a, b) {
+			return m[k]
+		}
+	}
+	return false
+}
+
+func nilKey(m map[*int]bool) bool {
+	for k := range m { // want `map lookup`
+		if k == nil {
+			return true
+		}
+	}
+	return false
+}
+
+func smallest(m map[int]bool, a, b int) bool {
+	for k := range m { // want `map lookup`
+		if k == min(a, b) {
+			return m[k]
+		}
+	}
+	return false
+}
+
+func overflowing(w wide, aLongWantedKeyNameToLookUp string) int {
+	for entry := range w.aLongMapFieldNameThatRunsPastTheLimit { // want `map lookup`
+		if entry == aLongWantedKeyNameToLookUp {
+			return w.aLongMapFieldNameThatRunsPastTheLimit[entry]
+		}
+	}
+	return 0
+}
+
+func lengthened(m map[string]string, want string, tail string) string {
+	for k, originalValue := range m { // want `map lookup`
+		if k == want {
+			return m[k] + originalValue + tail + "pppppppppppppppppppppppp"
+		}
+	}
+	return tail
+}
+
+func jumped(m map[string]int, want string, again bool) int {
+outer:
+	for k := range m { // want `map lookup`
+		if k == want {
+			return m[k]
+		}
+	}
+	if again {
+		goto outer
+	}
+	return 0
+}
+
+func ordered(m map[string]int, want string, count func(map[string]int) int) int {
+	for k := range m { // want `map lookup`
+		if k == want {
+			return m[k] + count(m)
+		}
+	}
+	return 0
+}
+
+func spread(m map[item]bool) bool {
+	for k := range m { // want `map lookup`
+		if k == (item{
+			id: 7,
+		}) {
+			return m[k]
+		}
+	}
+	return false
+}
+
+func rawkey(m map[string]int, want string) int {
+	for k := range m { // want `map lookup`
+		if k == `alpha
+beta` {
+			return m[k]
+		}
+	}
+	return 0
+}
+
+func splitLookup(m map[string]int, want string) int {
+	for k := range m { // want `map lookup`
+		if k == want {
+			return m[
+				k]
+		}
+	}
+	return 0
+}
+
+func fieldOfValue(n item, m map[int]bool) bool {
+	for k := range m { // want `map lookup`
+		if k == n.id {
+			return m[k]
+		}
+	}
+	return false
+}
+
+func held(m []map[string]int, want string) int {
+	for k := range m[0] { // want `map lookup`
+		if k == want {
+			return m[0][k]
+		}
+	}
+	return 0
+}
+
+func lookedUp(m map[string]bool, names map[int]string, i int) bool {
+	for k := range m { // want `map lookup`
+		if k == names[i] {
+			return m[k]
+		}
+	}
+	return false
+}
+
+func receivedFirst(m map[string]int, want string, ch chan int) int {
+	for k := range m { // want `map lookup`
+		if k == want {
+			return <-ch + m[k]
+		}
+	}
+	return 0
+}
+
+func bumped(m map[string]int, want string, bump func(map[string]int) int) int {
+	for k := range m { // want `map lookup`
+		if k == want {
+			return m[k] + bump(m) + m[k]
+		}
+	}
+	return 0
+}
+
+func rawMap(want string) bool {
+	for k := range map[string]int{ // want `map lookup`
+		`alpha
+beta`: 1,
+	} {
+		if k == want {
+			return true
+		}
+	}
+	return false
+}
+
+func spaced(m map[string]int, want string) int {
+	for k := range m { // want `map lookup`
+		if k == want {
+
+			return m[k]
+		}
+	}
+	return 0
+}
+
+func promotedValue(p packed, m map[int]bool) bool {
+	for k := range m { // want `map lookup`
+		if k == p.value {
+			return m[k]
+		}
+	}
+	return false
+}
+
+func buried(m map[string]int, want string) int {
+	for k := range m { // want `map lookup`
+		if k == want /* the target */ {
+			return m[k]
+		}
+	}
+	return 0
+}
+
+func annotated(m map[string]int, want string) int {
+	for k := range m { // want `map lookup`
+		if k == want {
+			return m[/* why this one */ k]
+		}
+	}
+	return 0
+}
+
+func plain(m map[string]int) {
+	for k := range m {
+		println(k)
+	}
+}
+
+func prints(m map[string]int, want string) {
+	for k := range m {
+		if k == want {
+			println(k)
+		}
+	}
+}
+
+func elsewhere(m map[string]int, other, want string) int {
+	for k := range m {
+		if other == want {
+			return m[k]
+		}
+	}
+	return 0
+}
+
+func divided(m map[int]bool, a, b int) bool {
+	for k := range m {
+		if k == a/b {
+			return true
+		}
+	}
+	return false
+}
+
+func comparedAny(m map[bool]bool, a, b any) bool {
+	for k := range m {
+		if k == (a == b) {
+			return m[k]
+		}
+	}
+	return false
+}
+
+func arrayCasted(m map[[2]int]bool, s []int) bool {
+	for k := range m {
+		if k == [2]int(s) {
+			return true
+		}
+	}
+	return false
+}
+
+func arrayParam[T ~[2]int](m map[[2]int]bool, x [2]int) bool {
+	for k := range m {
+		if k == T(x) {
+			return true
+		}
+	}
+	return false
+}
+
+func moreWork(m map[string]int, want string) (int, bool) {
+	for k, v := range m {
+		if k == want {
+			println(k)
+			return v, true
+		}
+	}
+	return 0, false
+}
+
+func otherwise(m map[string]int, want string) (int, bool) {
+	for k, v := range m {
+		if k == want {
+			return v, true
+		} else {
+			return 0, false
+		}
+	}
+	return 0, false
+}
+
+func joined(m map[string]int, want string, loose bool) (int, bool) {
+	for k, v := range m {
+		if k == want && loose {
+			return v, true
+		}
+	}
+	return 0, false
+}
+
+func twice(m map[string]int, want string) int {
+	for k := range m {
+		println(k)
+		if k == want {
+			return m[k]
+		}
+	}
+	return 0
+}
+
+func initialized(m map[string]int, want string) int {
+	for k := range m {
+		if _ = k; k == want {
+			return m[k]
+		}
+	}
+	return 0
+}
+
+func negated(m map[string]int, want string) (int, bool) {
+	for k, v := range m {
+		if k != want {
+			return v, true
+		}
+	}
+	return 0, false
+}
+
+func returnsKey(m map[string]int, want string) string {
+	for k := range m {
+		if k == want {
+			return k
+		}
+	}
+	return ""
+}
+
+func otherMap(m map[string]int, other map[string]int, want string) int {
+	for k := range m {
+		if k == want {
+			return other[k]
+		}
+	}
+	return 0
+}
+
+func overSlice(m []string, want int) bool {
+	for k := range m {
+		if k == want {
+			return true
+		}
+	}
+	return false
+}
+
+func assigns(m map[string]int, want string) bool {
+	var k string
+	for k = range m {
+		if k == want {
+			return true
+		}
+	}
+	return k == want
+}
+
+func called(m map[string]int, want func() string) int {
+	for k := range m {
+		if k == want() {
+			return m[k]
+		}
+	}
+	return 0
+}
+
+func received(m map[string]int, want chan string) int {
+	for k := range m {
+		if k == <-want {
+			return m[k]
+		}
+	}
+	return 0
+}
+
+func paired(m map[string]string) string {
+	for k, v := range m {
+		if k == v {
+			return "hit"
+		}
+	}
+	return ""
+}
+
+func concatenated(m map[string]int) int {
+	for k := range m {
+		if k == k+"x" {
+			return m[k]
+		}
+	}
+	return 0
+}
+
+func generic[K interface{ ~string | ~int }](m map[K]int, want K) int {
+	for k := range m {
+		if k == want {
+			return m[k]
+		}
+	}
+	return 0
+}
+
+func constrained[M ~map[string]int](m M, want string) int {
+	for k := range m {
+		if k == want {
+			return m[k]
+		}
+	}
+	return 0
+}
+
+func pairs(m map[[2]any]int, want [2]any) int {
+	for k := range m {
+		if k == want {
+			return m[k]
+		}
+	}
+	return 0
+}
+
+func remaindered(m map[int]bool, a, b int) bool {
+	for k := range m {
+		if k == a%b {
+			return true
+		}
+	}
+	return false
+}
+
+func shiftedCount(m map[int]bool, b int) bool {
+	for k := range m {
+		if k == 1<<b {
+			return true
+		}
+	}
+	return false
+}
+
+func indexedArray(m map[int]bool, counts [3]int, i int) bool {
+	for k := range m {
+		if k == counts[i] {
+			return true
+		}
+	}
+	return false
+}
+
+func indexedString(m map[byte]bool, s string, i int) bool {
+	for k := range m {
+		if k == s[i] {
+			return m[k]
+		}
+	}
+	return false
+}
+
+func cut(m map[string]bool, s string, a, b int) bool {
+	for k := range m {
+		if k == s[a:b] {
+			return true
+		}
+	}
+	return false
+}
+
+func negatedKey(m map[int]bool, a int) bool {
+	for k := range m { // want `map lookup`
+		if k == -a {
+			return m[k]
+		}
+	}
+	return false
+}
+
+func summed(m map[int]bool, a, b int) bool {
+	for k := range m { // want `map lookup`
+		if k == a+b {
+			return true
+		}
+	}
+	return false
+}
+
+func methodValue(m map[string]bool) bool {
+	for k := range m { // want `map lookup`
+		if k == http.MethodGet {
+			return m[k]
+		}
+	}
+	return false
+}
+
+func shadedMap(m map[string]map[string]int, want string) map[string]int {
+	for k, m := range m { // want `map lookup`
+		if k == want {
+			return m
+		}
+	}
+	return nil
+}
+
+func gapped(m map[string]int, want string) int {
+	for k := range m { // want `map lookup`
+
+		if k == want {
+			return m[k]
+		}
+	}
+	return 0
+}
+
+func unhashable(m map[any]int, want any) int {
+	for k := range m {
+		if k == want {
+			return m[k]
+		}
+	}
+	return 0
+}
+
+func closed(m map[string]int, want string) func() string {
+	for k := range m {
+		if k == want {
+			return func() string { return k }
+		}
+	}
+	return nil
+}
+
+func pointerderef(m map[int]bool, p *item) bool {
+	for k := range m {
+		if k == p.id {
+			return true
+		}
+	}
+	return false
+}
+
+func sliced(m map[string]bool, keys []string, i int) bool {
+	for k := range m {
+		if k == keys[i] {
+			return true
+		}
+	}
+	return false
+}
+
+func labeled(m map[label]bool, want label) bool {
+	for k := range m {
+		if k == want {
+			return true
+		}
+	}
+	return false
+}
+
+func wrapped(m map[string]int, want string) func() int {
+	for k := range m {
+		if k == want {
+			return func() int { return m[k] }
+		}
+	}
+	return nil
+}
+
+func widened(m map[string]int, want any) int {
+	for k := range m {
+		if k == want {
+			return m[k]
+		}
+	}
+	return 0
+}
+
+func hidden(m map[string]map[string]int, want string) int {
+	for k, m := range m {
+		if k == want {
+			return m[k]
+		}
+	}
+	return 0
+}
+
+func asserted(m map[string]bool, x any, want string) bool {
+	for k := range m {
+		if k == x.(string) {
+			return true
+		}
+	}
+	return false
+}
+
+func arrayPointed(m map[*[2]int]bool, s []int) bool {
+	for k := range m {
+		if k == (*[2]int)(s) {
+			return true
+		}
+	}
+	return false
+}
+
+func slicedArg(m map[int]bool, counts []int, i, j int) bool {
+	for k := range m {
+		if k == len(counts[i:j]) {
+			return m[k]
+		}
+	}
+	return false
+}
+
+func dereferenced(m map[string]bool, p *string) bool {
+	for k := range m {
+		if k == *p {
+			return true
+		}
+	}
+	return false
+}
+
+func promotedPointer(o outer, m map[int]bool) bool {
+	for k := range m {
+		if k == o.value {
+			return m[k]
+		}
+	}
+	return false
+}
+
+func headerNote(m map[string]int, want string) int {
+	for k := range m { if k == want { // want `map lookup`
+		return m[k]
+	} }
+	return 0
+}
+
+func lastline(m map[string]int, want string) int { for k := range m { if k == want { return m[k] } }; return 0 } // want `map lookup`

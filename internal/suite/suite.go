@@ -106,6 +106,7 @@ import (
 	"lesiw.io/tools/analyzers/linelen"
 	"lesiw.io/tools/analyzers/linewrap"
 	"lesiw.io/tools/analyzers/makezero"
+	"lesiw.io/tools/analyzers/mapfind"
 	"lesiw.io/tools/analyzers/marshalrecv"
 	"lesiw.io/tools/analyzers/methodexprcall"
 	"lesiw.io/tools/analyzers/newderef"
@@ -250,6 +251,7 @@ var (
 		makezero.Analyzer,
 		methodexprcall.Analyzer,
 		marshalrecv.Analyzer,
+		mapfind.Analyzer,
 		newderef.Analyzer,
 		nilchecklen.Analyzer,
 		nilfunc.Analyzer,
