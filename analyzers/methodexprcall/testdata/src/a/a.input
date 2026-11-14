@@ -1,0 +1,334 @@
+package a
+
+import "foreign"
+
+type item struct {
+	name string
+	size int
+}
+
+type namer interface {
+	getName() string
+}
+
+type box[V any] struct {
+	v V
+}
+
+type count int
+
+type total []int
+
+type handle func() int
+
+type cell struct {
+	tag int
+}
+
+type labelled struct {
+	cell
+}
+
+type describer interface {
+	describe() string
+}
+
+type document struct {
+	describer
+}
+
+type inner struct {
+	X func(s string) string
+}
+
+type outer struct {
+	inner
+}
+
+type carrier struct {
+	v any
+}
+
+type pointer *item
+
+type holder struct {
+	value item
+}
+
+type flag bool
+
+const three count = 3
+
+const four = 4
+
+func (i item) getName() string { return i.name }
+
+func (i *item) setName(s string) { i.name = s }
+
+func (i item) scale(n int) int { return i.size * n }
+
+func (i item) join(sep string, more ...string) string {
+	s := i.name
+	for _, m := range more {
+		s += sep + m
+	}
+	return s
+}
+
+func (i item) wrap(s string) item { return i }
+
+func (i item) any1() any { return i }
+
+func (i item) nameFunc() func() string {
+	return func() string { return i.name }
+}
+
+func (b box[V]) get() V { return b.v }
+
+func (c count) twice() count { return c * 2 }
+
+func (t total) size() int { return len(t) }
+
+func (h handle) run() int { return h() }
+
+func (c cell) promote() int { return 0 }
+
+func (labelled) tag() int { return 0 }
+
+func (document) describe() string { return "" }
+
+func (outer) X(s string) string { return s }
+
+func (f flag) yes() bool { return bool(f) }
+
+func receiverNamed(i item) {
+	_ = item.getName(i) // want `method expression called with its receiver`
+}
+
+func receiverAddressed(i item) {
+	(*item).setName(&i, "some name") // want `method expression called with its receiver`
+}
+
+func receiverPointed(p *item) {
+	(*item).setName(p, "some other name") // want `method expression called with its receiver`
+	_ = (*item).getName(p)                // want `method expression called with its receiver`
+}
+
+func receiverDereferenced(p *item, pp **item) {
+	_ = item.getName(*p)              // want `method expression called with its receiver`
+	(*item).setName(*pp, "some name") // want `method expression called with its receiver`
+}
+
+func receiverDefinedPointer(p pointer) {
+	_ = item.getName(*p) // want `method expression called with its receiver`
+}
+
+func receiverParenthesized(i item) {
+	_ = item.getName((i)) // want `method expression called with its receiver`
+	_ = (item.getName)(i) // want `method expression called with its receiver`
+	_ = (item.getName)(i) // want `method expression called with its receiver`
+	_ = (item).getName(i) // want `method expression called with its receiver`
+}
+
+func receiverIndexed(xs []item) {
+	_ = item.getName(xs[0])          // want `method expression called with its receiver`
+	(*item).setName(&xs[0], "first") // want `method expression called with its receiver`
+}
+
+func receiverCalled(xs []item) {
+	_ = item.getName(first(xs)) // want `method expression called with its receiver`
+}
+
+func receiverInterface(n namer, i item) {
+	_ = namer.getName(n) // want `method expression called with its receiver`
+	_ = namer.getName(i) // want `method expression called with its receiver`
+}
+
+func receiverGeneric(b box[int]) {
+	_ = box[int].get(b) // want `method expression called with its receiver`
+}
+
+func receiverCompositeInBody() {
+	_ = item.getName(item{}) // want `method expression called with its receiver`
+}
+
+func receiverCompositeInIf() {
+	if item.scale(item{}, 2) > 0 { // want `method expression called with its receiver`
+	}
+}
+
+func receiverCompositeInSwitch(i item) {
+	switch item.getName(item{}) { // want `method expression called with its receiver`
+	}
+	switch item.any1(item{}).(type) { // want `method expression called with its receiver`
+	}
+}
+
+func receiverCompositeInRange() {
+	for range item.getName(item{}) { // want `method expression called with its receiver`
+	}
+}
+
+func receiverCompositeInForPost() {
+	for n := 0; item.getName(item{}) == ""; n++ { // want `method expression called with its receiver`
+	}
+}
+
+func receiverCompositeNestedInHeader(i item) {
+	if item.getName(item.wrap(item{}, "a")) == "" { // want `method expression called with its receiver` `method expression called with its receiver`
+	}
+}
+
+func receiverCompositeBehindCall() {
+	if item.getName(item{}.wrap("a")) == "" { // want `method expression called with its receiver`
+	}
+	if sink(item.getName(item{})) { // want `method expression called with its receiver`
+	}
+	if len("x") > 0 && item.getName(item{}) != "" { // want `method expression called with its receiver`
+	}
+	if func() bool { return item.getName(item{}) == "" }() { // want `method expression called with its receiver`
+	}
+}
+
+func receiverCompositeBehindParen() {
+	if (item.getName(item{})) == "" { // want `method expression called with its receiver`
+	}
+	if item.getName((item{}.wrap("a"))) == "" { // want `method expression called with its receiver`
+	}
+}
+
+func receiverCompositeAsCallee() {
+	if item.nameFunc(item{})() != "" { // want `method expression called with its receiver`
+	}
+	for item.nameFunc(item{})() != "" { // want `method expression called with its receiver`
+	}
+	for range item.nameFunc(item{})() { // want `method expression called with its receiver`
+	}
+	switch item.nameFunc(item{})() { // want `method expression called with its receiver`
+	}
+}
+
+func receiverCompositeBehindAssertion() {
+	if item.getName(carrier{item{}}.v.(item)) == "" { // want `method expression called with its receiver`
+	}
+}
+
+func receiverCompositeBehindSlice() {
+	if item.getName([]item{{}}[:][0]) == "" { // want `method expression called with its receiver`
+	}
+}
+
+func receiverCompositeBracketed(more []string) {
+	if more[item.scale(item{}, 2)] != "" { // want `method expression called with its receiver`
+	}
+	if []string{item.getName(item{})}[0] == "" { // want `method expression called with its receiver`
+	}
+}
+
+func receiverCompositeAsHead() {
+	if item.getName(holder{}.value) == "" { // want `method expression called with its receiver`
+	}
+}
+
+func argumentsVariadic(i item, more []string) {
+	_ = item.join(i, "-", "alpha", "beta") // want `method expression called with its receiver`
+	_ = item.join(i, "-", more...)         // want `method expression called with its receiver`
+	_ = item.join(i, "-",                  // want `method expression called with its receiver`
+		"alpha",
+	)
+}
+
+func argumentsTypedConstant() {
+	_ = count.twice(three)     // want `method expression called with its receiver`
+	_ = count.twice(count(3))  // want `method expression called with its receiver`
+	_ = count.twice(-three)    // want `method expression called with its receiver`
+	_ = count.twice(three + 1) // want `method expression called with its receiver`
+}
+
+func argumentsBinary(a, b count, ch chan count) {
+	_ = count.twice(a + b) // want `method expression called with its receiver`
+	_ = count.twice(-a)    // want `method expression called with its receiver`
+	_ = count.twice(<-ch)  // want `method expression called with its receiver`
+}
+
+func argumentsBoolean(p, q flag, a, b bool) {
+	_ = flag.yes(!p)            // want `method expression called with its receiver`
+	_ = flag.yes(p && q)        // want `method expression called with its receiver`
+	_ = flag.yes(p && (a == b)) // want `method expression called with its receiver`
+}
+
+func nested(i item) {
+	_ = item.wrap(item.wrap(i, "a"), "b") // want `method expression called with its receiver` `method expression called with its receiver`
+}
+
+func pairs(i item) {
+	apply(item.getName)
+	_ = item.getName(i) // want `method expression called with its receiver`
+}
+
+func commented(i item) {
+	_ = item.getName( /* kept */ i)         // want `method expression called with its receiver`
+	_ = item.join(i /* kept */, "-", "one") // want `method expression called with its receiver`
+	_ = item.join(i, "-" /* kept */, "one") // want `method expression called with its receiver`
+}
+
+func untypedArguments(i item, n int) {
+	_ = i.getName()
+	_ = count.twice(0)
+	_ = count.twice(min(1, 2))
+	_ = count.twice(four)
+	_ = count.twice(1 + four)
+	_ = count.twice(foreign.N)
+	_ = count.twice(1 << n)
+	_ = count.twice(min(three, four))
+	_ = flag.yes(n == 0)
+	_ = flag.yes(!(n == 0))
+	_ = flag.yes((n == 0) || (n == 1))
+	_ = namer.getName(nil)
+	(*item).setName(nil, "some name")
+	f := item.getName
+	_ = f(i)
+	apply(item.getName)
+	_ = item.join(pair())
+}
+
+func assignable(s []int, u struct{ cell }, v struct{ describer }, w struct{ inner }, g func() int) {
+	_ = total.size(s)
+	_ = handle.run(g)
+	_ = labelled.tag(u)
+	_ = document.describe(v)
+	_ = outer.X(w, "x")
+	_ = labelled.promote(struct{ cell }{}) // want `method expression called with its receiver`
+	(*item).setName(&item{}, "made here")  // want `method expression called with its receiver`
+	_ = count.twice(three << 1)            // want `method expression called with its receiver`
+}
+
+func sink(s string) bool { return s == "" }
+
+type tagged struct {
+	getName func() string
+}
+
+type named struct {
+	tagged
+}
+
+func (named) getName() string { return "" }
+
+func fieldForName(u struct{ tagged }) {
+	_ = named.getName(u)
+}
+
+func definedPointerArgument(q pointer) {
+	(*item).setName(q, "some name")
+}
+
+func namedPointer(q pointer) {
+	_ = item.getName(*q) // want `method expression called with its receiver`
+}
+
+func first(xs []item) item { return xs[0] }
+
+func pair() (item, string) { return item{}, "-" }
+
+func apply(f func(item) string) {}

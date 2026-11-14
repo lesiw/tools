@@ -102,6 +102,7 @@ import (
 	"lesiw.io/tools/analyzers/linelen"
 	"lesiw.io/tools/analyzers/linewrap"
 	"lesiw.io/tools/analyzers/makezero"
+	"lesiw.io/tools/analyzers/methodexprcall"
 	"lesiw.io/tools/analyzers/newderef"
 	"lesiw.io/tools/analyzers/nilchecklen"
 	"lesiw.io/tools/analyzers/nilreturn"
@@ -227,6 +228,7 @@ var (
 		loopclosure.Analyzer,
 		lostcancel.Analyzer,
 		makezero.Analyzer,
+		methodexprcall.Analyzer,
 		newderef.Analyzer,
 		nilchecklen.Analyzer,
 		nilfunc.Analyzer,
