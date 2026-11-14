@@ -1,0 +1,496 @@
+package a
+
+func trim(s string) string { return s }
+
+func fetch(name string) error       { return nil }
+func deeper(err error) error        { return err }
+func typed(name string) *namedError { return nil }
+
+type namedError struct{}
+
+func (e *namedError) Error() string { return "some message" }
+
+type item struct {
+	name string
+}
+
+func namedResult(name string) (err error) {
+	if err = fetch(name); err != nil { // want `in this if statement`
+		return err
+	}
+	return nil
+}
+
+func selfRead(name string) (err error) {
+	if err = deeper(err); err != nil { // want `in this if statement`
+		return err
+	}
+	return nil
+}
+
+func literal(name string) {
+	f := func() (err error) {
+		if err = fetch(name); err != nil { // want `in this if statement`
+			return err
+		}
+		return nil
+	}
+	_ = f
+}
+
+func nestedNaked(name string) (err error) {
+	f := func() (n int) {
+		return
+	}
+	_ = f
+	if err = fetch(name); err != nil { // want `in this if statement`
+		return err
+	}
+	return nil
+}
+
+func passThrough(name string, err error) error {
+	if err = deeper(err); err != nil { // want `in this if statement`
+		return err
+	}
+	return nil
+}
+
+func compound(name string) (n int) {
+	if n = len(name); name == "" { // want `in this if statement`
+		n += 1
+	}
+	return 0
+}
+
+func loop(names map[string]bool) {
+	for name := range names {
+		if name = trim(name); name != "" { // want `in this if statement`
+			delete(names, name)
+		}
+	}
+}
+
+func tagless(name string) (err error) {
+	switch err = fetch(name); { // want `in this switch statement`
+	case err != nil:
+		return err
+	}
+	return nil
+}
+
+func tagged(name string) (err error) {
+	switch err = fetch(name); err { // want `in this switch statement`
+	case nil:
+		return nil
+	default:
+		return err
+	}
+}
+
+func typeSwitch(v any, name string) (err error) {
+	switch err = fetch(name); v.(type) { // want `in this switch statement`
+	case int:
+		return err
+	}
+	return nil
+}
+
+func parameter(name string, err error) error {
+	if err = fetch(name); err != nil { // want `in this if statement`
+		return err
+	}
+	return nil
+}
+
+func (it item) receiver(name string) bool {
+	if it = (item{name}); it.name == "" { // want `in this if statement`
+		return true
+	}
+	return false
+}
+
+func local(name string) error {
+	var err error
+	if err = fetch(name); err != nil { // want `in this if statement`
+		return err
+	}
+	return nil
+}
+
+func shortDecl(name string) error {
+	n, err := len(name), error(nil)
+	_ = n
+	if err = fetch(name); err != nil { // want `in this if statement`
+		return err
+	}
+	return nil
+}
+
+func sharedVar(name string) error {
+	var err, other error
+	if err = fetch(name); err != nil { // want `in this if statement`
+		return err
+	}
+	return other
+}
+
+func withValue(name string) error {
+	var err = deeper(nil)
+	if err = fetch(name); err != nil { // want `in this if statement`
+		return err
+	}
+	return nil
+}
+
+func commentedDecl(name string) error {
+	var err error                      // holds the result
+	if err = fetch(name); err != nil { // want `in this if statement`
+		return err
+	}
+	return nil
+}
+
+func grouped(name string) error {
+	var (
+		err error
+	)
+	if err = fetch(name); err != nil { // want `in this if statement`
+		return err
+	}
+	return nil
+}
+
+func blocked(name string) error {
+	var (
+		n   int
+		err error
+	)
+	if err = fetch(name); err != nil { // want `in this if statement`
+		return err
+	}
+	_ = n
+	return nil
+}
+
+func groupComment(name string) error {
+	var (
+		// err holds the result.
+		err error
+	)
+	if err = fetch(name); err != nil { // want `in this if statement`
+		return err
+	}
+	return nil
+}
+
+func chained(name string) error {
+	var err error
+	if err = fetch(name); err != nil { // want `in this if statement`
+		return err
+	} else if err = deeper(err); err != nil {
+		return err
+	}
+	return nil
+}
+
+func trailingAbove(name string) error {
+	n := 1 // one
+	var other error
+	if other = fetch(name); other != nil { // want `in this if statement`
+		return other
+	}
+	_ = n
+	return nil
+}
+
+func belowBlank(name string) error {
+	var (
+		n   int
+		err error
+
+		m int
+	)
+	if err = fetch(name); err != nil { // want `in this if statement`
+		return err
+	}
+	_, _ = n, m
+	return nil
+}
+
+func spaced(name string) error {
+	var (
+		n int // count
+
+		err error
+	)
+	if err = fetch(name); err != nil { // want `in this if statement`
+		return err
+	}
+	_ = n
+	return nil
+}
+
+func middleName(name string) error {
+	var first, err, last error
+	if err = fetch(name); err != nil { // want `in this if statement`
+		first = err
+		return err
+	}
+	_, _ = first, last
+	return nil
+}
+
+func trailingComment(name string) error {
+	var other, err error               // err holds it
+	if err = fetch(name); err != nil { // want `in this if statement`
+		return err
+	}
+	return other
+}
+
+func aboveName(name string) error {
+	// both come from f.
+	var other, err error
+	if err = fetch(name); err != nil { // want `in this if statement`
+		return err
+	}
+	return other
+}
+
+func atLimit(name string) (err error) {
+	if err = fetch(name); len(name) > 10000000 { // want `in this if statement`
+		return err
+	}
+	return nil
+}
+
+func overLimit(name string) (err error) {
+	if err = fetch(name); len(name) > 10000000 && len(name) < 20000000 && len(name) != 5 { // want `in this if statement`
+		return err
+	}
+	return nil
+}
+
+func nestedRange(name string, names map[error]string) (err error) {
+	if err = fetch(name); name != "" {
+		for err = range names {
+		}
+	}
+	return nil
+}
+
+func localSelf(name string) error {
+	var err error
+	if err = deeper(err); err != nil { // want `in this if statement`
+		return err
+	}
+	return nil
+}
+
+func namesLast(name string) error {
+	var other, err error
+	if err = fetch(name); err != nil { // want `in this if statement`
+		return err
+	}
+	return other
+}
+
+func specComment(name string) error {
+	var err /* holds it */, other error
+	if err = fetch(name); err != nil { // want `in this if statement`
+		return err
+	}
+	return other
+}
+
+func rangeOnly(names map[string]error, name string) error {
+	for _, err := range names {
+		if err = fetch(name); err != nil { // want `in this if statement`
+			return err
+		}
+	}
+	return nil
+}
+
+func aboveComment(name string) error {
+	// err holds the result.
+	var err error
+	if err = fetch(name); err != nil { // want `in this if statement`
+		return err
+	}
+	return nil
+}
+
+func concrete(name string) (err error) {
+	if err = typed(name); err != nil {
+		return err
+	}
+	return nil
+}
+
+func assignedLater(name string) (err error) {
+	defer func() {
+		if err = fetch(name); err != nil { // want `in this if statement`
+			_ = err
+		}
+	}()
+	return nil
+}
+
+func constant(x float64) int {
+	if x = 1; x > 0 {
+		return 1
+	}
+	return 0
+}
+
+func added(n int) int {
+	if n += 1; n > 2 {
+		return n
+	}
+	return 0
+}
+
+func naked(name string) (err error) {
+	if err = fetch(name); err != nil {
+		return err
+	}
+	return
+}
+
+func literalStatement(name string) (err error) {
+	f := func() {
+		if err = fetch(name); err != nil { // want `in this if statement`
+			_ = err
+		}
+	}
+	f()
+	return nil
+}
+
+func deferred(name string) (err error) {
+	if err = fetch(name); err != nil {
+		defer func() { _ = err }()
+	}
+	return nil
+}
+
+func addressed(name string) (err error) {
+	if err = fetch(name); err != nil {
+		p := &(err)
+		return *p
+	}
+	return nil
+}
+
+func readBefore(name string) error {
+	err := fetch(name)
+	if err != nil {
+		return err
+	}
+	if err = fetch(name); err != nil {
+		return err
+	}
+	return nil
+}
+
+func readAfter(name string) error {
+	var err error
+	if err = fetch(name); err != nil {
+		return err
+	}
+	return err
+}
+
+func writtenBefore(name string) (err error) {
+	err = fetch(name)
+	if err = fetch(name); err != nil {
+		return err
+	}
+	return nil
+}
+
+func writtenAfter(name string) (err error) {
+	if err = fetch(name); err != nil {
+		return err
+	}
+	err = nil
+	return nil
+}
+
+func neverRead(name string) (err error) {
+	if err = fetch(name); name == "" {
+		return nil
+	}
+	return nil
+}
+
+func writeOnly(name string) (err error) {
+	if err = fetch(name); name == "" {
+		err = nil
+	}
+	return nil
+}
+
+func rangeWrite(name string, errs map[string]error) (err error) {
+	if err = fetch(name); name == "" {
+		for _, err = range errs {
+		}
+	}
+	return nil
+}
+
+func negate(n int) int {
+	if n = -n; n > 0 { // want `in this if statement`
+		return n
+	}
+	return 0
+}
+
+func field(it item) bool {
+	if it.name = "x"; it.name == "" {
+		return true
+	}
+	return false
+}
+
+func forInit(name string) (err error) {
+	for err = fetch(name); err != nil; { // want `in this for statement`
+		return nil
+	}
+	return nil
+}
+
+var err error
+
+func global(name string) error {
+	if err = fetch(name); err != nil {
+		return err
+	}
+	return nil
+}
+
+func declared(name string) error {
+	if err := fetch(name); err != nil {
+		return err
+	}
+	return nil
+}
+
+func pair(name string) error {
+	var n int
+	var err error
+	if n, err = len(name), fetch(name); err != nil && n > 0 {
+		return err
+	}
+	return nil
+}
+
+func bound(v any, n string) (err error) {
+	switch err = fetch(n); x := v.(type) { // want `in this switch statement`
+	case int:
+		_, _ = x, err
+	}
+	return nil
+}

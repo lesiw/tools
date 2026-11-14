@@ -1,0 +1,3 @@
+package elsewhere
+
+var Err error

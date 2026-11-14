@@ -1,0 +1,10 @@
+package a
+
+import . "elsewhere"
+
+func dot(name string) error {
+	if Err = fetch(name); Err != nil {
+		return Err
+	}
+	return nil
+}

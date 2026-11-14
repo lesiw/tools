@@ -243,7 +243,7 @@ func parseIgnore(text string) (analyzers map[string]struct{}, in bool) {
 		return
 	}
 	for name := range strings.SplitSeq(analyzerList, ",") {
-		if name = strings.TrimSpace(name); name != "" {
+		if name := strings.TrimSpace(name); name != "" {
 			analyzers[name] = struct{}{}
 		}
 	}

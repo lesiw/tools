@@ -191,7 +191,7 @@ func classify(entries []entry) [][]entry {
 // locals returns the prefixes the flag names, in order.
 func locals() (out []string) {
 	for p := range strings.SplitSeq(local, ",") {
-		if p = strings.TrimSpace(p); p != "" {
+		if p := strings.TrimSpace(p); p != "" {
 			out = append(out, p)
 		}
 	}
