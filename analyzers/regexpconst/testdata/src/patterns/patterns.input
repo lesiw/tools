@@ -1,0 +1,9 @@
+package patterns
+
+import "regexp"
+
+const Broken = "a("
+
+func MatchString(pattern, s string) (bool, error) {
+	return regexp.MatchString(pattern, s)
+}

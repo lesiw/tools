@@ -104,6 +104,7 @@ import (
 	"lesiw.io/tools/analyzers/recvname"
 	"lesiw.io/tools/analyzers/recvtype"
 	"lesiw.io/tools/analyzers/redundantalias"
+	"lesiw.io/tools/analyzers/regexpconst"
 	"lesiw.io/tools/analyzers/regexpmust"
 	"lesiw.io/tools/analyzers/selfassert"
 	"lesiw.io/tools/analyzers/shellcommand"
@@ -221,6 +222,7 @@ var (
 		recvtype.Analyzer,
 		redundantalias.Analyzer,
 		reflectvaluecompare.Analyzer,
+		regexpconst.Analyzer,
 		regexpmust.Analyzer,
 		selfassert.Analyzer,
 		shellcommand.Analyzer,

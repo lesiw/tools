@@ -1,0 +1,80 @@
+package a
+
+import (
+	"fmt"
+	"regexp"
+
+	"patterns"
+)
+
+const (
+	broken           = "a("
+	valid            = "a+"
+	multilinePattern = `a(
+b`
+)
+
+var (
+	bad  = regexp.MustCompile(broken) // want `pattern does not compile: missing closing \)`
+	good = regexp.MustCompile(valid)
+)
+
+func literal() {
+	regexp.MustCompile(`\d`)
+	regexp.Match("a(", nil)       // want `pattern does not compile`
+	regexp.MatchReader("a(", nil) // want `pattern does not compile`
+	regexp.MatchString("a(", "x") // want `pattern does not compile`
+	regexp.Compile("a(")          // want `pattern does not compile`
+}
+
+func folded() {
+	regexp.MustCompile("a" + "(") // want `pattern does not compile`
+}
+
+func posix() {
+	regexp.MustCompilePOSIX("a(") // want `pattern does not compile`
+	regexp.MustCompilePOSIX(`\d`) // want `pattern does not compile: invalid escape sequence`
+	regexp.CompilePOSIX(`\d`)     // want `pattern does not compile: invalid escape sequence`
+	regexp.CompilePOSIX(`a+`)
+	regexp.Compile(`a**`) // want `pattern does not compile: invalid nested repetition operator`
+	regexp.CompilePOSIX(`a**`)
+}
+
+func printed() {
+	_, err := regexp.MatchString("a(", "x") // want `pattern does not compile`
+	fmt.Println(err)
+}
+
+func parameter(pattern string) {
+	regexp.MustCompile(pattern)
+}
+
+func multiline() {
+	regexp.MustCompile(multilinePattern) // want `^pattern does not compile: missing closing \)$`
+}
+
+func parens() {
+	(regexp.MustCompile)("a(") // want `pattern does not compile`
+}
+
+func imported() {
+	regexp.MustCompile(patterns.Broken) // want `pattern does not compile`
+}
+
+func functionValue() {
+	must := regexp.MustCompile
+	must("a(")
+}
+
+func variable() {
+	var held = "a("
+	regexp.MustCompile(held)
+}
+
+func matched(re *regexp.Regexp) bool {
+	return re.MatchString("a(")
+}
+
+func foreign() {
+	patterns.MatchString("a(", "x")
+}

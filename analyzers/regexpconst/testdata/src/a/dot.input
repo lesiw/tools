@@ -1,0 +1,7 @@
+package a
+
+import . "regexp"
+
+func dotted() {
+	MustCompile("a(")
+}
