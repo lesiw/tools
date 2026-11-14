@@ -1,0 +1,129 @@
+package a
+
+import (
+	"fmt"
+	"os"
+	"testing"
+)
+
+func printed() {
+	fmt.Printf("done\n")      // want `format string has no verb; use Println`
+	fmt.Printf("done")        // want `format string has no verb; use Print`
+	fmt.Printf("two\n\n")     // want `format string has no verb; use Print`
+	fmt.Printf("\n")          // want `format string has no verb; use Print`
+	fmt.Printf("line\r\n")    // want `format string has no verb; use Print`
+	fmt.Printf("done\x0a")    // want `format string has no verb; use Print`
+	fmt.Printf("done" + "\n") // want `format string has no verb; use Print`
+	fmt.Printf("done \n")     // want `format string has no verb; use Print`
+	fmt.Printf("done\t\n")    // want `format string has no verb; use Print`
+	fmt.Printf("")            // want `format string has no verb; use Print`
+}
+
+func formatted() string {
+	return fmt.Sprintf("some message") // want `format string has no verb; use Sprint`
+}
+
+func formattedLine() string {
+	return fmt.Sprintf("some message\n") // want `format string has no verb; use Sprintln`
+}
+
+func written() {
+	fmt.Fprintf(os.Stdout, "done\n") // want `format string has no verb; use Fprintln`
+	fmt.Fprintf(os.Stdout, "done")   // want `format string has no verb; use Fprint`
+}
+
+func failed(t *testing.T, tb testing.TB) {
+	t.Errorf("failed\n") // want `format string has no verb; use Error`
+	t.Errorf("failed")   // want `format string has no verb; use Error`
+	tb.Errorf("failed")  // want `format string has no verb; use Error`
+	t.Errorf("two\n\n")  // want `format string has no verb; use Error`
+	t.Errorf("line\r\n") // want `format string has no verb; use Error`
+	t.Errorf("done \n")  // want `format string has no verb; use Error`
+	t.Errorf("\n")
+	t.Errorf("done\x0a")
+	t.Errorf("") // want `format string has no verb; use Error`
+}
+
+func percent() {
+	fmt.Printf("100%%")
+	fmt.Printf("50%")
+	fmt.Printf("%")
+	fmt.Printf("50\x25")
+	fmt.Printf(pct)
+}
+
+const pct = "100%"
+
+func verbs(n int) {
+	fmt.Printf("%d\n", n)
+	fmt.Printf("%s", "some message")
+}
+
+func arguments(t *testing.T) {
+	fmt.Printf("done", 1)
+	fmt.Sprintf("done", 1)
+	fmt.Fprintf(os.Stdout, "done", 1)
+	t.Errorf("done", 1)
+}
+
+func dynamic(msg string) {
+	fmt.Printf(msg)
+	fmt.Sprintf(msg)
+}
+
+const message = "some message"
+
+func constant() string {
+	return fmt.Sprintf(message) // want `format string has no verb; use Sprint`
+}
+
+func constantPrint() {
+	fmt.Printf(message) // want `format string has no verb; use Print`
+}
+
+const trailing = "some message\n"
+
+func constantTrailing(t *testing.T) {
+	fmt.Printf(trailing)  // want `format string has no verb; use Print`
+	fmt.Sprintf(trailing) // want `format string has no verb; use Sprint`
+	t.Errorf(trailing)
+}
+
+type errorer struct{}
+
+func (errorer) Errorf(string, ...any) {}
+
+func other(e errorer) {
+	e.Errorf("failed")
+}
+
+func predeclared(err error) string {
+	return err.Error()
+}
+
+type shadowed struct {
+	*testing.T
+}
+
+func (shadowed) Error(...any) {}
+
+func declared(t *shadowed) {
+	t.Errorf("failed")
+}
+
+type promoted struct {
+	*testing.T
+}
+
+func embedded(t *promoted) {
+	t.Errorf("failed") // want `format string has no verb; use Error`
+}
+
+func constructed() error {
+	return fmt.Errorf("done")
+}
+
+func value() {
+	pf := fmt.Printf
+	pf("done\n")
+}

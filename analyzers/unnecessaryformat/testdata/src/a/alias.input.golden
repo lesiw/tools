@@ -1,0 +1,8 @@
+package a
+
+import f "fmt"
+
+func aliased() {
+	f.Println("done") // want `format string has no verb; use Println`
+	f.Sprint("done")  // want `format string has no verb; use Sprint`
+}
