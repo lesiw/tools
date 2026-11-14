@@ -1,0 +1,174 @@
+package a
+
+import "fmt"
+
+type word string
+
+func (word) String() string { return "" }
+
+type plain string
+
+type phrase = string
+
+func sprinted(s string) string {
+	return s // want `redundant wrapper`
+}
+
+func converted(s string) string {
+	return s // want `redundant wrapper`
+}
+
+func sprintTwice(s string) string {
+	return s // want `redundant wrapper`
+}
+
+func convertedString(s string) string {
+	return s // want `redundant wrapper`
+}
+
+func convertedBytes(b []byte) string {
+	return string(b) // want `redundant wrapper`
+}
+
+func literal() string {
+	return "x" // want `redundant wrapper`
+}
+
+func concatenated() string {
+	return "x" + "y" // want `redundant wrapper`
+}
+
+func typeAlias(s phrase) string {
+	return s // want `redundant wrapper`
+}
+
+func parenthesized(s string) string {
+	return s // want `redundant wrapper`
+}
+
+func indexed(a, b string) byte {
+	return (a + b)[0] // want `redundant wrapper`
+}
+
+func sliced(a, b string) string {
+	return (a + b)[1:] // want `redundant wrapper`
+}
+
+func primaryChain(a, b string) byte {
+	return (a + b)[0] // want `redundant wrapper`
+}
+
+func groupedCall(s string) byte {
+	return s[0] // want `redundant wrapper`
+}
+
+func indexedBy(m map[string]string, s string) string {
+	return m[s] // want `redundant wrapper`
+}
+
+func dereferenced(p *string) byte {
+	return (*p)[0] // want `redundant wrapper`
+}
+
+func received(ch chan string) byte {
+	return (<-ch)[0] // want `redundant wrapper`
+}
+
+func bytesAround(s string) []byte {
+	return []byte(s) // want `redundant wrapper`
+}
+
+func namedOutside(s string) word {
+	return word(s) // want `redundant wrapper`
+}
+
+func namedInside(w word) string {
+	return string(fmt.Sprint(w))
+}
+
+func callOperand(fn func() string) string {
+	return fn() // want `redundant wrapper`
+}
+
+func passed(s string) {
+	fmt.Println(s) // want `redundant wrapper`
+}
+
+func commented(s string) string {
+	return fmt.Sprint( /* why */ s) // want `redundant wrapper`
+}
+
+func trailingComment(s string) string {
+	return fmt.Sprint(s /* why */) // want `redundant wrapper`
+}
+
+func stringer(w word) string {
+	return fmt.Sprint(w)
+}
+
+func interfaceOperand(s string) string {
+	var v any = s
+	return fmt.Sprint(v)
+}
+
+func namedWithoutString(w plain) string {
+	return fmt.Sprint(w)
+}
+
+func generic[T ~string](v T) string {
+	return fmt.Sprint(v)
+}
+
+func pair(s, t string) string {
+	return fmt.Sprint(s, t)
+}
+
+func empty() string {
+	return fmt.Sprint()
+}
+
+func bareConversion(s string) string {
+	return string(s)
+}
+
+func functionValue(s string) string {
+	sprint := fmt.Sprint
+	return sprint(s)
+}
+
+func formatted(s string) string {
+	return fmt.Sprintf("%s", s)
+}
+
+func shadowed(fmt interface{ Sprint(string) string }, s string) string {
+	return fmt.Sprint(s)
+}
+
+func launched(fn func() string) {
+	go fn() // want `redundant wrapper`
+}
+
+func deferred(fn func() string) {
+	defer fn() // want `redundant wrapper`
+}
+
+func discarded(s string) {
+	fmt.Sprint(s)
+	defer fmt.Sprint(s)
+	go fmt.Sprint(s)
+	go fmt.Sprint(string(s))
+}
+
+func discardedParen(s string) {
+	(fmt.Sprint(s))
+}
+
+func discardedBytes(b []byte) {
+	fmt.Sprint(string(b))
+	defer fmt.Sprint(string(b))
+	go fmt.Sprint(string(b))
+}
+
+func discardedBuiltin(a, b string) {
+	go fmt.Sprint(min(a, b))
+}

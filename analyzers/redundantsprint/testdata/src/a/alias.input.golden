@@ -1,0 +1,5 @@
+package a
+
+func aliased(s string) string {
+	return s // want `redundant wrapper`
+}
