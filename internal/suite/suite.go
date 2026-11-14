@@ -84,6 +84,7 @@ import (
 	"lesiw.io/tools/analyzers/emptystring"
 	"lesiw.io/tools/analyzers/errflow"
 	"lesiw.io/tools/analyzers/errfmt"
+	"lesiw.io/tools/analyzers/errorlast"
 	"lesiw.io/tools/analyzers/errstrings"
 	"lesiw.io/tools/analyzers/flagderef"
 	"lesiw.io/tools/analyzers/gospell"
@@ -191,6 +192,7 @@ var (
 		errflow.Analyzer,
 		errfmt.Analyzer,
 		errname.New(),
+		errorlast.Analyzer,
 		errorsas.Analyzer,
 		errstrings.Analyzer,
 		flagderef.Analyzer,
