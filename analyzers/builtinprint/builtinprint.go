@@ -17,13 +17,11 @@ package builtinprint
 
 import (
 	"go/ast"
-	"go/token"
 	"go/types"
-	"path"
-	"strconv"
-	"strings"
 
 	"golang.org/x/tools/go/analysis"
+
+	"lesiw.io/tools/internal/imports"
 )
 
 var Analyzer = &analysis.Analyzer{
@@ -48,7 +46,7 @@ func run(pass *analysis.Pass) (any, error) {
 		return nil, nil
 	}
 	for _, file := range pass.Files {
-		names := imported(pass, file)
+		names := imports.Names(pass, file)
 		ast.Inspect(file, func(n ast.Node) bool {
 			call, ok := n.(*ast.CallExpr)
 			if !ok {
@@ -93,8 +91,8 @@ func callee(call *ast.CallExpr) (*ast.Ident, bool) {
 func diagnose(pass *analysis.Pass, file *ast.File, names map[string]string, call *ast.CallExpr, builtin string) analysis.Diagnostic {
 	var (
 		fmtCall        = replace[builtin].call
-		fmtName, fmtOK = qualifier(pass, names, "fmt", call.Pos())
-		osName, osOK   = qualifier(pass, names, "os", call.Pos())
+		fmtName, fmtOK = imports.Qualifier(pass, names, "fmt", call.Pos())
+		osName, osOK   = imports.Qualifier(pass, names, "os", call.Pos())
 		prefix         = fmtName + "." + fmtCall + "(" + osName + ".Stderr"
 		replacement    = prefix + ", ...)"
 		diagnostic     = analysis.Diagnostic{
@@ -117,7 +115,7 @@ func diagnose(pass *analysis.Pass, file *ast.File, names map[string]string, call
 		NewText: []byte(prefix + args + ")"),
 	}}
 	if missing := absent(names, "fmt", "os"); len(missing) > 0 {
-		edits = append(edits, addImports(pass, file, missing))
+		edits = append(edits, imports.Add(pass, file, missing...))
 	}
 	diagnostic.SuggestedFixes = []analysis.SuggestedFix{{
 		Message:   "Replace " + builtin + " with " + replacement,
@@ -185,44 +183,6 @@ func isString(t types.Type) bool {
 	return basic(t)&types.IsString != 0
 }
 
-// imported maps the path of each import in file to the name the file binds it
-// to.
-func imported(pass *analysis.Pass, file *ast.File) map[string]string {
-	names := make(map[string]string, len(file.Imports))
-	for _, spec := range file.Imports {
-		obj := pass.TypesInfo.Defs[spec.Name]
-		if obj == nil {
-			obj = pass.TypesInfo.Implicits[spec]
-		}
-		if pkgName, ok := obj.(*types.PkgName); ok {
-			names[pkgName.Imported().Path()] = pkgName.Name()
-		}
-	}
-	return names
-}
-
-// qualifier returns the name the rewrite writes for the package imported at
-// importPath, and reports whether the name reaches that package at pos.
-func qualifier(pass *analysis.Pass, names map[string]string, importPath string, pos token.Pos) (string, bool) {
-	name, ok := names[importPath]
-	if ok && (name == "." || name == "_") {
-		return path.Base(importPath), false
-	}
-	if !ok {
-		name = path.Base(importPath)
-	}
-	// A declaration or another import can hold the name the rewrite writes.
-	if scope := pass.Pkg.Scope().Innermost(pos); scope != nil {
-		if _, obj := scope.LookupParent(name, pos); obj != nil {
-			pkgName, ok := obj.(*types.PkgName)
-			if !ok || pkgName.Imported().Path() != importPath {
-				return name, false
-			}
-		}
-	}
-	return name, true
-}
-
 // arguments returns call's arguments as the tail of an argument list, in the
 // source text as written, so a rewrite keeps the line breaks and comments
 // among them.
@@ -251,21 +211,4 @@ func absent(names map[string]string, importPaths ...string) (missing []string) {
 		}
 	}
 	return missing
-}
-
-// addImports returns the edit that adds importPaths as a declaration after the
-// package clause, which a driver that only formats leaves in place and
-// goimports folds into the file's own block.
-func addImports(pass *analysis.Pass, file *ast.File, importPaths []string) analysis.TextEdit {
-	var (
-		tokFile = pass.Fset.File(file.Pos())
-		b       strings.Builder
-	)
-	b.WriteString("\n\nimport (\n")
-	for _, importPath := range importPaths {
-		b.WriteString("\t" + strconv.Quote(importPath) + "\n")
-	}
-	b.WriteString(")")
-	pos := tokFile.LineStart(tokFile.Line(file.Name.Pos())+1) - 1
-	return analysis.TextEdit{Pos: pos, End: pos, NewText: []byte(b.String())}
 }
