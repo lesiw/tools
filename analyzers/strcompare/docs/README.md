@@ -11,16 +11,16 @@ An `analysis.Analyzer` that reports a comparison made through strings.Compare or
 
 ```go
 func f(a, b string) {
-	if strings.Compare(a, b) == 0 { // comparison through Compare
-	}
-	if strings.Compare(a, b) < 0 { // comparison through Compare
-	}
-	if strings.Compare(a, b) > 0 { // comparison through Compare
-	}
-	if strings.Compare(a, b) == -1 { // comparison through Compare
-	}
-	if 0 != strings.Compare(a, b) { // comparison through Compare
-	}
+    if strings.Compare(a, b) == 0 { // comparison through Compare
+    }
+    if strings.Compare(a, b) < 0 { // comparison through Compare
+    }
+    if strings.Compare(a, b) > 0 { // comparison through Compare
+    }
+    if strings.Compare(a, b) == -1 { // comparison through Compare
+    }
+    if 0 != strings.Compare(a, b) { // comparison through Compare
+    }
 }
 ```
 

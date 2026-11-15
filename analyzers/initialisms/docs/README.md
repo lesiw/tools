@@ -21,7 +21,7 @@ type UrlPath struct{} // Url should be URL in UrlPath
 func f(httpURL string) {}
 
 func g(httpUrl string) { // Url should be URL in httpUrl
-	_ = httpUrl
+    _ = httpUrl
 }
 ```
 

@@ -11,7 +11,7 @@ An `analysis.Analyzer` that reports a byte slice searched as a string.
 
 ```go
 func f(b []byte, s string) int {
-	return strings.Index(string(b), s) // string conversion only to search; use bytes.Index
+    return strings.Index(string(b), s) // string conversion only to search; use bytes.Index
 }
 ```
 

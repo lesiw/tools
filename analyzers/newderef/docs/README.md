@@ -11,7 +11,7 @@ An `analysis.Analyzer` that reports a dereference of a fresh allocation.
 
 ```go
 func f() int {
-	return *new(int) // dereferenced allocation
+    return *new(int) // dereferenced allocation
 }
 ```
 

@@ -12,10 +12,10 @@ false.
 
 ```go
 func f(n int) {
-	if n < 0 && n > 10 { // condition is always false
-	}
-	for i := 0; i > 0; i++ { // loop condition is false before the first iteration
-	}
+    if n < 0 && n > 10 { // condition is always false
+    }
+    for i := 0; i > 0; i++ { // loop condition is false before the first iteration
+    }
 }
 ```
 

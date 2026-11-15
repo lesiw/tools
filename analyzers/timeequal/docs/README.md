@@ -11,11 +11,11 @@ An `analysis.Analyzer` that reports a `time.Time` compared with `==` or `!=`.
 
 ```go
 func f(a, b time.Time) bool {
-	return a == b // == on a time.Time compares more than the instant; write a.Equal(b)
+    return a == b // == on a time.Time compares more than the instant; write a.Equal(b)
 }
 
 func g(t time.Time) bool {
-	return t == time.Time{} // time.Time compared with the zero value; write t.IsZero()
+    return t == time.Time{} // time.Time compared with the zero value; write t.IsZero()
 }
 ```
 

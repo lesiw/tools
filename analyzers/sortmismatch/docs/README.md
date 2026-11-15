@@ -12,7 +12,7 @@ does not name the slice.
 
 ```go
 func byKeys(rows []row, keys []string) {
-	sort.Slice(rows, func(i, j int) bool { return keys[i] < keys[j] }) // the less function does not name rows
+    sort.Slice(rows, func(i, j int) bool { return keys[i] < keys[j] }) // the less function does not name rows
 }
 ```
 

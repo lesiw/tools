@@ -11,10 +11,10 @@ An `analysis.Analyzer` that reports consecutive appends to the same slice.
 
 ```go
 func f() []int {
-	var xs []int
-	xs = append(xs, 1) // 2 appends to one slice
-	xs = append(xs, 2)
-	return xs
+    var xs []int
+    xs = append(xs, 1) // 2 appends to one slice
+    xs = append(xs, 2)
+    return xs
 }
 ```
 

@@ -11,7 +11,7 @@ An `analysis.Analyzer` that reports an index that is always out of range.
 
 ```go
 func f(xs []int) int {
-	return xs[len(xs)] // index out of range
+    return xs[len(xs)] // index out of range
 }
 ```
 

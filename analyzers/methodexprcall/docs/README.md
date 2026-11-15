@@ -16,7 +16,7 @@ type item struct{ name string }
 func (i item) getName() string { return i.name }
 
 func f(i item) {
-	item.getName(i) // method expression called with its receiver; use a method call
+    item.getName(i) // method expression called with its receiver; use a method call
 }
 ```
 

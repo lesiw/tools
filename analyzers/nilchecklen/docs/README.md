@@ -12,7 +12,7 @@ redundant.
 
 ```go
 func nonEmpty(xs []int) bool {
-	return xs != nil && len(xs) > 0 // redundant nil check; len is zero for a nil slice
+    return xs != nil && len(xs) > 0 // redundant nil check; len is zero for a nil slice
 }
 ```
 

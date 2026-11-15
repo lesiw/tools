@@ -14,7 +14,7 @@ address to a call.
 func add(p *int) int { *p++; return *p }
 
 func incremented(n int) (int, int) {
-	return n, add(&n) // n is read before or after a call that may write it
+    return n, add(&n) // n is read before or after a call that may write it
 }
 ```
 

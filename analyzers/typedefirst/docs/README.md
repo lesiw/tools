@@ -13,11 +13,11 @@ An `analysis.Analyzer` that reports a type declared after the methods on it.
 package a
 
 func (s *session) touch() {
-	s.count++
+    s.count++
 }
 
 type session struct { // type session should be declared before method touch
-	count int
+    count int
 }
 ```
 

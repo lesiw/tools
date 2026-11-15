@@ -11,10 +11,10 @@ An `analysis.Analyzer` that reports an http.Error call without a return after it
 
 ```go
 func handler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		http.Error(w, "method", http.StatusMethodNotAllowed) // http.Error does not stop the handler
-		w.WriteHeader(http.StatusOK)
-	}
+    if r.Method != http.MethodGet {
+        http.Error(w, "method", http.StatusMethodNotAllowed) // http.Error does not stop the handler
+        w.WriteHeader(http.StatusOK)
+    }
 }
 ```
 
@@ -24,8 +24,8 @@ the handler wrote.
 
 ```go
 if r.Method != http.MethodGet {
-	http.Error(w, "method", http.StatusMethodNotAllowed)
-	return
+    http.Error(w, "method", http.StatusMethodNotAllowed)
+    return
 }
 ```
 

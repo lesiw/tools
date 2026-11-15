@@ -11,10 +11,10 @@ An `analysis.Analyzer` that reports a return of the variable an if just found to
 
 ```go
 func f(err error) error {
-	if err == nil {
-		return err // err is nil here, so the return is nil
-	}
-	return nil
+    if err == nil {
+        return err // err is nil here, so the return is nil
+    }
+    return nil
 }
 ```
 

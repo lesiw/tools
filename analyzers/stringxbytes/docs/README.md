@@ -104,7 +104,7 @@ Five shapes are left alone:
 
 ```go
 func (w writer) WriteString(s string) (int, error) {
-	return w.Write([]byte(s))
+    return w.Write([]byte(s))
 }
 ```
 

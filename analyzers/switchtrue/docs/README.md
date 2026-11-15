@@ -11,12 +11,12 @@ An `analysis.Analyzer` that reports a switch whose tag is the literal true.
 
 ```go
 func f(n int) int {
-	switch true { // switch on true; drop the tag
-	case n > 0:
-		return 1
-	default:
-		return 0
-	}
+    switch true { // switch on true; drop the tag
+    case n > 0:
+        return 1
+    default:
+        return 0
+    }
 }
 ```
 
@@ -26,7 +26,7 @@ with one word fewer.
 ```go
 switch {
 case n > 0:
-	return 1
+    return 1
 }
 ```
 

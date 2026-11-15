@@ -11,12 +11,12 @@ An `analysis.Analyzer` that reports a loop that searches a map for one key.
 
 ```go
 func f(m map[string]int, want string) (int, bool) {
-	for k, v := range m { // loop can be replaced by a map lookup
-		if k == want {
-			return v, true
-		}
-	}
-	return 0, false
+    for k, v := range m { // loop can be replaced by a map lookup
+        if k == want {
+            return v, true
+        }
+    }
+    return 0, false
 }
 ```
 

@@ -13,8 +13,8 @@ An `analysis.Analyzer` that reports a converted string written to a writer.
 type kind string
 
 func write(b *bytes.Buffer, s string, k kind) {
-	b.Write([]byte(s)) // converted string written to a writer; use WriteString
-	b.Write([]byte(k)) // converted string written to a writer; use WriteString
+    b.Write([]byte(s)) // converted string written to a writer; use WriteString
+    b.Write([]byte(k)) // converted string written to a writer; use WriteString
 }
 ```
 

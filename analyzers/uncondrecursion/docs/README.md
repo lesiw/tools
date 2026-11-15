@@ -12,7 +12,7 @@ function runs.
 
 ```go
 func f() {
-	f() // unconditional recursive call
+    f() // unconditional recursive call
 }
 ```
 

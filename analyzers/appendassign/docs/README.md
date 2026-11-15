@@ -12,8 +12,8 @@ that the function still reads.
 
 ```go
 func f(xs, ys []int, v int) ([]int, []int) {
-	ys = append(xs, v) // append to xs is assigned to ys, so xs keeps its length
-	return xs, ys
+    ys = append(xs, v) // append to xs is assigned to ys, so xs keeps its length
+    return xs, ys
 }
 ```
 

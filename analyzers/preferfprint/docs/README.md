@@ -11,10 +11,10 @@ An `analysis.Analyzer` that reports a formatted string written to a writer.
 
 ```go
 func f(b *bytes.Buffer, w *bytes.Buffer, n int) {
-	b.Write([]byte(fmt.Sprintf("%d", n))) // formatted string written to a writer
-	b.WriteString(fmt.Sprintf("%d", n)) // formatted string written to a writer
-	w.WriteString(fmt.Sprint(n)) // formatted string written to a writer
-	io.WriteString(b, fmt.Sprintln(n)) // formatted string written to a writer
+    b.Write([]byte(fmt.Sprintf("%d", n))) // formatted string written to a writer
+    b.WriteString(fmt.Sprintf("%d", n)) // formatted string written to a writer
+    w.WriteString(fmt.Sprint(n)) // formatted string written to a writer
+    io.WriteString(b, fmt.Sprintln(n)) // formatted string written to a writer
 }
 ```
 

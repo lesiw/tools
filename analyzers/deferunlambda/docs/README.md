@@ -11,7 +11,7 @@ An `analysis.Analyzer` that reports a deferred literal that only calls a functio
 
 ```go
 func f() {
-	defer func() { close1() }() // deferred literal only calls a function
+    defer func() { close1() }() // deferred literal only calls a function
 }
 ```
 

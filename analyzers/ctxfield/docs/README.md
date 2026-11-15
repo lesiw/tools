@@ -15,7 +15,7 @@ package a
 import "context"
 
 type good struct {
-	ctx context.Context // context.Context in a field
+    ctx context.Context // context.Context in a field
 }
 ```
 

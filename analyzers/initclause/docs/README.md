@@ -11,10 +11,10 @@ statement that declares nothing.
 
 ```go
 func reload(c *cache) bool {
-	if c.fetch(); c.err != nil { // if init clause declares nothing
-		return false
-	}
-	return true
+    if c.fetch(); c.err != nil { // if init clause declares nothing
+        return false
+    }
+    return true
 }
 ```
 

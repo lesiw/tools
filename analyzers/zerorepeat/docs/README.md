@@ -11,7 +11,7 @@ An `analysis.Analyzer` that reports a run of zero bytes built with bytes.Repeat.
 
 ```go
 func f(n int) []byte {
-	return bytes.Repeat([]byte{0}, n) // zero bytes from bytes.Repeat
+    return bytes.Repeat([]byte{0}, n) // zero bytes from bytes.Repeat
 }
 ```
 

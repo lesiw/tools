@@ -11,13 +11,13 @@ An `analysis.Analyzer` that reports a case that names an expression an earlier c
 
 ```go
 func f(xs []int) int {
-	switch xs[0] {
-	case xs[1], xs[2], xs[1]: // case repeats an earlier expression
-		return 1
-	case xs[3]:
-		return 2
-	}
-	return 0
+    switch xs[0] {
+    case xs[1], xs[2], xs[1]: // case repeats an earlier expression
+        return 1
+    case xs[3]:
+        return 2
+    }
+    return 0
 }
 ```
 

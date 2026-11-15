@@ -14,8 +14,8 @@ package name and the last element of its path.
 package a
 
 import (
-	fmt "fmt" // redundant import alias "fmt"
-	"os"
+    fmt "fmt" // redundant import alias "fmt"
+    "os"
 )
 
 var _ = fmt.Sprint(os.Args)

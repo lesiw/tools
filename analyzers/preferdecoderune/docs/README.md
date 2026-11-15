@@ -12,7 +12,7 @@ its first rune.
 
 ```go
 func initial(s string) rune {
-	return []rune(s)[0] // string converted to a rune slice; use utf8.DecodeRuneInString
+    return []rune(s)[0] // string converted to a rune slice; use utf8.DecodeRuneInString
 }
 ```
 

@@ -11,10 +11,10 @@ An `analysis.Analyzer` that reports two returns of opposite boolean constants un
 
 ```go
 func f(ok bool) bool {
-	if ok { // two returns of opposite constants; write return ok
-		return true
-	}
-	return false
+    if ok { // two returns of opposite constants; write return ok
+        return true
+    }
+    return false
 }
 ```
 
@@ -28,11 +28,11 @@ makes both halves false:
 
 ```go
 func g(n int) bool {
-	if n == 0 { // two returns of opposite constants; write return n != 0
-		return false
-	} else {
-		return true
-	}
+    if n == 0 { // two returns of opposite constants; write return n != 0
+        return false
+    } else {
+        return true
+    }
 }
 ```
 

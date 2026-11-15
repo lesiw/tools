@@ -12,7 +12,7 @@ always the same.
 
 ```go
 func unset(p *int) bool {
-	return &p == nil // an address cannot be nil
+    return &p == nil // an address cannot be nil
 }
 ```
 

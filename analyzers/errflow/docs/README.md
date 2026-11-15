@@ -11,11 +11,11 @@ An `analysis.Analyzer` that reports an else block that follows a terminating sta
 
 ```go
 func returning(err error) int {
-	if err != nil {
-		return 0
-	} else { // unnecessary else
-		return 1
-	}
+    if err != nil {
+        return 0
+    } else { // unnecessary else
+        return 1
+    }
 }
 ```
 

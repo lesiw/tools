@@ -11,7 +11,7 @@ An `analysis.Analyzer` that reports a string compared with its own length.
 
 ```go
 func f(s string) bool {
-	return len(s) == 0 // compare the string with "" instead
+    return len(s) == 0 // compare the string with "" instead
 }
 ```
 

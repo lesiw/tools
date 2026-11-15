@@ -12,8 +12,8 @@ whose error is always nil, so any check for it is dead code.
 
 ```go
 func must() *regexp.Regexp {
-	re, _ := regexp.Compile(`^a+$`) // the error of a constant pattern is always nil; use MustCompile
-	return re
+    re, _ := regexp.Compile(`^a+$`) // the error of a constant pattern is always nil; use MustCompile
+    return re
 }
 ```
 

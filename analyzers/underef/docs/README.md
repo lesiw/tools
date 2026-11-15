@@ -14,7 +14,7 @@ selector.
 type item struct{ Kind, Name string }
 
 func kind(p *item) string {
-	return (*p).Kind // redundant dereference in front of a selector
+    return (*p).Kind // redundant dereference in front of a selector
 }
 ```
 

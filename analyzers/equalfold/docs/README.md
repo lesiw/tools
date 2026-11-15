@@ -12,7 +12,7 @@ converted to the same case.
 
 ```go
 func f(a, b string) bool {
-	return strings.ToLower(a) == strings.ToLower(b) // strings.ToLower on both sides; use strings.EqualFold if folding is intended
+    return strings.ToLower(a) == strings.ToLower(b) // strings.ToLower on both sides; use strings.EqualFold if folding is intended
 }
 ```
 

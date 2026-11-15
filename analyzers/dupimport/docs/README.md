@@ -13,15 +13,15 @@ An `analysis.Analyzer` that reports one package imported twice under different n
 package a
 
 import (
-	"bytes"
-	printing "bytes" // bytes is imported more than once
-	"strings"
+    "bytes"
+    printing "bytes" // bytes is imported more than once
+    "strings"
 )
 
 func f() {
-	_ = bytes.Buffer{}
-	_ = printing.Buffer{}
-	_ = strings.TrimSpace("")
+    _ = bytes.Buffer{}
+    _ = printing.Buffer{}
+    _ = strings.TrimSpace("")
 }
 ```
 

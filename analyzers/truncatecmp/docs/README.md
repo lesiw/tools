@@ -12,7 +12,7 @@ conversion.
 
 ```go
 func below(wide int64, bound int32) bool {
-	return int32(wide) < bound // comparison truncates int64 to int32
+    return int32(wide) < bound // comparison truncates int64 to int32
 }
 ```
 

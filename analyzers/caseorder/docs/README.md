@@ -12,11 +12,11 @@ run in neither ascending nor descending order.
 
 ```go
 func f(n int) {
-	switch n { // case values are in neither ascending nor descending order
-	case 3:
-	case 1:
-	case 2:
-	}
+    switch n { // case values are in neither ascending nor descending order
+    case 3:
+    case 1:
+    case 2:
+    }
 }
 ```
 

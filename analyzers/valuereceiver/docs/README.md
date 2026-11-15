@@ -12,7 +12,7 @@ receiver.
 
 ```go
 func (p pair) Set(left int) {
-	p.left = left // dead write to field left of a value receiver
+    p.left = left // dead write to field left of a value receiver
 }
 ```
 

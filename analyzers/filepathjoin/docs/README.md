@@ -12,7 +12,7 @@ separator.
 
 ```go
 func config(dir, name string) string {
-	return dir + "/" + name // path concatenated with a literal separator can be replaced by filepath.Join
+    return dir + "/" + name // path concatenated with a literal separator can be replaced by filepath.Join
 }
 ```
 

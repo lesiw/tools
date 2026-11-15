@@ -11,13 +11,13 @@ An `analysis.Analyzer` that reports a type switch whose cases assert the value a
 
 ```go
 func f(x any) int {
-	switch x.(type) { // type switch binds nothing
-	case int:
-		return x.(int)
-	case string:
-		return len(x.(string))
-	}
-	return 0
+    switch x.(type) { // type switch binds nothing
+    case int:
+        return x.(int)
+    case string:
+        return len(x.(string))
+    }
+    return 0
 }
 ```
 
@@ -27,7 +27,7 @@ in the header does both once.
 ```go
 switch v := x.(type) {
 case int:
-	return v
+    return v
 }
 ```
 

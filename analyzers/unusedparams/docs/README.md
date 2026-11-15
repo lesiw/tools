@@ -11,7 +11,7 @@ An `analysis.Analyzer` that reports a parameter a function never reads.
 
 ```go
 func unread(a int, b string) string { // parameter a is never read
-	return b
+    return b
 }
 ```
 
@@ -21,7 +21,7 @@ nothing:
 
 ```go
 func unread(_ int, b string) string {
-	return b
+    return b
 }
 ```
 

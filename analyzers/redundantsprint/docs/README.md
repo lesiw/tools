@@ -12,7 +12,7 @@ string.
 
 ```go
 func f(s string) string {
-	return fmt.Sprint(s) // redundant wrapper; the operand is already a string
+    return fmt.Sprint(s) // redundant wrapper; the operand is already a string
 }
 ```
 

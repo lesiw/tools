@@ -11,7 +11,7 @@ An `analysis.Analyzer` that reports a comparison with the constant on the left.
 
 ```go
 func f(err error) bool {
-	return nil == err // constant on the left
+    return nil == err // constant on the left
 }
 ```
 

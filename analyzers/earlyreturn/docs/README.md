@@ -12,8 +12,8 @@ width.
 
 ```go
 func matches(s string) bool {
-	return strings.Contains(s, "alpha-one") && strings.HasPrefix(s, "alpha") || // chains 4 conditions
-		strings.Contains(s, "beta-two") && strings.HasPrefix(s, "beta")
+    return strings.Contains(s, "alpha-one") && strings.HasPrefix(s, "alpha") || // chains 4 conditions
+        strings.Contains(s, "beta-two") && strings.HasPrefix(s, "beta")
 }
 ```
 
@@ -23,10 +23,10 @@ decompose it:
 
 ```go
 func matches(s string) bool {
-	if strings.Contains(s, "alpha-one") && strings.HasPrefix(s, "alpha") {
-		return true
-	}
-	return strings.Contains(s, "beta-two") && strings.HasPrefix(s, "beta")
+    if strings.Contains(s, "alpha-one") && strings.HasPrefix(s, "alpha") {
+        return true
+    }
+    return strings.Contains(s, "beta-two") && strings.HasPrefix(s, "beta")
 }
 ```
 

@@ -12,7 +12,7 @@ a count of zero.
 
 ```go
 func words(s string) []string {
-	return regexp.MustCompile(`\w+`).FindAllString(s, 0) // a count of zero always returns no matches
+    return regexp.MustCompile(`\w+`).FindAllString(s, 0) // a count of zero always returns no matches
 }
 ```
 

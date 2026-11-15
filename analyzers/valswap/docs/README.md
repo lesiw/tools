@@ -11,10 +11,10 @@ An `analysis.Analyzer` that reports a swap written through a temporary.
 
 ```go
 func f(x, y int) (int, int) {
-	tmp := x // swap through tmp; write x, y = y, x instead
-	x = y
-	y = tmp
-	return x, y
+    tmp := x // swap through tmp; write x, y = y, x instead
+    x = y
+    y = tmp
+    return x, y
 }
 ```
 

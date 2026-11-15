@@ -11,16 +11,16 @@ An `analysis.Analyzer` that reports a redundant block statement.
 
 ```go
 func f(n int) {
-	{ // redundant block statement
-		println(n)
-	}
-	switch n {
-	case 1:
-		{ // redundant block statement
-			x := 1
-			println(x)
-		}
-	}
+    { // redundant block statement
+        println(n)
+    }
+    switch n {
+    case 1:
+        { // redundant block statement
+            x := 1
+            println(x)
+        }
+    }
 }
 ```
 

@@ -11,7 +11,7 @@ An `analysis.Analyzer` that reports a receiver that the method body never reads.
 
 ```go
 func (t *T) Read() int { // receiver t is unused
-	return 0
+    return 0
 }
 ```
 
@@ -21,7 +21,7 @@ that it does not.
 
 ```go
 func (*T) Read() int {
-	return 0
+    return 0
 }
 ```
 

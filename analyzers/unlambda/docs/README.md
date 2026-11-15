@@ -11,8 +11,8 @@ An `analysis.Analyzer` that reports a function literal that only forwards its ar
 
 ```go
 func g() {
-	use(func(s string) []string { return strings.Fields(s) }) // literal only forwards its arguments
-	use(strings.Fields)
+    use(func(s string) []string { return strings.Fields(s) }) // literal only forwards its arguments
+    use(strings.Fields)
 }
 ```
 

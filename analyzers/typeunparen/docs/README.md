@@ -25,7 +25,7 @@ type T (int) // redundant parentheses around a type
 var m map[string](int) // redundant parentheses around a type
 
 func g(n int) int {
-	return (n + 1)
+    return (n + 1)
 }
 ```
 

@@ -11,11 +11,11 @@ An `analysis.Analyzer` that reports an if whose two branches hold the same state
 
 ```go
 func f(cond bool) {
-	if cond {
-		println("same")
-	} else { // both branches hold the same statements
-		println("same")
-	}
+    if cond {
+        println("same")
+    } else { // both branches hold the same statements
+        println("same")
+    }
 }
 ```
 

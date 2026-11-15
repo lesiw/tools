@@ -11,14 +11,14 @@ An `analysis.Analyzer` that reports a call whose format string has no verb.
 
 ```go
 func f(w io.Writer) {
-	fmt.Printf("done\n")        // format string has no verb; use Println
-	fmt.Printf("done")          // format string has no verb; use Print
-	fmt.Sprintf("some message") // format string has no verb; use Sprint
-	fmt.Fprintf(w, "done\n")    // format string has no verb; use Fprintln
+    fmt.Printf("done\n")        // format string has no verb; use Println
+    fmt.Printf("done")          // format string has no verb; use Print
+    fmt.Sprintf("some message") // format string has no verb; use Sprint
+    fmt.Fprintf(w, "done\n")    // format string has no verb; use Fprintln
 }
 
 func g(t *testing.T) {
-	t.Errorf("failed") // format string has no verb; use Error
+    t.Errorf("failed") // format string has no verb; use Error
 }
 ```
 

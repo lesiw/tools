@@ -12,11 +12,11 @@ switch, or for statement whose variable is not used outside the statement.
 
 ```go
 func load(name string) error {
-	var err error
-	if err = fetch(name); err != nil { // err can be declared in this if statement
-		return err
-	}
-	return nil
+    var err error
+    if err = fetch(name); err != nil { // err can be declared in this if statement
+        return err
+    }
+    return nil
 }
 ```
 
@@ -24,10 +24,10 @@ A short declaration gives `err` the scope where it is read:
 
 ```go
 func load(name string) error {
-	if err := fetch(name); err != nil {
-		return err
-	}
-	return nil
+    if err := fetch(name); err != nil {
+        return err
+    }
+    return nil
 }
 ```
 

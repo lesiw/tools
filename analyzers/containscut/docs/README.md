@@ -12,8 +12,8 @@ already returns.
 
 ```go
 if strings.Contains(ref, "@") { // Contains followed by Cut; Cut reports the separator itself
-	repo, _, _ := strings.Cut(ref, "@")
-	return repo, "", true
+    repo, _, _ := strings.Cut(ref, "@")
+    return repo, "", true
 }
 ```
 
@@ -22,7 +22,7 @@ scan for a boolean the next line throws away. The idiomatic form asks once:
 
 ```go
 if repo, _, ok := strings.Cut(ref, "@"); ok {
-	return repo, "", true
+    return repo, "", true
 }
 ```
 

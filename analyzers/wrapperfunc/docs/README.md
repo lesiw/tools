@@ -12,7 +12,7 @@ arguments.
 
 ```go
 func outer(x int) int { // func outer only forwards its arguments; call inner instead
-	return inner(x)
+    return inner(x)
 }
 ```
 

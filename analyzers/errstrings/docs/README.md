@@ -13,8 +13,8 @@ An `analysis.Analyzer` that reports a capitalized error string or one ending in 
 package a
 
 import (
-	"errors"
-	"fmt"
+    "errors"
+    "fmt"
 )
 
 var errBad = errors.New("Something went wrong") // error string starts with a capital letter
@@ -24,13 +24,13 @@ var errStop = errors.New("not found.") // error string ends with punctuation
 var errBoth = errors.New("Not found.") // error string starts with a capital letter
 
 func f(n int) error {
-	if n < 0 {
-		return fmt.Errorf("Negative count: %d", n) // error string starts with a capital letter
-	}
-	if n == 0 {
-		return fmt.Errorf("count is zero") // fine
-	}
-	return nil
+    if n < 0 {
+        return fmt.Errorf("Negative count: %d", n) // error string starts with a capital letter
+    }
+    if n == 0 {
+        return fmt.Errorf("count is zero") // fine
+    }
+    return nil
 }
 ```
 

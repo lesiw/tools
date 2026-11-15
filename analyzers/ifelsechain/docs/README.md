@@ -11,16 +11,16 @@ An `analysis.Analyzer` that reports an if-else chain that reads as a switch.
 
 ```go
 func three(n int) int {
-	if n == 0 { // if-else chain of 4 branches; use a switch
-		return 0
-	} else if n == 1 {
-		return 1
-	} else if n == 2 {
-		return 2
-	} else if n == 3 {
-		return 3
-	}
-	return -1
+    if n == 0 { // if-else chain of 4 branches; use a switch
+        return 0
+    } else if n == 1 {
+        return 1
+    } else if n == 2 {
+        return 2
+    } else if n == 3 {
+        return 3
+    }
+    return -1
 }
 ```
 
@@ -31,7 +31,7 @@ is a choice between two things, and an if is the right form for that.
 ```go
 switch n {
 case 0:
-	return 0
+    return 0
 }
 ```
 

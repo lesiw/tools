@@ -11,7 +11,7 @@ An `analysis.Analyzer` that reports a declaration that shadows an imported packa
 
 ```go
 func f(path string) string { // declaration shadows the imported package "path"
-	return path
+    return path
 }
 ```
 

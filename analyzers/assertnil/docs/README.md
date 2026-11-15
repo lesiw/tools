@@ -13,9 +13,9 @@ An `analysis.Analyzer` that reports a redundant nil check on the result of a typ
 type sink interface{ Use() }
 
 func f(x any) {
-	if s, ok := x.(sink); ok && s != nil { // s is never nil when ok is true
-		s.Use()
-	}
+    if s, ok := x.(sink); ok && s != nil { // s is never nil when ok is true
+        s.Use()
+    }
 }
 ```
 

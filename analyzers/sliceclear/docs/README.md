@@ -12,9 +12,9 @@ slice.
 
 ```go
 func reset(xs []int) {
-	for i := range xs { // loop can be replaced by clear(xs)
-		xs[i] = 0
-	}
+    for i := range xs { // loop can be replaced by clear(xs)
+        xs[i] = 0
+    }
 }
 ```
 

@@ -12,9 +12,9 @@ An `analysis.Analyzer` that reports a redundant label.
 ```go
 func f(xs []int) {
 outer: // redundant label outer
-	for range xs {
-		break outer
-	}
+    for range xs {
+        break outer
+    }
 }
 ```
 

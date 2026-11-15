@@ -11,7 +11,7 @@ An `analysis.Analyzer` that reports a type assertion from a type to itself.
 
 ```go
 func f(r any) any {
-	return r.(any) // type assertion from a type to itself
+    return r.(any) // type assertion from a type to itself
 }
 ```
 

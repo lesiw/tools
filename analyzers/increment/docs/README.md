@@ -12,9 +12,9 @@ compound assignment.
 
 ```go
 func f(i int) int {
-	i += 1 // += 1 can be replaced by ++
-	i -= 1 // -= 1 can be replaced by --
-	return i
+    i += 1 // += 1 can be replaced by ++
+    i -= 1 // -= 1 can be replaced by --
+    return i
 }
 ```
 

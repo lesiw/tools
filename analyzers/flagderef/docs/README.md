@@ -17,8 +17,8 @@ import "flag"
 var b = *flag.Bool("b", false, "b docs") // flag read before Parse
 
 func f() {
-	_ = *flag.String("s", "", "s docs") // flag read before Parse
-	_ = flag.Int("n", 0, "n docs")
+    _ = *flag.String("s", "", "s docs") // flag read before Parse
+    _ = flag.Int("n", 0, "n docs")
 }
 ```
 

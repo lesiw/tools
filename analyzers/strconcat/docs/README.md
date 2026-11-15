@@ -11,7 +11,7 @@ An `analysis.Analyzer` that reports a two- or three-element Join with a literal 
 
 ```go
 func f(a, b string) string {
-	return strings.Join([]string{a, b}, "-") // Join of 2 parts
+    return strings.Join([]string{a, b}, "-") // Join of 2 parts
 }
 ```
 

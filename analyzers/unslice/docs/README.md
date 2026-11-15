@@ -11,7 +11,7 @@ An `analysis.Analyzer` that reports a slice expression that takes the whole valu
 
 ```go
 func f(s []int) []int {
-	return s[:] // unnecessary full slice
+    return s[:] // unnecessary full slice
 }
 ```
 

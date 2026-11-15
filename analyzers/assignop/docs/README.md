@@ -11,9 +11,9 @@ An `analysis.Analyzer` that reports an assignment that writes a variable in term
 
 ```go
 func f(x, y int) int {
-	x = x + y // assignment writes x in terms of itself
-	x = x * y // assignment writes x in terms of itself
-	return x
+    x = x + y // assignment writes x in terms of itself
+    x = x * y // assignment writes x in terms of itself
+    return x
 }
 ```
 

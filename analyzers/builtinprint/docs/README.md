@@ -12,7 +12,7 @@ functions.
 
 ```go
 func f(n int) {
-	println("step", n) // println can be replaced by fmt.Fprintln(os.Stderr, ...)
+    println("step", n) // println can be replaced by fmt.Fprintln(os.Stderr, ...)
 }
 ```
 

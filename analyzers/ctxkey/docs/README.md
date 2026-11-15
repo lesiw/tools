@@ -12,7 +12,7 @@ built-in type.
 
 ```go
 func f(ctx context.Context, v any) context.Context {
-	return context.WithValue(ctx, "some-key", v) // context key has the built-in type string; define a key type
+    return context.WithValue(ctx, "some-key", v) // context key has the built-in type string; define a key type
 }
 ```
 

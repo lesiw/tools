@@ -11,14 +11,14 @@ An `analysis.Analyzer` that reports an if nested in an else block.
 
 ```go
 func f(n int) int {
-	if n == 0 {
-		return 0
-	} else { // if nested in an else; write else if
-		if n == 1 {
-			return 1
-		}
-	}
-	return -1
+    if n == 0 {
+        return 0
+    } else { // if nested in an else; write else if
+        if n == 1 {
+            return 1
+        }
+    }
+    return -1
 }
 ```
 

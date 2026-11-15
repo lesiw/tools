@@ -11,13 +11,13 @@ An `analysis.Analyzer` that reports a case whose whole body is a fallthrough.
 
 ```go
 func f(n int) int {
-	switch n {
-	case 0:
-		fallthrough // case only falls through
-	case 1:
-		return 1
-	}
-	return 0
+    switch n {
+    case 0:
+        fallthrough // case only falls through
+    case 1:
+        return 1
+    }
+    return 0
 }
 ```
 

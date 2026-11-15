@@ -12,12 +12,12 @@ receiver.
 
 ```go
 type item struct {
-	text []byte
+    text []byte
 }
 
 func (i item) MarshalText() ([]byte, error) {
-	i.text = []byte("0") // writes to a copy of item; the caller never sees it
-	return nil, nil
+    i.text = []byte("0") // writes to a copy of item; the caller never sees it
+    return nil, nil
 }
 ```
 

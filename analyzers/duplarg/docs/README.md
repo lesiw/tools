@@ -11,7 +11,7 @@ An `analysis.Analyzer` that reports a call that passes one value where it expect
 
 ```go
 func f(s string) bool {
-	return strings.Contains(s, s) // both arguments are the same value
+    return strings.Contains(s, s) // both arguments are the same value
 }
 ```
 

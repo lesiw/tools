@@ -11,7 +11,7 @@ An `analysis.Analyzer` that reports an operator whose operands are the same valu
 
 ```go
 func f(items []int, k int) bool {
-	return items[k] < items[k] // both operands are the same value
+    return items[k] < items[k] // both operands are the same value
 }
 ```
 

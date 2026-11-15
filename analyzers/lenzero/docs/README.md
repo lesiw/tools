@@ -11,7 +11,7 @@ An `analysis.Analyzer` that reports a comparison of len with zero that is always
 
 ```go
 func f(xs []int) bool {
-	return len(xs) < 0 // len is never negative; this is always false
+    return len(xs) < 0 // len is never negative; this is always false
 }
 ```
 

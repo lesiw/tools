@@ -12,7 +12,7 @@ last one.
 
 ```go
 func lookup() (error, int) { // error is not the last result
-	return nil, 0
+    return nil, 0
 }
 ```
 

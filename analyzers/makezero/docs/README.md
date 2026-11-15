@@ -11,8 +11,8 @@ An `analysis.Analyzer` that reports a slice made with a non-zero length that is 
 
 ```go
 func f() []int {
-	s := make([]int, 10) // slice made with a length, then appended to
-	return append(s, 1)
+    s := make([]int, 10) // slice made with a length, then appended to
+    return append(s, 1)
 }
 ```
 
