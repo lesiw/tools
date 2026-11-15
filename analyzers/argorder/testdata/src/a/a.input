@@ -1,0 +1,180 @@
+package a
+
+func join(from, to string) string { return from + to }
+
+func reversed(from, to string) string {
+	return join(to, from) // want `arguments are in the order to, from; the parameters are from, to`
+}
+
+func inOrder(from, to string) string {
+	return join(from, to)
+}
+
+func unrelated(a, b string) string {
+	return join(b, a)
+}
+
+func halfMatched(from, b string) string {
+	return join(b, from)
+}
+
+func wrapper(to, from string) string {
+	return join(to, from) // want `arguments are in the order to, from; the parameters are from, to`
+}
+
+func less(a, b int) bool { return a < b }
+
+func greater(a, b int) bool {
+	return less(b, a) // want `arguments are in the order b, a; the parameters are a, b`
+}
+
+func literals() string {
+	return join("from", "to")
+}
+
+func calls(next func() string) string {
+	return join(next(), next())
+}
+
+func pairOf() (string, string) { return "", "" }
+
+func spread() string {
+	return join(pairOf())
+}
+
+func parenthesized(from, to string) string {
+	return join((to), (from)) // want `arguments are in the order to, from; the parameters are from, to`
+}
+
+type point struct {
+	from, to int
+}
+
+func set(from, to int) {}
+
+func selectors(p point) {
+	set(p.to, p.from)
+}
+
+func predeclared(p, q point) int {
+	return min(p.to, q.from)
+}
+
+func elements(xs, ys []string) string {
+	return join(xs[0], ys[1])
+}
+
+type list []int
+
+func sum(a []int, b list) int { return len(a) + len(b) }
+
+func crossTypes(a []int, b list) int {
+	return sum(b, a)
+}
+
+func span(lo, hi, out int) int { return hi - lo + out }
+
+func adjacentPair(lo, hi, out int) int {
+	return span(hi, lo, out) // want `arguments are in the order hi, lo; the parameters are lo, hi`
+}
+
+func reversedTriple(lo, hi, out int) int {
+	return span(out, hi, lo)
+}
+
+func halfMatchedPair(lo, hi, out int) int {
+	return span(hi, out, lo)
+}
+
+func merge(dst, src []byte) []byte { return append(dst, src...) }
+
+func merged(dst, src []byte) []byte {
+	return merge(src, dst) // want `arguments are in the order src, dst; the parameters are dst, src`
+}
+
+func pack(first, last string, more ...string) string {
+	return first + last
+}
+
+func variadicFixed(first, last string) string {
+	return pack(last, first) // want `arguments are in the order last, first; the parameters are first, last`
+}
+
+func variadicCollected(first, last string) string {
+	return pack(first, last, last, first)
+}
+
+func collect(xs []string, rest ...string) []string { return xs }
+
+func variadicNotPaired(rest []string, xs string) string {
+	collect(rest, xs)
+	return xs
+}
+
+func both[A any](x, y A) A { return x }
+
+func instantiated(x, y int) int {
+	return both(y, x) // want `arguments are in the order y, x; the parameters are x, y`
+}
+
+func kind[A any](x, y A) bool { return true }
+
+func instantiatedExplicitly(x, y string) bool {
+	return kind[string](y, x) // want `arguments are in the order y, x; the parameters are x, y`
+}
+
+type joiner struct{}
+
+func (joiner) stitch(from, to string) string { return from + to }
+
+func methodValue(j joiner, from, to string) string {
+	return j.stitch(to, from) // want `arguments are in the order to, from; the parameters are from, to`
+}
+
+func methodExpr(j joiner, from, to string) string {
+	return joiner.stitch(j, to, from) // want `arguments are in the order to, from; the parameters are from, to`
+}
+
+type thing struct{}
+
+func (dst thing) swap(other thing) {}
+
+func methodExprReceiver(dst, other thing) {
+	thing.swap(other, dst) // want `arguments are in the order other, dst; the parameters are dst, other`
+}
+
+type stitcher interface {
+	stitch(from, to string) string
+}
+
+func throughInterface(s stitcher, from, to string) string {
+	return s.stitch(to, from) // want `arguments are in the order to, from; the parameters are from, to`
+}
+
+type stitchFunc func(from, to string) string
+
+func throughValue(f stitchFunc, from, to string) string {
+	return f(to, from) // want `arguments are in the order to, from; the parameters are from, to`
+}
+
+var unnamed func(int, int) int
+
+func throughUnnamed(p, q point) int {
+	return unnamed(p.to, q.from)
+}
+
+func literalCall(from, to string) string {
+	return func(from, to string) string { return from + to }(to, from) // want `arguments are in the order to, from; the parameters are from, to`
+}
+
+type styled string
+
+func speak(loud, quiet styled) styled { return loud }
+
+func named(loud, quiet styled) styled {
+	return speak(quiet, loud) // want `arguments are in the order quiet, loud; the parameters are loud, quiet`
+}
+
+func throughTypeParam[F ~func(x, y int) int](f F, x, y int) int {
+	return f(y, x)
+}

@@ -57,6 +57,7 @@ import (
 	"lesiw.io/tools/analyzers/afterhttperror"
 	"lesiw.io/tools/analyzers/appendassign"
 	"lesiw.io/tools/analyzers/appendcombine"
+	"lesiw.io/tools/analyzers/argorder"
 	"lesiw.io/tools/analyzers/assertnil"
 	"lesiw.io/tools/analyzers/assignop"
 	"lesiw.io/tools/analyzers/badcond"
@@ -194,6 +195,7 @@ var (
 		appendassign.Analyzer,
 		appendcombine.Analyzer,
 		appends.Analyzer,
+		argorder.Analyzer,
 		asmdecl.Analyzer,
 		assertnil.Analyzer,
 		assign.Analyzer,

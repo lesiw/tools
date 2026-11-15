@@ -85,6 +85,20 @@ func f(xs []string) []string {
 }
 ```
 
+## argorder
+
+Reports a call whose arguments name the parameters in the other order. Two adjacent parameters of one type can be swapped without a compile error, so only the names show which value went where.
+
+Inspired by go-critic's argOrder.
+
+```
+func send(from, to string) {}
+
+func f(from, to string) {
+    send(to, from)
+}
+```
+
 ## asmdecl
 
 Reports a disagreement between an assembly function and the Go declaration it implements: an argument or result read at the wrong size or offset, a frame size that differs, a missing Go declaration, or a RET that leaves the result unwritten.

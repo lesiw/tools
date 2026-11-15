@@ -81,6 +81,20 @@
 //		return append(xs)
 //	}
 //
+// # argorder
+//
+// Reports a call whose arguments name the parameters in the other order. Two
+// adjacent parameters of one type can be swapped without a compile error, so
+// only the names show which value went where.
+//
+// Inspired by go-critic's argOrder.
+//
+//	func send(from, to string) {}
+//
+//	func f(from, to string) {
+//		send(to, from)
+//	}
+//
 // # asmdecl
 //
 // Reports a disagreement between an assembly function and the Go declaration
