@@ -1,0 +1,227 @@
+package a
+
+import "sync"
+
+func loaded(m *sync.Map, key string) int {
+	// want+1 `LoadAndDelete`
+	value, ok := m.Load(key)
+	if ok {
+		m.Delete(key)
+	}
+	return use(value, ok)
+}
+
+func inHeader(m *sync.Map, key string) {
+	// want+1 `LoadAndDelete`
+	if value, ok := m.Load(key); ok {
+		m.Delete(key)
+		use(value, ok)
+	}
+}
+
+func only(m *sync.Map, key string) {
+	// want+1 `LoadAndDelete`
+	if _, ok := m.Load(key); ok {
+		m.Delete(key)
+	}
+}
+
+func above(m *sync.Map, key string) {
+	// want+1 `LoadAndDelete`
+	_, ok := m.Load(key)
+	if ok {
+		m.Delete(key)
+	}
+}
+
+func keptValue(m *sync.Map, key string) int {
+	// want+1 `LoadAndDelete`
+	value, ok := m.Load(key)
+	if ok {
+		m.Delete(key)
+	}
+	return use(value)
+}
+
+func keptFlag(m *sync.Map, key string) bool {
+	// want+1 `LoadAndDelete`
+	_, ok := m.Load(key)
+	if ok {
+		m.Delete(key)
+	}
+	return ok
+}
+
+func reassignedHeader(m *sync.Map, key string) (int, bool) {
+	var (
+		value any
+		ok    bool
+	)
+	// want+1 `LoadAndDelete`
+	if value, ok = m.Load(key); ok {
+		m.Delete(key)
+	}
+	return use(value), ok
+}
+
+func assigned(m *sync.Map, key string) int {
+	var (
+		value any
+		ok    bool
+	)
+	// want+1 `LoadAndDelete`
+	value, ok = m.Load(key)
+	if ok {
+		m.Delete(key)
+	}
+	return use(value, ok)
+}
+
+type holder struct{ entries *sync.Map }
+
+func field(holders []*holder, keys []string, i int) {
+	// want+1 `LoadAndDelete`
+	if value, ok := holders[i].entries.Load(keys[i]); ok {
+		holders[i].entries.Delete(keys[i])
+		use(value, ok)
+	}
+}
+
+func trailing(m *sync.Map, key string, other any) {
+	// want+1 `LoadAndDelete`
+	if value, ok := m.Load(key); ok {
+		m.Delete(key)
+		use(value, ok)
+		m.Store(key, other)
+	}
+}
+
+func inline(m *sync.Map, key string) {
+	// want+1 `LoadAndDelete`
+	if value, ok := m.Load(key); ok {
+		m.Delete(key); use(value, ok)
+	}
+}
+
+func reused(m *sync.Map, key string) int {
+	var value any
+	// want+1 `LoadAndDelete`
+	value, ok := m.Load(key)
+	if ok {
+		m.Delete(key)
+	}
+	return use(value)
+}
+
+func switched(m *sync.Map, key string, n int) int {
+	switch n {
+	case 1:
+		// want+1 `LoadAndDelete`
+		if value, ok := m.Load(key); ok {
+			m.Delete(key)
+			use(value, ok)
+		}
+	}
+	return n
+}
+
+func selected(m *sync.Map, key string, done chan struct{}) {
+	select {
+	case <-done:
+		// want+1 `LoadAndDelete`
+		if value, ok := m.Load(key); ok {
+			m.Delete(key)
+			use(value, ok)
+		}
+	}
+}
+
+func otherwise(m *sync.Map, key string, strict bool) {
+	if strict {
+		use(key)
+	// want+1 `LoadAndDelete`
+	} else if value, ok := m.Load(key); ok {
+		m.Delete(key)
+		use(value, ok)
+	}
+}
+
+func local(key string) {
+	var m sync.Map
+	// want+1 `LoadAndDelete`
+	if value, ok := m.Load(key); ok {
+		m.Delete(key)
+		use(value, ok)
+	}
+}
+
+type embedded struct{ *sync.Map }
+
+func promoted(e embedded, key string) {
+	// want+1 `LoadAndDelete`
+	if value, ok := e.Load(key); ok {
+		e.Delete(key)
+		use(value, ok)
+	}
+}
+
+type watched struct{ ok bool }
+
+func fieldFlag(w *watched, m *sync.Map, key string) {
+	// want+1 `LoadAndDelete`
+	_, w.ok = m.Load(key)
+	if w.ok {
+		m.Delete(key)
+	}
+}
+
+func noted(m *sync.Map, key string) {
+	// want+1 `LoadAndDelete`
+	_, ok := m.Load(key) // presence decides
+	if ok {
+		m.Delete(key)
+	}
+	use(ok)
+}
+
+func either(m *sync.Map, key string) {
+	// want+1 `LoadAndDelete`
+	if value, ok := m.Load(key); ok {
+		m.Delete(key)
+		use(value, ok)
+	} else {
+		use(key)
+	}
+}
+
+func rawReturned(m *sync.Map) bool {
+	// want+1 `LoadAndDelete`
+	_, ok := m.Load(`a
+b`)
+	if ok {
+		m.Delete(`a
+b`)
+	}
+	return ok
+}
+
+func labeledOnly(m *sync.Map, key string) {
+	// want+1 `LoadAndDelete`
+again:
+	if _, ok := m.Load(key); ok {
+		m.Delete(key)
+	}
+	goto again
+}
+
+func labeledPair(m *sync.Map, key string) {
+	// want+1 `LoadAndDelete`
+again:
+	if value, ok := m.Load(key); ok {
+		m.Delete(key)
+		use(value, ok)
+	}
+	goto again
+}
+
+func use(args ...any) int { return 0 }

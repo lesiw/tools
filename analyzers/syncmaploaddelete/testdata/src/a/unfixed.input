@@ -1,0 +1,122 @@
+package a
+
+import "sync"
+
+func commented(m *sync.Map, key string, other any) {
+	// want+1 `LoadAndDelete`
+	if value, ok := m.Load(key); ok {
+		m.Delete(key) // the only reference
+		use(value, ok)
+		m.Store(key, other)
+	}
+}
+
+func commentedOnly(m *sync.Map, key string) {
+	// want+1 `LoadAndDelete`
+	if _, ok := m.Load(key); ok {
+		m.Delete(key) /* the key outlives the entry */
+	}
+}
+
+func elseOnly(m *sync.Map, key string, other any) {
+	// want+1 `LoadAndDelete`
+	if _, ok := m.Load(key); ok {
+		m.Delete(key)
+	} else {
+		m.Store(key, other)
+	}
+}
+
+func rawKey(m *sync.Map) {
+	// want+1 `LoadAndDelete`
+	if _, ok := m.Load(`a
+b`); ok {
+		m.Delete(`a
+b`)
+	}
+}
+
+func commentAbove(m *sync.Map, key string) {
+	// want+1 `LoadAndDelete`
+	if value, ok := m.Load(key); ok {
+		// the entry goes once it is read
+		m.Delete(key)
+		use(value, ok)
+	}
+}
+
+func labeledAbove(m *sync.Map, key string) {
+	// want+1 `LoadAndDelete`
+	_, ok := m.Load(key)
+again:
+	if ok {
+		m.Delete(key)
+	}
+	goto again
+}
+
+func elseIfOnly(m *sync.Map, key string, strict bool) {
+	if strict {
+		use(key)
+	// want+1 `LoadAndDelete`
+	} else if _, ok := m.Load(key); ok {
+		m.Delete(key)
+	}
+}
+
+func assignedAfter(m *sync.Map, key string) int {
+	var (
+		value any
+		ok    bool
+	)
+	// want+1 `LoadAndDelete`
+	value, ok = m.Load(key)
+	if ok {
+		m.Delete(key)
+	}
+	return use(value)
+}
+
+func assignedHeader(m *sync.Map, key string) int {
+	var (
+		value any
+		ok    bool
+	)
+	// want+1 `LoadAndDelete`
+	if value, ok = m.Load(key); ok {
+		m.Delete(key)
+	}
+	return use(value)
+}
+
+func written(m *sync.Map, key string) {
+	// want+1 `LoadAndDelete`
+	_, ok := m.Load(key)
+	if ok {
+		m.Delete(key)
+	}
+	ok = false
+}
+
+func betweenLoadAndIf(m *sync.Map, key string) int {
+	// want+1 `LoadAndDelete`
+	value, ok := m.Load(key)
+	// the entry goes once it is read
+	if ok {
+		m.Delete(key)
+	}
+	return use(value)
+}
+
+func labeledDelete(m *sync.Map, key string, n int) {
+	// want+1 `LoadAndDelete`
+	if value, ok := m.Load(key); ok {
+	drop:
+		m.Delete(key)
+		use(value, ok)
+		if n > 0 {
+			n--
+			goto drop
+		}
+	}
+}

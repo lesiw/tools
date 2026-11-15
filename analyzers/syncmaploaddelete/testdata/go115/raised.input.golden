@@ -1,0 +1,11 @@
+//go:build go1.15
+
+package go115
+
+import "sync"
+
+func raised(m *sync.Map, key string) {
+	if value, ok := m.LoadAndDelete(key); ok { // want `LoadAndDelete`
+		use(value, ok)
+	}
+}

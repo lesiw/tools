@@ -1,0 +1,90 @@
+package a
+
+import "sync"
+
+func staleKey(m *sync.Map, key, stale string) {
+	if value, ok := m.Load(key); ok {
+		m.Delete(stale)
+		use(value, ok)
+	}
+}
+
+func otherMap(one, two *sync.Map, key string) {
+	if value, ok := one.Load(key); ok {
+		two.Delete(key)
+		use(value, ok)
+	}
+}
+
+type store struct{}
+
+func (store) Load(string) (any, bool) { return nil, false }
+
+func (store) Delete(string) {}
+
+func notSync(s store, key string) {
+	if value, ok := s.Load(key); ok {
+		s.Delete(key)
+		use(value, ok)
+	}
+}
+
+func writes(m *sync.Map, key string, other any) {
+	if value, ok := m.Load(key); ok {
+		m.Store(key, other)
+		use(value, ok)
+	}
+}
+
+func guarded(m *sync.Map, key string, done bool) {
+	if value, ok := m.Load(key); ok && done {
+		m.Delete(key)
+		use(value, ok)
+	}
+}
+
+func inverted(m *sync.Map, key string) {
+	if _, ok := m.Load(key); !ok {
+		m.Delete(key)
+	}
+}
+
+func later(m *sync.Map, key string) {
+	if value, ok := m.Load(key); ok {
+		use(value, ok)
+		m.Delete(key)
+	}
+}
+
+func apart(m *sync.Map, key string) {
+	value, ok := m.Load(key)
+	use(ok)
+	if ok {
+		m.Delete(key)
+	}
+	use(value)
+}
+
+func withInit(m *sync.Map, key string) {
+	_, ok := m.Load(key)
+	if n := len(key); ok {
+		m.Delete(key)
+		use(n)
+	}
+}
+
+func calls(m *sync.Map, key string) {
+	if value, ok := m.Load(next(key)); ok {
+		m.Delete(next(key))
+		use(value, ok)
+	}
+}
+
+func next(key string) string { return key }
+
+func ignored(m *sync.Map, key string) {
+	m.Load(key)
+	if ok := true; ok {
+		m.Delete(key)
+	}
+}

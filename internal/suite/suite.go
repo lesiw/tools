@@ -147,6 +147,7 @@ import (
 	"lesiw.io/tools/analyzers/stringofint"
 	"lesiw.io/tools/analyzers/stringxbytes"
 	"lesiw.io/tools/analyzers/switchtrue"
+	"lesiw.io/tools/analyzers/syncmaploaddelete"
 	"lesiw.io/tools/analyzers/testcmp"
 	"lesiw.io/tools/analyzers/testhelpers"
 	"lesiw.io/tools/analyzers/testlabel"
@@ -328,6 +329,7 @@ var (
 		stringxbytes.Analyzer,
 		structtag.Analyzer,
 		switchtrue.Analyzer,
+		syncmaploaddelete.Analyzer,
 		testcmp.Analyzer,
 		testhelpers.Analyzer,
 		testinggoroutine.Analyzer,

@@ -1,0 +1,11 @@
+package nowidth
+
+import "sync"
+
+func atAnyWidth(cache *sync.Map, entryKey string) bool {
+	// want+1 `LoadAndDelete`
+	_, present := cache.LoadAndDelete(entryKey) // a long line that overflows the limit
+	return present
+}
+
+func use(args ...any) {}

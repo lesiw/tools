@@ -1,0 +1,23 @@
+package narrow
+
+import "sync"
+
+func overflowing(cache *sync.Map, entryKey string) {
+	// want+1 `LoadAndDelete`
+	_, present := cache.Load(entryKey)
+	if present {
+		cache.Delete(entryKey)
+		use(present)
+	}
+}
+
+func alreadyOver(cache *sync.Map, entryKey string) bool {
+	// want+1 `LoadAndDelete`
+	_, present := cache.Load(entryKey) // the line is already long
+	if present {
+		cache.Delete(entryKey)
+	}
+	return present
+}
+
+func use(args ...any) {}

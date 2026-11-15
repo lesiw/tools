@@ -1969,6 +1969,20 @@
 //		return 0
 //	}
 //
+// # syncmaploaddelete
+//
+// Reports a sync.Map load followed by a delete of the same key. The pair
+// leaves a window where a value another goroutine stores is deleted unseen.
+//
+// Adapted from go-critic's syncMapLoadAndDelete.
+//
+//	func forget(m *sync.Map, key string) {
+//		if v, ok := m.Load(key); ok {
+//			m.Delete(key)
+//			use(v)
+//		}
+//	}
+//
 // # testcmp
 //
 // Reports a reflect.DeepEqual call in a test file. DeepEqual compares

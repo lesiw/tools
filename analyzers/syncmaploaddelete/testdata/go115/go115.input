@@ -1,0 +1,12 @@
+package go115
+
+import "sync"
+
+func pair(m *sync.Map, key string) {
+	if value, ok := m.Load(key); ok {
+		m.Delete(key)
+		use(value, ok)
+	}
+}
+
+func use(args ...interface{}) {}
