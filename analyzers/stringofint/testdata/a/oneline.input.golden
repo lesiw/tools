@@ -1,0 +1,5 @@
+package a
+
+import "strconv"
+
+func oneLine(n int) string { return strconv.Itoa(n) } // want `string\(n\) can be replaced by strconv\.Itoa\(n\)`

@@ -1,0 +1,9 @@
+package a
+
+import (
+	"fmt"
+)
+
+func block(n int) string {
+	return fmt.Sprint(string(n)) // want `string\(n\) can be replaced by strconv\.Itoa\(n\)`
+}

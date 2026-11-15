@@ -1,0 +1,7 @@
+package a
+
+import . "strconv"
+
+func dotted(n int) string {
+	return Itoa(n) + string(n) // want `string\(n\) yields a string of one rune`
+}

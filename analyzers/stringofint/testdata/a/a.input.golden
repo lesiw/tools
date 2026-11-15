@@ -1,0 +1,106 @@
+package a
+
+import "strconv"
+
+type count int
+
+type kind string
+
+type char int32
+
+func plain(n int) string {
+	return strconv.Itoa(n) // want `string\(n\) can be replaced by strconv\.Itoa\(n\)`
+}
+
+func narrow(n int8, m int16) string {
+	return strconv.Itoa(int(n)) + strconv.Itoa(int(m)) // want `Itoa\(int\(n\)\)` `Itoa\(int\(m\)\)`
+}
+
+func wide(n int64, u uint64) string {
+	return strconv.FormatInt(n, 10) + strconv.FormatUint(u, 10) // want `FormatInt\(n, 10\)` `FormatUint\(u, 10\)`
+}
+
+func unsigned(u uint, p uintptr) string {
+	return strconv.FormatUint(uint64(u), 10) + strconv.FormatUint(uint64(p), 10) // want `FormatUint\(uint64\(u\), 10\)` `FormatUint\(uint64\(p\), 10\)`
+}
+
+func named(c count) string {
+	return strconv.Itoa(int(c)) // want `string\(c\) can be replaced by strconv\.Itoa\(int\(c\)\)`
+}
+
+func target(c count) kind {
+	return kind(strconv.Itoa(int(c))) // want `kind\(c\) can be replaced by kind\(strconv\.Itoa\(int\(c\)\)\)`
+}
+
+func literal() string {
+	return strconv.Itoa(65) // want `string\(65\) can be replaced by strconv\.Itoa\(65\)`
+}
+
+func kept(r rune, b byte, u uint8, c char, s string, bs []byte) string {
+	return string(r) + string(b) + string(u) + string(c) + string(s) + string(bs) + string('a')
+}
+
+func call() string {
+	string := func(int) string { return "" }
+	return string(1)
+}
+
+func param[T ~int](v T) string {
+	return strconv.Itoa(int(v)) // want `string\(v\) can be replaced by strconv\.Itoa\(int\(v\)\)`
+}
+
+func paramWide[T ~int | ~int64](v T) string {
+	return strconv.FormatInt(int64(v), 10) // want `string\(v\) can be replaced by strconv\.FormatInt\(int64\(v\), 10\)`
+}
+
+func paramMixed[T ~int | ~uint](v T) string {
+	return string(v) // want `string\(v\) yields a string of one rune`
+}
+
+func paramByte[T ~byte | ~rune](v T) string {
+	return string(v)
+}
+
+func paramRune[T ~rune | ~int64](v T) string {
+	return string(v) // want `string\(v\) yields a string of one rune`
+}
+
+func paramString[T ~string](n int) T {
+	return T(strconv.Itoa(n)) // want `T\(n\) can be replaced by T\(strconv\.Itoa\(n\)\)`
+}
+
+func constant() string {
+	return strconv.FormatInt(1<<40, 10) // want `FormatInt\(1 << 40, 10\)`
+}
+
+const big uint64 = 1 << 63
+
+func unsignedConstant() string {
+	return strconv.FormatUint(big, 10) // want `string\(big\) can be replaced by strconv\.FormatUint\(big, 10\)`
+}
+
+const nl = string(10) // want `string\(10\) yields a string of one rune`
+
+func limit() string {
+	return string(1 << 100) // want `string\(1 << 100\) yields a string of one rune`
+}
+
+func paramBytes[T ~[]byte | ~int](v T) string {
+	return string(v)
+}
+
+var sizes [len(string(1))]int // want `string\(1\) yields a string of one rune`
+
+var indexed = [4]string{int(len(string(1))): "x"} // want `string\(1\) yields a string of one rune`
+
+func wideConstant() string {
+	return strconv.FormatUint(1<<63, 10) // want `FormatUint\(1 << 63, 10\)`
+}
+
+func targetParam[T ~string | ~int](n int) T {
+	return T(n) // want `T\(n\) yields a string of one rune`
+}
+
+func mapKey(n int) map[string]int {
+	return map[string]int{strconv.Itoa(n): 1} // want `string\(n\) can be replaced by strconv\.Itoa\(n\)`
+}

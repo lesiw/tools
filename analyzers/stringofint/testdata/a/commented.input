@@ -1,0 +1,9 @@
+package a
+
+func commented(n int) string {
+	return string( /* the code point */ n) // want `string\(n\) yields a string of one rune`
+}
+
+func trailing(n int) string {
+	return string(n /* the code point */) // want `string\(n\) yields a string of one rune`
+}

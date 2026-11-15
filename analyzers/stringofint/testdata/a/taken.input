@@ -1,0 +1,27 @@
+package a
+
+type big64 int64
+
+type bigU uint64
+
+func taken(strconv int) string {
+	return string(strconv) // want `string\(strconv\) yields a string of one rune`
+}
+
+func shadowedInt(n int8) string {
+	int := 0
+	_ = int
+	return string(n) // want `string\(n\) yields a string of one rune`
+}
+
+func shadowedInt64(w big64) string {
+	int64 := 0
+	_ = int64
+	return string(w) // want `string\(w\) yields a string of one rune`
+}
+
+func shadowedUint64(u bigU) string {
+	uint64 := 0
+	_ = uint64
+	return string(u) // want `string\(u\) yields a string of one rune`
+}

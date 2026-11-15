@@ -1,0 +1,7 @@
+package a
+
+import conv "strconv"
+
+func aliased(n int) string {
+	return conv.Itoa(n) + conv.Itoa(n) // want `string\(n\) can be replaced by conv\.Itoa\(n\)`
+}

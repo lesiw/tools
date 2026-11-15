@@ -40,15 +40,24 @@ func Qualifier(pass *analysis.Pass, names map[string]string, importPath string, 
 		name = path.Base(importPath)
 	}
 	// A declaration or another import can hold the name the rewrite writes.
-	if scope := pass.Pkg.Scope().Innermost(pos); scope != nil {
-		if _, obj := scope.LookupParent(name, pos); obj != nil {
-			pkgName, ok := obj.(*types.PkgName)
-			if !ok || pkgName.Imported().Path() != importPath {
-				return name, false
-			}
+	if obj := Lookup(pass, name, pos); obj != nil {
+		pkgName, ok := obj.(*types.PkgName)
+		if !ok || pkgName.Imported().Path() != importPath {
+			return name, false
 		}
 	}
 	return name, true
+}
+
+// Lookup returns the object that name reaches at pos, or nil when the position
+// is outside the package's scopes or no declaration reaches it.
+func Lookup(pass *analysis.Pass, name string, pos token.Pos) types.Object {
+	scope := pass.Pkg.Scope().Innermost(pos)
+	if scope == nil {
+		return nil
+	}
+	_, obj := scope.LookupParent(name, pos)
+	return obj
 }
 
 // Add returns the edit that adds paths as an import declaration after the

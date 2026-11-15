@@ -1858,6 +1858,19 @@
 //		return x
 //	}
 //
+// # stringofint
+//
+// Reports a conversion of an integer to a string. The conversion yields a
+// string of one rune, and the digits of the number are what the code usually
+// means; the fix writes them, which changes the output. A byte and a rune are
+// left alone, since the conversion is the intended form for both.
+//
+// Adapted from x/tools' stringintconv and revive's string-of-int.
+//
+//	func f(n int) string {
+//		return string(n)
+//	}
+//
 // # stringsbuilder
 //
 // Reports string concatenation with +=. strings.Builder accumulates the text
