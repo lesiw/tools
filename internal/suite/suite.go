@@ -96,6 +96,7 @@ import (
 	"lesiw.io/tools/analyzers/importshadow"
 	"lesiw.io/tools/analyzers/increment"
 	"lesiw.io/tools/analyzers/indexalloc"
+	"lesiw.io/tools/analyzers/initclause"
 	"lesiw.io/tools/analyzers/initialisms"
 	"lesiw.io/tools/analyzers/ipliteral"
 	"lesiw.io/tools/analyzers/lenzero"
@@ -226,6 +227,7 @@ var (
 		increment.Analyzer,
 		indexalloc.Analyzer,
 		initialisms.Analyzer,
+		initclause.Analyzer,
 		ipliteral.Analyzer,
 		lenzero.Analyzer,
 		linelen.Analyzer,

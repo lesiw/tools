@@ -1,0 +1,83 @@
+package a
+
+func ready() bool { return true }
+
+func fetch() int { return 0 }
+
+func callInIf() {
+	if fetch(); ready() { // want `if init clause declares nothing`
+	}
+}
+
+func callInElseIf() {
+	if ready() {
+	} else if fetch(); ready() { // want `if init clause declares nothing`
+	}
+}
+
+func countInIf(limit int) {
+	var n int
+	if n++; n < limit { // want `if init clause declares nothing`
+	}
+}
+
+func sendInIf(ch chan int, n int) {
+	if ch <- n; ready() { // want `if init clause declares nothing`
+	}
+}
+
+func callInSwitch() {
+	var mode int
+	switch fetch(); mode { // want `switch init clause declares nothing`
+	default:
+	}
+}
+
+func countInSwitch() {
+	var step int
+	switch step++; step { // want `switch init clause declares nothing`
+	default:
+	}
+}
+
+func callInTypeSwitch(value any) {
+	switch fetch(); v := value.(type) { // want `type switch init clause declares nothing`
+	default:
+		_ = v
+	}
+}
+
+func declared() {
+	if n := fetch(); n > 0 {
+	}
+	switch n := fetch(); n {
+	default:
+	}
+}
+
+func assigned() {
+	var n int
+	if n = 3; n > 0 {
+	}
+	switch n = 3; n {
+	default:
+	}
+}
+
+func plain(value any) {
+	if ready() {
+	}
+	switch 3 {
+	default:
+	}
+	switch value.(type) {
+	}
+}
+
+func loop(limit int) {
+	var n int
+	for n++; n < limit; n++ {
+	}
+	for fetch(); ready(); fetch() {
+	}
+}
