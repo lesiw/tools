@@ -155,6 +155,7 @@ import (
 	"lesiw.io/tools/analyzers/unlabelstmt"
 	"lesiw.io/tools/analyzers/unlambda"
 	"lesiw.io/tools/analyzers/unnecessaryblock"
+	"lesiw.io/tools/analyzers/unnecessarydefer"
 	"lesiw.io/tools/analyzers/unnecessaryformat"
 	"lesiw.io/tools/analyzers/unslice"
 	"lesiw.io/tools/analyzers/unusedparams"
@@ -329,6 +330,7 @@ var (
 		unlambda.Analyzer,
 		unmarshal.Analyzer,
 		unnecessaryblock.Analyzer,
+		unnecessarydefer.Analyzer,
 		unnecessaryformat.Analyzer,
 		unreachable.Analyzer,
 		unsafeptr.Analyzer,

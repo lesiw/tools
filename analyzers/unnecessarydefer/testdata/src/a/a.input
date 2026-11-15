@@ -1,0 +1,217 @@
+package a
+
+func close1() {}
+
+func close2() {}
+
+func nothingFollows() {
+	defer close1() // want `deferred call can be replaced by a plain call`
+}
+
+func builtinCall(ch chan int) {
+	defer close(ch) // want `deferred call can be replaced by a plain call`
+}
+
+func bareReturn() {
+	defer close1() // want `deferred call can be replaced by a plain call`
+	return
+}
+
+func bareReturnNamed() (n int) {
+	defer close1() // want `deferred call can be replaced by a plain call`
+	return
+}
+
+type keeper struct{}
+
+func (keeper) release() {}
+
+func (k keeper) selectorCall() {
+	defer k.release() // want `deferred call can be replaced by a plain call`
+}
+
+type cleanup func()
+
+func definedFuncType(fn cleanup) {
+	defer fn() // want `deferred call can be replaced by a plain call`
+}
+
+func onlyTheLast() {
+	defer close1()
+	defer close2() // want `deferred call can be replaced by a plain call`
+}
+
+func deferInsideLiteral() {
+	defer func() {
+		defer close1() // want `deferred call can be replaced by a plain call`
+	}()
+}
+
+func insideBranch(ready bool) {
+	if ready {
+		defer close1() // want `deferred call can be replaced by a plain call`
+	}
+}
+
+func insideElse(ready bool) {
+	if ready {
+		close1()
+	} else {
+		defer close1() // want `deferred call can be replaced by a plain call`
+	}
+}
+
+func insideElseIf(ready, other bool) {
+	if ready {
+		close1()
+	} else if other {
+		defer close1() // want `deferred call can be replaced by a plain call`
+	}
+}
+
+func insideSwitch(n int) {
+	switch n {
+	case 1:
+		defer close1() // want `deferred call can be replaced by a plain call`
+	}
+}
+
+func twoClauses(n int) {
+	switch n {
+	case 1:
+		defer close1() // want `deferred call can be replaced by a plain call`
+	case 2:
+		defer close2() // want `deferred call can be replaced by a plain call`
+	}
+}
+
+func insideTypeSwitch(v any) {
+	switch v.(type) {
+	case int:
+		defer close1() // want `deferred call can be replaced by a plain call`
+	}
+}
+
+func twoCommClauses(ch, other chan int) {
+	select {
+	case <-ch:
+		defer close1() // want `deferred call can be replaced by a plain call`
+	case <-other:
+		defer close2() // want `deferred call can be replaced by a plain call`
+	}
+}
+
+func defaultClause(n int) {
+	switch n {
+	case 1:
+		close1()
+	default:
+		defer close1() // want `deferred call can be replaced by a plain call`
+	}
+}
+
+func caseEndsInReturn(n int) {
+	switch n {
+	case 1:
+		defer close1() // want `deferred call can be replaced by a plain call`
+		return
+	}
+}
+
+func insideBlock() {
+	{
+		defer close1() // want `deferred call can be replaced by a plain call`
+	}
+}
+
+func labeledBlock(reentered bool) {
+	if reentered {
+		goto L
+	}
+L:
+	{
+		defer close1() // want `deferred call can be replaced by a plain call`
+	}
+}
+
+func labeledDefer(again bool) {
+	if again {
+		goto L
+	}
+L:
+	defer close1() // want `deferred call can be replaced by a plain call`
+}
+
+func labeledReturn(again bool) {
+	if again {
+		goto L
+	}
+	defer close1() // want `deferred call can be replaced by a plain call`
+L:
+	return
+}
+
+func bodylessStub()
+
+func onlyBareReturn() {
+	return
+}
+
+func statementFollows() {
+	defer close1()
+	close1()
+}
+
+func branchThenStatement(ready bool) {
+	if ready {
+		defer close1()
+	}
+	close1()
+}
+
+func breakAfterDefer(n int) {
+	switch n {
+	case 1:
+		defer close1()
+		break
+	}
+}
+
+func fallthroughCase(n int) {
+	switch n {
+	case 1:
+		defer close1()
+		fallthrough
+	case 2:
+		close1()
+	}
+}
+
+func returnWithResult() bool {
+	defer close1()
+	return true
+}
+
+func closeWithError() error { return nil }
+
+func resultDiscarded() {
+	defer closeWithError()
+}
+
+func typeParamCallee[T func()](g T) {
+	defer g()
+}
+
+func loopBody(xs []int) {
+	for range xs {
+		defer close1()
+	}
+}
+
+func literalCallee() {
+	defer func() { close1() }()
+}
+
+func parenthesizedLiteral() {
+	defer (func() { close1() })()
+}
