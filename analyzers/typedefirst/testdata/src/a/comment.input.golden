@@ -1,0 +1,40 @@
+package a
+
+// Section: readers
+
+// A note that heads the reader block.
+
+// reader holds the stream.
+type reader struct{} // want `type reader should be declared before method next`
+
+// next advances the stream.
+func (r *reader) next() {}
+
+// orphan keeps its last reader.
+
+type orphan struct{} // want `type orphan should be declared before method use`
+
+func (o orphan) use() {}
+
+var seen = 1 // tokens read so far
+
+type tally struct{} // want `type tally should be declared before method bump`
+
+func (t *tally) bump() {}
+
+type queue struct{} // want `type queue should be declared before method read`
+
+func (q *queue) read() {} // advances the queue
+
+type worker struct{} // want `type worker should be declared before method run`
+
+func (w *worker) run() {}
+
+var limit = 2 // retries attempted
+
+type writer struct{} // want `type writer should be declared before method drain`
+
+// A note that heads the drain.
+
+// drain empties the queue.
+func (w *writer) drain() {}

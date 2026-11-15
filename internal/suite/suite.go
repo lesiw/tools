@@ -139,6 +139,7 @@ import (
 	"lesiw.io/tools/analyzers/timelayout"
 	"lesiw.io/tools/analyzers/todocomment"
 	"lesiw.io/tools/analyzers/truncatecmp"
+	"lesiw.io/tools/analyzers/typedefirst"
 	"lesiw.io/tools/analyzers/typeswitchvar"
 	"lesiw.io/tools/analyzers/typeunparen"
 	"lesiw.io/tools/analyzers/uncondrecursion"
@@ -292,6 +293,7 @@ var (
 		timelayout.Analyzer,
 		todocomment.Analyzer,
 		truncatecmp.Analyzer,
+		typedefirst.Analyzer,
 		typeswitchvar.Analyzer,
 		typeunparen.Analyzer,
 		uncondrecursion.Analyzer,

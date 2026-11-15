@@ -1,0 +1,20 @@
+package a
+
+func (t thing) use() {}
+
+type helper int
+
+type thing struct { // want `type thing should be declared before method use`
+	n helper
+}
+
+func (m meter) read() int {
+	return 0
+}
+
+type unit int
+
+type (
+	meter int // want `type meter should be declared before method read`
+	ruler unit
+)

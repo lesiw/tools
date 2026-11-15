@@ -1,0 +1,15 @@
+package a
+
+type declared struct{}
+
+func (d *declared) use() {}
+
+func mentionsLater() {
+	_ = later{}
+}
+
+type later struct{}
+
+var cached slot
+
+type slot struct{}

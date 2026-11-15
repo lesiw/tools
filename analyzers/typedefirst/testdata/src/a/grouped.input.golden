@@ -1,0 +1,15 @@
+package a
+
+// key and entry name one record.
+type (
+	key   string
+	entry struct{ n int } // want `type entry should be declared before method size`
+)
+
+func (e entry) size() int {
+	return e.n
+}
+
+func (k key) text() string {
+	return string(k)
+}

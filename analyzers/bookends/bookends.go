@@ -1048,6 +1048,21 @@ func inSignature(file *ast.File, pos token.Pos) bool {
 	return found
 }
 
+// packer is the state one list is laid out from: the text of each element, the
+// indent every line begins with, and the width the lines must fit.
+type packer struct {
+	indent      []byte
+	texts       [][]byte
+	starts      []int    // the first element of each group; starts[0] is 0
+	closeIndent []byte   // the indent the closer sits at
+	solo        []bool   // the element takes a line of its own
+	spans       []bool   // the element is written across lines
+	trail       [][]byte // the comment that follows an element on its line
+	oneGroup    bool     // each group takes a line of its own
+	spread      bool     // the last element is followed by an ellipsis
+	limit       int
+}
+
 // fill returns the layout of the element list with the least raggedness: the
 // sum of the squared space left at the end of each line, which is the line
 // breaker TeX uses. Elements spread across lines by width, so a short element
@@ -1180,21 +1195,6 @@ func keyedArgs(pass *analysis.Pass, call *ast.CallExpr) (starts []int, ok bool) 
 		starts = append(starts, i)
 	}
 	return starts, len(starts) > 1
-}
-
-// packer is the state one list is laid out from: the text of each element, the
-// indent every line begins with, and the width the lines must fit.
-type packer struct {
-	indent      []byte
-	texts       [][]byte
-	starts      []int    // the first element of each group; starts[0] is 0
-	closeIndent []byte   // the indent the closer sits at
-	solo        []bool   // the element takes a line of its own
-	spans       []bool   // the element is written across lines
-	trail       [][]byte // the comment that follows an element on its line
-	oneGroup    bool     // each group takes a line of its own
-	spread      bool     // the last element is followed by an ellipsis
-	limit       int
 }
 
 // alone reports whether the line holding groups i through j-1 must hold only

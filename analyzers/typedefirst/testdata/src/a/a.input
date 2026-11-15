@@ -1,0 +1,46 @@
+package a
+
+func (s *session) touch() {
+	s.count++
+}
+
+type session struct { // want `type session should be declared before method touch`
+	count int
+}
+
+func (r record) size() int {
+	return r.n
+}
+
+type record struct{ n int } // want `type record should be declared before method size`
+
+func (l *list[T]) push(v T) {
+	l.items = append(l.items, v)
+}
+
+type list[T any] struct { // want `type list should be declared before method push`
+	items []T
+}
+
+func (g *grid[T, K]) at(k K) T {
+	return g.cells[k]
+}
+
+type grid[T any, K comparable] struct { // want `type grid should be declared before method at`
+	cells map[K]T
+}
+
+func (c *conn) use() {}
+
+func (s *spec) use() {}
+
+type conn struct{} // want `type conn should be declared before method use`
+type spec struct{} // want `type spec should be declared before method use`
+
+func (d *delta) use() {}
+
+// delta keeps one window open.
+type delta struct{} // want `type delta should be declared before method use`
+func purge() {
+	_ = delta{}
+}

@@ -46,6 +46,15 @@ type snapshot struct {
 	end    int
 }
 
+// renderer is the file a rule edits, together with the printer's account of
+// it. Every width question goes to the printer, because it decides padding as
+// well as breaks.
+type renderer struct {
+	fset    *token.FileSet
+	tokFile *token.File
+	file    *ast.File
+}
+
 // render returns the file as go/printer renders it, split into lines. It
 // reports whether the render has one line per line-table entry.
 //
@@ -133,15 +142,6 @@ func extractIndent(line []byte) []byte {
 		}
 	}
 	return line
-}
-
-// renderer is the file a rule edits, together with the printer's account of
-// it. Every width question goes to the printer, because it decides padding as
-// well as breaks.
-type renderer struct {
-	fset    *token.FileSet
-	tokFile *token.File
-	file    *ast.File
 }
 
 // join merges every line between start and end onto start's line. It keeps the
