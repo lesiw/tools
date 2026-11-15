@@ -1499,6 +1499,19 @@ import (
 )
 ```
 
+## redundantbuildtag
+
+Reports a //go:build line the file name already implies. The go command includes a file only where the tags in its name hold.
+
+Adapted from revive's redundant-build-tag.
+
+```
+// a_linux.go
+//go:build linux
+
+package a
+```
+
 ## redundantsprint
 
 Reports a fmt.Sprint whose operand has static type string, and a string conversion around one. Both return the operand unchanged. A named string type is left alone, since Sprint may call its String method.

@@ -130,6 +130,7 @@ import (
 	"lesiw.io/tools/analyzers/recvname"
 	"lesiw.io/tools/analyzers/recvtype"
 	"lesiw.io/tools/analyzers/redundantalias"
+	"lesiw.io/tools/analyzers/redundantbuildtag"
 	"lesiw.io/tools/analyzers/redundantsprint"
 	"lesiw.io/tools/analyzers/regexpconst"
 	"lesiw.io/tools/analyzers/regexpmust"
@@ -300,6 +301,7 @@ var (
 		recvname.Analyzer,
 		recvtype.Analyzer,
 		redundantalias.Analyzer,
+		redundantbuildtag.Analyzer,
 		redundantsprint.Analyzer,
 		reflectvaluecompare.Analyzer,
 		regexpconst.Analyzer,
