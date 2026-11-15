@@ -15,11 +15,12 @@ go run lesiw.io/tools/cmd/fix@latest ./...
 
 ## cmd/vet
 
-Vet checks Go packages with the golang.org/x/tools analysis passes. It adds
-analyzers for error handling, import grouping, line length, literals, layout,
-naming, testing practice, declaration style, control flow, evaluation order,
-allocation, and code modernization, including unread parameters and forwarding
-wrappers.
+Vet checks Go packages with the golang.org/x/tools analysis passes, adding
+every analyzer in this module: error handling, imports, line length, literals,
+layout, naming, testing practice, declaration style, control flow, evaluation
+order, allocation, and code modernization, among others. Each analyzer has its
+own page under `analyzers/`, and that page is the reference for what it
+reports and what it leaves alone.
 
 A //ignore directive suppresses a diagnostic, for one analyzer or for all of
 them. Each analyzer can be selected or disabled by name:
