@@ -1,0 +1,155 @@
+package a
+
+import "sort"
+
+type item struct {
+	rank int
+	key  string
+}
+
+type group struct {
+	items []item
+	keys  []string
+}
+
+func byKeys(rows []item, keys []string) {
+	sort.Slice(rows, func(i, j int) bool { return keys[i] < keys[j] }) // want `does not name rows`
+}
+
+func stable(rows []item, keys []string) {
+	sort.SliceStable(rows, func(i, j int) bool { return keys[i] < keys[j] }) // want `does not name rows`
+}
+
+func isSorted(rows []item, keys []string) bool {
+	return sort.SliceIsSorted(rows, func(i, j int) bool { return keys[i] < keys[j] }) // want `does not name rows`
+}
+
+func byIndex(rows []item) {
+	sort.Slice(rows, func(i, j int) bool { return i < j }) // want `does not name rows`
+}
+
+func constant(rows []item) {
+	sort.Slice(rows, func(i, j int) bool { return false }) // want `does not name rows`
+}
+
+func field(g *group) {
+	sort.Slice(g.items, func(i, j int) bool { return g.keys[i] < g.keys[j] }) // want `does not name g\.items`
+}
+
+func prefix(rows []item, keys []string) {
+	sort.Slice(rows[:2], func(i, j int) bool { return keys[i] < keys[j] }) // want `does not name rows`
+}
+
+func boundCall(rows []item, keys []string) {
+	sort.Slice(rows[:len(rows)/2], func(i, j int) bool { return keys[i] < keys[j] }) // want `does not name rows`
+}
+
+func tieBreak(rows []item, keys, other []string) {
+	sort.Slice(rows, func(i, j int) bool { // want `does not name rows`
+		return keys[i] < keys[j] || keys[i] == keys[j] && other[i] < other[j]
+	})
+}
+
+func branch(rows []item, keys []string) {
+	sort.Slice(rows, func(i, j int) bool { // want `does not name rows`
+		if keys[i] < keys[j] {
+			return true
+		}
+		return false
+	})
+}
+
+func alias(rows []item) {
+	sl := rows
+	sort.Slice(rows, func(i, j int) bool { return sl[i].rank < sl[j].rank }) // want `does not name rows`
+}
+
+func reads(rows []item) {
+	sort.Slice(rows, func(i, j int) bool { return rows[i].rank < rows[j].rank })
+}
+
+func oneSide(rows []item, other []item) {
+	sort.Slice(rows, func(i, j int) bool { return rows[i].rank < other[j].rank })
+}
+
+func fixedIndexes(rows []item) {
+	sort.Slice(rows, func(i, j int) bool { return rows[0].rank < rows[1].rank })
+}
+
+func head(rows []item) {
+	sort.Slice(rows[:2], func(i, j int) bool { return rows[i].rank < rows[j].rank })
+}
+
+func headZero(rows []item) {
+	sort.Slice(rows[0:2], func(i, j int) bool { return rows[i].rank < rows[j].rank })
+}
+
+func shifted(rows []item, keys []string) {
+	sort.Slice(rows[2:], func(i, j int) bool { return keys[i] < keys[j] }) // want `does not name rows`
+}
+
+func suffix(rows []item) {
+	sort.Slice(rows[2:], func(i, j int) bool { return rows[i+2].rank < rows[j+2].rank })
+}
+
+func selector(g *group) {
+	sort.Slice(g.items, func(i, j int) bool { return g.items[i].rank < g.items[j].rank })
+}
+
+func dereference(ps []*int) {
+	sort.Slice(ps, func(i, j int) bool { return *ps[i] < *ps[j] })
+}
+
+func counted(rows []item) {
+	sort.Slice(rows, func(i, j int) bool {
+		rank := rows[i].rank
+		return rank < rows[j].rank
+	})
+}
+
+func calls(rows []item) {
+	sort.Slice(rows, func(i, j int) bool { return rank(i) < rank(j) })
+}
+
+func method(rows []item) {
+	sort.Slice(rows, func(i, j int) bool { return rows[i].label() < rows[j].label() })
+}
+
+func computed(rows []item) {
+	sort.Slice(compute(rows), func(i, j int) bool { return rows[i].rank < rows[j].rank })
+}
+
+func named(rows []item, less func(i, j int) bool) {
+	sort.Slice(rows, less)
+}
+
+func functionValue(rows []item, keys []string) {
+	f := sort.Slice
+	f(rows, func(i, j int) bool { return keys[i] < keys[j] })
+}
+
+func assertion(v any) {
+	sort.Slice(v.([]item), func(i, j int) bool {
+		return v.([]item)[i].rank < v.([]item)[j].rank
+	})
+}
+
+func literal() {
+	sort.Slice([]item{{rank: 1}}, func(i, j int) bool { return i < j })
+}
+
+func sorted(rows []item) {
+	sort.Sort(byRank(rows))
+}
+
+type byRank []item
+
+func (r byRank) Len() int           { return len(r) }
+func (r byRank) Swap(i, j int)      { r[i], r[j] = r[j], r[i] }
+func (r byRank) Less(i, j int) bool { return r[i].rank < r[j].rank }
+
+func (i item) label() string { return i.key }
+
+func rank(int) int { return 0 }
+
+func compute(rows []item) []item { return rows }

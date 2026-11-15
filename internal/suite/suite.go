@@ -124,6 +124,7 @@ import (
 	"lesiw.io/tools/analyzers/singlefield"
 	"lesiw.io/tools/analyzers/sliceclear"
 	"lesiw.io/tools/analyzers/sloppyreassign"
+	"lesiw.io/tools/analyzers/sortmismatch"
 	"lesiw.io/tools/analyzers/strcompare"
 	"lesiw.io/tools/analyzers/strconcat"
 	"lesiw.io/tools/analyzers/strictvar"
@@ -265,6 +266,7 @@ var (
 		sliceclear.Analyzer,
 		slog.Analyzer,
 		sloppyreassign.Analyzer,
+		sortmismatch.Analyzer,
 		sortslice.Analyzer,
 		stdmethods.Analyzer,
 		stdversion.Analyzer,

@@ -1,0 +1,7 @@
+package a
+
+import . "sort"
+
+func dotted(rows []item, keys []string) {
+	Slice(rows, func(i, j int) bool { return keys[i] < keys[j] }) // want `does not name rows`
+}
