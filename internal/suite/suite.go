@@ -117,6 +117,7 @@ import (
 	"lesiw.io/tools/analyzers/selfassert"
 	"lesiw.io/tools/analyzers/shellcommand"
 	"lesiw.io/tools/analyzers/singlefield"
+	"lesiw.io/tools/analyzers/sliceclear"
 	"lesiw.io/tools/analyzers/strcompare"
 	"lesiw.io/tools/analyzers/strconcat"
 	"lesiw.io/tools/analyzers/strictvar"
@@ -247,6 +248,7 @@ var (
 		shift.Analyzer,
 		sigchanyzer.Analyzer,
 		singlefield.Analyzer,
+		sliceclear.Analyzer,
 		slog.Analyzer,
 		sortslice.Analyzer,
 		stdmethods.Analyzer,

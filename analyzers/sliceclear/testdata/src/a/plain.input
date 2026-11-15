@@ -1,0 +1,87 @@
+package a
+
+type list struct {
+	items []int
+}
+
+func rangeLoop(xs []int) {
+	// want+1 `loop can be replaced by clear\(xs\)`
+	for i := range xs {
+		xs[i] = 0
+	}
+}
+
+func countedLoop(xs []int) {
+	// want+1 `loop can be replaced by clear\(xs\)`
+	for i := 0; i < len(xs); i++ {
+		xs[i] = 0
+	}
+}
+
+func field(l *list) {
+	// want+1 `loop can be replaced by clear\(l\.items\)`
+	for i := range l.items {
+		l.items[i] = 0
+	}
+}
+
+func blankValue(xs []int) {
+	// want+1 `loop can be replaced by clear\(xs\)`
+	for i, _ := range xs {
+		xs[i] = 0
+	}
+}
+
+func rangeLength(xs []int) {
+	// want+1 `loop can be replaced by clear\(xs\)`
+	for i := range len(xs) {
+		xs[i] = 0
+	}
+}
+
+func indexed(rows [][]int) {
+	// want+1 `loop can be replaced by clear\(rows\[0\]\)`
+	for i := range rows[0] {
+		rows[0][i] = 0
+	}
+}
+
+func pointerSlice(rows *[]int) {
+	// want+1 `loop can be replaced by clear\(\*rows\)`
+	for i := range *rows {
+		(*rows)[i] = 0
+	}
+}
+
+func labeled(xs []int, again bool) {
+	if again {
+		goto Loop
+	}
+Loop:
+	// want+1 `loop can be replaced by clear\(xs\)`
+	for i := range xs {
+		xs[i] = 0
+	}
+}
+
+func laterClear(xs []int) {
+	// want+1 `loop can be replaced by clear\(xs\)`
+	for i := range xs {
+		xs[i] = 0
+	}
+	clear := func([]int) {}
+	clear(xs)
+}
+
+func oneLine(xs []int) {
+	for i := range xs { xs[i] = 0 } // want `loop can be replaced by clear\(xs\)`
+}
+
+func nested(rows, cols []int) {
+	for i := 0; i < len(rows); i++ {
+		// want+1 `loop can be replaced by clear\(cols\)`
+		for j := range cols {
+			cols[j] = 0
+		}
+	}
+}

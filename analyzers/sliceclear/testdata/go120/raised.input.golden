@@ -1,0 +1,8 @@
+//go:build go1.21
+
+package old
+
+func raised(xs []int) {
+	// want+1 `loop can be replaced by clear\(xs\)`
+	clear(xs)
+}

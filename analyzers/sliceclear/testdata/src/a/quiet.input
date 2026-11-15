@@ -1,0 +1,217 @@
+package a
+
+func other(xs, ys []int) {
+	for i := range xs {
+		ys[i] = 0
+	}
+}
+
+func nonzero(xs []int) {
+	for i := range xs {
+		xs[i] = 1
+	}
+}
+
+func call(xs []int) {
+	for i := range xs {
+		xs[i] = next()
+	}
+}
+
+func extra(xs []int) {
+	for i := range xs {
+		xs[i] = 0
+		xs[0] = 1
+	}
+}
+
+func valued(xs []int) {
+	for i, x := range xs {
+		xs[i] = 0
+		_ = x
+	}
+}
+
+func assigned(xs []int) {
+	var i int
+	for i = range xs {
+		xs[i] = 0
+	}
+}
+
+func mapping(m map[int]int) {
+	for k := range m {
+		m[k] = 0
+	}
+}
+
+func fieldAssign(xs []struct{ n int }) {
+	for i := range xs {
+		xs[i].n = 0
+	}
+}
+
+func pointed(xs []*int) {
+	for i := range xs {
+		*xs[i] = 0
+	}
+}
+
+func fromOne(xs []int) {
+	for i := 1; i < len(xs); i++ {
+		xs[i] = 0
+	}
+}
+
+func step(xs []int) {
+	for i := 0; i < len(xs); i += 2 {
+		xs[i] = 0
+	}
+}
+
+func inclusive(xs []int) {
+	for i := 0; i <= len(xs)-1; i++ {
+		xs[i] = 0
+	}
+}
+
+func shortened(xs []int) {
+	for i := range xs[:2] {
+		xs[i] = 0
+	}
+}
+
+func emptySlice(xs [][]int) {
+	for i := range xs {
+		xs[i] = []int{}
+	}
+}
+
+func emptyMap(xs []map[string]int) {
+	for i := range xs {
+		xs[i] = map[string]int{}
+	}
+}
+
+func allocated(xs []*int) {
+	for i := range xs {
+		xs[i] = new(int)
+	}
+}
+
+func array(arr [4]int) {
+	for i := range arr {
+		arr[i] = 0
+	}
+}
+
+func arrayPointer(arr *[4]int) {
+	for i := range arr {
+		arr[i] = 0
+	}
+}
+
+func anyZero(vals []any) {
+	for i := range vals {
+		vals[i] = 0
+	}
+}
+
+func copies(xs []int) []int { return xs }
+
+func callRange(xs []int) {
+	for i := range copies(xs) {
+		xs[i] = 0
+	}
+}
+
+func callBound(xs []int) {
+	for i := 0; i < len(copies(xs)); i++ {
+		xs[i] = 0
+	}
+}
+
+func countedByIndex(rows [][]int) {
+	for i := 0; i < len(rows[i]); i++ {
+		rows[i][i] = 0
+	}
+}
+
+func countedMap(m map[int]int) {
+	for i := 0; i < len(m); i++ {
+		m[i] = 0
+	}
+}
+
+func countedArray(arr [4]int) {
+	for i := 0; i < len(arr); i++ {
+		arr[i] = 0
+	}
+}
+
+func noKey(xs []int) {
+	for range xs {
+		xs[0] = 0
+	}
+}
+
+func noInit(xs []int) {
+	var i int
+	for ; i < len(xs); i++ {
+		xs[i] = 0
+	}
+}
+
+func twoIndices(xs []int) {
+	for i, j := 0, 0; i < len(xs); i++ {
+		xs[i+j] = 0
+	}
+}
+
+func arrayParameter[S ~[4]int](xs S) {
+	for i := range xs {
+		xs[i] = 0
+	}
+}
+
+func rangeOfShadowedLen(xs []int) {
+	len := func([]int) int { return 0 }
+	for i := range len(xs) {
+		xs[i] = 0
+	}
+}
+
+func shadowedFunction(xs []int) {
+	clear := func([]int) {}
+	for i := range xs {
+		xs[i] = 0
+	}
+	clear(xs)
+}
+
+func addAssign(xs []int) {
+	for i := range xs {
+		xs[i] += 0
+	}
+}
+
+func setLiteral(items []item) {
+	for i := range items {
+		items[i] = item{n: 1}
+	}
+}
+
+func countOfShadowedLen(xs []int) {
+	len := func([]int) int { return 0 }
+	for i := 0; i < len(xs); i++ {
+		xs[i] = 0
+	}
+}
+
+func countedBound(xs []int, n int) {
+	for i := 0; i < len(xs[:n]); i++ {
+		xs[i] = 0
+	}
+}
+
+func next() int { return 0 }

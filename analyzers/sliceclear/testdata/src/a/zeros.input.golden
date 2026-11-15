@@ -1,0 +1,86 @@
+package a
+
+import "time"
+
+type pair struct{ n int }
+
+type one []int
+
+type two []int
+
+type item struct {
+	name string
+	n    int
+}
+
+const zero = 0
+
+func stringZero(names []string) {
+	// want+1 `loop can be replaced by clear\(names\)`
+	clear(names)
+}
+
+func boolZero(flags []bool) {
+	// want+1 `loop can be replaced by clear\(flags\)`
+	clear(flags)
+}
+
+func pointerZero(ptrs []*int) {
+	// want+1 `loop can be replaced by clear\(ptrs\)`
+	clear(ptrs)
+}
+
+func interfaceZero(vals []any) {
+	// want+1 `loop can be replaced by clear\(vals\)`
+	clear(vals)
+}
+
+func structZero(items []item) {
+	// want+1 `loop can be replaced by clear\(items\)`
+	clear(items)
+}
+
+func arrayElementZero(arrs [][2]int) {
+	// want+1 `loop can be replaced by clear\(arrs\)`
+	clear(arrs)
+}
+
+func constZero(slots []int) {
+	// want+1 `loop can be replaced by clear\(slots\)`
+	clear(slots)
+}
+
+func floatZero(rates []float64) {
+	// want+1 `loop can be replaced by clear\(rates\)`
+	clear(rates)
+}
+
+func complexZero(vals []complex128) {
+	// want+1 `loop can be replaced by clear\(vals\)`
+	clear(vals)
+}
+
+func typeParameter[T ~int](vals []T) {
+	// want+1 `loop can be replaced by clear\(vals\)`
+	clear(vals)
+}
+
+func typeParameterSlice[S ~[]int](xs S) {
+	// want+1 `loop can be replaced by clear\(xs\)`
+	clear(xs)
+}
+
+func anonymousLiteral(pairs []pair) {
+	// want+1 `loop can be replaced by clear\(pairs\)`
+	clear(pairs)
+}
+
+func unionSlice[S one | two](xs S) {
+	// want+1 `loop can be replaced by clear\(xs\)`
+	clear(xs)
+}
+
+func convertedZero(durs []time.Duration) {
+	// want+1 `loop can be replaced by clear\(durs\)`
+	clear(durs)
+}

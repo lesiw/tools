@@ -1,0 +1,13 @@
+package old
+
+func rangeLoop(xs []int) {
+	for i := range xs {
+		xs[i] = 0
+	}
+}
+
+func countedLoop(xs []int) {
+	for i := 0; i < len(xs); i++ {
+		xs[i] = 0
+	}
+}

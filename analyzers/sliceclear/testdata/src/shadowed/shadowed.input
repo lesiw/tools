@@ -1,0 +1,9 @@
+package shadowed
+
+var clear = func([]int) {}
+
+func reset(xs []int) {
+	for i := range xs {
+		xs[i] = 0
+	}
+}

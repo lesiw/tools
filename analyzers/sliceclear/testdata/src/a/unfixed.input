@@ -1,0 +1,8 @@
+package a
+
+func commented(xs []int) {
+	// want+1 `loop can be replaced by clear\(xs\)`
+	for i := range xs {
+		xs[i] = 0 // comment
+	}
+}

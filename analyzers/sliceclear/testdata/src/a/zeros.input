@@ -1,0 +1,114 @@
+package a
+
+import "time"
+
+type pair struct{ n int }
+
+type one []int
+
+type two []int
+
+type item struct {
+	name string
+	n    int
+}
+
+const zero = 0
+
+func stringZero(names []string) {
+	// want+1 `loop can be replaced by clear\(names\)`
+	for i := range names {
+		names[i] = ""
+	}
+}
+
+func boolZero(flags []bool) {
+	// want+1 `loop can be replaced by clear\(flags\)`
+	for i := range flags {
+		flags[i] = false
+	}
+}
+
+func pointerZero(ptrs []*int) {
+	// want+1 `loop can be replaced by clear\(ptrs\)`
+	for i := range ptrs {
+		ptrs[i] = nil
+	}
+}
+
+func interfaceZero(vals []any) {
+	// want+1 `loop can be replaced by clear\(vals\)`
+	for i := range vals {
+		vals[i] = nil
+	}
+}
+
+func structZero(items []item) {
+	// want+1 `loop can be replaced by clear\(items\)`
+	for i := range items {
+		items[i] = item{}
+	}
+}
+
+func arrayElementZero(arrs [][2]int) {
+	// want+1 `loop can be replaced by clear\(arrs\)`
+	for i := range arrs {
+		arrs[i] = [2]int{}
+	}
+}
+
+func constZero(slots []int) {
+	// want+1 `loop can be replaced by clear\(slots\)`
+	for i := range slots {
+		slots[i] = zero
+	}
+}
+
+func floatZero(rates []float64) {
+	// want+1 `loop can be replaced by clear\(rates\)`
+	for i := range rates {
+		rates[i] = 0.0
+	}
+}
+
+func complexZero(vals []complex128) {
+	// want+1 `loop can be replaced by clear\(vals\)`
+	for i := range vals {
+		vals[i] = 0i
+	}
+}
+
+func typeParameter[T ~int](vals []T) {
+	// want+1 `loop can be replaced by clear\(vals\)`
+	for i := range vals {
+		vals[i] = 0
+	}
+}
+
+func typeParameterSlice[S ~[]int](xs S) {
+	// want+1 `loop can be replaced by clear\(xs\)`
+	for i := range xs {
+		xs[i] = 0
+	}
+}
+
+func anonymousLiteral(pairs []pair) {
+	// want+1 `loop can be replaced by clear\(pairs\)`
+	for i := range pairs {
+		pairs[i] = struct{ n int }{}
+	}
+}
+
+func unionSlice[S one | two](xs S) {
+	// want+1 `loop can be replaced by clear\(xs\)`
+	for i := range xs {
+		xs[i] = 0
+	}
+}
+
+func convertedZero(durs []time.Duration) {
+	// want+1 `loop can be replaced by clear\(durs\)`
+	for i := range durs {
+		durs[i] = time.Duration(0)
+	}
+}
