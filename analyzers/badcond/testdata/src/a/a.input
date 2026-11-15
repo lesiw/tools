@@ -1,0 +1,168 @@
+package a
+
+func rangeOf(n int) {
+	if n < 0 && n > 10 { // want `^condition is always false$`
+	}
+	if n <= 10 && n >= 20 { // want `^condition is always false$`
+	}
+	if n > 10 && n < 0 { // want `^condition is always false$`
+	}
+	if 0 > n && 10 < n { // want `^condition is always false$`
+	}
+	if n > 5 && n <= 5 { // want `^condition is always false$`
+	}
+	if n >= 5 && n < 5 { // want `^condition is always false$`
+	}
+	if 10 <= n && 0 >= n { // want `^condition is always false$`
+	}
+	if n > 5 && n < 5 { // want `^condition is always false$`
+	}
+	if n >= 5 || n <= 5 { // want `^condition is always true$`
+	}
+}
+
+func wrapped(n int) {
+	if n < 0 && // want `^condition is always false$`
+		n > 10 {
+	}
+}
+
+func tautology(n int) {
+	if n < 10 || n > 0 { // want `^condition is always true$`
+	}
+	if n <= 5 || n > 5 { // want `^condition is always true$`
+	}
+	if n < 5 || n >= 5 { // want `^condition is always true$`
+	}
+}
+
+func chain(n int) {
+	if n < 0 && n < 5 && n > 1 { // want `^condition is always false$`
+	}
+	if (n < 0) && (n > 1) { // want `^condition is always false$`
+	}
+	switch {
+	case n < 0 && n > 1: // want `^condition is always false$`
+	}
+}
+
+func converted(n int) {
+	if int64(n) < 0 && int64(n) > 1 { // want `^condition is always false$`
+	}
+}
+
+func capped(buf []byte) {
+	if cap(buf) < 0 && cap(buf) > 1 { // want `^condition is always false$`
+	}
+}
+
+func asserted(v any) {
+	if v.(int) < 0 && v.(int) > 1 { // want `^condition is always false$`
+	}
+}
+
+func convertedString(s string) {
+	if string(s[0]) < "a" && string(s[0]) > "b" { // want `^condition is always false$`
+	}
+}
+
+func words(s string) {
+	if s < "a" && s > "b" { // want `^condition is always false$`
+	}
+	if s < "b" || s >= "b" { // want `^condition is always true$`
+	}
+}
+
+func lenPairs(xs []int) {
+	if len(xs) == 0 && len(xs) != 0 { // want `^condition is always false$`
+	}
+	if len(xs) <= 0 || len(xs) > 0 { // want `^condition is always true$`
+	}
+}
+
+const zero = 0
+
+func namedZero(xs []int) {
+	if len(xs) < zero && len(xs) > 10 { // want `^condition is always false$`
+	}
+}
+
+func equality(n int) {
+	if n == 1 && n != 1 { // want `^condition is always false$`
+	}
+	if n == 1 || n != 1 { // want `^condition is always true$`
+	}
+}
+
+func guarded(ok bool, n int) {
+	if ok && n < 0 && n > 1 { // want `^condition is always false$`
+	}
+}
+
+func typedBounds(a any, xs []int) {
+	if 1 == a && a != 1 { // want `^condition is always false$`
+	}
+	if 1 == a && "x" != a {
+	}
+	if 0 > len(xs) && len(xs) > 10 { // want `^condition is always false$`
+	}
+}
+
+func whole(n, m int) {
+	if n < 10 && n > 0 {
+	}
+	if n < 0 && n < 5 {
+	}
+	if n < m && n > 10 {
+	}
+	if n < 0 || n > 10 {
+	}
+	if n > 0 && n < 10 || n > 20 {
+	}
+	if n >= 5 && n <= 5 {
+	}
+	if n > 5 || n < 5 {
+	}
+}
+
+func distinct(n, m int) {
+	if n < 0 && m > 10 {
+	}
+}
+
+type count int
+
+func typedConstants(a any) {
+	if a == count(1) && a != 1 {
+	}
+	if a == count(1) || a != 1 {
+	}
+}
+
+func lengths(xs []int) {
+	if len(xs) < 0 && len(xs) > 10 { // want `^condition is always false$`
+	}
+}
+
+func equalityQuiet(a any, n int) {
+	if n == 1 && n == 2 {
+	}
+	if 0 == n && 1 == n {
+	}
+	if a == 1 && a == 1i {
+	}
+	if a == 1 && a != "x" {
+	}
+	if a == 1 && a != 1.0 {
+	}
+}
+
+func repeated(n int) {
+	if n < n && n > n {
+	}
+}
+
+func wordsQuiet(s string) {
+	if s < "b" && s > "a" {
+	}
+}

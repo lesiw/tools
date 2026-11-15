@@ -1,0 +1,24 @@
+package a
+
+func floatRange(f float64) {
+	if f < 0 && f > 10 { // want `^condition is always false$`
+	}
+	if f == 1 && f != 1 { // want `^condition is always false$`
+	}
+	if f == 1 && f != 1.0 { // want `^condition is always false$`
+	}
+}
+
+func floatExact(c complex128) {
+	if c == 1 || c != 1 { // want `^condition is always true$`
+	}
+}
+
+type reading float64
+
+func namedFloat(v reading) {
+	if v < 0 && v > 1 { // want `^condition is always false$`
+	}
+	if v < 0 || v >= 0 {
+	}
+}

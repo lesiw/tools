@@ -1,0 +1,96 @@
+package a
+
+func forward() {
+	for i := 0; i > 0; i++ { // want `^loop condition is false before the first iteration$`
+	}
+}
+
+func backward() {
+	for i := 0; i < 0; i++ { // want `^loop condition is false before the first iteration$`
+	}
+}
+
+func unequal() {
+	for i := 0; i != 0; i++ { // want `^loop condition is false before the first iteration$`
+	}
+}
+
+func noPost() {
+	for i := 0; i > 0; { // want `^loop condition is false before the first iteration$`
+	}
+}
+
+func starting() {
+	for i := 5; i < 5; i-- { // want `^loop condition is false before the first iteration$`
+	}
+}
+
+func compare(n int) {
+	for i := 0; i < n; i++ {
+	}
+}
+
+func negativeBound(n int) {
+	for i := 0; i > n; i++ {
+	}
+}
+
+func withinRange() {
+	for i := 0; i < 10; i++ {
+	}
+}
+
+func assigned(i, j int) {
+	for i, j = 0, 1; i < j; i++ {
+	}
+}
+
+func call() {
+	for i := start(); i < 0; i++ {
+	}
+}
+
+func start() int { return 0 }
+
+func otherVariable(limit int) {
+	for i := 0; limit < 0; i++ {
+	}
+}
+
+func swapped() {
+	for i := 0; 0 < i; i++ { // want `^loop condition is false before the first iteration$`
+	}
+}
+
+func reassigned() {
+	i := 10
+	for i = 0; i > 0; i++ { // want `^loop condition is false before the first iteration$`
+	}
+}
+
+func settledPair() {
+	for i := 0; i < 0 && i > 1; i++ { // want `^condition is always false$`
+	}
+}
+
+func pairAmongTerms(n int) {
+	for i := 0; i > 0 && n < 0 && n > 1; i++ { // want `^condition is always false$`
+	}
+}
+
+func absent() {
+	for {
+		break
+	}
+}
+
+func absentWithPost() {
+	for i := 0; ; i++ {
+		break
+	}
+}
+
+func chained(ok bool) {
+	for i := 0; i > 0 && ok; i++ { // want `^loop condition is false before the first iteration$`
+	}
+}

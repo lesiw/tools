@@ -1,0 +1,15 @@
+package a
+
+func ordered[T ~int](v T) {
+	if v < 0 || v >= 0 { // want `^condition is always true$`
+	}
+	if v < 0 && v > 1 { // want `^condition is always false$`
+	}
+}
+
+func unordered[T ~float64 | ~int](v T) {
+	if v < 0 || v >= 0 {
+	}
+	if v < 0 && v > 1 { // want `^condition is always false$`
+	}
+}

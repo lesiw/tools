@@ -1,0 +1,46 @@
+package a
+
+func measured() int { return 0 }
+
+func called() {
+	if measured() < 0 && measured() > 1 {
+	}
+}
+
+func received(ch chan int) {
+	if <-ch < 0 && <-ch > 1 {
+	}
+}
+
+type pair struct{ x int }
+
+func bump(p *int) bool {
+	*p++
+	return true
+}
+
+func written(n int) {
+	if n < 0 && bump(&n) && n > 10 {
+	}
+	if n > 0 || bump(&n) || n <= 0 {
+	}
+	if n == 1 && bump(&n) && n != 1 {
+	}
+}
+
+func writtenElsewhere(n, m int) {
+	if n < 0 && bump(&m) && n > 10 {
+	}
+}
+
+func writtenGuard() {
+	for i := 0; bump(&i) && i > 0; i++ {
+	}
+	for i := 0; i > 0 && bump(&i); i++ { // want `^loop condition is false`
+	}
+}
+
+func addressed() {
+	if (&pair{}).x < 0 && (&pair{}).x > 1 {
+	}
+}
