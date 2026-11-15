@@ -1,0 +1,25 @@
+package main
+
+import (
+	"log"
+	"os"
+)
+
+func main() {
+	os.Exit(run())
+}
+
+func init() {
+	log.Fatal("init")
+}
+
+func run() int {
+	log.Fatal("run") // want `log.Fatal outside main or init ends the program`
+	return 0
+}
+
+type job struct{}
+
+func (job) main() {
+	os.Exit(1) // want `os.Exit outside main or init ends the program`
+}

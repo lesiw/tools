@@ -1,0 +1,30 @@
+// A test file is not reported, whatever its functions end.
+
+package a
+
+import (
+	"log"
+	"os"
+	"testing"
+)
+
+func TestMain(m *testing.M) {
+	os.Exit(m.Run())
+}
+
+func TestRun(t *testing.T) {
+	log.Fatal("run")
+}
+
+func mustPath(err error) string {
+	if err != nil {
+		log.Fatal(err)
+	}
+	return "path"
+}
+
+func TestHelper(t *testing.T) {
+	if os.Getenv("HELPER") != "" {
+		os.Exit(0)
+	}
+}

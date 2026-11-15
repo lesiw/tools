@@ -32,6 +32,10 @@ const (
 	exitFinding = 3
 )
 
+// The callers are main functions, so the exit is the command's own.
+//
+//ignore:deepexit
+
 // Main reports the suite's diagnostics over the packages named on the command
 // line, and applies the fixes instead when the command line asks for them. It
 // does not return.
@@ -47,6 +51,10 @@ func Main(analyzers ...*analysis.Analyzer) {
 	}
 	os.Exit(vet(analyzers, rest))
 }
+
+// The callers are main functions, so the exit is the command's own.
+//
+//ignore:deepexit
 
 // Fix applies the suite's fixes, repeating until no fix is left. It does not
 // return.

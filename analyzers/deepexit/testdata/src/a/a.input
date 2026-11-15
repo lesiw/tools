@@ -1,0 +1,106 @@
+package a
+
+import (
+	"log"
+	"os"
+	"syscall"
+)
+
+func fail() {
+	os.Exit(1) // want `os.Exit outside main or init ends the program`
+}
+
+func signal() {
+	syscall.Exit(1) // want `syscall.Exit outside main or init ends the program`
+}
+
+func report(err error) {
+	log.Fatal(err) // want `log.Fatal outside main or init ends the program`
+}
+
+func reportf(err error) {
+	// want +1 `log.Fatalf outside main or init ends the program`
+	log.Fatalf("%v", err)
+}
+
+func reportln(err error) {
+	log.Fatalln(err) // want `log.Fatalln outside main or init ends the program`
+}
+
+func deferred(err error) {
+	defer log.Fatal(err) // want `log.Fatal outside main or init ends the program`
+}
+
+func spawned() {
+	go os.Exit(1) // want `os.Exit outside main or init ends the program`
+}
+
+func immediate() {
+	go func() {
+		os.Exit(1) // want `os.Exit outside main or init ends the program`
+	}()
+}
+
+func parenthesized() {
+	(os.Exit)(3) // want `os.Exit outside main or init ends the program`
+}
+
+type runner struct{}
+
+func (runner) init() {
+	os.Exit(3) // want `os.Exit outside main or init ends the program`
+}
+
+func main() {
+	os.Exit(1) // want `os.Exit outside main or init ends the program`
+}
+
+func init() {
+	os.Exit(1)
+}
+
+func giveUp() {
+	panic("here")
+}
+
+func kept() func() {
+	return func() {
+		os.Exit(1)
+	}
+}
+
+func apply(f func()) { f() }
+
+func handed() {
+	apply(func() {
+		os.Exit(1)
+	})
+}
+
+func held() {
+	exit := os.Exit
+	exit(1)
+}
+
+type mock struct{}
+
+func (mock) Exit(code int) {}
+
+func lookalike() {
+	mock{}.Exit(1)
+}
+
+func logger(err error) {
+	l := log.Default()
+	// want +1 `log\.Fatal outside main or init ends the program`
+	l.Fatal(err)
+	// want +1 `log\.Fatalf outside main or init ends the program`
+	l.Fatalf("%v", err)
+	// want +1 `log\.Fatalln outside main or init ends the program`
+	l.Fatalln(err)
+}
+
+var initialized = func() int {
+	os.Exit(1)
+	return 0
+}()

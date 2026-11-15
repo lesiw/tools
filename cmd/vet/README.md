@@ -453,6 +453,18 @@ func same(a, b error) bool {
 }
 ```
 
+## deepexit
+
+Reports a call to os.Exit, syscall.Exit, or a Fatal function of the log package outside main or init. The call ends the program at that point, so the caller gets no error to handle.
+
+Inspired by revive's deep-exit.
+
+```
+func serve(err error) {
+    log.Fatal(err)
+}
+```
+
 ## defers
 
 Reports a defer statement whose argument calls time.Since. The argument is evaluated where the defer stands, so the elapsed time is measured at once; a func literal that makes the call when the defer runs is the fix.
