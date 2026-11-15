@@ -3,6 +3,7 @@ package suite
 
 import (
 	"slices"
+	"strings"
 
 	errname "github.com/Antonboom/errname/pkg/analyzer"
 	"golang.org/x/tools/go/analysis"
@@ -173,8 +174,18 @@ import (
 // suite, and the lesiw.io analyzers.
 func Analyzers() []*analysis.Analyzer { return analyzers }
 
+func sorted(as []*analysis.Analyzer) []*analysis.Analyzer {
+	out := slices.Concat(as, modernize.Suite)
+	slices.SortFunc(out, func(x, y *analysis.Analyzer) int {
+		return strings.Compare(x.Name, y.Name)
+	})
+	return out
+}
+
 var (
-	analyzers = slices.Concat(list, modernize.Suite)
+	// Sorted, so the suite's order matches the catalog's and a reader who
+	// finds a diagnostic there finds it in -help too.
+	analyzers = sorted(list)
 	list      = []*analysis.Analyzer{
 		addrnil.Analyzer,
 		afterhttperror.Analyzer,
@@ -230,8 +241,8 @@ var (
 		errorlast.Analyzer,
 		errorsas.Analyzer,
 		errstrings.Analyzer,
-		filepathjoin.Analyzer,
 		evalorder.Analyzer,
+		filepathjoin.Analyzer,
 		findallzero.Analyzer,
 		flagderef.Analyzer,
 		flagname.Analyzer,
@@ -247,8 +258,8 @@ var (
 		importshadow.Analyzer,
 		increment.Analyzer,
 		indexalloc.Analyzer,
-		initialisms.Analyzer,
 		initclause.Analyzer,
+		initialisms.Analyzer,
 		ipliteral.Analyzer,
 		lenzero.Analyzer,
 		linelen.Analyzer,
@@ -256,9 +267,9 @@ var (
 		loopclosure.Analyzer,
 		lostcancel.Analyzer,
 		makezero.Analyzer,
-		methodexprcall.Analyzer,
-		marshalrecv.Analyzer,
 		mapfind.Analyzer,
+		marshalrecv.Analyzer,
+		methodexprcall.Analyzer,
 		newderef.Analyzer,
 		nilchecklen.Analyzer,
 		nilfunc.Analyzer,
@@ -317,8 +328,8 @@ var (
 		unlabelstmt.Analyzer,
 		unlambda.Analyzer,
 		unmarshal.Analyzer,
-		unnecessaryformat.Analyzer,
 		unnecessaryblock.Analyzer,
+		unnecessaryformat.Analyzer,
 		unreachable.Analyzer,
 		unsafeptr.Analyzer,
 		unslice.Analyzer,
