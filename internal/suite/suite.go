@@ -153,6 +153,7 @@ import (
 	"lesiw.io/tools/analyzers/uuid"
 	"lesiw.io/tools/analyzers/valswap"
 	"lesiw.io/tools/analyzers/whitespace"
+	"lesiw.io/tools/analyzers/wrapperfunc"
 	"lesiw.io/tools/analyzers/yoda"
 	"lesiw.io/tools/analyzers/zerorepeat"
 )
@@ -310,6 +311,7 @@ var (
 		valswap.Analyzer,
 		waitgroup.Analyzer,
 		whitespace.Analyzer,
+		wrapperfunc.Analyzer,
 		yoda.Analyzer,
 		zerorepeat.Analyzer,
 	}

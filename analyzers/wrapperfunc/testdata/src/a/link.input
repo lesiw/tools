@@ -1,0 +1,4 @@
+package a
+
+//go:linkname threaded other.name
+func elsewhere(x int) int { return x }

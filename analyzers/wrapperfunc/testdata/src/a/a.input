@@ -1,0 +1,268 @@
+package a
+
+import (
+	_ "unsafe"
+
+	"mirror"
+)
+
+func inner(x int) int { return x + 1 }
+
+func outer( // want `func outer only forwards its arguments; call inner instead`
+	x int,
+) int {
+	return inner(x)
+}
+
+func emit(x int) { _ = x }
+
+func send( // want `func send only forwards its arguments; call emit instead`
+	x int,
+) {
+	emit(x)
+}
+
+func spread(xs ...int) int { return len(xs) }
+
+func sliceLen(xs []int) int { return len(xs) }
+
+func gather(xs ...int) int { return sliceLen(xs) }
+
+func pack(xs []int) int { return spread(xs...) }
+
+func widen( // want `func widen only forwards its arguments; call spread instead`
+	xs ...int,
+) int {
+	return spread(xs...)
+}
+
+func pair(x int) (int, bool) { return x, true }
+
+func both( // want `func both only forwards its arguments; call pair instead`
+	x int,
+) (int, bool) {
+	return pair(x)
+}
+
+func add(x, y int) int { return x + y }
+
+func plus( // want `func plus only forwards its arguments; call add instead`
+	x, y int,
+) int {
+	return add(x, y)
+}
+
+type quiet struct{}
+
+func (quiet) step( // want `method step only forwards its arguments; call inner instead`
+	x int,
+) int {
+	return inner(x)
+}
+
+func parenthesized( // want `func parenthesized only forwards its arguments; call inner instead`
+	x int,
+) int {
+	return (inner)(x)
+}
+
+func indexed(x int) int {
+	fns := []func(int) int{inner}
+	return fns[0](x)
+}
+
+func adjusted( // want `func adjusted only forwards its arguments; call mirror.Adjust instead`
+	x int,
+) int {
+	return mirror.Adjust(x)
+}
+
+//go:noinline
+func directed( // want `func directed only forwards its arguments; call inner instead`
+	x int,
+) int {
+	return inner(x)
+}
+
+func setup() {}
+
+func init() { setup() }
+
+func Exported(x int) int { return inner(x) }
+
+func sub(x, y int) int { return x - y }
+
+func subBackwards(x, y int) int { return sub(y, x) }
+
+func width(x int64) int64 { return x }
+
+func scaled(x int) int64 { return width(int64(x)) }
+
+func number(x int) int { return x }
+
+func anyNumber(x int) any { return number(x) }
+
+func sum(x, y int) (n int) {
+	n = add(x, y)
+	return
+}
+
+type opener interface{ open(string) int }
+
+func openPath(p string) int { return len(p) }
+
+type handle struct{}
+
+func (handle) open(p string) int { return openPath(p) }
+
+type handlePtr struct{}
+
+func (*handlePtr) open(p string) int { return openPath(p) }
+
+func pick(o opener) int { return o.open("a") }
+
+func (handle) Open(p string) int { return openPath(p) }
+
+type base interface{ shut() }
+
+type derived interface{ base }
+
+func shutDown() {}
+
+type shutter struct{}
+
+func (shutter) shut() { shutDown() }
+
+func closeIt(s *shutter) { s.shut() }
+
+func apply(f func(int) int) int { return f(1) }
+
+func held(x int) int { return inner(x) }
+
+func use() int { return apply(held) + pick(handle{}) + pick(&handlePtr{}) }
+
+func bodyless(x int) int
+
+func wrapBodyless( // want `func wrapBodyless only forwards its arguments`
+	x int,
+) int {
+	return bodyless(x)
+}
+
+type namer interface{ name() }
+
+type gnotifier[T any] interface{ notify(v T) }
+
+func emitT[T any](v T) {}
+
+type gbox[T any] struct{}
+
+func (gbox[T]) notify(v T) { emitT(v) }
+
+type genericShutter[T any] struct{}
+
+func (genericShutter[T]) shut( // want `method shut only forwards its arguments`
+	x int,
+) int {
+	return inner(x)
+}
+
+type getter[T any] interface{ get(a int) T }
+
+func innerString(a int) string { return "x" }
+
+type cache struct{}
+
+func (cache) get(v int) string { return innerString(v) }
+
+var _ getter[string] = cache{}
+
+type genericDifferent[T any] interface{ stop(v T, n int) }
+
+func keepT[T any](v T) T { return v }
+
+func (gbox[T]) stop( // want `method stop only forwards its arguments`
+	v T,
+) T {
+	return keepT(v)
+}
+
+type label struct{}
+
+func (label) name( // want `method name only forwards its arguments`
+	x int,
+) int {
+	return inner(x)
+}
+
+type counter struct{ n int }
+
+func (c *counter) add(x int) { c.n += x }
+
+var counterValue counter
+
+func bumpIt(x int) { counterValue.add(x) }
+
+func bumpAll( // want `func bumpAll only forwards its arguments`
+	c *counter, x int,
+) {
+	(*counter).add(c, x)
+}
+
+//go:linkname linked other.name
+func linked(x int) int { return inner(x) }
+
+//go:linkname detached other.name
+
+func detached(x int) int { return inner(x) }
+
+//go:linknamestd standard other.name
+func standard(x int) int { return inner(x) }
+
+//go:wasmexport otherName
+func boot(x int) int { return inner(x) }
+
+//export exported
+func exported(x int) int { return inner(x) }
+
+func threaded(x int) int { return inner(x) }
+
+func tick() {}
+
+func start() { tick() } // want `func start only forwards its arguments`
+
+var hook = func(x int) int { return x }
+
+func throughHook(x int) int { return hook(x) }
+
+func identity[T any](v T) T { return v }
+
+func sameIdentity[T any]( // want `func sameIdentity only forwards its arguments; call identity instead`
+	v T,
+) T {
+	return identity(v)
+}
+
+func combine[T any, U any](t T, u U) (T, U) { return t, u }
+
+func pairUp( // want `func pairUp only forwards its arguments; call combine\[int, string\] instead`
+	x int, y string,
+) (int, string) {
+	return combine[int, string](x, y)
+}
+
+func instantiated( // want `func instantiated only forwards its arguments; call identity\[int\] instead`
+	x int,
+) int {
+	return identity[int](x)
+}
+
+func loop(x int) int { return loop(x) }
+
+// documented reports whether x plus one is positive.
+func documented(x int) int { return inner(x) }
+
+func commented(x int) int {
+	// The step the caller takes.
+	return inner(x)
+}
