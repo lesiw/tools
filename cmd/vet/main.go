@@ -1144,6 +1144,19 @@
 //		return 0, false
 //	}
 //
+// # mapkey
+//
+// Reports a map key that is unhashable. A map keyed by an interface accepts a
+// slice, a map, or a function, and the map panics when it hashes one. For a
+// conversion to an interface the report names the operand's type, so any(xs)
+// names []int.
+//
+// The name comes from go-critic's mapKey.
+//
+//	func f(m map[any]int, xs []int) {
+//		m[xs] = 1
+//	}
+//
 // # mapsloop
 //
 // Reports a range over a map or an iter.Seq2 whose body copies one entry into

@@ -111,6 +111,7 @@ import (
 	"lesiw.io/tools/analyzers/linewrap"
 	"lesiw.io/tools/analyzers/makezero"
 	"lesiw.io/tools/analyzers/mapfind"
+	"lesiw.io/tools/analyzers/mapkey"
 	"lesiw.io/tools/analyzers/marshalrecv"
 	"lesiw.io/tools/analyzers/methodexprcall"
 	"lesiw.io/tools/analyzers/newderef"
@@ -272,6 +273,7 @@ var (
 		lostcancel.Analyzer,
 		makezero.Analyzer,
 		mapfind.Analyzer,
+		mapkey.Analyzer,
 		marshalrecv.Analyzer,
 		methodexprcall.Analyzer,
 		newderef.Analyzer,

@@ -1,0 +1,188 @@
+package a
+
+import (
+	"fmt"
+	"net/http"
+)
+
+type row []int
+
+type table map[any]int
+
+type pair struct {
+	n  int
+	xs []int
+}
+
+type nested struct {
+	inner pair
+}
+
+type described struct {
+	xs []int
+}
+
+func (described) String() string { return "" }
+
+type box[T any] struct {
+	v T
+}
+
+type cache[V any] map[string]V
+
+type genericMap[K comparable, V any] map[K]V
+
+type keyed any
+
+type mixed struct {
+	v  any
+	xs []int
+}
+
+func literalKey() {
+	_ = map[any]int{
+		[]int{1}:         1, // want `map key of type \[\]int is unhashable`
+		row{1}:           1, // want `map key of type row is unhashable`
+		[2][]int{}:       1, // want `map key of type \[2\]\[\]int is unhashable`
+		map[string]int{}: 1, // want `map key of type map\[string\]int is unhashable`
+		http.Header{}:    1, // want `map key of type http\.Header is unhashable`
+		func() {}:        1, // want `map key of type func\(\) is unhashable`
+		pair{n: 1}:       1, // want `map key of type pair is unhashable`
+		nested{}:         1, // want `map key of type nested is unhashable`
+	}
+}
+
+func namedMapKey() {
+	_ = table{
+		[]int{1}: 1, // want `map key of type \[\]int is unhashable`
+	}
+}
+
+func elidedKey() {
+	_ = []map[any]int{
+		{[]int{1}: 1}, // want `map key of type \[\]int is unhashable`
+	}
+}
+
+func interfaceKey() {
+	_ = map[fmt.Stringer]int{
+		described{}: 1, // want `map key of type described is unhashable`
+	}
+}
+
+func convertedKey(xs []int, v any) {
+	_ = map[any]int{
+		any(xs):      1, // want `map key of type \[\]int is unhashable`
+		any(any(xs)): 1, // want `map key of type \[\]int is unhashable`
+		(any(xs)):    1, // want `map key of type \[\]int is unhashable`
+		row(xs):      1, // want `map key of type row is unhashable`
+		keyed(xs):    1, // want `map key of type \[\]int is unhashable`
+		any(v):       1,
+	}
+}
+
+func convertedParamKey[T ~string](b []byte, m map[any]int) {
+	m[T(b)] = 1
+	_ = map[T]int{T(b): 1}
+}
+
+func aliasedParamKey[T ~[]int](xs []int) {
+	type alias = T
+	_ = map[any]int{
+		alias(xs): 1,
+	}
+}
+
+func genericStructKey() {
+	_ = map[any]int{
+		box[[]int]{}: 1, // want `map key of type box\[\[\]int\] is unhashable`
+	}
+}
+
+func genericLiteralKey() {
+	_ = genericMap[any, int]{
+		[]int{1}: 1, // want `map key of type \[\]int is unhashable`
+	}
+}
+
+func paramSliceKey[T any](v T) {
+	_ = map[any]int{
+		[]T{v}: 1, // want `map key of type \[\]T is unhashable`
+	}
+}
+
+func typeIndex() {
+	_ = cache[[]int]{}
+}
+
+func notMapLiteral(xs []int) {
+	_ = pair{n: 1, xs: xs}
+}
+
+func opaqueKey(m map[any]int, v any, p *row) {
+	_ = map[any]int{
+		v:   1,
+		nil: 1,
+		p:   1,
+	}
+	_ = m[v]
+	delete(m, v)
+}
+
+func hashableKey(ch chan int) {
+	_ = map[any]int{
+		struct{ n int }{1}: 1,
+		[2]int{}:           1,
+		ch:                 1,
+	}
+}
+
+func interfaceFieldKey(xs []int) {
+	_ = map[any]int{
+		struct{ v any }{v: xs}: 1,
+		[1]any{xs}:             1,
+		mixed{v: xs, xs: xs}:   1, // want `map key of type mixed is unhashable`
+	}
+}
+
+func indexedMap(m map[any]int, xs []int) {
+	m[xs] = 1       // want `map key of type \[\]int is unhashable`
+	delete(m, xs)   // want `map key of type \[\]int is unhashable`
+	(delete)(m, xs) // want `map key of type \[\]int is unhashable`
+}
+
+func shadowedDelete(m map[any]int, xs []int) {
+	delete := func(map[any]int, any) {}
+	delete(m, xs)
+}
+
+func calledKey(m map[any]int, f func() any) {
+	m[f()] = 1
+}
+
+func callResultKey(g func([]int) []int, xs []int) {
+	_ = map[any]int{
+		g(xs): 1, // want `map key of type \[\]int is unhashable`
+	}
+}
+
+func nonMapIndex(xs []int) {
+	_ = xs[0]
+}
+
+func typeParamKey[T ~[]int](v T) {
+	_ = map[any]int{
+		v: 1,
+	}
+}
+
+func typeParamMapKey[M ~map[any]int](m M, xs []int) {
+	m[xs] = 1
+	delete(m, xs)
+}
+
+func paramStructKey[T any](v T) {
+	_ = map[any]int{
+		box[T]{v: v}: 1,
+	}
+}
