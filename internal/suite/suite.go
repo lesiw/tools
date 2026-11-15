@@ -79,6 +79,7 @@ import (
 	"lesiw.io/tools/analyzers/defaultcaseorder"
 	"lesiw.io/tools/analyzers/deferunlambda"
 	"lesiw.io/tools/analyzers/deprecated"
+	"lesiw.io/tools/analyzers/docstub"
 	"lesiw.io/tools/analyzers/docsyntax"
 	"lesiw.io/tools/analyzers/dupbranch"
 	"lesiw.io/tools/analyzers/dupcase"
@@ -244,6 +245,7 @@ var (
 		deferunlambda.Analyzer,
 		deprecated.Analyzer,
 		directive.Analyzer,
+		docstub.Analyzer,
 		docsyntax.Analyzer,
 		dupbranch.Analyzer,
 		dupcase.Analyzer,

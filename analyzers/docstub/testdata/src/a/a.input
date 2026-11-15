@@ -1,0 +1,223 @@
+// Package a does a.
+package a
+
+// Foo does foo.
+func Foo() {} // want `doc comment only repeats the name Foo`
+
+// Bar returns the bar.
+func Bar() int { return 0 } // want `doc comment only repeats the name Bar`
+
+// Return
+func Return() error { return nil } // want `doc comment only repeats the name Return`
+
+// Returns Ready.
+func Ready() bool { return true } // want `doc comment only repeats the name Ready`
+
+// NewItem returns a new Item.
+func NewItem() *Item { return nil } // want `doc comment only repeats the name NewItem`
+
+// NewPad creates a new Pad.
+func NewPad() *Pad { return nil } // want `doc comment only repeats the name NewPad`
+
+// Returns a new Solo.
+func NewSolo() *Solo { return nil } // want `doc comment only repeats the name NewSolo`
+
+// Returns the width.
+func Width() int { return 0 } // want `doc comment only repeats the name Width`
+
+// Query queries.
+func Query() string { return "" } // want `doc comment only repeats the name Query`
+
+// An Item is an item.
+type Item struct{} // want `doc comment only repeats the name Item`
+
+// Pad ...
+type Pad struct{} // want `doc comment only repeats the name Pad`
+
+// Halt.
+type Halt struct{} // want `doc comment only repeats the name Halt`
+
+// A Rest is whatever.
+type Rest struct{} // want `doc comment only repeats the name Rest`
+
+// A Widget xxx.
+type Widget struct{} // want `doc comment only repeats the name Widget`
+
+// An HTTPClient is an HTTP client.
+type HTTPClient struct{} // want `doc comment only repeats the name HTTPClient`
+
+// A Base64 is a base64.
+type Base64 struct{} // want `doc comment only repeats the name Base64`
+
+// A Handle represents a handle.
+type Handle struct{} // want `doc comment only repeats the name Handle`
+
+/* Doc does doc. */
+func Doc() {} // want `doc comment only repeats the name Doc`
+
+/*
+ * Starred does starred.
+ */
+func Starred() {} // want `doc comment only repeats the name Starred`
+
+/*
+ * Wrapped
+ * does wrapped.
+ */
+func Wrapped() {} // want `doc comment only repeats the name Wrapped`
+
+type (
+	// A Group is a group.
+	Group struct{} // want `doc comment only repeats the name Group`
+)
+
+// A Solo is a solo.
+type (
+	Solo struct{} // want `doc comment only repeats the name Solo`
+)
+
+type (
+	// A First is a first.
+	First  struct{} // want `doc comment only repeats the name First`
+	Second struct{}
+)
+
+// inner does inner.
+func inner() {} // want `doc comment only repeats the name inner`
+
+// spot does spot.
+type spot struct{} // want `doc comment only repeats the name spot`
+
+// Size returns the size.
+func (i Item) Size() int { return 0 } // want `doc comment only repeats the name Size`
+
+// A Limit is a limit.
+const Limit = 10 // want `doc comment only repeats the name Limit`
+
+// A Default is a default.
+var Default = Limit // want `doc comment only repeats the name Default`
+
+// A Bound is a bound.
+const (
+	Bound = 10 // want `doc comment only repeats the name Bound`
+)
+
+// Min does min.
+const (
+	Min, Max = 1, 10
+)
+
+const (
+	// A Total is a total.
+	Total = 3 // want `doc comment only repeats the name Total`
+	Other = 4
+)
+
+// A Head is a head.
+type (
+	Head struct{}
+	Tail struct{}
+)
+
+func local() {
+	// A Local is a local.
+	const Local = 1
+	_ = Local
+}
+
+type Box struct {
+	// A Count is a count.
+	Count int
+
+	Total int
+}
+
+type Sizer interface {
+	Size() int
+}
+
+type Closer interface {
+	// Close does close.
+	Close() error // want `doc comment only repeats the name Close`
+
+	Flush()
+
+	// Sizer does sizer.
+	Sizer
+}
+
+// Close closes the connection.
+func (i Item) Close() error { return nil }
+
+// Save does save.
+//
+// It is safe for concurrent use.
+func (i Item) Save() error { return nil }
+
+// A SplitKey is a key.
+type SplitKey struct{}
+
+// ErrStop is the end.
+type ErrStop struct{}
+
+// -- Mass Value
+type massValue int
+
+// # Unit
+type Unit int
+
+// - Bullet
+type Bullet int
+
+// *Star
+type Star struct{}
+
+// -Dash
+type Dash struct{}
+
+// [Kind] is a kind.
+type Kind int
+
+// Header.Type
+type HeaderType int
+
+// Read -> Write.
+func readWrite() {}
+
+// Does does.
+func _() {}
+
+// Fetch fetches.
+func Fetch() {} // want `doc comment only repeats the name Fetch`
+
+// Copy copies.
+func Copy() {} // want `doc comment only repeats the name Copy`
+
+// Mass type.
+type massType uint32 // want `doc comment only repeats the name massType`
+
+// A Reader yields the records of a table.
+type Reader struct{}
+
+// Read returns a Reader.
+func Read() Reader { return Reader{} }
+
+// Reader returns the reader.
+func OpenReader() *Reader { return nil }
+
+// String returns the string representation of the item.
+func (i Item) String() string { return "" }
+
+// Trim does trim.
+//
+//go:generate echo hi
+func Trim() {}
+
+// Sys
+//sys
+func Sys() {}
+
+//line other.go:500
+
+// Trace does trace.
+func Trace() {} // want `doc comment only repeats the name Trace`

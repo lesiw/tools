@@ -539,6 +539,17 @@ Imported from the x/tools vet suite.
 package p
 ```
 
+## docstub
+
+Reports a doc comment that only repeats the declaration's name. A doc comment should say what the declaration returns, does, or provides.
+
+Adapted from go-critic's docStub.
+
+```
+// Foo does foo.
+func Foo() {}
+```
+
 ## docsyntax
 
 Reports Markdown that Go doc comments do not implement: a code span, a fenced block, bold, or a link with a URL. Go renders each of them as literal punctuation.

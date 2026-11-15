@@ -548,6 +548,16 @@
 //	//go:debug panicnil=1
 //	package p
 //
+// # docstub
+//
+// Reports a doc comment that only repeats the declaration's name. A doc
+// comment should say what the declaration returns, does, or provides.
+//
+// Adapted from go-critic's docStub.
+//
+//	// Foo does foo.
+//	func Foo() {}
+//
 // # docsyntax
 //
 // Reports Markdown that Go doc comments do not implement: a code span, a

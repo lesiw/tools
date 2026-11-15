@@ -1,0 +1,183 @@
+// Package a does a.
+package a
+
+func Foo() {} // want `doc comment only repeats the name Foo`
+
+func Bar() int { return 0 } // want `doc comment only repeats the name Bar`
+
+func Return() error { return nil } // want `doc comment only repeats the name Return`
+
+func Ready() bool { return true } // want `doc comment only repeats the name Ready`
+
+func NewItem() *Item { return nil } // want `doc comment only repeats the name NewItem`
+
+func NewPad() *Pad { return nil } // want `doc comment only repeats the name NewPad`
+
+func NewSolo() *Solo { return nil } // want `doc comment only repeats the name NewSolo`
+
+func Width() int { return 0 } // want `doc comment only repeats the name Width`
+
+func Query() string { return "" } // want `doc comment only repeats the name Query`
+
+type Item struct{} // want `doc comment only repeats the name Item`
+
+type Pad struct{} // want `doc comment only repeats the name Pad`
+
+type Halt struct{} // want `doc comment only repeats the name Halt`
+
+type Rest struct{} // want `doc comment only repeats the name Rest`
+
+type Widget struct{} // want `doc comment only repeats the name Widget`
+
+type HTTPClient struct{} // want `doc comment only repeats the name HTTPClient`
+
+type Base64 struct{} // want `doc comment only repeats the name Base64`
+
+type Handle struct{} // want `doc comment only repeats the name Handle`
+
+func Doc() {} // want `doc comment only repeats the name Doc`
+
+func Starred() {} // want `doc comment only repeats the name Starred`
+
+func Wrapped() {} // want `doc comment only repeats the name Wrapped`
+
+type (
+	Group struct{} // want `doc comment only repeats the name Group`
+)
+
+type (
+	Solo struct{} // want `doc comment only repeats the name Solo`
+)
+
+type (
+	First  struct{} // want `doc comment only repeats the name First`
+	Second struct{}
+)
+
+func inner() {} // want `doc comment only repeats the name inner`
+
+type spot struct{} // want `doc comment only repeats the name spot`
+
+func (i Item) Size() int { return 0 } // want `doc comment only repeats the name Size`
+
+const Limit = 10 // want `doc comment only repeats the name Limit`
+
+var Default = Limit // want `doc comment only repeats the name Default`
+
+const (
+	Bound = 10 // want `doc comment only repeats the name Bound`
+)
+
+// Min does min.
+const (
+	Min, Max = 1, 10
+)
+
+const (
+	Total = 3 // want `doc comment only repeats the name Total`
+	Other = 4
+)
+
+// A Head is a head.
+type (
+	Head struct{}
+	Tail struct{}
+)
+
+func local() {
+	// A Local is a local.
+	const Local = 1
+	_ = Local
+}
+
+type Box struct {
+	// A Count is a count.
+	Count int
+
+	Total int
+}
+
+type Sizer interface {
+	Size() int
+}
+
+type Closer interface {
+	Close() error // want `doc comment only repeats the name Close`
+
+	Flush()
+
+	// Sizer does sizer.
+	Sizer
+}
+
+// Close closes the connection.
+func (i Item) Close() error { return nil }
+
+// Save does save.
+//
+// It is safe for concurrent use.
+func (i Item) Save() error { return nil }
+
+// A SplitKey is a key.
+type SplitKey struct{}
+
+// ErrStop is the end.
+type ErrStop struct{}
+
+// -- Mass Value
+type massValue int
+
+// # Unit
+type Unit int
+
+// - Bullet
+type Bullet int
+
+// *Star
+type Star struct{}
+
+// -Dash
+type Dash struct{}
+
+// [Kind] is a kind.
+type Kind int
+
+// Header.Type
+type HeaderType int
+
+// Read -> Write.
+func readWrite() {}
+
+// Does does.
+func _() {}
+
+func Fetch() {} // want `doc comment only repeats the name Fetch`
+
+func Copy() {} // want `doc comment only repeats the name Copy`
+
+type massType uint32 // want `doc comment only repeats the name massType`
+
+// A Reader yields the records of a table.
+type Reader struct{}
+
+// Read returns a Reader.
+func Read() Reader { return Reader{} }
+
+// Reader returns the reader.
+func OpenReader() *Reader { return nil }
+
+// String returns the string representation of the item.
+func (i Item) String() string { return "" }
+
+// Trim does trim.
+//
+//go:generate echo hi
+func Trim() {}
+
+// Sys
+//sys
+func Sys() {}
+
+//line other.go:500
+
+func Trace() {} // want `doc comment only repeats the name Trace`

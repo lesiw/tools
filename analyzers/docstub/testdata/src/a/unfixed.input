@@ -1,0 +1,7 @@
+package a
+
+const (
+	Left = 1 /* x
+	y */ // Right does right.
+	Right = 2 // want `doc comment only repeats the name Right`
+)
