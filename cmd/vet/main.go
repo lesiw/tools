@@ -1297,6 +1297,19 @@
 //		return f == nil
 //	}
 //
+// # nilmapassign
+//
+// Reports an assignment to an element of a nil map, which panics at run time.
+// The map has to be a nil literal or a local variable whose value is nil on
+// every path to the write.
+//
+// Adapted from staticcheck's SA5000.
+//
+//	func f() {
+//		var m map[string]int
+//		m["x"] = 1
+//	}
+//
 // # nilness
 //
 // Reports a nil test whose answer the assignments already fix, as a pointer

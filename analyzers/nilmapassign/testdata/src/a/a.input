@@ -1,0 +1,141 @@
+package a
+
+type counts map[string]int
+
+var global map[string]int
+
+type holder struct{}
+
+func (holder) fromReceiver(m map[string]int) {
+	m["x"] = 1
+}
+
+func fromParameter(m map[string]int) {
+	m["x"] = 1
+}
+
+func nilMap() map[string]int { return nil }
+
+func fromCall() {
+	nilMap()["x"] = 1
+}
+
+func fromResult() {
+	m := nilMap()
+	m["x"] = 1
+}
+
+func fromField() {
+	var record struct{ tally map[string]int }
+	record.tally["x"] = 1
+}
+
+func fromElement(maps []map[string]int) {
+	maps[0]["x"] = 1
+}
+
+func fromPackage() {
+	global["x"] = 1
+}
+
+func zero() {
+	var m map[string]int
+	m["x"] = 1 // want `assignment to nil map`
+}
+
+func explicitNil() {
+	var m map[string]int = nil
+	m["x"] = 1 // want `assignment to nil map`
+}
+
+func conversion() {
+	m := map[string]int(nil)
+	m["x"] = 1 // want `assignment to nil map`
+}
+
+func namedConversion() {
+	m := counts(nil)
+	m["x"] = 1 // want `assignment to nil map`
+}
+
+func parenthesized() {
+	m := (map[string]int)(nil)
+	m["x"] = 1 // want `assignment to nil map`
+}
+
+func compound() {
+	var m map[string]int
+	m["x"] += 1 // want `assignment to nil map`
+}
+
+func increment() {
+	var m map[string]int
+	m["x"]++ // want `assignment to nil map`
+}
+
+func copied() {
+	var m map[string]int
+	n := m
+	n["x"] = 1 // want `assignment to nil map`
+}
+
+func assigned() {
+	var m map[string]int
+	m = map[string]int{}
+	m["x"] = 1
+}
+
+func maybeAssigned(ok bool) {
+	var m map[string]int
+	if ok {
+		m = map[string]int{}
+	}
+	m["x"] = 1
+}
+
+func stillNil(ok bool) {
+	var m map[string]int
+	if ok {
+		m = nil
+	}
+	m["x"] = 1 // want `assignment to nil map`
+}
+
+func literal() {
+	m := map[string]int{}
+	m["x"] = 1
+}
+
+func made() {
+	m := make(map[string]int)
+	m["x"] = 1
+}
+
+func writtenBeforeMake() {
+	var m map[string]int
+	m["x"] = 1 // want `assignment to nil map`
+	m = make(map[string]int)
+}
+
+func addressed() {
+	var m map[string]int
+	p := &m
+	*p = map[string]int{}
+	m["x"] = 1
+}
+
+func loopAssigned(count int) {
+	var m map[string]int
+	for i := range count {
+		m = make(map[string]int)
+		m["x"] = i
+	}
+}
+
+func closure() {
+	var m map[string]int
+	f := func() {
+		m["x"] = 1
+	}
+	f()
+}

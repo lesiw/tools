@@ -118,6 +118,7 @@ import (
 	"lesiw.io/tools/analyzers/methodexprcall"
 	"lesiw.io/tools/analyzers/newderef"
 	"lesiw.io/tools/analyzers/nilchecklen"
+	"lesiw.io/tools/analyzers/nilmapassign"
 	"lesiw.io/tools/analyzers/nilreturn"
 	"lesiw.io/tools/analyzers/nowsub"
 	"lesiw.io/tools/analyzers/octal"
@@ -292,6 +293,7 @@ var (
 		newderef.Analyzer,
 		nilchecklen.Analyzer,
 		nilfunc.Analyzer,
+		nilmapassign.Analyzer,
 		nilness.Analyzer,
 		nilreturn.Analyzer,
 		nowsub.Analyzer,
