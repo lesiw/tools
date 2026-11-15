@@ -1,0 +1,257 @@
+package a
+
+import (
+	"math"
+	"time"
+)
+
+type kind int
+
+type label string
+
+type verdict bool
+
+type row struct{ n int }
+
+const (
+	first  byte = 1
+	second      = 2 // want `second is int; a spec above declares byte`
+)
+
+const (
+	labelOne label = "some-label"
+	labelTwo       = "some-other-label" // want `labelTwo is string; a spec above declares label`
+)
+
+const (
+	verdictOn  verdict = true
+	verdictOff         = false // want `verdictOff is bool; a spec above declares verdict`
+)
+
+const (
+	maskKind  kind = 1
+	shiftKind      = 3 // want `shiftKind is int; a spec above declares kind`
+)
+
+var (
+	limit  byte = 10
+	offset      = 20 // want `offset is int; a spec above declares byte`
+)
+
+var (
+	size  byte
+	count = 30 // want `count is int; a spec above declares byte`
+)
+
+var (
+	timeout time.Duration = 1
+	retries               = 2 // want `retries is int; a spec above declares time.Duration`
+)
+
+var (
+	scale float64 = 1.5
+	steps         = 2 // want `steps is int; a spec above declares float64`
+)
+
+const (
+	pairFirst             byte = 1
+	pairSecond, pairThird      = 2, "some-value" // want `pairSecond is int; a spec above declares byte`
+)
+
+const (
+	mixedA      = 1
+	mixedB byte = 2
+	mixedC      = 3 // want `mixedC is int; a spec above declares byte`
+)
+
+const (
+	stepA     byte = iota
+	stepTimes      = iota * 2 // want `stepTimes is int; a spec above declares byte`
+)
+
+const shiftWidth uint = 5
+
+const (
+	bitA byte = 1
+	bitB      = 1 << shiftWidth // want `bitB is int; a spec above declares byte`
+)
+
+var (
+	roomFirst byte = 10
+	roomOther      = "some-name"
+	roomLast       = 20 // want `roomLast is int; a spec above declares byte`
+)
+
+var (
+	circle float32 = 1
+	half           = 1.5 // want `half is float64; a spec above declares float32`
+	huge           = 1e40
+)
+
+var (
+	phase complex64 = 1
+	turn            = 1i // want `turn is complex128; a spec above declares complex64`
+	wide            = 1e40i
+)
+
+var (
+	radius float32 = 1
+	pi             = math.Pi // want `pi is float64; a spec above declares float32`
+)
+
+const (
+	phaseA byte = iota
+	phaseB
+	phaseC
+)
+
+const (
+	inheritFirst      = 1
+	inheritTyped byte = 2
+	inheritLast
+)
+
+const (
+	width  byte = 1
+	height int  = 2
+)
+
+const (
+	ratio      float64 = 1.5
+	floatRatio         = 2.5
+)
+
+var (
+	total int = 1
+	sum       = 2
+)
+
+var (
+	name  string = "some-name"
+	alias        = "some-other-name"
+)
+
+const (
+	letter  rune = 1
+	initial      = 'b'
+)
+
+var (
+	flag     byte = 1
+	sameFlag      = byte(2)
+)
+
+var (
+	bytes     uint = 1
+	converted      = int64(2)
+)
+
+var (
+	callback func() = nil
+	literal         = func() {}
+)
+
+var (
+	anyValue any = nil
+	text         = "some-value"
+)
+
+var (
+	record row
+	number = 1
+)
+
+var (
+	table map[string]int
+	tally = 1
+)
+
+var (
+	queue []int
+	next  = 1
+)
+
+var (
+	titleText string = "some-name"
+	titleOn          = true
+)
+
+var (
+	depth uint = 4
+	sink       = -1
+)
+
+var (
+	octet byte = 1
+	over       = 300
+)
+
+var (
+	whole byte = 1
+	part       = 1.5
+)
+
+var items = []int{1, 2}
+
+var (
+	head    byte = 1
+	indexed      = items[0]
+)
+
+var (
+	cell byte = 1
+	grid      = [2]byte{}
+)
+
+const otherKind kind = 1
+
+var (
+	plain     int = 1
+	fromConst     = otherKind
+)
+
+var other int
+
+var (
+	known    byte = 1
+	borrowed      = other
+)
+
+var amount int
+
+var (
+	masked  byte = 1
+	shifted      = 1 << amount
+)
+
+var (
+	probe byte = 1
+	_          = 2
+)
+
+func generic[T ~byte]() {
+	var (
+		bound T = 1
+		free    = 2
+	)
+	_, _ = bound, free
+}
+
+const (
+	runFirst byte = 1
+	runOther      = "some-value"
+
+	runAlone = 3
+)
+
+const (
+	documentedFirst byte = 1
+	documentedOther      = "some-value"
+	// documentedLast is a count.
+	documentedLast = 3
+)
+
+const (
+	maxFirst  byte = 1
+	maxSecond      = max(1, 2)
+)

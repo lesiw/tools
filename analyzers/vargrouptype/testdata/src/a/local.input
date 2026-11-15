@@ -1,0 +1,19 @@
+package a
+
+func pair() (int, string) { return 0, "some-value" }
+
+func local() {
+	var (
+		budget byte = 1
+		spent       = 2 // want `spent is int; a spec above declares byte`
+	)
+	_, _ = budget, spent
+}
+
+func localPair() {
+	var (
+		size         byte = 1
+		width, label      = pair()
+	)
+	_, _, _ = size, width, label
+}

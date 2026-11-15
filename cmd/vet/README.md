@@ -2475,6 +2475,19 @@ func (p pair) set(left int) {
 }
 ```
 
+## vargrouptype
+
+Reports an untyped constant whose default type is not the one a spec above it declares, where that type could hold the value. A const block passes a type down only when the spec below also omits its expression list, and a variable declared without a type takes the type of its value.
+
+Adapted from staticcheck's SA9004.
+
+```
+const (
+    first  byte = 1
+    second      = 2
+)
+```
+
 ## waitgroup
 
 Reports a sync.WaitGroup.Add call made inside a new goroutine, which can run after the Wait that waits for it.
