@@ -1,0 +1,12 @@
+package go122
+
+func assigned(ns []int) []*int {
+	var (
+		out []*int
+		n   int
+	)
+	for _, n = range ns {
+		out = append(out, &n) // want `address of loop variable n is the same in every iteration`
+	}
+	return out
+}

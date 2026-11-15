@@ -1,0 +1,351 @@
+package go121
+
+type box struct {
+	tag   string
+	count *int
+}
+
+type shelf struct {
+	tags [2]int
+}
+
+var (
+	cell  int
+	later *int
+)
+
+func appended(ns []int) []*int {
+	var out []*int
+	for _, n := range ns {
+		out = append(out, &n) // want `address of loop variable n is the same in every iteration`
+	}
+	return out
+}
+
+func appendedBox(ns []int) []box {
+	var out []box
+	for _, n := range ns {
+		out = append(out, box{count: &n}) // want `address of loop variable n is the same in every iteration`
+	}
+	return out
+}
+
+func appendedBoxPtr(ns []int) []*box {
+	var out []*box
+	for _, n := range ns {
+		out = append(out, &box{count: &n}) // want `address of loop variable n is the same in every iteration`
+	}
+	return out
+}
+
+func arrayElement(items []shelf) []*int {
+	var out []*int
+	for _, item := range items {
+		out = append(out, &item.tags[0]) // want `address of loop variable item is the same in every iteration`
+	}
+	return out
+}
+
+func assigned(ns []int) (out []*int) {
+	var v int
+	for _, v = range ns {
+		out = append(out, &v) // want `address of loop variable v is the same in every iteration`
+	}
+	return out
+}
+
+func assignedWrites(ns []int) (out []*int) {
+	var v int
+	for _, v = range ns {
+		out = append(out, &v) // want `address of loop variable v is the same in every iteration`
+		v = 9
+	}
+	return out
+}
+
+func calledTarget(ns []int) {
+	for _, n := range ns {
+		makeSlice()[0] = &n // want `address of loop variable n is the same in every iteration`
+	}
+}
+
+func carried(ns []int) []*int {
+	var out []*int
+	for _, n := range ns {
+		p := &n // want `address of loop variable n is the same in every iteration`
+		out = append(out, p)
+	}
+	return out
+}
+
+func carriedBox(ns []int) []box {
+	var out []box
+	for _, n := range ns {
+		p := box{count: &n} // want `address of loop variable n is the same in every iteration`
+		out = append(out, p)
+	}
+	return out
+}
+
+func carriedField(ns []int) []box {
+	var out []box
+	for _, n := range ns {
+		var p box
+		p.count = &n // want `address of loop variable n is the same in every iteration`
+		out = append(out, p)
+	}
+	return out
+}
+
+func continued(ns []int) []*int {
+	var out []*int
+	for _, n := range ns {
+		out = append(out, &n) // want `address of loop variable n is the same in every iteration`
+		continue
+	}
+	return out
+}
+
+func converted(ns []int) []any {
+	var out []any
+	for _, n := range ns {
+		out = append(out, any(&n)) // want `address of loop variable n is the same in every iteration`
+	}
+	return out
+}
+
+func declared(ns []int) []*int {
+	var out []*int
+	for _, n := range ns {
+		var p = &n // want `address of loop variable n is the same in every iteration`
+		out = append(out, p)
+	}
+	return out
+}
+
+func declaredFirst(ns []int) (out []*int) {
+	for _, n := range ns {
+		y := len(out)
+		_ = y
+		out = append(out, &n) // want `address of loop variable n is the same in every iteration`
+	}
+	return out
+}
+
+func deferred(ns []int) {
+	for _, n := range ns {
+		defer sink(&n) // want `address of loop variable n is the same in every iteration`
+	}
+}
+
+func escalatingChannel(ns []int, out []chan *int) {
+	for _, n := range ns {
+		ch := make(chan *int, 1)
+		ch <- &n // want `address of loop variable n is the same in every iteration`
+		out[0] = ch
+	}
+}
+
+func fielded(ns []int, h *box) {
+	for _, n := range ns {
+		h.count = &n // want `address of loop variable n is the same in every iteration`
+	}
+}
+
+func filled(ns []int, out []*int) {
+	for i, n := range ns {
+		out[i] = &n // want `address of loop variable n is the same in every iteration`
+	}
+}
+
+func filledBox(ns []int, out []box) {
+	for i, n := range ns {
+		out[i] = box{count: &n} // want `address of loop variable n is the same in every iteration`
+	}
+}
+
+func incdec(ns []int, seen map[*int]int) {
+	for _, n := range ns {
+		seen[&n]++ // want `address of loop variable n is the same in every iteration`
+	}
+}
+
+func kept(ns []int) *int {
+	var last *int
+	for _, n := range ns {
+		last = &n // want `address of loop variable n is the same in every iteration`
+	}
+	return last
+}
+
+func keyed(ns []int, seen map[*int]bool) {
+	for _, n := range ns {
+		seen[&n] = true // want `address of loop variable n is the same in every iteration`
+	}
+}
+
+func keyedBox(ns []int, seen map[box]bool) {
+	for _, n := range ns {
+		seen[box{count: &n}] = true // want `address of loop variable n is the same in every iteration`
+	}
+}
+
+func keyedOver(keys map[int]bool) []*int {
+	var out []*int
+	for k := range keys {
+		out = append(out, &k) // want `address of loop variable k is the same in every iteration`
+	}
+	return out
+}
+
+func literalRead(ns []int) []*int {
+	var out []*int
+	for _, n := range ns {
+		out = append(out, &n) // want `address of loop variable n is the same in every iteration`
+		_ = func() int { return n }
+	}
+	return out
+}
+
+func makeSlice() []*int {
+	return make([]*int, 1)
+}
+
+func mapped(ns []int) []map[*int]bool {
+	var out []map[*int]bool
+	for _, n := range ns {
+		out = append(out, map[*int]bool{&n: true}) // want `address of loop variable n is the same in every iteration`
+	}
+	return out
+}
+
+func nested(rows, cells []int) []*int {
+	var out []*int
+	for _, cell = range rows {
+		for _, cell = range cells {
+			out = append(out, &cell) // want `address of loop variable cell is the same in every iteration`
+		}
+	}
+	return out
+}
+
+func nestedBreak(ns []int) (hit *int) {
+	for _, n := range ns {
+		for {
+			hit = &n // want `address of loop variable n is the same in every iteration`
+			break
+		}
+	}
+	return hit
+}
+
+func oneLine(ns []int, out []*int) {
+	for _, n := range ns { out = append(out, &n) } // want `address of loop variable n is the same in every iteration`
+}
+
+func packageVar(ns []int) {
+	for _, n := range ns {
+		later = &n // want `address of loop variable n is the same in every iteration`
+	}
+}
+
+func paired(counts map[int]int) (keys, values []*int) {
+	for k, v := range counts {
+		keys = append(keys, &k)     // want `address of loop variable k is the same in every iteration`
+		values = append(values, &v) // want `address of loop variable v is the same in every iteration`
+	}
+	return keys, values
+}
+
+func redeclared(ns []int) []*int {
+	var out []*int
+	for _, n := range ns {
+		p := &n // want `address of loop variable n is the same in every iteration`
+		out = append(out, p)
+		n := 2
+		_ = n
+	}
+	return out
+}
+
+func restarted(ns []int) []*int {
+	var out []*int
+again:
+	for _, n := range ns {
+		out = append(out, &n) // want `address of loop variable n is the same in every iteration`
+		if len(out) < 2 {
+			goto again
+		}
+	}
+	return out
+}
+
+func selected(ns []int, ch chan int) *int {
+	var hit *int
+	for _, n := range ns {
+		select {
+		case <-ch:
+			hit = &n // want `address of loop variable n is the same in every iteration`
+		case ch <- 1:
+		}
+	}
+	return hit
+}
+
+func sent(ns []int, ch chan *int) {
+	for _, n := range ns {
+		ch <- &n // want `address of loop variable n is the same in every iteration`
+	}
+}
+
+func sink(p *int) {
+	_ = *p
+}
+
+func spawned(ns []int) {
+	for _, n := range ns {
+		go sink(&n) // want `address of loop variable n is the same in every iteration`
+	}
+}
+
+func storedLiteral(ns []int) []func() *int {
+	var out []func() *int
+	for _, n := range ns {
+		out = append(out, func() *int { return &n }) // want `address of loop variable n is the same in every iteration`
+	}
+	return out
+}
+
+func structElement(ns []int, out []box) {
+	for _, n := range ns {
+		out[0].count = &n // want `address of loop variable n is the same in every iteration`
+	}
+}
+
+func structField(items []box) []*string {
+	var out []*string
+	for _, item := range items {
+		out = append(out, &item.tag) // want `address of loop variable item is the same in every iteration`
+	}
+	return out
+}
+
+func switched(ns []int) *int {
+	var hit *int
+	for _, n := range ns {
+		switch {
+		case n > 0:
+			hit = &n // want `address of loop variable n is the same in every iteration`
+			break
+		}
+	}
+	return hit
+}
+
+func twice(ns []int) (first, second []*int) {
+	for _, n := range ns {
+		first = append(first, &n)   // want `address of loop variable n is the same in every iteration`
+		second = append(second, &n) // want `address of loop variable n is the same in every iteration`
+	}
+	return first, second
+}

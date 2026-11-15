@@ -1,0 +1,11 @@
+//go:build go1.22
+
+package go121
+
+func raised(ns []int) []*int {
+	var out []*int
+	for _, n := range ns {
+		out = append(out, &n)
+	}
+	return out
+}

@@ -1,0 +1,9 @@
+package a
+
+func appended(ns []int) []*int {
+	var out []*int
+	for _, n := range ns {
+		out = append(out, &n)
+	}
+	return out
+}

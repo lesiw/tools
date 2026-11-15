@@ -1549,6 +1549,25 @@ func f(n int) {
 }
 ```
 
+## rangevaladdress
+
+Reports an address taken from a range loop's variable and kept past the iteration. In a file that declares a Go version before 1.22 every iteration shares the variable, so a pointer kept past the iteration reads the value the loop wrote last, and a range clause that assigns its variables with = shares them at every version.
+
+Adapted from revive's range-val-address.
+
+```
+//go:build go1.21
+
+package p
+
+func f(ns []int) (out []*int) {
+    for _, n := range ns {
+        out = append(out, &n)
+    }
+    return out
+}
+```
+
 ## recvname
 
 Reports a method receiver whose name differs from the name another method of the type uses, and one named this, self, or me. A reader who sees two names has to check whether the second is a different value.

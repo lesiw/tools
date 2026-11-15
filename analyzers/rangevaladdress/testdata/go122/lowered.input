@@ -1,0 +1,11 @@
+//go:build go1.21
+
+package go122
+
+func lowered(ns []int) []*int {
+	var out []*int
+	for _, n := range ns {
+		out = append(out, &n) // want `address of loop variable n is the same in every iteration`
+	}
+	return out
+}

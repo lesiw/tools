@@ -1,0 +1,274 @@
+package go121
+
+type node struct {
+	next  *node
+	value int
+}
+
+type record struct {
+	items []int
+}
+
+type inner struct {
+	count int
+}
+
+type outer struct {
+	*inner
+}
+
+func bodyMap(ns []int) {
+	for _, n := range ns {
+		m := make(map[*int]bool)
+		m[&n] = true
+	}
+}
+
+func calledLiteral(ns []int) []*int {
+	var out []*int
+	for _, n := range ns {
+		out = append(out, func() *int { return &n }())
+	}
+	return out
+}
+
+func captured(ns []int) {
+	for _, n := range ns {
+		go func() {
+			_ = &n
+		}()
+	}
+}
+
+func chained(nodes []*node) []*int {
+	var out []*int
+	for _, n := range nodes {
+		out = append(out, &n.next.value)
+	}
+	return out
+}
+
+func commaOK(ns []int, m map[int]int) (v int, ok bool) {
+	for i, n := range ns {
+		v, ok = m[n+i]
+	}
+	return v, ok
+}
+
+func consume(p *int) {
+	_ = p
+}
+
+func copiedByShadow(ns []int) []*int {
+	var out []*int
+	for _, n := range ns {
+		n := n
+		out = append(out, &n)
+	}
+	return out
+}
+
+func copiedChannel(ns []int, ch chan *int) {
+	for _, n := range ns {
+		c := ch
+		c <- &n
+	}
+}
+
+func copiedPointer(ns []int, h *box) {
+	for _, n := range ns {
+		p := h
+		p.count = &n
+	}
+}
+
+func counted(n int) []*int {
+	var out []*int
+	for i := 0; i < n; i++ {
+		out = append(out, &i)
+	}
+	return out
+}
+
+func embedded(outs []outer, out []*int) {
+	for _, o := range outs {
+		out[0] = &o.count
+	}
+}
+
+func ended(ns []int) *int {
+	var out []*int
+	for _, n := range ns {
+		out = append(out, &n)
+		return out[0]
+	}
+	return nil
+}
+
+func escapedFirst(ns []int, out []*box) {
+	for _, n := range ns {
+		var h box
+		out[0] = &h
+		h.count = &n
+	}
+}
+
+func jumped(ns []int) *int {
+	var hit *int
+	for _, n := range ns {
+		hit = &n
+		goto done
+	}
+done:
+	return hit
+}
+
+func labeled(ns []int) *int {
+	var hit *int
+outer:
+	for _, n := range ns {
+		hit = &n
+		break outer
+	}
+	return hit
+}
+
+func local(ns []int) {
+	for _, n := range ns {
+		p := &n
+		_ = p
+	}
+}
+
+func localRow(ns []int) {
+	for _, n := range ns {
+		row := make([]*int, 1)
+		row[0] = &n
+	}
+}
+
+func param(ns []int, h box) {
+	for _, n := range ns {
+		h.count = &n
+	}
+}
+
+func passed(ns []int) {
+	for _, n := range ns {
+		consume(&n)
+	}
+}
+
+func pointed(nodes []*node) []*int {
+	var out []*int
+	for _, n := range nodes {
+		out = append(out, &n.value)
+	}
+	return out
+}
+
+func pointedStore(ns []int, pp **int) {
+	for _, n := range ns {
+		p := pp
+		*p = &n
+	}
+}
+
+func returned(ns []int) *int {
+	for _, n := range ns {
+		return &n
+	}
+	return nil
+}
+
+func safeAfterStore(ns []int) (a, b *int) {
+	for _, n := range ns {
+		a = &n
+		b = &n
+		break
+	}
+	return a, b
+}
+
+func sentAndReturned(ns []int, ch chan *int) {
+	for _, n := range ns {
+		select {
+		case ch <- &n:
+			return
+		}
+	}
+}
+
+func sentLocally(ns []int) {
+	for _, n := range ns {
+		ch := make(chan *int, 1)
+		ch <- &n
+		_ = <-ch
+	}
+}
+
+func sliceElement(ns []int, out []*int) {
+	for i := range ns {
+		out[0] = &ns[i]
+	}
+}
+
+func sliceRow(rs []record, out []*int) {
+	for _, r := range rs {
+		out[0] = &r.items[0]
+	}
+}
+
+func stopped(ns []int) *int {
+	var hit *int
+	for _, n := range ns {
+		if n > 0 {
+			hit = &n
+			break
+		}
+	}
+	return hit
+}
+
+func storeInBlock(ns []int) *int {
+	var hit *int
+	for _, n := range ns {
+		if n > 0 {
+			hit = &n
+		}
+		break
+	}
+	return hit
+}
+
+func storeInCase(ns []int) *int {
+	var hit *int
+outer:
+	for _, n := range ns {
+		switch {
+		case n > 0:
+			hit = &n
+		}
+		break outer
+	}
+	return hit
+}
+
+func tailBeforeReturn(ns []int) {
+	for _, n := range ns {
+		if n > 0 {
+			defer sink(&n)
+		}
+		x := 1
+		x++
+		sink(&x)
+		return
+	}
+}
+
+func throughPointer(ns []int, hs []*int) {
+	for _, n := range ns {
+		p := hs
+		p[0] = &n
+	}
+}

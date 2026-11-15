@@ -1,0 +1,15 @@
+package go122
+
+func appended(ns []int) []*int {
+	var out []*int
+	for _, n := range ns {
+		out = append(out, &n)
+	}
+	return out
+}
+
+func keyed(ns []int, seen map[*int]bool) {
+	for _, n := range ns {
+		seen[&n] = true
+	}
+}
