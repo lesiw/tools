@@ -1,11 +1,15 @@
 package a
 
-import "regexp"
+import (
+	"regexp"
+
+	"patterns"
+)
 
 var re = must()
 
 func must() *regexp.Regexp {
-	re, _ := regexp.Compile(`^a+$`) // want `regexp compiled from a constant; use MustCompile`
+	re, _ := regexp.Compile(`^a+$`) // want `the error of a constant pattern is always nil; use MustCompile`
 	return re
 }
 
@@ -13,4 +17,75 @@ var good = regexp.MustCompile(`^a+$`)
 
 func dynamic(pattern string) (*regexp.Regexp, error) {
 	return regexp.Compile(pattern)
+}
+
+func broken() *regexp.Regexp {
+	re, _ := regexp.Compile(`a(`)
+	return re
+}
+
+func brokenPOSIX() *regexp.Regexp {
+	re, _ := regexp.CompilePOSIX(`\d`)
+	return re
+}
+
+func posix() *regexp.Regexp {
+	re, _ := regexp.CompilePOSIX(`a+`) // want `the error of a constant pattern is always nil; use MustCompilePOSIX`
+	return re
+}
+
+var declared, _ = regexp.Compile(`^a+$`) // want `the error of a constant pattern is always nil; use MustCompile`
+
+const plus = "a" + "+"
+
+var folded, _ = regexp.Compile(plus) // want `the error of a constant pattern is always nil; use MustCompile`
+
+func imported() {
+	_, _ = regexp.Compile(patterns.Valid) // want `the error of a constant pattern is always nil`
+}
+
+func parens() {
+	_, _ = (regexp.Compile)(`a+`) // want `the error of a constant pattern is always nil`
+}
+
+func parenValue() *regexp.Regexp {
+	re, _ := (regexp.Compile(`^a+$`)) // want `the error of a constant pattern is always nil; use MustCompile`
+	return re
+}
+
+func commented() *regexp.Regexp {
+	re /* why */, _ := regexp.Compile(`^a+$`) // want `the error of a constant pattern is always nil; use MustCompile`
+	return re
+}
+
+func readError() (*regexp.Regexp, error) {
+	re, err := regexp.Compile(`^a+$`) // want `the error of a constant pattern is always nil`
+	if err != nil {
+		return nil, err
+	}
+	return re, nil
+}
+
+func returned() (*regexp.Regexp, error) {
+	return regexp.Compile(`^a+$`) // want `the error of a constant pattern is always nil`
+}
+
+func posixNested() *regexp.Regexp {
+	re, _ := regexp.CompilePOSIX(`a**`) // want `the error of a constant pattern is always nil; use MustCompilePOSIX`
+	return re
+}
+
+func checked() error {
+	_, err := regexp.Compile(`^a+$`) // want `the error of a constant pattern is always nil`
+	return err
+}
+
+func variable() {
+	held := `a+`
+	_, _ = regexp.Compile(held)
+}
+
+func functionValue() {
+	compile := regexp.Compile
+	_, _ = compile(`a+`)
 }

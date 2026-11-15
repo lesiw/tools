@@ -7,23 +7,27 @@
 [![Discord](https://img.shields.io/discord/1145827224516300971?logo=discord&logoColor=white&color=5865F2&label=discord)](https://lesiw.dev/discord)
 [![License](https://img.shields.io/github/license/lesiw/tools)](../../../LICENSE)
 
-An `analysis.Analyzer` that reports a regexp compiled from a constant with its error dropped.
+An `analysis.Analyzer` that reports a `regexp.Compile` of a constant pattern
+whose error is always nil, so any check for it is dead code.
 
 ```go
 func must() *regexp.Regexp {
-	re, _ := regexp.Compile(`^a+$`) // regexp compiled from a constant; use MustCompile
+	re, _ := regexp.Compile(`^a+$`) // the error of a constant pattern is always nil; use MustCompile
 	return re
 }
 ```
 
-Compiling a constant pattern cannot fail. The error is always nil. MustCompile
-does the same and panics if the pattern is wrong.
+`CompilePOSIX` takes `MustCompilePOSIX`, which keeps the pattern in POSIX ERE.
 
-```go
-var re = regexp.MustCompile(`^a+$`)
-```
+Only a constant argument to a package-qualified call is checked: a pattern held
+in a variable or a parameter is left alone, and so is a call through a dot
+import or a function value.
 
-The idea comes from go-critic's regexpMust.
+A pattern that does not compile is a different fault, reported by `regexpconst`:
+moving it to `MustCompile` would turn the returned error into a panic without
+fixing the pattern.
+
+The rule is adapted from go-critic's regexpMust.
 
 Report only.
 
