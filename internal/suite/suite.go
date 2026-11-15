@@ -63,6 +63,7 @@ import (
 	"lesiw.io/tools/analyzers/boolreturn"
 	"lesiw.io/tools/analyzers/boolset"
 	"lesiw.io/tools/analyzers/builtinprint"
+	"lesiw.io/tools/analyzers/caseorder"
 	"lesiw.io/tools/analyzers/commentfmt"
 	"lesiw.io/tools/analyzers/containscut"
 	"lesiw.io/tools/analyzers/ctxfield"
@@ -189,6 +190,7 @@ var (
 		boolset.Analyzer,
 		buildtag.Analyzer,
 		builtinprint.Analyzer,
+		caseorder.Analyzer,
 		cgocall.Analyzer,
 		commentfmt.Analyzer,
 		composite.Analyzer,

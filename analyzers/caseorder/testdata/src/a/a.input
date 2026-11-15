@@ -1,0 +1,185 @@
+package a
+
+func shuffled(n int) {
+	switch n { // want `case values are in neither ascending nor descending order`
+	case 3:
+	case 1:
+	case 2:
+	}
+}
+
+func parenthesized(n int) {
+	switch n { // want `case values are in neither ascending nor descending order`
+	case (3):
+	case 1:
+	case (2):
+	}
+}
+
+func hexadecimal(n int) {
+	switch n { // want `case values are in neither ascending nor descending order`
+	case 0x03:
+	case 0x01:
+	case 0x02:
+	}
+}
+
+func floatTag(f float64) {
+	switch f { // want `case values are in neither ascending nor descending order`
+	case 3:
+	case 1:
+	case 2:
+	}
+}
+
+func defaultFirst(n int) {
+	switch n { // want `case values are in neither ascending nor descending order`
+	default:
+	case 3:
+	case 1:
+	case 2:
+	}
+}
+
+func defaultLast(n int) {
+	switch n { // want `case values are in neither ascending nor descending order`
+	case 3:
+	case 1:
+	case 2:
+	default:
+	}
+}
+
+func empty(n int) {
+	switch n {
+	}
+}
+
+func ascending(n int) {
+	switch n {
+	case 1:
+	case 2:
+	case 3:
+	}
+}
+
+func descending(n int) {
+	switch n {
+	case 3:
+	case 2:
+	case 1:
+	}
+}
+
+func defaultMiddle(n int) {
+	switch n {
+	case 1:
+	default:
+	case 3:
+	case 2:
+	}
+}
+
+type kind int
+
+const (
+	kindOne kind = iota
+	kindTwo
+	kindThree
+)
+
+func named(k kind) {
+	switch k {
+	case kindThree:
+	case kindOne:
+	case kindTwo:
+	}
+}
+
+func escapes(r rune) {
+	switch r {
+	case '\n':
+	case '\t':
+	case '\v':
+	}
+}
+
+func letters(r rune) {
+	switch r {
+	case 'c':
+	case 'a':
+	case 'b':
+	}
+}
+
+func gapped(n int) {
+	switch n {
+	case 1:
+	case 5:
+	case 3:
+	}
+}
+
+func signed(n int) {
+	switch n {
+	case 1:
+	case -1:
+	case 0:
+	}
+}
+
+func wide(u uint64) {
+	switch u {
+	case 10000000000000000002:
+	case 10000000000000000000:
+	case 10000000000000000001:
+	}
+}
+
+func defaultThrough(n int) {
+	switch n {
+	default:
+		fallthrough
+	case 3:
+	case 1:
+	case 2:
+	}
+}
+
+func grouped(n int) {
+	switch n {
+	case 2, 1:
+	case 4:
+	case 3:
+	case 5:
+	}
+}
+
+func through(n int) {
+	switch n {
+	case 2:
+	case 4:
+		fallthrough
+	case 1:
+	case 3:
+	}
+}
+
+func labeled(n int) {
+	switch n {
+	case 2:
+		goto done
+	done:
+		fallthrough
+	case 1:
+	case 3:
+	}
+}
+
+func floatLiterals(f float64) {
+	switch f {
+	case 3.0:
+	case 1.0:
+	case 2.0:
+	}
+}
