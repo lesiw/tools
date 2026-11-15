@@ -1,0 +1,7 @@
+package a
+
+import "sync"
+
+type Tester struct {
+	sync.Mutex
+}

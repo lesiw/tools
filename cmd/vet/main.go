@@ -808,6 +808,19 @@
 //		return n, bump(&n)
 //	}
 //
+// # exposedsyncmutex
+//
+// Reports a sync.Mutex or sync.RWMutex embedded in a type an importer can
+// reach. The embed puts Lock and Unlock in the method set of the type or its
+// pointer, so a caller can unlock the mutex a method holds, and a caller that
+// holds the lock deadlocks the next method that takes it.
+//
+// Adapted from go-critic's exposedSyncMutex.
+//
+//	type Cache struct {
+//		sync.Mutex
+//	}
+//
 // # filepathjoin
 //
 // Reports a path concatenated with a literal separator, in a file that imports

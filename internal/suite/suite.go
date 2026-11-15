@@ -95,6 +95,7 @@ import (
 	"lesiw.io/tools/analyzers/errorlast"
 	"lesiw.io/tools/analyzers/errstrings"
 	"lesiw.io/tools/analyzers/evalorder"
+	"lesiw.io/tools/analyzers/exposedsyncmutex"
 	"lesiw.io/tools/analyzers/filepathjoin"
 	"lesiw.io/tools/analyzers/findallzero"
 	"lesiw.io/tools/analyzers/flagderef"
@@ -255,6 +256,7 @@ var (
 		errorsas.Analyzer,
 		errstrings.Analyzer,
 		evalorder.Analyzer,
+		exposedsyncmutex.Analyzer,
 		filepathjoin.Analyzer,
 		findallzero.Analyzer,
 		flagderef.Analyzer,

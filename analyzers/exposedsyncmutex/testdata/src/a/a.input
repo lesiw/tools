@@ -1,0 +1,255 @@
+package a
+
+import (
+	"sync"
+
+	"example.com/other"
+)
+
+type Cache struct {
+	sync.Mutex // want `avoid embedding sync.Mutex; consider a named field`
+	entries map[string]int
+}
+
+type Store struct {
+	sync.RWMutex // want `avoid embedding sync.RWMutex; consider a named field`
+	byKey map[string]string
+}
+
+type Set[T comparable] struct {
+	sync.Mutex // want `avoid embedding sync.Mutex; consider a named field`
+	items map[T]struct{}
+}
+
+type Named struct {
+	Set[int]
+}
+
+var Inst Set[int]
+
+type (
+	Guarded struct {
+		mu sync.Mutex
+		n  int
+	}
+
+	Held struct {
+		Mu sync.Mutex
+	}
+
+	Queue struct {
+		sync.Mutex // want `avoid embedding sync.Mutex; consider a named field`
+		head int
+	}
+)
+
+type Shared struct {
+	*sync.Mutex // want `avoid embedding \*sync.Mutex; consider a named field`
+}
+
+type mutex = sync.Mutex
+
+type Aliased struct {
+	mutex // want `avoid embedding mutex; consider a named field`
+}
+
+type item struct {
+	sync.Mutex // want `avoid embedding sync.Mutex; consider a named field`
+	n int
+}
+
+type Config struct {
+	Cache item
+}
+
+var (
+	List  []item
+	Array [2]item
+	Index map[string]item
+	Keys  map[item]int
+	Stream chan item
+)
+
+type inner struct {
+	sync.Mutex // want `avoid embedding sync.Mutex; consider a named field`
+}
+
+type Outer struct {
+	inner
+}
+
+type aliased struct {
+	sync.Mutex // want `avoid embedding sync.Mutex; consider a named field`
+}
+
+type Reachable = aliased
+
+type handed struct {
+	sync.Mutex // want `avoid embedding sync.Mutex; consider a named field`
+}
+
+var Exposed handed
+
+func Export() handed { return handed{} }
+
+type result struct {
+	sync.Mutex // want `avoid embedding sync.Mutex; consider a named field`
+}
+
+type Supplier struct{}
+
+func (Supplier) Get() *result { return nil }
+
+type packet struct {
+	sync.Mutex // want `avoid embedding sync.Mutex; consider a named field`
+}
+
+type Deliverer interface {
+	Take() packet
+}
+
+type signal struct {
+	sync.Mutex // want `avoid embedding sync.Mutex; consider a named field`
+}
+
+var Handler func() signal
+
+type Cell[T any] struct {
+	Value T
+}
+
+var Registered Cell[registered]
+
+type registered struct {
+	sync.Mutex // want `avoid embedding sync.Mutex; consider a named field`
+}
+
+type Basis struct {
+	sync.Mutex // want `avoid embedding sync.Mutex; consider a named field`
+}
+
+func (b *Basis) Lock()   {}
+func (b *Basis) Unlock() {}
+
+type Derived Basis
+
+type Partial struct {
+	sync.Mutex // want `avoid embedding sync.Mutex; consider a named field`
+}
+
+func (p *Partial) Lock() {}
+
+type screened struct {
+	sync.Mutex
+}
+
+type Source interface {
+	take() screened
+}
+
+type sealed struct {
+	sync.Mutex
+}
+
+type quiet struct{}
+
+func (quiet) pull() sealed { return sealed{} }
+
+type Shelf struct{ n int }
+
+func (Shelf) pull() sealed { return sealed{} }
+
+type unheld struct{}
+
+func (unheld) Take() sealed { return sealed{} }
+
+type payload struct {
+	sync.Mutex // want `avoid embedding sync.Mutex; consider a named field`
+}
+
+type keeper struct{}
+
+func (keeper) Take() payload { return payload{} }
+
+type Keeper struct {
+	keeper
+}
+
+type InterfaceLocker struct {
+	sync.Locker // want `avoid embedding sync.Locker; consider a named field`
+}
+
+type PtrToAnon *struct {
+	sync.Mutex // want `avoid embedding sync.Mutex; consider a named field`
+}
+
+var Pointed PtrToAnon
+
+type Declared struct {
+	sync.Mutex // want `avoid embedding sync.Mutex; consider a named field`
+}
+
+func (d *Declared) Lock()   {}
+func (d *Declared) Unlock() {}
+
+type left struct {
+	*right
+}
+
+type right struct {
+	*left
+}
+
+type Cyclic struct {
+	left
+}
+
+type hidden struct {
+	sync.Mutex
+}
+
+type Foreign struct {
+	foreign.Base // want `avoid embedding foreign.Base; consider a named field`
+}
+
+type Defined foreign.Base
+
+var Borrowed = foreign.Make()
+
+var Published struct {
+	sync.Mutex // want `avoid embedding sync.Mutex; consider a named field`
+}
+
+var Literal = struct {
+	sync.RWMutex // want `avoid embedding sync.RWMutex; consider a named field`
+}{}
+
+var Address = &struct {
+	sync.Mutex // want `avoid embedding sync.Mutex; consider a named field`
+}{}
+
+var Indirect **struct {
+	sync.Mutex // want `avoid embedding sync.Mutex; consider a named field`
+}
+
+var overlooked, Paired = struct {
+	sync.Mutex
+}{}, struct {
+	sync.RWMutex // want `avoid embedding sync.RWMutex; consider a named field`
+}{}
+
+var unpublished struct {
+	sync.Mutex
+}
+
+func Prepared() struct {
+	sync.Mutex // want `avoid embedding sync.Mutex; consider a named field`
+} {
+	return struct{ sync.Mutex }{}
+}
+
+func local() {
+	type Inside struct {
+		sync.Mutex
+	}
+}

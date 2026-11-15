@@ -1,0 +1,14 @@
+package foreign
+
+import "sync"
+
+type Base struct {
+	sync.Mutex // want `avoid embedding sync.Mutex; consider a named field`
+	name string
+}
+
+func Make() struct {
+	sync.RWMutex // want `avoid embedding sync.RWMutex; consider a named field`
+} {
+	return struct{ sync.RWMutex }{}
+}
