@@ -1,0 +1,97 @@
+package a
+
+import "time"
+
+func elapsed(start time.Time) time.Duration {
+	return time.Since(start) // want `call can be replaced by time.Since\(start\)`
+}
+
+func remaining(deadline time.Time) time.Duration {
+	return time.Until(deadline) // want `call can be replaced by time.Until\(deadline\)`
+}
+
+func compared(start time.Time) bool {
+	return time.Since(start) > time.Second // want `call can be replaced by time.Since\(start\)`
+}
+
+func argument(start time.Time) time.Duration {
+	return time.Now().Sub(begin())
+}
+
+func received(ch chan time.Time) time.Duration {
+	return time.Now().Sub(<-ch)
+}
+
+func begin() time.Time { return time.Now() }
+
+func end() time.Duration {
+	return time.Until(begin()) // want `call can be replaced by time.Until\(begin\(\)\)`
+}
+
+func shifted(d time.Duration, start time.Time) time.Duration {
+	return time.Now().Add(d).Sub(start)
+}
+
+func shiftedUntil(d time.Duration) time.Duration {
+	return time.Until(time.Now().Add(d)) // want `call can be replaced by time.Until\(time.Now\(\).Add\(d\)\)`
+}
+
+func addressed(start time.Time) time.Duration {
+	return time.Until(start) // want `call can be replaced by time.Until\(start\)`
+}
+
+func between(from, to time.Time) time.Duration {
+	return to.Sub(from)
+}
+
+func shorthand(start, deadline time.Time) (time.Duration, time.Duration) {
+	return time.Since(start), time.Until(deadline)
+}
+
+func value(start time.Time) func(time.Time) time.Duration {
+	return time.Now().Sub
+}
+
+func pointer(p *time.Time) time.Duration {
+	return time.Until(*p) // want `call can be replaced by time.Until\(\*p\)`
+}
+
+func dereferenced(p *time.Time) time.Duration {
+	return time.Until(*p) // want `call can be replaced by time.Until\(\*p\)`
+}
+
+func pointerField(t struct{ at *time.Time }) time.Duration {
+	return time.Until(*t.at) // want `call can be replaced by time.Until\(\*t.at\)`
+}
+
+func method(from time.Time) time.Duration {
+	return time.Time.Sub(from, time.Now())
+}
+
+type embeds struct{ time.Time }
+
+func promoted(e embeds) time.Duration {
+	return e.Sub(time.Now())
+}
+
+type span struct{}
+
+func (span) Sub(time.Time) time.Duration { return 0 }
+
+func other(s span) time.Duration {
+	return s.Sub(time.Now())
+}
+
+func held(start time.Time) time.Duration {
+	now := time.Now
+	return now().Sub(start)
+}
+
+func wrapped(start time.Time) time.Duration {
+	return /* // want `call can be replaced by time.Since\(start\)` */ time.Now().
+		Sub(start)
+}
+
+func annotated(start time.Time) time.Duration {
+	return time.Now(). /* marked */ Sub(start) // want `call can be replaced by time.Since\(start\)`
+}

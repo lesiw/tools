@@ -1,0 +1,11 @@
+package a
+
+import t "time"
+
+func aliasedElapsed(start t.Time) t.Duration {
+	return t.Now().Sub(start) // want `call can be replaced by t.Since\(start\)`
+}
+
+func aliasedRemaining(deadline t.Time) t.Duration {
+	return deadline.Sub(t.Now()) // want `call can be replaced by t.Until\(deadline\)`
+}

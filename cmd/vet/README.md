@@ -1286,6 +1286,18 @@ func f(err error) error {
 }
 ```
 
+## nowsub
+
+Reports time.Now().Sub(t) and t.Sub(time.Now()), which time.Since and time.Until are shorthand for. The time.Since direction is reported only when the argument does no work, because the rewrite moves the clock read past the argument.
+
+Adapted from staticcheck's S1012 and S1024.
+
+```
+func f(start time.Time) time.Duration {
+    return time.Now().Sub(start)
+}
+```
+
 ## octal
 
 Reports an octal literal written with a leading zero. The 0o prefix marks the base where a leading zero reads as padding. An argument of time.Date keeps its zero, and so does a literal of zero, or one written 0\_755.

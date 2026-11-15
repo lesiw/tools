@@ -1,0 +1,19 @@
+package nowsub
+
+import (
+	"embed"
+	"testing"
+
+	"golang.org/x/tools/go/analysis/analysistest"
+
+	"lesiw.io/tools/internal/fixtures"
+)
+
+//go:embed testdata
+var testdata embed.FS
+
+// Test checks which calls are reported and what the fix writes.
+func Test(t *testing.T) {
+	dir := fixtures.Dir(t, testdata)
+	analysistest.RunWithSuggestedFixes(t, dir, Analyzer, "a")
+}

@@ -117,6 +117,7 @@ import (
 	"lesiw.io/tools/analyzers/newderef"
 	"lesiw.io/tools/analyzers/nilchecklen"
 	"lesiw.io/tools/analyzers/nilreturn"
+	"lesiw.io/tools/analyzers/nowsub"
 	"lesiw.io/tools/analyzers/octal"
 	"lesiw.io/tools/analyzers/offby1"
 	"lesiw.io/tools/analyzers/preferdecoderune"
@@ -282,6 +283,7 @@ var (
 		nilfunc.Analyzer,
 		nilness.Analyzer,
 		nilreturn.Analyzer,
+		nowsub.Analyzer,
 		octal.Analyzer,
 		offby1.Analyzer,
 		preferdecoderune.Analyzer,

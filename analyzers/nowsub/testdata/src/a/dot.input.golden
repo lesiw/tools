@@ -1,0 +1,11 @@
+package a
+
+import . "time"
+
+func dottedElapsed(start Time) Duration {
+	return Now().Sub(start)
+}
+
+func dottedRemaining(deadline Time) Duration {
+	return deadline.Sub(Now())
+}
