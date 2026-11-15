@@ -70,6 +70,10 @@ func Add(pass *analysis.Pass, file *ast.File, paths ...string) analysis.TextEdit
 		}
 		b.WriteString(")")
 	}
-	pos := tokFile.LineStart(tokFile.Line(file.Name.Pos())+1) - 1
+	// A file can end at its package clause, which has no line after it.
+	pos := file.Name.End()
+	if tokFile.LineCount() > tokFile.Line(file.Name.Pos()) {
+		pos = tokFile.LineStart(tokFile.Line(file.Name.Pos())+1) - 1
+	}
 	return analysis.TextEdit{Pos: pos, End: pos, NewText: []byte(b.String())}
 }
