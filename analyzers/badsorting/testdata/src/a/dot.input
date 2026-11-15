@@ -1,0 +1,7 @@
+package a
+
+import . "sort"
+
+func dot(rows []item) {
+	Slice(rows, func(i, j int) bool { return rows[0].rank < rows[1].rank }) // want `does not order rows`
+}

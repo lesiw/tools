@@ -24,6 +24,12 @@ func Text(e ast.Expr) string {
 	return buf.String()
 }
 
+// Pure reports whether evaluating call twice gives the same value: a
+// conversion does, and so does a builtin that only reads its arguments.
+func Pure(pass *analysis.Pass, call *ast.CallExpr) bool {
+	return pureCall(pass, call)
+}
+
 // Effectful reports whether reading e can give a different value the second
 // time.
 func Effectful(pass *analysis.Pass, e ast.Expr) bool {

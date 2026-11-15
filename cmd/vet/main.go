@@ -204,6 +204,20 @@
 //		}
 //	}
 //
+// # badsorting
+//
+// Reports a sort.Slice call whose less function does not order the elements by
+// the indexes it was given. A comparison that reads a single element cannot
+// order the pair, and one at a constant index reads the same slot every time,
+// so the sort leaves the slice as it found it. A fix would guess which pair
+// was meant, so none is offered.
+//
+// Inspired by go-critic's sortSlice, which reads the same less function.
+//
+//	func f(xs []int) {
+//		sort.Slice(xs, func(i, j int) bool { return xs[0] < xs[1] })
+//	}
+//
 // # bookends
 //
 // Reports bracket layout that the printer would place differently, where a fix

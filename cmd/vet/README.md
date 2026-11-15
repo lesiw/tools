@@ -206,6 +206,18 @@ func f(n int) {
 }
 ```
 
+## badsorting
+
+Reports a sort.Slice call whose less function does not order the elements by the indexes it was given. A comparison that reads a single element cannot order the pair, and one at a constant index reads the same slot every time, so the sort leaves the slice as it found it. A fix would guess which pair was meant, so none is offered.
+
+Inspired by go-critic's sortSlice, which reads the same less function.
+
+```
+func f(xs []int) {
+    sort.Slice(xs, func(i, j int) bool { return xs[0] < xs[1] })
+}
+```
+
 ## bookends
 
 Reports bracket layout that the printer would place differently, where a fix moves a bracket or a line break and no element changes. The shapes are a closer that does not sit at its opener's column, an elided literal whose elements start at different columns, a table whose rows do not read down or whose row runs past the width, a list with one indented line or a line past the width, and a keyed literal on one line past the width.

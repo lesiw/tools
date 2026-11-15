@@ -61,6 +61,7 @@ import (
 	"lesiw.io/tools/analyzers/assertnil"
 	"lesiw.io/tools/analyzers/assignop"
 	"lesiw.io/tools/analyzers/badcond"
+	"lesiw.io/tools/analyzers/badsorting"
 	"lesiw.io/tools/analyzers/bookends"
 	"lesiw.io/tools/analyzers/boolreturn"
 	"lesiw.io/tools/analyzers/boolset"
@@ -206,6 +207,7 @@ var (
 		atomic.Analyzer,
 		atomicalign.Analyzer,
 		badcond.Analyzer,
+		badsorting.Analyzer,
 		bookends.Analyzer,
 		boolreturn.Analyzer,
 		bools.Analyzer,

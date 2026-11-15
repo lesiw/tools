@@ -35,8 +35,9 @@ it. A comparison built on `cmp.Compare` is left alone for that reason.
 The comparison names the slice in any form. `rows[i].rank < rows[j].rank`,
 `*ps[i] < *ps[j]`, and `b.items[i] < b.items[j]` all name the slice that is
 sorted. Any mention counts, so a comparison that reads one side of the slice,
-`rows[i].rank < other[j].rank`, and one that reads a fixed pair,
-`rows[0].rank < rows[1].rank`, are left alone.
+`rows[i].rank < other[j].rank`, is left alone here and reported by `badsorting`.
+A comparison over a fixed pair, `rows[0].rank < rows[1].rank`, is reported there
+as well.
 
 A slice expression is read as its base: element `i` of `rows[:2]` is `rows[i]`,
 and element `i` of `rows[2:]` is `rows[i+2]`. The rule does not track offsets, so

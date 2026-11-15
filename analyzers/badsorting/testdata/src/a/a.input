@@ -1,0 +1,292 @@
+package a
+
+import (
+	"slices"
+	"sort"
+
+	"lookalike"
+)
+
+type item struct {
+	rank int
+	key  string
+}
+
+type group struct {
+	items []item
+}
+
+func fixed(rows []item) {
+	sort.Slice(rows, func(i, j int) bool { return rows[0].rank < rows[1].rank }) // want `does not order rows`
+}
+
+func twice(rows []item) {
+	sort.Slice(rows, func(i, j int) bool { return rows[i].rank < rows[i].rank }) // want `does not order rows`
+}
+
+func single(rows []item, limit int) {
+	sort.Slice(rows, func(i, j int) bool { return rows[i].rank < limit }) // want `does not order rows`
+}
+
+func parenthesized(rows []item) {
+	sort.Slice(rows, func(i, j int) bool { return rows[i].rank < rows[(i)].rank }) // want `does not order rows`
+}
+
+func mixed(rows []item) {
+	sort.Slice(rows, func(i, j int) bool { return rows[i].rank < rows[0].rank }) // want `does not order rows`
+}
+
+func elsewhere(rows, other []item) {
+	sort.SliceStable(rows, func(i, j int) bool { return rows[i].rank < other[j].rank }) // want `does not order rows`
+}
+
+func hidden(rows []item) {
+	sort.Slice(rows, func(i, j int) bool { return rows[i].label() < rows[0].label() }) // want `does not order rows`
+}
+
+func counted(rows []item) {
+	sort.Slice(rows, func(i, j int) bool { return len(rows) < 0 }) // want `does not order rows`
+}
+
+func capacity(rows []item) {
+	sort.Slice(rows, func(i, j int) bool { return cap(rows) < 0 }) // want `does not order rows`
+}
+
+func converted(rows []item) {
+	sort.Slice(rows, func(i, j int) bool { return len([]item(rows)) < 0 }) // want `does not order rows`
+}
+
+func field(g *group) {
+	sort.Slice(g.items, func(i, j int) bool {
+		return g.items[0].rank < g.items[1].rank // want `does not order g\.items`
+	})
+}
+
+func table(t [][]item) {
+	sort.Slice(t[0], func(i, j int) bool {
+		return t[0][0].rank < t[0][1].rank // want `does not order t\[0\]`
+	})
+}
+
+func tailPair(rows []item) {
+	sort.Slice(rows[2:], func(i, j int) bool { return rows[0].rank < rows[1].rank }) // want `does not order rows`
+}
+
+func tailIndexes(rows []item) {
+	sort.Slice(rows[2:], func(i, j int) bool { return rows[i].rank < rows[j].rank })
+}
+
+func tailExpr(rows []item) {
+	sort.Slice(rows[2:], func(i, j int) bool {
+		return rows[2:][0].rank < rows[2:][1].rank // want `does not order rows`
+	})
+}
+
+func wrapped(rows []item) {
+	sort.Slice(rows, func(i, j int) bool {
+		return (rows[0].rank < rows[1].rank) // want `does not order rows`
+	})
+}
+
+func branch(rows []item) {
+	sort.Slice(rows, func(i, j int) bool {
+		if rows[i].rank != rows[j].rank {
+			return rows[i].rank < rows[0].rank // want `does not order rows`
+		}
+		return rows[i].rank < rows[j].rank
+	})
+}
+
+func isSorted(rows []item) bool {
+	return sort.SliceIsSorted(rows, func(i, j int) bool {
+		return rows[0].rank < rows[1].rank // want `does not order rows`
+	})
+}
+
+func correct(rows []item) {
+	sort.Slice(rows, func(i, j int) bool { return rows[i].rank < rows[j].rank })
+}
+
+func descending(rows []item) {
+	sort.Slice(rows, func(i, j int) bool { return rows[j].rank < rows[i].rank })
+}
+
+func letters(rows []item) {
+	sort.Slice(rows, func(a, b int) bool { return rows[a].rank < rows[b].rank })
+}
+
+func guarded(rows []item) {
+	sort.Slice(rows, func(i, j int) bool {
+		return rows[i].rank < rows[j].rank || rows[0].key == ""
+	})
+}
+
+func aliased(rows []item) {
+	sort.Slice(rows, func(i, j int) bool {
+		x, y := i, j
+		return rows[x].rank < rows[y].rank
+	})
+}
+
+func adjacent(rows []item) {
+	sort.Slice(rows, func(i, j int) bool { return rows[i].rank < rows[j+1].rank })
+}
+
+func captured(rows []item, k int) {
+	sort.Slice(rows, func(i, j int) bool { return rows[i].rank < rows[k].rank })
+}
+
+func resliced(rows []item) {
+	sort.Slice(rows, func(i, j int) bool {
+		return rows[i:][0].rank < rows[j:][0].rank
+	})
+}
+
+func guardedKeys(rows, keys []item) {
+	sort.Slice(rows, func(i, j int) bool {
+		return len(rows) > 0 && keys[i].rank < keys[j].rank
+	})
+}
+
+func convertedBase(rows []item) {
+	sort.Slice(rows, func(i, j int) bool {
+		return rows[i].rank < []item(rows)[j].rank
+	})
+}
+
+func addressed(rows []item, less func(*[]item, int, int) bool) {
+	sort.Slice(rows, func(i, j int) bool { return less(&rows, i, j) })
+}
+
+func offset(rows []item) {
+	sort.Slice(rows[2:], func(i, j int) bool {
+		return rows[i+2].rank < rows[j+2].rank
+	})
+}
+
+func aliasedPair(rows []item) {
+	q := rows
+	sort.Slice(rows, func(i, j int) bool { return rows[i].rank < q[j].rank }) // want `does not order rows`
+}
+
+func pointer(ps *[]item) {
+	sort.Slice(*ps, func(i, j int) bool {
+		return (*ps)[i].rank < (*ps)[j].rank
+	})
+}
+
+func pointerPair(ps *[]item) {
+	sort.Slice(*ps, func(i, j int) bool {
+		return (*ps)[0].rank < (*ps)[1].rank // want `does not order \*ps`
+	})
+}
+
+func parallel(rows []item, keys []string) {
+	sort.Slice(rows, func(i, j int) bool { return keys[i] < keys[j] })
+}
+
+func constant(rows []item) {
+	sort.Slice(rows, func(i, j int) bool { return true })
+}
+
+func indexes(rows []item) {
+	sort.Slice(rows, func(i, j int) bool { return i < j })
+}
+
+func hoisted(rows []item) {
+	sort.Slice(rows, func(i, j int) bool {
+		less := rows[0].rank < rows[1].rank
+		return less
+	})
+}
+
+func namedResult(rows []item) {
+	sort.Slice(rows, func(i, j int) (less bool) {
+		less = rows[0].rank < rows[1].rank
+		return
+	})
+}
+
+func delegation(rows []item, less func(i, j int) bool) {
+	sort.Slice(rows, func(i, j int) bool { return less(i, j) })
+}
+
+func passed(rows []item, less func([]item, int, int) bool) {
+	sort.Slice(rows, func(i, j int) bool { return less(rows[:], i, j) })
+}
+
+func receiver(r rows) {
+	sort.Slice(r, func(i, j int) bool { return r.before(i, j) })
+}
+
+func method(rows []item) {
+	sort.Slice(rows, func(i, j int) bool { return rows[i].label() < rows[j].label() })
+}
+
+func byName(rows []item, less func(i, j int) bool) {
+	sort.Slice(rows, less)
+}
+
+func otherPackage(rows []item) {
+	lookalike.Slice(rows, func(i, j int) bool { return rows[0].rank < rows[1].rank })
+}
+
+func functionValue(rows []item) {
+	f := sort.Slice
+	f(rows, func(i, j int) bool { return rows[0].rank < rows[1].rank })
+}
+
+func computed(rows []item) {
+	sort.Slice(compute(rows), func(i, j int) bool {
+		return rows[0].rank < rows[1].rank
+	})
+}
+
+func computedPair(rows []item) {
+	sort.Slice(rows, func(i, j int) bool {
+		return compute(rows)[0].rank < compute(rows)[1].rank
+	})
+}
+
+func convertedText(s string) {
+	sort.Slice([]rune(s), func(i, j int) bool { return s[i] < s[j] })
+}
+
+func bounded(rows []item) {
+	sort.Slice(rows, func(i, j int) bool { return len(rows[:j]) < 0 }) // want `does not order rows`
+}
+
+func asserted(v any) {
+	sort.Slice(v.([]item), func(i, j int) bool {
+		return v.([]item)[0].rank < v.([]item)[1].rank
+	})
+}
+
+func nested(rows []item) {
+	sort.Slice(rows, func(i, j int) bool {
+		_ = func(v item) bool { return rows[0].rank < v.rank }
+		return rows[i].rank < rows[j].rank
+	})
+}
+
+func sorted(rows []item) {
+	sort.Sort(byRank(rows))
+}
+
+func sortedFunc(rows []item) {
+	slices.SortFunc(rows, func(a, b item) int { return a.rank - b.rank })
+}
+
+type rows []item
+
+func (r rows) before(i, j int) bool { return r[i].rank < r[j].rank }
+
+type byRank []item
+
+func (r byRank) Len() int           { return len(r) }
+func (r byRank) Swap(i, j int)      { r[i], r[j] = r[j], r[i] }
+func (r byRank) Less(i, j int) bool { return r[0].rank < r[1].rank }
+
+func (i item) label() string { return i.key }
+
+func compute(rows []item) []item { return rows }
