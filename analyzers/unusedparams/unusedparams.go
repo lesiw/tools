@@ -26,6 +26,8 @@ import (
 	"go/types"
 
 	"golang.org/x/tools/go/analysis"
+
+	"lesiw.io/tools/internal/uses"
 )
 
 var Analyzer = &analysis.Analyzer{
@@ -37,10 +39,9 @@ var Analyzer = &analysis.Analyzer{
 func run(pass *analysis.Pass) (any, error) {
 	var (
 		info  = pass.TypesInfo
-		calls = callIdents(pass)
-		iface = interfaceMethods(pass)
+		iface = uses.InterfaceMethods(pass)
 		read  = readVars(pass)
-		held  = heldFuncs(pass, calls)
+		held  = uses.Held(pass)
 	)
 	for _, file := range pass.Files {
 		for _, decl := range file.Decls {
@@ -54,7 +55,8 @@ func run(pass *analysis.Pass) (any, error) {
 			if _, conforms := iface[fn.Name.Name]; fn.Recv != nil && conforms {
 				continue // the signature may conform to the interface
 			}
-			if _, isHeld := held[info.Defs[fn.Name]]; isHeld {
+			self, _ := info.Defs[fn.Name].(*types.Func)
+			if _, isHeld := held[self]; isHeld {
 				continue // used as a value, so the signature is fixed
 			}
 			if placeholder(fn.Body) {
@@ -97,74 +99,6 @@ func report(pass *analysis.Pass, fn *ast.FuncDecl, read map[*types.Var]struct{})
 	}
 }
 
-// callIdents returns the identifiers that name a called function, which are
-// the uses that do not take the function's address.
-func callIdents(pass *analysis.Pass) map[*ast.Ident]struct{} {
-	out := make(map[*ast.Ident]struct{})
-	for _, file := range pass.Files {
-		ast.Inspect(file, func(n ast.Node) bool {
-			call, ok := n.(*ast.CallExpr)
-			if !ok {
-				return true
-			}
-			if id := calledIdent(pass, call.Fun); id != nil {
-				out[id] = struct{}{}
-			}
-			return true
-		})
-	}
-	return out
-}
-
-// calledIdent returns the identifier that names the function a call calls. It
-// looks through parentheses and a type instantiation, so (f)(1) and a call to
-// f instantiated at a type both name f. An index that is not a type indexes a
-// value, so the call goes through what the index names.
-func calledIdent(pass *analysis.Pass, e ast.Expr) *ast.Ident {
-	for {
-		switch x := e.(type) {
-		case *ast.ParenExpr:
-			e = x.X
-		case *ast.IndexExpr:
-			if !pass.TypesInfo.Types[x.Index].IsType() {
-				return nil
-			}
-			e = x.X
-		case *ast.IndexListExpr:
-			e = x.X
-		case *ast.Ident:
-			return x
-		case *ast.SelectorExpr:
-			return x.Sel
-		default:
-			return nil
-		}
-	}
-}
-
-// interfaceMethods returns the names of the unexported methods that any
-// interface in the package declares.
-func interfaceMethods(pass *analysis.Pass) map[string]struct{} {
-	out := make(map[string]struct{})
-	for _, file := range pass.Files {
-		ast.Inspect(file, func(n ast.Node) bool {
-			it, ok := n.(*ast.InterfaceType)
-			if !ok {
-				return true
-			}
-			for _, field := range it.Methods.List {
-				for _, name := range field.Names {
-					if !name.IsExported() && name.Name != "_" {
-						out[name.Name] = struct{}{}
-					}
-				}
-			}
-			return true
-		})
-	}
-	return out
-}
-
 // readVars returns the variables the package reads.
 func readVars(pass *analysis.Pass) map[*types.Var]struct{} {
 	out := make(map[*types.Var]struct{})
@@ -172,21 +106,6 @@ func readVars(pass *analysis.Pass) map[*types.Var]struct{} {
 		v, ok := obj.(*types.Var)
 		if ok {
 			out[v] = struct{}{}
-		}
-	}
-	return out
-}
-
-// heldFuncs returns the functions the package uses as a value rather than
-// calls.
-func heldFuncs(pass *analysis.Pass, calls map[*ast.Ident]struct{}) map[types.Object]struct{} {
-	out := make(map[types.Object]struct{})
-	for id, obj := range pass.TypesInfo.Uses {
-		if _, called := calls[id]; called {
-			continue
-		}
-		if _, ok := obj.(*types.Func); ok && !obj.Exported() {
-			out[obj] = struct{}{}
 		}
 	}
 	return out
