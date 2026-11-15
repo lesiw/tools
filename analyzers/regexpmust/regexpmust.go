@@ -11,9 +11,8 @@
 // fix. It also reports without a fix when both results are discarded and when
 // a comment sits between the two targets.
 //
-// A pattern that does not compile is a different fault, reported by
-// regexpconst: the swap would turn the returned error into a panic without
-// fixing the pattern.
+// A pattern that does not compile still takes the Must form: the panic at init
+// is the diagnostic, and it arrives before the program has done any work.
 //
 // The rule is adapted from go-critic's regexpMust.
 package regexpmust
@@ -23,7 +22,6 @@ import (
 	"go/constant"
 	"go/token"
 	"go/types"
-	"regexp"
 
 	"golang.org/x/tools/go/analysis"
 )
@@ -34,14 +32,11 @@ var Analyzer = &analysis.Analyzer{
 	Run:  run,
 }
 
-// compilers are the functions the rule covers, each with the compiler for its
-// pattern and the name of the function that panics where it returns an error.
-var compilers = map[string]struct {
-	compile func(string) (*regexp.Regexp, error)
-	must    string
-}{
-	"Compile":      {regexp.Compile, "MustCompile"},
-	"CompilePOSIX": {regexp.CompilePOSIX, "MustCompilePOSIX"},
+// musts are the functions the rule covers, each with the name of the function
+// that panics where it returns an error.
+var musts = map[string]string{
+	"Compile":      "MustCompile",
+	"CompilePOSIX": "MustCompilePOSIX",
 }
 
 func run(pass *analysis.Pass) (any, error) {
@@ -62,8 +57,8 @@ func run(pass *analysis.Pass) (any, error) {
 	return nil, nil
 }
 
-// check reports one call whose constant pattern compiles, with the edit that
-// swaps in the Must form when the caller throws the error away.
+// check reports one call over a constant pattern, with the edit that swaps in
+// the Must form when the caller throws the error away.
 func check(pass *analysis.Pass, file *ast.File, stack []ast.Node, call *ast.CallExpr) {
 	must, sel, ok := mustFor(pass, call)
 	if !ok {
@@ -87,13 +82,13 @@ func check(pass *analysis.Pass, file *ast.File, stack []ast.Node, call *ast.Call
 }
 
 // mustFor returns the Must name and the identifier to replace for a regexp
-// compile whose constant pattern compiles, and false for any other call.
+// compile of a constant pattern, and false for any other call.
 func mustFor(pass *analysis.Pass, call *ast.CallExpr) (string, *ast.Ident, bool) {
 	sel, ok := ast.Unparen(call.Fun).(*ast.SelectorExpr)
 	if !ok {
 		return "", nil, false
 	}
-	form, ok := compilers[sel.Sel.Name]
+	must, ok := musts[sel.Sel.Name]
 	if !ok {
 		return "", nil, false
 	}
@@ -112,10 +107,7 @@ func mustFor(pass *analysis.Pass, call *ast.CallExpr) (string, *ast.Ident, bool)
 	if !ok || tv.Value == nil || tv.Value.Kind() != constant.String {
 		return "", nil, false
 	}
-	if _, err := form.compile(constant.StringVal(tv.Value)); err != nil {
-		return "", nil, false
-	}
-	return form.must, sel.Sel, true
+	return must, sel.Sel, true
 }
 
 // targets returns the two assignment targets that hold call as the only value,

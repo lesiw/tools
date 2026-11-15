@@ -20,12 +20,12 @@ func dynamic(pattern string) (*regexp.Regexp, error) {
 }
 
 func broken() *regexp.Regexp {
-	re, _ := regexp.Compile(`a(`)
+	re, _ := regexp.Compile(`a(`) // want `the error of a constant pattern is always nil; use MustCompile`
 	return re
 }
 
 func brokenPOSIX() *regexp.Regexp {
-	re, _ := regexp.CompilePOSIX(`\d`)
+	re, _ := regexp.CompilePOSIX(`\d`) // want `the error of a constant pattern is always nil; use MustCompilePOSIX`
 	return re
 }
 
