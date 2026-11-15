@@ -2320,6 +2320,20 @@ Inspired by go-critic's typeUnparen.
 var x (int) = 1
 ```
 
+## uncheckedinlineerr
+
+Reports an empty body in an if that checks an error from its init. A comment on a line of its own in the body is left alone.
+
+Inspired by go-critic's uncheckedInlineErr and staticcheck's SA9003.
+
+```
+func write(w io.Writer, src string) error {
+    if _, err := io.WriteString(w, src); err != nil {
+    }
+    return nil
+}
+```
+
 ## uncondrecursion
 
 Reports a call that runs whenever the function does and calls the function again, as an unguarded recursive call does. The stack grows until the program crashes.

@@ -170,6 +170,7 @@ import (
 	"lesiw.io/tools/analyzers/typedefirst"
 	"lesiw.io/tools/analyzers/typeswitchvar"
 	"lesiw.io/tools/analyzers/typeunparen"
+	"lesiw.io/tools/analyzers/uncheckedinlineerr"
 	"lesiw.io/tools/analyzers/uncondrecursion"
 	"lesiw.io/tools/analyzers/underef"
 	"lesiw.io/tools/analyzers/unexportedreturn"
@@ -367,6 +368,7 @@ var (
 		typedefirst.Analyzer,
 		typeswitchvar.Analyzer,
 		typeunparen.Analyzer,
+		uncheckedinlineerr.Analyzer,
 		uncondrecursion.Analyzer,
 		underef.Analyzer,
 		unexportedreturn.Analyzer,

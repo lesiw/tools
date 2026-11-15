@@ -1,0 +1,237 @@
+package a
+
+import (
+	"errors"
+	"fmt"
+)
+
+func apply() error { return nil }
+
+func pair() (int, error) { return 0, nil }
+
+func throughError[E error](item E) E { return item }
+
+func known(error) bool { return false }
+
+func lookup() int { return 0 }
+
+type failure struct{}
+
+func (*failure) Error() string { return "failed" }
+
+func throughPointer[P *failure](item P) P { return item }
+
+func concrete() *failure { return nil }
+
+func empty() {
+	if err := apply(); err != nil { // want `err is checked in an if with an empty body`
+	}
+}
+
+func assigned() {
+	var err error
+	if err = apply(); err != nil { // want `err is checked in an if with an empty body`
+	}
+}
+
+func blankAssigned() {
+	var err error
+	if _, err = pair(); err != nil { // want `err is checked in an if with an empty body`
+	}
+}
+
+func multi() {
+	if _, err := pair(); err != nil { // want `err is checked in an if with an empty body`
+	}
+}
+
+func success() {
+	if err := apply(); err == nil { // want `err is checked in an if with an empty body`
+	}
+}
+
+func typeParam[E error](item E) {
+	if err := throughError(item); err.Error() != "" { // want `err is checked in an if with an empty body`
+	}
+}
+
+func bound(item *failure) {
+	if err := throughPointer(item); err != nil { // want `err is checked in an if with an empty body`
+	}
+}
+
+func concreteError() {
+	if err := concrete(); err != nil { // want `err is checked in an if with an empty body`
+	}
+}
+
+func mentioned() {
+	if err := apply(); known(err) { // want `err is checked in an if with an empty body`
+	}
+}
+
+func wrapped(target error) {
+	if err := apply(); errors.Is(err, target) { // want `err is checked in an if with an empty body`
+	}
+}
+
+func parenLHS() {
+	var err error
+	if (err) = apply(); err != nil { // want `err is checked in an if with an empty body`
+	}
+}
+
+func parens(f *failure) {
+	if err := (error(f)); err != nil {
+	}
+}
+
+func oneLine() {
+	if err := apply(); err != nil { /* nothing to do */ } // want `err is checked in an if with an empty body`
+}
+
+func blankElse() {
+	if err := apply(); err != nil { // want `err is checked in an if with an empty body`
+	} else {
+	}
+}
+
+func elsePrints() {
+	if err := apply(); err != nil {
+	} else {
+		fmt.Println("ok")
+	}
+}
+
+func notedElse() {
+	if err := apply(); err != nil {
+	} else {
+		// The call succeeded, so there is nothing to do.
+	}
+}
+
+func elseIf(verbose bool) {
+	if err := apply(); err != nil {
+	} else if verbose {
+	}
+}
+
+func returnedLater() error {
+	var err error
+	if err = apply(); err != nil { // want `err is checked in an if with an empty body`
+	}
+	return err
+}
+
+func notedBrace() {
+	if err := apply(); err != nil { // want `err is checked in an if with an empty body`
+	} // The caller reports this.
+}
+
+func asserted(err error) {
+	if typed, ok := err.(*failure); ok && typed != nil { // want `typed is checked in an if with an empty body`
+	}
+}
+
+func twoErrors() {
+	if a, b := apply(), apply(); a != nil && b != nil { // want `a is checked in an if with an empty body` `b is checked in an if with an empty body`
+	}
+}
+
+func handledBody() error {
+	if err := apply(); err != nil {
+		return err
+	} else {
+	}
+	return nil
+}
+
+func spanning() {
+	// want +1 `err is checked in an if with an empty body`
+	if err := apply(); err != nil { /*
+		The caller reports this.
+	*/ }
+}
+
+func explainedBody() {
+	if err := apply(); err != nil {
+		// The caller reports this.
+	}
+}
+
+func notedBody() {
+	if err := apply(); err != nil {
+		// TODO
+	}
+}
+
+func recorded(failed *bool) {
+	if err := apply(); err != nil {
+		*failed = true
+	}
+}
+
+func elseReads() {
+	if err := apply(); err != nil {
+	} else {
+		fmt.Println(err)
+	}
+}
+
+func elseHandles() {
+	if err := apply(); err == nil {
+	} else {
+		fmt.Println(err)
+	}
+}
+
+func typeTerm[P *failure](item P) {
+	if err := throughPointer(item); err != nil {
+	}
+}
+
+func conversion(f *failure) {
+	if err := error(f); err != nil {
+	}
+}
+
+func different(target error) error {
+	var err error
+	if err = apply(); target != nil {
+	}
+	return err
+}
+
+func callInit() {
+	if apply(); apply() != nil {
+	}
+}
+
+type record struct{ err error }
+
+func field(r *record) {
+	if r.err = apply(); r.err != nil {
+	}
+}
+
+func element(xs []error) {
+	if xs[0] = apply(); xs[0] != nil {
+	}
+}
+
+func earlier(err error) {
+	if err != nil {
+	}
+}
+
+func notAnError() {
+	if n := lookup(); n > 0 {
+	}
+}
+
+func copied() {
+	var err error
+	last := err
+	if err = last; err != nil { // want `err is checked in an if with an empty body`
+	}
+}
