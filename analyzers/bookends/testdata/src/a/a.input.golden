@@ -88,7 +88,7 @@ type row struct {
 
 type triple struct{ a, b, c int }
 
-var wideTable = []row{{ // want `table mixes one-line and multi-line rows`
+var mixedTable = []row{{ // want `table mixes one-line and multi-line rows`
 	1,
 	2,
 	3,
@@ -106,6 +106,65 @@ var wideTable = []row{{ // want `table mixes one-line and multi-line rows`
 	6,
 	7,
 	8,
+}}
+
+var mixedWideLoose = []item{{ // want `table mixes one-line and multi-line rows`
+	"alpha",
+	"beta",
+}, {
+	"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+	"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+}, {
+	"gamma",
+	"delta",
+}}
+
+var wideRow = []item{{ // want `table row runs past the width`
+	"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+	"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+}, {
+	"alpha",
+	"beta",
+}}
+
+var oneLineWide = []item{{
+	"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+	"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+}, {
+	"alpha",
+	"beta",
+}} // want `table row runs past the width`
+
+var looseOpener = []item{{ // want `table braces do not share their lines`
+	"alpha",
+	"beta",
+}, {
+	"gamma",
+	"delta",
+}}
+
+var looseSeam = []item{{ // want `table braces do not share their lines`
+	"alpha",
+	"beta",
+}, {
+	"gamma",
+	"delta",
+}}
+
+var looseCloser = []item{{ // want `table braces do not share their lines`
+	"alpha",
+	"beta",
+}, {
+	"gamma",
+	"delta",
+}}
+
+var looseEmptySeam = []pair{{ // want `table braces do not share their lines`
+	1,
+	2,
+}, {}, {
+	3,
+	4,
 }}
 
 func splitByWidth(w http.ResponseWriter, err error) {
@@ -420,7 +479,7 @@ func nameList() {
 
 func registerFourErrors(a, b, c, d error) {}
 
-var doneEmptyRow = []pair{{}, {
+var emptyRowReadsDown = []pair{{}, {
 	1,
 	2,
 }}

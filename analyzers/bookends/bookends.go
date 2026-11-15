@@ -9,15 +9,18 @@
 // The package also reports four shapes that depend on the same braces. A
 // literal whose type is elided shares its first line with its opening brace,
 // so its elements start at different columns. A table, a literal whose
-// elements are elided literals, is rewritten as one edit: when a row does not
-// fit, every row goes on a line of its own, and each row's braces go on the
-// lines their elements are on. A list with a single indented line is packed:
-// indenting a list across two lines to carry one line of elements wastes the
-// indentation. So is a list with a line past the width, which cannot stand as
-// written. A keyed literal on one line past the width takes one key per line,
-// which is the shape it takes once it no longer fits. The layout is the one
-// with the least raggedness, the sum of the squared space left at the end of
-// each line, so elements spread by width: a short element joins a long one.
+// elements are elided literals, is left alone when every row sits on one
+// line and none runs past the width; otherwise it reads down when every
+// non-empty row spans lines and every brace shares a line with the brace it
+// meets. A table that does neither is rewritten as one edit, and every
+// element of a row takes a line of its own. A list with a single indented
+// line is packed: indenting a list across two lines to carry one line of
+// elements wastes the indentation. So is a list with a line past the width,
+// which cannot stand as written. A keyed literal on one line past the width
+// takes one key per line, which is the shape it takes once it no longer
+// fits. The layout is the one with the least raggedness, the sum of the
+// squared space left at the end of each line, so elements spread by width: a
+// short element joins a long one.
 //
 // Two indented lines within the width are a grouping the author chose. The
 // layout is the only place it is written down, so a rewrite would erase it,
@@ -169,12 +172,11 @@ func inTable(tables []pair, pos token.Pos) bool {
 	return false
 }
 
-// reportTable reports a table that does not read as a table. A comment inside
-// it would not survive a rebuild from the elements, so the table is left
-// alone.
+// reportTable reports a table that does not read down. A comment the rebuild
+// cannot write back leaves the table alone.
 func reportTable(pass *analysis.Pass, l *layout, src []byte, file *ast.File, p pair) {
-	if tableDone(l, p.lit) {
-		return // the table already reads as a table
+	if p.fault == "" {
+		return // the table reads down already
 	}
 	if hasComment(l, file, p) {
 		return
@@ -188,9 +190,9 @@ func reportTable(pass *analysis.Pass, l *layout, src []byte, file *ast.File, p p
 	start := token.Pos(sourceLineStart(src, int(p.lit.Lbrace)-l.base) + l.base)
 	pass.Report(analysis.Diagnostic{
 		Pos:     p.open,
-		Message: "table mixes one-line and multi-line rows",
+		Message: p.fault,
 		SuggestedFixes: []analysis.SuggestedFix{{
-			Message: "Put every row on its own lines",
+			Message: "Put each row's elements on lines of their own",
 			TextEdits: []analysis.TextEdit{{
 				Pos:     start,
 				End:     p.close + 1,
@@ -278,9 +280,10 @@ type pair struct {
 	first       token.Pos // first element, for an opener pair
 	elts        []ast.Expr
 	lit         *ast.CompositeLit
-	opener      bool // the pair guards an opener, not a closer
-	table       bool // the pair guards a whole table
-	spread      bool // a call whose last argument is a spread
+	opener      bool   // the pair guards an opener, not a closer
+	table       bool   // the pair guards a whole table
+	fault       string // why the table does not read down, empty when it does
+	spread      bool   // a call whose last argument is a spread
 	call        *ast.CallExpr
 	inner       bool // the pair around this one lays the line out
 }
@@ -298,13 +301,15 @@ func sourceLineStart(src []byte, off int) int {
 }
 
 // tablePair returns the pair for a table: a literal whose elements are all
-// literals with an elided type, where at least one row spans lines.
+// literals with an elided type, where at least one row spans lines or runs
+// past the width on one line. The pair's fault is empty when the table reads
+// down.
 func tablePair(n ast.Node, l *layout, pass *analysis.Pass) (pair, bool) {
 	lit, ok := n.(*ast.CompositeLit)
 	if !ok || len(lit.Elts) < 2 {
 		return pair{}, false
 	}
-	var multi, wide bool
+	var multi, oneLine, wide bool
 	for _, elt := range lit.Elts {
 		row, ok := elt.(*ast.CompositeLit)
 		if !ok || row.Type != nil {
@@ -314,20 +319,56 @@ func tablePair(n ast.Node, l *layout, pass *analysis.Pass) (pair, bool) {
 			multi = true
 			continue
 		}
+		// An empty row on one line counts as neither shape: counting
+		// it would report a table whose empty row is its only one-line
+		// row.
+		if len(row.Elts) == 0 {
+			continue
+		}
+		oneLine = true
 		if rowWide(pass, l, row) {
 			wide = true
 		}
 	}
-	if !multi && !wide {
+	var fault string
+	switch {
+	case !multi && !wide:
 		return pair{}, false
+	case multi && oneLine:
+		fault = "table mixes one-line and multi-line rows"
+	case wide:
+		fault = "table row runs past the width"
+	case !sharesLines(l, lit):
+		fault = "table braces do not share their lines"
 	}
-	return pair{open: lit.Lbrace, close: lit.Rbrace, lit: lit, table: true},
-		true
+	return pair{
+		open:  lit.Lbrace,
+		close: lit.Rbrace,
+		lit:   lit,
+		table: true,
+		fault: fault,
+	}, true
 }
 
-// rowWide reports whether a row on one line would run past the width limit. A
-// table with one such row is a table that has to be read across lines, and
-// every row follows it there.
+// sharesLines reports whether every brace of the table shares a line with the
+// brace it meets: the opener with the first row's, each seam between rows, and
+// the closer with the last row's.
+func sharesLines(l *layout, lit *ast.CompositeLit) bool {
+	prev := lit.Lbrace
+	for _, elt := range lit.Elts {
+		row := elt.(*ast.CompositeLit)
+		if l.line(prev) != l.line(row.Lbrace) {
+			return false
+		}
+		prev = row.Rbrace
+	}
+	return l.line(prev) == l.line(lit.Rbrace)
+}
+
+// rowWide reports whether a row on one line runs past the width limit,
+// measured from the indent of the line it starts on. A table
+// with one such row cannot keep its rows on one line, so every row is written
+// across lines.
 func rowWide(pass *analysis.Pass, l *layout, row *ast.CompositeLit) bool {
 	if linelen.Config.Len <= 0 {
 		return false // no width was asked for
@@ -338,40 +379,6 @@ func rowWide(pass *analysis.Pass, l *layout, row *ast.CompositeLit) bool {
 	}
 	line := append(slices.Clone(l.indentAt(row.Lbrace)), buf.Bytes()...)
 	return !linelen.CheckLine(line)
-}
-
-// tableDone reports whether a table already has every row across lines with
-// its braces cuddled: {{ at the start, }, { between rows, }} at the end.
-func tableDone(l *layout, lit *ast.CompositeLit) bool {
-	var (
-		first = lit.Elts[0].(*ast.CompositeLit)
-		last  = lit.Elts[len(lit.Elts)-1].(*ast.CompositeLit)
-	)
-	if l.line(lit.Lbrace) != l.line(first.Lbrace) {
-		return false
-	}
-	if l.line(last.Rbrace) != l.line(lit.Rbrace) {
-		return false
-	}
-	for i, elt := range lit.Elts {
-		row := elt.(*ast.CompositeLit)
-		if len(row.Elts) == 0 {
-			// An empty row cannot be expanded, so it keeps its
-			// braces together whatever the rest of the table does.
-			continue
-		}
-		if l.line(row.Lbrace) == l.line(row.Rbrace) {
-			return false
-		}
-		if i == 0 {
-			continue
-		}
-		prev := lit.Elts[i-1].(*ast.CompositeLit)
-		if l.line(prev.Rbrace) != l.line(row.Lbrace) {
-			return false
-		}
-	}
-	return true
 }
 
 // trailingComments returns the comments that sit on the table's opening line.
@@ -386,9 +393,10 @@ func trailingComments(l *layout, file *ast.File, lit *ast.CompositeLit) (out []*
 	return out
 }
 
-// tableText renders a table with every row across lines and the braces
-// cuddled. It replaces the line the literal starts on, so the text is written
-// from a known column rather than from the middle of a line.
+// tableText renders a table with every non-empty row across lines and every
+// brace sharing a line with the brace it meets. It replaces the line the
+// literal starts on, so the text is written from a known column rather than
+// from the middle of a line.
 func tableText(pass *analysis.Pass, l *layout, src []byte, lit *ast.CompositeLit, file *ast.File) ([]byte, bool) {
 	var (
 		start    = l.lineStart(lit.Lbrace)

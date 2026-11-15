@@ -13,9 +13,8 @@ fix moves a bracket or a line break; no element is added or removed:
 - a closing bracket that is not at the indent of its opening bracket;
 - an elided-type literal whose opening brace shares a line with its first
   element, so its elements start at different columns;
-- a table whose rows are not all one shape, where one row is on a line and
-  another spans lines, which is neither a table on one line nor a table to
-  read down;
+- a table whose rows span lines and do not read down, and a table whose row on
+  one line runs past the width;
 - a list indented across two lines to carry one line of elements, and a list
   with a line past the width;
 - a keyed literal on one line past the width, which takes one key per line.
@@ -70,12 +69,19 @@ brace, so its elements start at different columns:
 The fix moves the first element to a line of its own, and every element
 then starts at one column.
 
-### A table whose rows are not all one shape
+### A table that does not read down
 
-A row on a line and a row across lines in the same literal is neither a
-table on one line nor a table to read down. The rebuild writes the whole
-literal as one edit: every row on its own lines, and each row's braces on
-the lines its elements are on.
+A table is a literal of two or more elided literals. This rule leaves it
+alone when every row sits on one line and none runs past the width;
+otherwise the table reads down when every non-empty row spans lines and
+every brace shares a line with the brace it meets: `{{` begins the table,
+`}, {` joins two rows and `}}` ends it. Three faults keep a table from
+reading down, and the message names the first that applies: a one-line row
+beside a multi-line one, a row on one line that runs past the width, or
+braces that do not share their lines. The rebuild writes the whole literal
+as one edit, each row's elements on lines of their own. An empty row on
+one line counts as neither shape, and is written `{}` with its braces
+together. A comment the rebuild cannot write back leaves the table alone.
 
 ### A list indented to carry one line
 
