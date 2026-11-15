@@ -1,0 +1,7 @@
+package a
+
+func inPlace(dst []int) []int {
+	// want +1 `can be replaced by append`
+	dst = append(dst, dst...)
+	return dst
+}

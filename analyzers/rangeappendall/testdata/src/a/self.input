@@ -1,0 +1,9 @@
+package a
+
+func inPlace(dst []int) []int {
+	// want +1 `can be replaced by append`
+	for _, n := range dst {
+		dst = append(dst, n)
+	}
+	return dst
+}

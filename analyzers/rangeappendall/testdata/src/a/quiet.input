@@ -1,0 +1,170 @@
+package a
+
+func indexUsed(dst, src []int) []int {
+	for i := range src {
+		dst = append(dst, src[i])
+	}
+	return dst
+}
+
+func conditional(dst, src []int, keep func(int) bool) []int {
+	for _, n := range src {
+		if keep(n) {
+			dst = append(dst, n)
+		}
+	}
+	return dst
+}
+
+func twice(dst, src []int) []int {
+	for _, n := range src {
+		dst = append(dst, n, n)
+	}
+	return dst
+}
+
+func flattened(dst []byte, src [][]byte) []byte {
+	for _, b := range src {
+		dst = append(dst, b...)
+	}
+	return dst
+}
+
+func counted(dst, src []int) ([]int, int) {
+	var n int
+	for _, v := range src {
+		dst = append(dst, v)
+		n++
+	}
+	return dst, n
+}
+
+func reused(dst, src []string) []string {
+	var s string
+	for _, s = range src {
+		dst = append(dst, s)
+	}
+	return append(dst, s)
+}
+
+func elsewhere(dst, other, src []int) []int {
+	for _, n := range src {
+		other = append(dst, n)
+	}
+	return other
+}
+
+func widened(dst []any, src []int) []any {
+	for _, n := range src {
+		dst = append(dst, n)
+	}
+	return dst
+}
+
+func runes(dst []rune, s string) []rune {
+	for _, r := range s {
+		dst = append(dst, r)
+	}
+	return dst
+}
+
+func arrayElements(dst []int, src [3]int) []int {
+	for _, n := range src {
+		dst = append(dst, n)
+	}
+	return dst
+}
+
+func mapping(dst []string, m map[string]int) []string {
+	for k := range m {
+		dst = append(dst, k)
+	}
+	return dst
+}
+
+func resliced(dst, src []int) []int {
+	for _, n := range src {
+		dst = append(dst[:0], n)
+	}
+	return dst
+}
+
+func capBound(dst []int) []int {
+	for _, n := range dst[:cap(dst)] {
+		dst = append(dst, n)
+	}
+	return dst
+}
+
+func derived(dst []int) []int {
+	for _, n := range dst[1:] {
+		dst = append(dst, n)
+	}
+	return dst
+}
+
+func indexed(dst [][]int, src []int) [][]int {
+	for _, n := range src {
+		dst[0] = append(dst[0], n)
+	}
+	return dst
+}
+
+func called(src []string) {
+	for _, s := range src {
+		newBox().items = append(newBox().items, s)
+	}
+}
+
+func newBox() *box { return &box{} }
+
+func shadowed(src []int) []int {
+	var dst []int
+	append := func([]int, ...int) []int { return nil }
+	for _, n := range src {
+		dst = append(dst, n)
+	}
+	return dst
+}
+
+func other(src []int) []int {
+	var dst, alt []int
+	for _, n := range src {
+		dst = append(alt, n)
+	}
+	return dst
+}
+
+func pair(dst, src []int) []int {
+	more := dst
+	for _, n := range src {
+		more, dst = dst, append(dst, n)
+	}
+	_ = more
+	return dst
+}
+
+func pointed(dst *[]int, src []int) *[]int {
+	for _, n := range src {
+		*dst = append(*dst, n)
+	}
+	return dst
+}
+
+type myRow []int
+
+func declared(dst, src []int) []int {
+	for _, n := range src {
+		dst := append(dst, n)
+		_ = dst
+	}
+	return dst
+}
+
+func blank(src []int) []int {
+	var dst []int
+	for range src {
+		dst = append(dst, 0)
+	}
+	return dst
+}

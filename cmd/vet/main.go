@@ -1383,6 +1383,21 @@
 //		return fmt.Sprintf("%d", "one")
 //	}
 //
+// # rangeappendall
+//
+// Reports a range loop that appends each element of a slice one at a time.
+// Each append may grow the slice and copy it; one append with the whole slice
+// grows it once.
+//
+// Inspired by go-critic's rangeAppendAll, which reports the opposite loop.
+//
+//	func merge(dst, src []string) []string {
+//		for _, s := range src {
+//			dst = append(dst, s)
+//		}
+//		return dst
+//	}
+//
 // # rangeint
 //
 // Reports a three-clause for loop that counts to an integer and leaves its

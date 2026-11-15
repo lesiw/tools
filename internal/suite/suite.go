@@ -122,6 +122,7 @@ import (
 	"lesiw.io/tools/analyzers/preferdecoderune"
 	"lesiw.io/tools/analyzers/preferfprint"
 	"lesiw.io/tools/analyzers/preferstringwriter"
+	"lesiw.io/tools/analyzers/rangeappendall"
 	"lesiw.io/tools/analyzers/recvname"
 	"lesiw.io/tools/analyzers/recvtype"
 	"lesiw.io/tools/analyzers/redundantalias"
@@ -287,6 +288,7 @@ var (
 		preferfprint.Analyzer,
 		preferstringwriter.Analyzer,
 		printf.Analyzer,
+		rangeappendall.Analyzer,
 		recvname.Analyzer,
 		recvtype.Analyzer,
 		redundantalias.Analyzer,

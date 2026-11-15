@@ -1,0 +1,10 @@
+package a
+
+func annotated(dst []int) []int {
+	// want +1 `can be replaced by append`
+	for _, n := range dst {
+		// Twice the elements, in order.
+		dst = append(dst, n)
+	}
+	return dst
+}

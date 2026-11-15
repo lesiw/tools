@@ -1,0 +1,108 @@
+package a
+
+type box struct {
+	items []string
+}
+
+type row []int
+
+func each(dst, src []string) []string {
+	// want +1 `can be replaced by append`
+	for _, s := range src {
+		dst = append(dst, s)
+	}
+	return dst
+}
+
+func rows(dst, src [][]int) [][]int {
+	// want +1 `can be replaced by append`
+	for _, r := range src {
+		dst = append(dst, r)
+	}
+	return dst
+}
+
+func field(bx *box, src []string) {
+	// want +1 `can be replaced by append`
+	for _, s := range src {
+		bx.items = append(bx.items, s)
+	}
+}
+
+func acrossFields(left, right *box) {
+	// want +1 `can be replaced by append`
+	for _, s := range left.items {
+		right.items = append(right.items, s)
+	}
+}
+
+func named(dst, src row) row {
+	// want +1 `can be replaced by append`
+	for _, n := range src {
+		dst = append(dst, n)
+	}
+	return dst
+}
+
+func call(dst []string) []string {
+	// want +1 `can be replaced by append`
+	for _, s := range fetch() {
+		dst = append(dst, s)
+	}
+	return dst
+}
+
+func literal(dst []string) []string {
+	// want +1 `append\(dst, \[\]string{"a", "b"}\.\.\.\)`
+	for _, s := range []string{"a", "b"} {
+		dst = append(dst, s)
+	}
+	return dst
+}
+
+func fetch() []string { return nil }
+
+func generic[S ~[]int](dst, src S) S {
+	// want +1 `can be replaced by append`
+	for _, n := range src {
+		dst = append(dst, n)
+	}
+	return dst
+}
+
+func approx[S []int](dst, src S) S {
+	// want +1 `can be replaced by append`
+	for _, n := range src {
+		dst = append(dst, n)
+	}
+	return dst
+}
+
+func namedConstraint[S row](dst, src S) S {
+	// want +1 `can be replaced by append`
+	for _, n := range src {
+		dst = append(dst, n)
+	}
+	return dst
+}
+
+func sized(src []int) []int {
+	dst := make([]int, 0, len(src))
+	// want +1 `can be replaced by append`
+	for _, n := range src {
+		dst = append(dst, n)
+	}
+	return dst
+}
+
+func jumped(dst, src []int) []int {
+lbl:
+	// want +1 `can be replaced by append`
+	for _, n := range src {
+		dst = append(dst, n)
+	}
+	if len(dst) < 3 {
+		goto lbl
+	}
+	return dst
+}
