@@ -1,0 +1,4 @@
+package a
+
+// want +1 `redundant label scan`
+func last(xs []int) { scan: for range xs { break scan } }

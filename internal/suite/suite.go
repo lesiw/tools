@@ -127,6 +127,7 @@ import (
 	"lesiw.io/tools/analyzers/todocomment"
 	"lesiw.io/tools/analyzers/typeswitchvar"
 	"lesiw.io/tools/analyzers/typeunparen"
+	"lesiw.io/tools/analyzers/unlabelstmt"
 	"lesiw.io/tools/analyzers/unlambda"
 	"lesiw.io/tools/analyzers/unslice"
 	"lesiw.io/tools/analyzers/unusedparams"
@@ -261,6 +262,7 @@ var (
 		todocomment.Analyzer,
 		typeswitchvar.Analyzer,
 		typeunparen.Analyzer,
+		unlabelstmt.Analyzer,
 		unlambda.Analyzer,
 		unmarshal.Analyzer,
 		unreachable.Analyzer,

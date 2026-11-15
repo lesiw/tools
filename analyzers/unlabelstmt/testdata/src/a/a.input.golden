@@ -1,0 +1,176 @@
+package a
+
+func bail(xs []int) {
+	// want +1 `redundant label outer`
+	for _, x := range xs {
+		if x < 0 {
+			break
+		}
+		if x > 1 {
+			break
+		}
+	}
+}
+
+func skipRest(xs []int) {
+	// want +1 `redundant label again`
+	for _, x := range xs {
+		if x < 0 {
+			continue
+		}
+	}
+}
+
+func preceded(xs []int) {
+	// want +1 `redundant label tally`
+	_ = xs
+	for range xs {
+		break
+	}
+}
+
+func shared(xs []int) {
+	// want +1 `redundant label scan`
+	for range xs {
+		break
+	}
+}
+
+func noted(xs []int) {
+	// want +1 `redundant label step`
+	/* why */ for range xs {
+		break
+	}
+}
+
+func innerLoop(xs, ys []int) {
+	for range xs {
+		// want +1 `redundant label body`
+		for range ys {
+			break
+		}
+	}
+}
+
+func classify(n int) {
+	// want +1 `redundant label sign`
+	switch {
+	case n > 0:
+		break
+	}
+}
+
+func settle(ch chan int) {
+	// want +1 `redundant label choice`
+	select {
+	case <-ch:
+		break
+	}
+}
+
+func typed(v any) {
+	// want +1 `redundant label kind`
+	switch v.(type) {
+	default:
+		break
+	}
+}
+
+func turn(ch chan int) {
+	// want +1 `redundant label round`
+	for {
+		select {
+		case <-ch:
+			continue
+		}
+	}
+}
+
+func throughSwitch(xs []int) {
+	// want +1 `redundant label outer`
+	for range xs {
+		switch len(xs) {
+		case 1:
+			continue
+		}
+	}
+}
+
+func blank(xs []int) {
+	// want +1 `redundant label _`
+	for range xs {
+	}
+}
+
+func retry(xs []int, ready bool) {
+again:
+	for range xs {
+		if ready {
+			break again
+		}
+	}
+	if !ready {
+		goto again
+	}
+}
+
+func gotoElsewhere(xs []int, ready bool) {
+later:
+	if !ready {
+		goto later
+	}
+	// want +1 `redundant label whole`
+	for range xs {
+		break
+	}
+}
+
+func escapingBreak(xs, ys []int) {
+outer:
+	for range xs {
+		for range ys {
+			break outer
+		}
+	}
+}
+
+func escapingContinue(xs, ys []int) {
+outer:
+	for range xs {
+		for range ys {
+			continue outer
+		}
+	}
+}
+
+func breakOutOfSelect(xs []int, ch chan bool) {
+pair:
+	for range xs {
+		select {
+		case <-ch:
+			break pair
+		}
+	}
+}
+
+func breakOutOfSwitch(xs []int) {
+pick:
+	for range xs {
+		switch {
+		default:
+			break pick
+		}
+	}
+}
+
+func mixed(xs, ys []int) {
+both:
+	for _, x := range xs {
+		for range ys {
+			break both
+		}
+		if x < 0 {
+			break both
+		}
+	}
+}
