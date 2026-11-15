@@ -1,0 +1,5 @@
+package elsewhere
+
+type Key string
+
+type Shortcut = string

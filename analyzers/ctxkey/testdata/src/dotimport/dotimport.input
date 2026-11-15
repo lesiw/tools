@@ -1,0 +1,7 @@
+package dotimport
+
+import . "context"
+
+func dotted(ctx Context, val any) {
+	WithValue(ctx, "some-key", val) // want `has the built-in type string;`
+}

@@ -1,0 +1,71 @@
+package a
+
+import (
+	"context"
+	"unsafe"
+
+	"elsewhere"
+)
+
+type cacheKey struct{}
+
+type label string
+
+type shorthand = string
+
+type session struct{}
+
+func (session) WithValue(ctx context.Context, key, val any) context.Context {
+	return ctx
+}
+
+func WithValue(ctx context.Context, key, val any) context.Context { return ctx }
+
+func literalKeys(ctx context.Context, val any) {
+	context.WithValue(ctx, "some-key", val)   // want `has the built-in type string;`
+	context.WithValue(ctx, 7, val)            // want `has the built-in type int;`
+	context.WithValue(ctx, true, val)         // want `has the built-in type bool;`
+	(context.WithValue)(ctx, "some-key", val) // want `has the built-in type string;`
+}
+
+func heldKeys(ctx context.Context, val any) {
+	const setting = "some-setting"
+	name := "some-name"
+	var count int
+	var held any
+	var ptr unsafe.Pointer
+	context.WithValue(ctx, setting, val) // want `has the built-in type string;`
+	context.WithValue(ctx, name, val)    // want `has the built-in type string;`
+	context.WithValue(ctx, count, val)   // want `has the built-in type int;`
+	context.WithValue(ctx, ptr, val)     // want `has the built-in type unsafe\.Pointer;`
+	context.WithValue(ctx, held, val)
+}
+
+func definedKeys(ctx context.Context, val any) {
+	context.WithValue(ctx, cacheKey{}, val)
+	context.WithValue(ctx, label("some-key"), val)
+	context.WithValue(ctx, elsewhere.Key("some-key"), val)
+}
+
+func aliasKeys(ctx context.Context, val any) {
+	var shortcut shorthand = "some-key"
+	var borrowed elsewhere.Shortcut = "some-key"
+	context.WithValue(ctx, shortcut, val) // want `has the built-in type string \(alias shorthand\);`
+	context.WithValue(ctx, borrowed, val) // want `has the built-in type string \(alias elsewhere.Shortcut\);`
+}
+
+func parameterKey[K ~string](ctx context.Context, key K, val any) {
+	context.WithValue(ctx, key, val)
+}
+
+func compositeKeys(ctx context.Context, val any) {
+	context.WithValue(ctx, []string{"some-key"}, val)
+	context.WithValue(ctx, struct{}{}, val)
+	context.WithValue(ctx, &cacheKey{}, val)
+}
+
+func otherKeys(ctx context.Context, val any) {
+	context.WithValue(ctx, nil, val)
+	WithValue(ctx, "some-key", val)
+	session{}.WithValue(ctx, "some-key", val)
+}

@@ -62,6 +62,7 @@ import (
 	"lesiw.io/tools/analyzers/ctxfield"
 	"lesiw.io/tools/analyzers/ctxfirst"
 	"lesiw.io/tools/analyzers/ctxguard"
+	"lesiw.io/tools/analyzers/ctxkey"
 	"lesiw.io/tools/analyzers/ctxname"
 	"lesiw.io/tools/analyzers/cyclo"
 	"lesiw.io/tools/analyzers/deferunlambda"
@@ -152,6 +153,7 @@ var (
 		ctxfield.Analyzer,
 		ctxfirst.Analyzer,
 		ctxguard.Analyzer,
+		ctxkey.Analyzer,
 		ctxname.Analyzer,
 		cyclo.Analyzer,
 		deepequalerrors.Analyzer,
