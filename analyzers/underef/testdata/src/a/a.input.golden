@@ -1,0 +1,138 @@
+package a
+
+type item struct {
+	Kind string
+}
+
+func (i *item) Describe() string { return i.Kind }
+
+func (i item) Label() string { return i.Kind }
+
+type link *item
+
+type describer interface{ Describe() string }
+
+type wrapper struct{ *item }
+
+type holder struct{ item }
+
+type box[T any] struct{ v T }
+
+func (b *box[T]) Put(x T) { b.v = x }
+
+type inner struct{ describer }
+
+type pointerish interface {
+	*item
+	Describe() string
+}
+
+func field(p *item) string {
+	return p.Kind // want `redundant dereference in front of a selector`
+}
+
+func setField(p *item) {
+	p.Kind = "some kind" // want `redundant dereference in front of a selector`
+}
+
+func valueMethod(p *item) string {
+	return p.Label() // want `redundant dereference in front of a selector`
+}
+
+func definedPtrField(p link) string {
+	return p.Kind // want `redundant dereference in front of a selector`
+}
+
+func promotedField(w *wrapper) string {
+	return w.Kind // want `redundant dereference in front of a selector`
+}
+
+func embeddedPointerField(w *wrapper) string {
+	return w.Describe() // want `redundant dereference in front of a selector`
+}
+
+func embeddedValueField(h *holder) string {
+	return h.Describe() // want `redundant dereference in front of a selector`
+}
+
+func embeddedInterfaceField(v *inner) string {
+	return v.Describe() // want `redundant dereference in front of a selector`
+}
+
+func doubleParens(p *item) string {
+	return p.Kind // want `redundant dereference in front of a selector`
+}
+
+func valueMethodValue(p *item) func() string {
+	return p.Label // want `redundant dereference in front of a selector`
+}
+
+func pointerFromCall(p func() *item) string {
+	return p().Kind // want `redundant dereference in front of a selector`
+}
+
+func channel(ch <-chan *item) string {
+	return (<-ch).Kind // want `redundant dereference in front of a selector`
+}
+
+func dereferencedTwice(pp **item) string {
+	return (*pp).Kind // want `redundant dereference in front of a selector`
+}
+
+func blockCommentInside(p *item) string {
+	return /* note */ p.Kind // want `redundant dereference in front of a selector`
+}
+
+func lineCommentInside(p *item) string {
+	// want +1 `redundant dereference in front of a selector`
+	return ( // note
+	*p).Kind
+}
+
+func pointerMethod(p *item) string {
+	return (*p).Describe()
+}
+
+func pointerMethodValue(p *item) func() string {
+	return (*p).Describe
+}
+
+func instantiated(p *box[int]) {
+	(*p).Put(1)
+}
+
+func definedPtrMethod(p link) string {
+	return (*p).Label()
+}
+
+func pointerToPointer(pp **item) string {
+	return (*pp).Kind
+}
+
+func pointerToInterface(pi *describer) string {
+	return (*pi).Describe()
+}
+
+func typeParameter[T interface{ Describe() string }](p *T) string {
+	return (*p).Describe()
+}
+
+func methodExpression() func(*item) string {
+	return (*item).Describe
+}
+
+func methodExpressionPromoted() func(*wrapper) string {
+	return (*wrapper).Describe
+}
+
+func constrainedMethod[P pointerish](p P) string {
+	return (*p).Describe()
+}
+
+func constrainedPointer[P *item](p P) string {
+	return (*p).Kind
+}
+
+func pointerToLink(p *link) string {
+	return (*p).Kind
+}
