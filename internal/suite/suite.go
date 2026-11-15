@@ -171,6 +171,7 @@ import (
 	"lesiw.io/tools/analyzers/typeunparen"
 	"lesiw.io/tools/analyzers/uncondrecursion"
 	"lesiw.io/tools/analyzers/underef"
+	"lesiw.io/tools/analyzers/unexportedreturn"
 	"lesiw.io/tools/analyzers/unlabelstmt"
 	"lesiw.io/tools/analyzers/unlambda"
 	"lesiw.io/tools/analyzers/unnecessaryblock"
@@ -365,6 +366,7 @@ var (
 		typeunparen.Analyzer,
 		uncondrecursion.Analyzer,
 		underef.Analyzer,
+		unexportedreturn.Analyzer,
 		unlabelstmt.Analyzer,
 		unlambda.Analyzer,
 		unmarshal.Analyzer,

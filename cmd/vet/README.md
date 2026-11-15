@@ -2332,6 +2332,18 @@ func kind(p *item) string {
 }
 ```
 
+## unexportedreturn
+
+Reports an exported function or method whose result is an unexported type declared in the same package, so a caller cannot write the type the result is declared with.
+
+Adapted from revive's unexported-return.
+
+```
+func New() option {
+    return option{}
+}
+```
+
 ## unlabelstmt
 
 Reports a label that no goto names and that every break or continue reaching it would reach without the name. The label adds nothing.

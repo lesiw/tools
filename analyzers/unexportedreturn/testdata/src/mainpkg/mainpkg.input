@@ -1,0 +1,7 @@
+package main
+
+type option struct{}
+
+func New() option {
+	return option{}
+}

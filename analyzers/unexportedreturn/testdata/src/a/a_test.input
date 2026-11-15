@@ -1,0 +1,7 @@
+package a
+
+type testOnly struct{}
+
+func NewTestOnly() testOnly {
+	return testOnly{}
+}

@@ -1,0 +1,136 @@
+package a
+
+type option struct{}
+
+type settings interface {
+	Apply() option
+}
+
+type Config struct{}
+
+type helper = Config
+
+type secret = option
+
+type Option = option
+
+type box[T any] struct{}
+
+type Box[T any] struct{}
+
+type opts []option
+
+type callback func() option
+
+type handle struct{}
+
+type Handle = handle
+
+type hush = handle
+
+func New() option { // want `exported func New returns unexported type option`
+	return option{}
+}
+
+func Paren() ((option)) { // want `exported func Paren returns unexported type option`
+	return option{}
+}
+
+func NewPointer() *option { // want `exported func NewPointer returns unexported type \*option`
+	return &option{}
+}
+
+func Both() (
+	a option, // want `exported func Both returns unexported type option`
+	b option, // want `exported func Both returns unexported type option`
+) {
+	return
+}
+
+func Mixed() (
+	a secret, // want `exported func Mixed returns unexported type secret`
+	b option, // want `exported func Mixed returns unexported type option`
+	c *option, // want `exported func Mixed returns unexported type \*option`
+) {
+	return
+}
+
+func Pair() (
+	a option, // want `exported func Pair returns unexported type option`
+	b opts, // want `exported func Pair returns unexported type opts`
+) {
+	return
+}
+
+func Unpub() box[option] { // want `exported func Unpub returns unexported type box\[option\]`
+	return box[option]{}
+}
+
+func Callback() callback { // want `exported func Callback returns unexported type callback`
+	return nil
+}
+
+func NewConfig() Config {
+	return Config{}
+}
+
+func NewHelper() helper {
+	return Config{}
+}
+
+func NewAlias() Option {
+	return Option{}
+}
+
+func AliasPointer() *Option {
+	return nil
+}
+
+func Boxed() Box[option] {
+	return Box[option]{}
+}
+
+func Peek() func() option {
+	return nil
+}
+
+func Options() []option {
+	return nil
+}
+
+func Settings() settings {
+	return nil
+}
+
+func SettingsRef() *settings {
+	return nil
+}
+
+func local() option {
+	return option{}
+}
+
+func (Config) View() option { // want `exported method View returns unexported type option`
+	return option{}
+}
+
+func (Handle) Alias() option { // want `exported method Alias returns unexported type option`
+	return option{}
+}
+
+func (helper) AliasRecv() option { // want `exported method AliasRecv returns unexported type option`
+	return option{}
+}
+
+func (hush) AliasPlain() option {
+	return option{}
+}
+
+func (handle) Value() option {
+	return option{}
+}
+
+func (*handle) Pointer() option {
+	return option{}
+}
+
