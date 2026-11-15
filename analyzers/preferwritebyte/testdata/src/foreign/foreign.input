@@ -1,0 +1,98 @@
+package foreign
+
+type Sink struct{ N int }
+
+func (s *Sink) Write(p []byte) (int, error) {
+	s.N += len(p)
+	return len(p), nil
+}
+
+func (s *Sink) WriteString(v string) (int, error) {
+	s.N += len(v)
+	return len(v), nil
+}
+
+func (s *Sink) WriteByte(b byte) error {
+	s.N++
+	return nil
+}
+
+type ValuePair struct{}
+
+func (ValuePair) Write(p []byte) (int, error) { return 0, nil }
+
+func (ValuePair) WriteByte(b byte) error { return nil }
+
+type MixedPair struct{}
+
+func (MixedPair) Write(p []byte) (int, error) { return 0, nil }
+
+func (*MixedPair) WriteByte(b byte) error { return nil }
+
+type Both interface {
+	Write(p []byte) (int, error)
+	WriteByte(b byte) error
+}
+
+type WriteOnly interface {
+	Write(p []byte) (int, error)
+}
+
+type ByteOnly interface {
+	WriteByte(b byte) error
+}
+
+type BothWriter interface {
+	WriteOnly
+	ByteOnly
+}
+
+type WriterPart struct{}
+
+func (WriterPart) Write(p []byte) (int, error) { return 0, nil }
+
+type BytePart struct{}
+
+func (BytePart) WriteByte(b byte) error { return nil }
+
+type TwoParts struct {
+	WriterPart
+	BytePart
+}
+
+type Loose struct{}
+
+func (Loose) Write(v any) (int, error) { return 0, nil }
+
+func (Loose) WriteByte(b byte) error { return nil }
+
+type Bytes []byte
+
+type Octet byte
+type Octets []Octet
+
+type Stream struct{}
+
+func (Stream) Write(p Octets) (int, error) { return 0, nil }
+
+func (Stream) WriteByte(b byte) error { return nil }
+
+type Tally struct{}
+
+func (Tally) Write(p []byte) (int, error) { return 0, nil }
+
+func (Tally) WriteByte(b byte) (int, error) { return 0, nil }
+
+type StringOnly struct{}
+
+func (StringOnly) Write(p []byte) (int, error) { return 0, nil }
+
+func (StringOnly) WriteString(v string) error { return nil }
+
+func (StringOnly) WriteByte(b byte) error { return nil }
+
+type Spread struct{}
+
+func (Spread) Write(p ...byte) (int, error) { return 0, nil }
+
+func (Spread) WriteByte(b byte) error { return nil }

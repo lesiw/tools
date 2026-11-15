@@ -1,0 +1,7 @@
+package a
+
+import "strings"
+
+func testOther(b *strings.Builder) {
+	b.WriteByte('a') // want `one-byte slice written to a writer; use WriteByte`
+}

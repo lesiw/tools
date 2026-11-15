@@ -1397,6 +1397,19 @@ func f(b *bytes.Buffer, s string) {
 }
 ```
 
+## preferwritebyte
+
+Reports a one-element byte slice literal written to a writer, and that literal converted to a string. WriteByte takes the byte, so the literal is never built.
+
+Inspired by go-critic's preferWriteByte.
+
+```
+func f(b *bytes.Buffer) {
+    b.Write([]byte{'\n'})
+    b.WriteString(string([]byte{'0'}))
+}
+```
+
 ## printf
 
 Reports a format string whose verbs and arguments disagree, and a formatting call with the wrong number of arguments. The check covers fmt, log, and a wrapper of either.

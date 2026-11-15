@@ -1,0 +1,15 @@
+package a_test
+
+import (
+	"strings"
+
+	"a"
+)
+
+func extOwn(l a.Local) {
+	l.Write([]byte{'a'})
+}
+
+func extOther(b *strings.Builder) {
+	b.WriteByte('a') // want `one-byte slice written to a writer; use WriteByte`
+}

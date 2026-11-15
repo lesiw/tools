@@ -1,0 +1,181 @@
+package a
+
+import (
+	"bufio"
+	"bytes"
+	"io"
+	"strings"
+
+	"foreign"
+)
+
+type Local struct{}
+
+func (Local) Write(p []byte) (int, error) { return 0, nil }
+
+func (Local) WriteByte(b byte) error { return nil }
+
+func newline(s *foreign.Sink) {
+	s.Write([]byte{'\n'}) // want `one-byte slice written to a writer; use WriteByte`
+}
+
+func variable(b *bufio.Writer, c byte) {
+	b.Write([]byte{c}) // want `one-byte slice written to a writer; use WriteByte`
+}
+
+func converted(b *strings.Builder) {
+	b.WriteString(string([]byte{'a'})) // want `one-byte string written to a writer; use WriteByte`
+}
+
+func deferred(b *bytes.Buffer) {
+	defer b.Write([]byte{'a'}) // want `one-byte slice written to a writer; use WriteByte`
+}
+
+func started(b *bytes.Buffer) {
+	go b.Write([]byte{'a'}) // want `one-byte slice written to a writer; use WriteByte`
+}
+
+func addressableValue(b bytes.Buffer) {
+	b.Write([]byte{'a'}) // want `one-byte slice written to a writer; use WriteByte`
+}
+
+func bothMethods(w foreign.Both) {
+	w.Write([]byte{'a'}) // want `one-byte slice written to a writer; use WriteByte`
+}
+
+func embeddedInterfaces(w foreign.BothWriter) {
+	w.Write([]byte{'a'}) // want `one-byte slice written to a writer; use WriteByte`
+}
+
+func parameterized[T foreign.BothWriter](w T) {
+	w.Write([]byte{'a'}) // want `one-byte slice written to a writer; use WriteByte`
+}
+
+func valueReceiver(w foreign.ValuePair) {
+	w.Write([]byte{'a'}) // want `one-byte slice written to a writer; use WriteByte`
+}
+
+func counted(b *bytes.Buffer) (int, error) {
+	return b.Write([]byte{'a'}) // want `one-byte slice written to a writer; use WriteByte`
+}
+
+func assigned(b *bytes.Buffer) {
+	n, err := b.Write([]byte{'a'}) // want `one-byte slice written to a writer; use WriteByte`
+	_, _ = n, err
+}
+
+func noted(b *bytes.Buffer) {
+	b.Write([]byte{ /* kept */ 'a'}) // want `one-byte slice written to a writer; use WriteByte`
+	b.Write([]byte{'a' /* kept */})  // want `one-byte slice written to a writer; use WriteByte`
+}
+
+type wrapper struct{ *bytes.Buffer }
+
+func promoted(w wrapper) {
+	w.Write([]byte{'a'}) // want `one-byte slice written to a writer; use WriteByte`
+}
+
+type hooked struct{ Write func([]byte) (int, error) }
+
+func fieldWrite(h hooked) {
+	h.Write([]byte{'a'})
+}
+
+type localInterface interface {
+	Write(p []byte) (int, error)
+	WriteByte(b byte) error
+}
+
+func localInterfaceArg(w localInterface) {
+	w.Write([]byte{'a'})
+}
+
+func writeStringFunc(s *foreign.Sink) {
+	io.WriteString(s, string([]byte{'a'}))
+}
+
+func definedSliceLiteral(s *foreign.Sink) {
+	s.Write(foreign.Bytes{'a'}) // want `one-byte slice written to a writer; use WriteByte`
+}
+
+func localReceiver(l Local) {
+	l.Write([]byte{'a'})
+}
+
+func pair(s *foreign.Sink) {
+	s.Write([]byte{'a', 'b'})
+}
+
+func empty(s *foreign.Sink) {
+	s.Write([]byte{})
+}
+
+func keyed(s *foreign.Sink) {
+	s.Write([]byte{0: 'a'})
+	s.Write([]byte{1: 'a'})
+}
+
+func text(s *foreign.Sink, v string) {
+	s.Write([]byte(v))
+	s.WriteString(v)
+}
+
+func stringLiteral(s *foreign.Sink) {
+	s.WriteString("a")
+}
+
+func convertedDefinedSlice(s *foreign.Sink, o foreign.Octets) {
+	s.WriteString(string(o))
+}
+
+func runeElements(s *foreign.Sink, r []rune) {
+	s.WriteString(string(r))
+}
+
+func literalString(s *foreign.Sink) {
+	s.Write([]byte("\n"))
+}
+
+func runeString(s *foreign.Sink, r rune) {
+	s.WriteString(string(r))
+}
+
+func encodedByte(s *foreign.Sink, c byte) {
+	s.WriteString(string(c))
+}
+
+func methodExpression(b *bufio.Writer) {
+	(*bufio.Writer).Write(b, []byte{'a'})
+}
+
+func writerOnly(w io.Writer) {
+	w.Write([]byte{'a'})
+}
+
+func anyArg(w foreign.Loose) {
+	w.Write([]byte{'a'})
+}
+
+func definedWriteParam(w foreign.Stream) {
+	w.Write(foreign.Octets{1})
+}
+
+func mixedReceivers(w foreign.MixedPair) {
+	w.Write([]byte{'a'})
+}
+
+func recounted(w foreign.Tally) {
+	w.Write([]byte{'a'})
+}
+
+func narrowSignature(w foreign.StringOnly) {
+	w.WriteString(string([]byte{'a'}))
+}
+
+func splitSource(w foreign.TwoParts) {
+	w.Write([]byte{'a'})
+}
+
+func variadic(w foreign.Spread) {
+	w.Write([]byte{'a'}...)
+}
