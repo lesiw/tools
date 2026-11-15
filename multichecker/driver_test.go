@@ -132,16 +132,15 @@ func create(t *testing.T, dir, name, content string) {
 	}
 }
 
-// help is a subcommand only as the first argument, so a flag ahead of it
-// leaves a package pattern.
-func TestHelpSubcommand(t *testing.T) {
-	if !isHelp([]string{"help"}) {
-		t.Fatal("isHelp(help) = false")
-	}
-	if isHelp([]string{"./..."}) {
-		t.Fatal("isHelp(./...) = true")
-	}
-	if isHelp([]string{"-fix", "help"}) {
-		t.Fatal("isHelp(-fix help) = true")
+// TestHelpFlag checks that both help spellings end a run without exiting,
+// since a step that exits cannot be tested.
+func TestHelpFlag(t *testing.T) {
+	for _, flag := range []string{"-h", "-help"} {
+		if code := vet(helpAnalyzers, []string{flag}); code != exitOK {
+			t.Errorf("vet(%s) = %d, want %d", flag, code, exitOK)
+		}
+		if err := run([]string{flag}, helpAnalyzers); err != nil {
+			t.Errorf("run(%s) = %v, want nil", flag, err)
+		}
 	}
 }

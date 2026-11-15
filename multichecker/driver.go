@@ -22,12 +22,6 @@ import (
 	"lesiw.io/tools/internal/ignore"
 )
 
-// isHelp reports whether the command line asks for the analyzer list. The
-// subcommand is only read from the first argument.
-func isHelp(args []string) bool {
-	return len(args) > 0 && args[0] == "help"
-}
-
 // Exit codes. 1 means the run could not analyze what it was given, 2 means the
 // command line could not be acted on, and 3 means the run produced
 // diagnostics.
@@ -47,14 +41,11 @@ func Main(analyzers ...*analysis.Analyzer) {
 		unitchecker.Main(ignore.Apply(analyzers...)...)
 		return
 	}
-	if isHelp(args) {
-		help(analyzers)
-		os.Exit(exitOK)
-	}
-	if rest, ok := withoutFix(args); ok {
+	rest, fix := withoutFix(args)
+	if fix {
 		os.Exit(fixRun(rest, analyzers))
 	}
-	os.Exit(vet(analyzers, args))
+	os.Exit(vet(analyzers, rest))
 }
 
 // Fix applies the suite's fixes, repeating until no fix is left. It does not
@@ -64,10 +55,6 @@ func Fix(analyzers ...*analysis.Analyzer) {
 	if drivenByGo(args) {
 		unitchecker.Main(ignore.Apply(analyzers...)...)
 		return
-	}
-	if isHelp(args) {
-		help(analyzers)
-		os.Exit(exitOK)
 	}
 	os.Exit(fixRun(args, analyzers))
 }
@@ -96,9 +83,9 @@ func withoutFix(args []string) ([]string, bool) {
 	)
 	for _, arg := range args {
 		switch arg {
-		case "-fix", "--fix", "-fix=true":
+		case "-fix", "--fix", "-fix=true", "--fix=true":
 			asked = true
-		case "-fix=false":
+		case "-fix=false", "--fix=false":
 		default:
 			out = append(out, arg)
 		}
@@ -109,6 +96,9 @@ func withoutFix(args []string) ([]string, bool) {
 // vet analyzes the named packages and prints what the suite reports.
 func vet(analyzers []*analysis.Analyzer, args []string) int {
 	opts, err := parseArgs(args, analyzers)
+	if err == errHelp {
+		return exitOK
+	}
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "vet: %v\n", err)
 		return exitUsage

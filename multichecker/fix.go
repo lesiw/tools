@@ -24,10 +24,14 @@ const maxRounds = 100
 // errUsage marks a command line this command cannot act on.
 var errUsage = fmt.Errorf("usage: [build flags] [analyzer flags] [packages]")
 
+// errHelp marks a command line that asked for the analyzer list, which the
+// parser has already printed.
+var errHelp = fmt.Errorf("help")
+
 // unsupported are the flags this command does not take: go vet's output and
-// tool flags, the profiler's, and the help flags.
+// tool flags, and the profiler's.
 var unsupported = map[string]struct{}{
-	"h": {}, "help": {}, "json": {}, "c": {}, "diff": {},
+	"json": {}, "c": {}, "diff": {},
 	"vettool": {}, "fix": {}, "debug": {}, "cpuprofile": {},
 	"memprofile": {}, "trace": {},
 }
@@ -74,6 +78,9 @@ func fixRun(args []string, analyzers []*analysis.Analyzer) int {
 // run is the command.
 func run(args []string, analyzers []*analysis.Analyzer) error {
 	opts, err := parseArgs(args, analyzers)
+	if errors.Is(err, errHelp) {
+		return nil
+	}
 	if err != nil {
 		return err
 	}
@@ -157,6 +164,12 @@ type options struct {
 // with a dash is a build flag.
 func parseArgs(args []string, analyzers []*analysis.Analyzer) (options, error) {
 	p := newArgParser(analyzers)
+	// The subcommand is only read from the first argument the parser sees, so
+	// a flag ahead of it leaves a package pattern.
+	if len(args) > 0 && args[0] == "help" {
+		fmt.Print(helpText(p.opts.analyzers))
+		return p.opts, errHelp
+	}
 	p.enable(args)
 	for i := 0; i < len(args); i++ {
 		next, err := p.arg(args, i)
@@ -174,11 +187,13 @@ func parseArgs(args []string, analyzers []*analysis.Analyzer) (options, error) {
 	return p.opts, nil
 }
 
-// help prints the analyzers and what each one reports.
-func help(analyzers []*analysis.Analyzer) {
+// helpText returns the analyzer list, one analyzer per line.
+func helpText(analyzers []*analysis.Analyzer) string {
+	var b strings.Builder
 	for _, a := range analyzers {
-		fmt.Printf("%s: %s\n", a.Name, a.Doc)
+		fmt.Fprintf(&b, "%s: %s\n", a.Name, a.Doc)
 	}
+	return b.String()
 }
 
 // argParser is the state one command line is read into.
@@ -258,13 +273,14 @@ func (p *argParser) arg(args []string, i int) (int, error) {
 			return p.setFlag(args, i, base, sub, value, hasValue)
 		}
 	}
+	// The value is ignored: -h and -help print the list either way.
+	if name == "h" || name == "help" {
+		fmt.Print(helpText(p.opts.analyzers))
+		return i, errHelp
+	}
 	// A flag in unsupported means nothing to the load, so forwarding it
 	// would print a usage message about the wrong tool.
 	if _, ok := unsupported[name]; ok {
-		if name == "h" || name == "help" {
-			help(p.opts.analyzers)
-			os.Exit(exitOK)
-		}
 		return i, fmt.Errorf("%w: -%s is not supported", errUsage, name)
 	}
 	// A build flag that takes a separate value needs both halves. Left
