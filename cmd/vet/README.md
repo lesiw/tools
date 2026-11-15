@@ -1376,7 +1376,7 @@ func f(err error) error {
 
 ## nowsub
 
-Reports time.Now().Sub(t) and t.Sub(time.Now()), which time.Since and time.Until are shorthand for. The time.Since direction is reported only when the argument does no work, because the rewrite moves the clock read past the argument.
+Reports time.Now().Sub(t) or t.Sub(time.Now()). time.Since and time.Until are shorthand for these two calls. In the Since direction a call is reported only when the argument does no work, because the rewrite moves the clock read past the argument.
 
 Adapted from staticcheck's S1012 and S1024.
 
@@ -1955,6 +1955,18 @@ Reports a declaration the suite would write another way, such as a zero value gi
 func f() int {
     x := 0
     return x
+}
+```
+
+## stringintconv
+
+Reports a conversion of an integer to a string. The conversion yields the UTF-8 encoding of the number as a code point, where the decimal digits are what the code usually means. A rune or a byte is left alone, since the conversion is the intended form for both.
+
+Imported from the x/tools vet suite.
+
+```
+func f(n int) string {
+    return string(n)
 }
 ```
 

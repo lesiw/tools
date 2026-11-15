@@ -40,6 +40,7 @@ import (
 	"golang.org/x/tools/go/analysis/passes/sortslice"
 	"golang.org/x/tools/go/analysis/passes/stdmethods"
 	"golang.org/x/tools/go/analysis/passes/stdversion"
+	"golang.org/x/tools/go/analysis/passes/stringintconv"
 	"golang.org/x/tools/go/analysis/passes/structtag"
 	"golang.org/x/tools/go/analysis/passes/testinggoroutine"
 	"golang.org/x/tools/go/analysis/passes/tests"
@@ -340,6 +341,7 @@ var (
 		strcompare.Analyzer,
 		strconcat.Analyzer,
 		strictvar.Analyzer,
+		stringintconv.Analyzer,
 		stringofint.Analyzer,
 		stringxbytes.Analyzer,
 		structtag.Analyzer,

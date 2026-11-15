@@ -10,26 +10,18 @@ func remaining(deadline time.Time) time.Duration {
 	return deadline.Sub(time.Now()) // want `call can be replaced by time.Until\(deadline\)`
 }
 
+type stamp time.Time
+
+func converted(start stamp) time.Duration {
+	return time.Now().Sub(time.Time(start)) // want `call can be replaced by time.Since\(time.Time\(start\)\)`
+}
+
+func indexed(samples []time.Time) time.Duration {
+	return time.Now().Sub(samples[len(samples)-1]) // want `call can be replaced by time.Since\(samples\[len\(samples\)-1\]\)`
+}
+
 func compared(start time.Time) bool {
 	return time.Now().Sub(start) > time.Second // want `call can be replaced by time.Since\(start\)`
-}
-
-func argument(start time.Time) time.Duration {
-	return time.Now().Sub(begin())
-}
-
-func received(ch chan time.Time) time.Duration {
-	return time.Now().Sub(<-ch)
-}
-
-func begin() time.Time { return time.Now() }
-
-func end() time.Duration {
-	return begin().Sub(time.Now()) // want `call can be replaced by time.Until\(begin\(\)\)`
-}
-
-func shifted(d time.Duration, start time.Time) time.Duration {
-	return time.Now().Add(d).Sub(start)
 }
 
 func shiftedUntil(d time.Duration) time.Duration {
@@ -38,18 +30,6 @@ func shiftedUntil(d time.Duration) time.Duration {
 
 func addressed(start time.Time) time.Duration {
 	return (&start).Sub(time.Now()) // want `call can be replaced by time.Until\(start\)`
-}
-
-func between(from, to time.Time) time.Duration {
-	return to.Sub(from)
-}
-
-func shorthand(start, deadline time.Time) (time.Duration, time.Duration) {
-	return time.Since(start), time.Until(deadline)
-}
-
-func value(start time.Time) func(time.Time) time.Duration {
-	return time.Now().Sub
 }
 
 func pointer(p *time.Time) time.Duration {
@@ -64,8 +44,52 @@ func pointerField(t struct{ at *time.Time }) time.Duration {
 	return t.at.Sub(time.Now()) // want `call can be replaced by time.Until\(\*t.at\)`
 }
 
-func method(from time.Time) time.Duration {
-	return time.Time.Sub(from, time.Now())
+func end() time.Duration {
+	return begin().Sub(time.Now()) // want `call can be replaced by time.Until\(begin\(\)\)`
+}
+
+func wrapped(start time.Time) time.Duration {
+	// want+1 `call can be replaced by time.Since\(start\)`
+	return time.Now().
+		Sub(start)
+}
+
+func commented(start time.Time) time.Duration {
+	return time.Now(). /* marked */ Sub(start) // want `call can be replaced by time.Since\(start\)`
+}
+
+func literal(start time.Time) time.Duration {
+	return func() time.Time { return start }().Sub(time.Now()) // want `call can be replaced by a call to time\.Until`
+}
+
+func twice() time.Duration {
+	return time.Now().Sub(time.Now())
+}
+
+func begin() time.Time { return time.Now() }
+
+func argument(start time.Time) time.Duration {
+	return time.Now().Sub(begin())
+}
+
+func received(ch chan time.Time) time.Duration {
+	return time.Now().Sub(<-ch)
+}
+
+func shiftedSince(d time.Duration, start time.Time) time.Duration {
+	return time.Now().Add(d).Sub(start)
+}
+
+func between(from, to time.Time) time.Duration {
+	return to.Sub(from)
+}
+
+func methodValue(start time.Time) func(time.Time) time.Duration {
+	return time.Now().Sub
+}
+
+func methodExpr(from time.Time) time.Duration {
+	return time.Time.Sub(time.Now(), from)
 }
 
 type embeds struct{ time.Time }
@@ -82,16 +106,12 @@ func other(s span) time.Duration {
 	return s.Sub(time.Now())
 }
 
+func heldUntil(start time.Time) time.Duration {
+	now := time.Now
+	return start.Sub(now())
+}
+
 func held(start time.Time) time.Duration {
 	now := time.Now
 	return now().Sub(start)
-}
-
-func wrapped(start time.Time) time.Duration {
-	return /* // want `call can be replaced by time.Since\(start\)` */ time.Now().
-		Sub(start)
-}
-
-func annotated(start time.Time) time.Duration {
-	return time.Now(). /* marked */ Sub(start) // want `call can be replaced by time.Since\(start\)`
 }
