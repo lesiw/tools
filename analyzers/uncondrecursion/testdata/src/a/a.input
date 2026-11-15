@@ -1,0 +1,489 @@
+package a
+
+import (
+	"log"
+	"os"
+	"runtime"
+	"testing"
+)
+
+func spin() {
+	spin() // want `unconditional recursive call`
+}
+
+func twice() {
+	twice() // want `unconditional recursive call`
+	twice() // want `unconditional recursive call`
+}
+
+func result() int {
+	return result() // want `unconditional recursive call`
+}
+
+func nested() int {
+	return 1 + nested() // want `unconditional recursive call`
+}
+
+func deferred(ch chan int) {
+	defer deferred(ch) // want `unconditional recursive call`
+}
+
+func deferredFatal(msg string) {
+	if msg != "" {
+		defer log.Fatal(msg)
+	}
+	deferredFatal(msg) // want `unconditional recursive call`
+}
+
+func blocked() {
+	{
+		blocked() // want `unconditional recursive call`
+	}
+}
+
+func tested() bool {
+	if tested() { // want `unconditional recursive call`
+		return true
+	}
+	return false
+}
+
+func inited() int {
+	if x := inited(); x > 0 { // want `unconditional recursive call`
+		return x
+	}
+	return 0
+}
+
+func tagged(n int) int {
+	switch tagged(n) { // want `unconditional recursive call`
+	default:
+		return 0
+	}
+}
+
+func kinded(v any) any {
+	switch kinded(v).(type) { // want `unconditional recursive call`
+	default:
+	}
+	return v
+}
+
+func sentInSelect(ch chan int, n int) int {
+	select {
+	case ch <- sentInSelect(ch, n): // want `unconditional recursive call`
+	}
+	return n
+}
+
+func receivedInSelect(n int) <-chan int {
+	select {
+	case <-receivedInSelect(n): // want `unconditional recursive call`
+	}
+	return nil
+}
+
+func rangeOperand(xs []int) []int {
+	for range rangeOperand(xs) { // want `unconditional recursive call`
+	}
+	return xs
+}
+
+func forInit(n int) int {
+	for i := forInit(n); i < 1; i++ { // want `unconditional recursive call`
+	}
+	return n
+}
+
+func forCondition(n int) int {
+	for ; forCondition(n) > 0; { // want `unconditional recursive call`
+	}
+	return n
+}
+
+func forever(n int) {
+	for {
+		forever(n) // want `unconditional recursive call`
+	}
+}
+
+func roamed(n int) {
+	for {
+		roamed(n) // want `unconditional recursive call`
+		if n > 0 {
+			return
+		}
+	}
+}
+
+func labeled(n int) {
+loop:
+	labeled(n) // want `unconditional recursive call`
+	goto loop
+}
+
+func pair(first, second int) {
+	pair(second, first) // want `unconditional recursive call`
+}
+
+type counter struct{ n int }
+
+func (c *counter) reset() {
+	c.reset() // want `unconditional recursive call`
+}
+
+type first struct{}
+
+type second struct{}
+
+func (x *first) run() {}
+
+func (x *second) run() {
+	{
+		x := &first{}
+		x.run()
+	}
+}
+
+func generic[T any](v T) {
+	generic[T](v) // want `unconditional recursive call`
+}
+
+func grow[T any](v T) {
+	grow[any](v) // want `unconditional recursive call`
+}
+
+func handed(n int) int {
+	go deliver(handed(n)) // want `unconditional recursive call`
+	return n
+}
+
+func deliver(int) {}
+
+func launched(n int) int {
+	go launched(n) // want `unconditional recursive call`
+	return n
+}
+
+func guarded(n int) int {
+	if n == 0 {
+		return 0
+	}
+	return guarded(n - 1)
+}
+
+func returned() {
+	return
+	returned()
+}
+
+func rangeReturns(n int, xs []int) {
+	for range xs {
+		if n > 0 {
+			return
+		}
+	}
+	rangeReturns(n, xs)
+}
+
+func labeledBreak(n int) {
+walk:
+	for {
+		if n > 0 {
+			break walk
+		}
+		labeledBreak(n)
+	}
+}
+
+func brokeOuter(n int, xs []int) {
+outer:
+	for {
+		for range xs {
+			if n > 0 {
+				break outer
+			}
+		}
+		brokeOuter(n, xs)
+	}
+}
+
+func continuedOuter(n int, xs []int) {
+outer:
+	for {
+		for range xs {
+			if n > 0 {
+				continue outer
+			}
+		}
+		continuedOuter(n, xs)
+	}
+}
+
+func loopedByGoto(n int) {
+again:
+	if n > 0 {
+		goto again
+	}
+	loopedByGoto(n)
+}
+
+func jumpedOver(n int) {
+	goto end
+	jumpedOver(n)
+end:
+	return
+}
+
+func skippedByGoto(n int, ok bool) {
+	if ok {
+		goto done
+	}
+	skippedByGoto(n, ok)
+done:
+}
+
+func deadAfterPanic() {
+	panic("stop")
+	deadAfterPanic()
+}
+
+func exitedByHelper(err error) {
+	if err != nil {
+		mustFail(err)
+	}
+	exitedByHelper(err) // want `unconditional recursive call`
+}
+
+func mustFail(error) { os.Exit(1) }
+
+func labeledElsewhere(n int, xs []int) {
+outer:
+	for range xs {
+		for range xs {
+			if n > 0 {
+				break outer
+			}
+		}
+	}
+	labeledElsewhere(n, xs)
+}
+
+func afterForever(n int) {
+	for {
+	}
+	afterForever(n)
+}
+
+func afterEmptySelect(n int) {
+	select {}
+	afterEmptySelect(n)
+}
+
+func bounded(n int) {
+	if n > 0 {
+		bounded(n - 1)
+	}
+}
+
+func shortened(s string) bool {
+	return s != "" && shortened(s[1:])
+}
+
+func testedFirst(s string) bool {
+	return testedFirst(s) && s != "" // want `unconditional recursive call`
+}
+
+func retriedOn(err error) bool {
+	return err == nil || retriedOn(err)
+}
+
+func each(xs []int) {
+	for range xs {
+		each(xs)
+	}
+}
+
+func counted(n int) {
+	for i := 0; i < n; i++ {
+		counted(n)
+	}
+}
+
+func caseBody(n int) {
+	switch {
+	case n > 0:
+		caseBody(n)
+	}
+}
+
+func selectBody(n int, ch chan int) {
+	select {
+	case ch <- n:
+		selectBody(n, ch)
+	}
+}
+
+func inPlace() {
+	func() {
+		inPlace()
+	}()
+}
+
+func throughValue() {
+	g := throughValue
+	g()
+}
+
+type runner interface {
+	run()
+}
+
+func (x *second) dispatch() {
+	var r runner = x
+	r.run()
+}
+
+func panicGuard(ok bool) {
+	if !ok {
+		panic("not ok")
+	}
+	panicGuard(ok)
+}
+
+func logFatalGuard(msg string) {
+	if msg != "" {
+		log.Fatal(msg)
+	}
+	logFatalGuard(msg)
+}
+
+func exitGuard(n int) {
+	if n < 0 {
+		os.Exit(1)
+	}
+	exitGuard(n)
+}
+
+func goexitGuard(n int) {
+	if n < 0 {
+		runtime.Goexit()
+	}
+	goexitGuard(n)
+}
+
+func tFatalGuard(t *testing.T, n int) {
+	if n < 0 {
+		t.Fatal("negative")
+	}
+	tFatalGuard(t, n-1)
+}
+
+func tFailNowGuard(t *testing.T, n int) {
+	if n < 0 {
+		t.FailNow()
+	}
+	tFailNowGuard(t, n-1)
+}
+
+func tSkipGuard(t *testing.T, n int) {
+	if n < 0 {
+		t.Skip("negative")
+	}
+	tSkipGuard(t, n-1)
+}
+
+func tbFatalGuard(tb testing.TB, n int) {
+	if n < 0 {
+		tb.Fatal("negative")
+	}
+	tbFatalGuard(tb, n-1)
+}
+
+func logPanicGuard(msg string) {
+	if msg != "" {
+		log.Panic(msg)
+	}
+	logPanicGuard(msg)
+}
+
+func logFatalfGuard(format string) {
+	if format != "" {
+		log.Fatalf("%s", format)
+	}
+	logFatalfGuard(format)
+}
+
+func tSkipfGuard(t *testing.T, n int) {
+	if n < 0 {
+		t.Skipf("n=%d", n)
+	}
+	tSkipfGuard(t, n-1)
+}
+
+func brokeInLoop(n int) {
+	for {
+		if n <= 0 {
+			break
+		}
+		brokeInLoop(n - 1)
+	}
+}
+
+func continuedInLoop(n int) {
+	for {
+		if n > 0 {
+			continue
+		}
+		continuedInLoop(n)
+	}
+}
+
+func continuedFromSwitch(n int) {
+	for {
+		switch n {
+		case 1:
+			continue
+		}
+		continuedFromSwitch(n)
+	}
+}
+
+func continuedFromSelect(ch chan int, n int) {
+	for {
+		select {
+		case <-ch:
+			continue
+		}
+		continuedFromSelect(ch, n)
+	}
+}
+
+func returnInLoop(n int) {
+	for i := 0; i < n; i++ {
+		if i > 5 {
+			return
+		}
+	}
+	returnInLoop(n)
+}
+
+func returnedFromSwitch(n int) int {
+	switch {
+	case n > 0:
+		return n
+	}
+	return returnedFromSwitch(n)
+}
+
+func returnedFromSelect(ch chan bool) {
+	select {
+	case <-ch:
+		return
+	}
+	returnedFromSelect(ch)
+}
+
+func ping() { pong() }
+
+func pong() { ping() }
