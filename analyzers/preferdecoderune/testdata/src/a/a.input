@@ -1,0 +1,103 @@
+package a
+
+func initial(s string) rune {
+	return []rune(s)[0] // want `string converted to a rune slice; use utf8.DecodeRuneInString`
+}
+
+const zero = 0
+
+func namedIndex(s string) bool {
+	return []rune(s)[zero] == 'x' // want `string converted to a rune slice; use utf8.DecodeRuneInString`
+}
+
+func int32s(s string) rune {
+	return []int32(s)[0] // want `string converted to a rune slice; use utf8.DecodeRuneInString`
+}
+
+func parenthesized(s string) rune {
+	return ([]rune(s))[0] // want `string converted to a rune slice; use utf8.DecodeRuneInString`
+}
+
+func parenthesizedType(s string) rune {
+	return ([]rune)(s)[0] // want `string converted to a rune slice; use utf8.DecodeRuneInString`
+}
+
+type name string
+
+func defined(s name) rune {
+	return []rune(s)[0] // want `string converted to a rune slice; use utf8.DecodeRuneInString`
+}
+
+type runes []rune
+
+func namedSlice(s string) rune {
+	return runes(s)[0] // want `string converted to a rune slice; use utf8.DecodeRuneInString`
+}
+
+func generic[T ~string](s T) rune {
+	return []rune(s)[0] // want `string converted to a rune slice; use utf8.DecodeRuneInString`
+}
+
+type box[T any] []T
+
+func instantiated(s string) rune {
+	return box[rune](s)[0] // want `string converted to a rune slice; use utf8.DecodeRuneInString`
+}
+
+func targetParam[S ~[]rune](s string) rune {
+	return S(s)[0] // want `string converted to a rune slice; use utf8.DecodeRuneInString`
+}
+
+type runeType rune
+
+func definedElement(s string) runeType {
+	return []runeType(s)[0] // want `string converted to a rune slice; use utf8.DecodeRuneInString`
+}
+
+func fromBytes(b []byte) rune {
+	return []rune(string(b))[0] // want `string converted to a rune slice; use utf8.DecodeRuneInString`
+}
+
+func literal() rune {
+	return []rune("one")[0] // want `string converted to a rune slice; use utf8.DecodeRuneInString`
+}
+
+func second(s string) rune {
+	return []rune(s)[1]
+}
+
+func variableIndex(s string, i int) rune {
+	return []rune(s)[i]
+}
+
+func runeSlice(rs []rune) rune {
+	return rs[0]
+}
+
+func chars(s string) []rune {
+	return []rune(s)
+}
+
+func viaCall(s string) rune {
+	return chars(s)[0]
+}
+
+func converted(rs []rune) rune {
+	return []rune(rs)[0]
+}
+
+func octets(s string) byte {
+	return []byte(s)[0]
+}
+
+func sliceParam[T ~[]rune](rs T) rune {
+	return []rune(rs)[0]
+}
+
+func mixedParam[T ~string | ~[]rune](s T) rune {
+	return []rune(s)[0]
+}
+
+func count(s string) int {
+	return len([]rune(s))
+}

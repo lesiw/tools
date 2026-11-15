@@ -112,6 +112,7 @@ import (
 	"lesiw.io/tools/analyzers/nilreturn"
 	"lesiw.io/tools/analyzers/octal"
 	"lesiw.io/tools/analyzers/offby1"
+	"lesiw.io/tools/analyzers/preferdecoderune"
 	"lesiw.io/tools/analyzers/preferfprint"
 	"lesiw.io/tools/analyzers/preferstringwriter"
 	"lesiw.io/tools/analyzers/recvname"
@@ -253,6 +254,7 @@ var (
 		nilreturn.Analyzer,
 		octal.Analyzer,
 		offby1.Analyzer,
+		preferdecoderune.Analyzer,
 		preferfprint.Analyzer,
 		preferstringwriter.Analyzer,
 		printf.Analyzer,
