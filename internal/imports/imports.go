@@ -53,17 +53,23 @@ func Qualifier(pass *analysis.Pass, names map[string]string, importPath string, 
 
 // Add returns the edit that adds paths as an import declaration after the
 // package clause. A driver that only formats leaves the declaration in place,
-// and goimports folds it into the file's own block.
+// and goimports folds it into the file's own block. One path is written as a
+// single declaration, since nothing unwraps a block of one.
 func Add(pass *analysis.Pass, file *ast.File, paths ...string) analysis.TextEdit {
 	var (
 		tokFile = pass.Fset.File(file.Pos())
 		b       strings.Builder
 	)
-	b.WriteString("\n\nimport (\n")
-	for _, importPath := range paths {
-		b.WriteString("\t" + strconv.Quote(importPath) + "\n")
+	b.WriteString("\n\n")
+	if len(paths) == 1 {
+		b.WriteString("import " + strconv.Quote(paths[0]))
+	} else {
+		b.WriteString("import (\n")
+		for _, importPath := range paths {
+			b.WriteString("\t" + strconv.Quote(importPath) + "\n")
+		}
+		b.WriteString(")")
 	}
-	b.WriteString(")")
 	pos := tokFile.LineStart(tokFile.Line(file.Name.Pos())+1) - 1
 	return analysis.TextEdit{Pos: pos, End: pos, NewText: []byte(b.String())}
 }
