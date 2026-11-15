@@ -64,7 +64,7 @@ func check(pass *analysis.Pass, call *ast.CallExpr) {
 	}
 	for _, ret := range returns(less.Body) {
 		// sortmismatch reports a comparison that does not mention the slice.
-		if !names(pass, ret, slice) {
+		if !astexpr.Mentions(pass, ret, slice) {
 			continue
 		}
 		if throughCall(pass, ret, slice) {
@@ -148,48 +148,6 @@ func returns(body *ast.BlockStmt) []ast.Expr {
 	return results
 }
 
-// names reports whether e mentions s anywhere, in any form.
-func names(pass *analysis.Pass, e, s ast.Expr) bool {
-	var found bool
-	ast.Inspect(e, func(n ast.Node) bool {
-		if expr, ok := n.(ast.Expr); ok && same(pass, expr, s) {
-			found = true
-		}
-		return !found
-	})
-	return found
-}
-
-// same reports whether a and b read the same value: the same identifiers,
-// field names, indexes, literals, and dereferences. A call is left out, since
-// two of them may differ.
-func same(pass *analysis.Pass, a, b ast.Expr) bool {
-	a, b = ast.Unparen(a), ast.Unparen(b)
-	switch a := a.(type) {
-	case *ast.Ident:
-		ident, ok := b.(*ast.Ident)
-		if !ok {
-			return false
-		}
-		obj := pass.TypesInfo.ObjectOf(a)
-		return obj != nil && obj == pass.TypesInfo.ObjectOf(ident)
-	case *ast.SelectorExpr:
-		sel, ok := b.(*ast.SelectorExpr)
-		return ok && a.Sel.Name == sel.Sel.Name && same(pass, a.X, sel.X)
-	case *ast.IndexExpr:
-		index, ok := b.(*ast.IndexExpr)
-		return ok && same(pass, a.X, index.X) &&
-			same(pass, a.Index, index.Index)
-	case *ast.StarExpr:
-		star, ok := b.(*ast.StarExpr)
-		return ok && same(pass, a.X, star.X)
-	case *ast.BasicLit:
-		lit, ok := b.(*ast.BasicLit)
-		return ok && a.Kind == lit.Kind && a.Value == lit.Value
-	}
-	return false
-}
-
 // throughCall reports whether e hands s to a call that astexpr.Pure does not
 // clear, where handed finds s in the call's receiver or its arguments. Such a
 // call may read the elements without naming them: rows.at(i) reads the element
@@ -211,12 +169,12 @@ func throughCall(pass *analysis.Pass, e, s ast.Expr) bool {
 // arguments.
 func handed(pass *analysis.Pass, call *ast.CallExpr, s ast.Expr) bool {
 	if sel, ok := ast.Unparen(call.Fun).(*ast.SelectorExpr); ok {
-		if same(pass, base(pass, sel.X), s) {
+		if astexpr.Same(pass, base(pass, sel.X), s) {
 			return true
 		}
 	}
 	for _, arg := range call.Args {
-		if same(pass, base(pass, arg), s) {
+		if astexpr.Same(pass, base(pass, arg), s) {
 			return true
 		}
 	}

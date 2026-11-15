@@ -21,6 +21,8 @@ import (
 	"go/version"
 
 	"golang.org/x/tools/go/analysis"
+
+	"lesiw.io/tools/internal/astexpr"
 )
 
 var Analyzer = &analysis.Analyzer{
@@ -144,7 +146,7 @@ func counted(pass *analysis.Pass, stmt *ast.ForStmt) (*ast.Ident, ast.Expr) {
 	}
 	obj := pass.TypesInfo.ObjectOf(index)
 	cond, ok := stmt.Cond.(*ast.BinaryExpr)
-	if !ok || cond.Op != token.LSS || !same(pass, cond.X, index) {
+	if !ok || cond.Op != token.LSS || !astexpr.Same(pass, cond.X, index) {
 		return nil, nil
 	}
 	slice, ok := lenOperand(pass, cond.Y)
@@ -152,7 +154,7 @@ func counted(pass *analysis.Pass, stmt *ast.ForStmt) (*ast.Ident, ast.Expr) {
 		return nil, nil
 	}
 	post, ok := stmt.Post.(*ast.IncDecStmt)
-	if !ok || post.Tok != token.INC || !same(pass, post.X, index) {
+	if !ok || post.Tok != token.INC || !astexpr.Same(pass, post.X, index) {
 		return nil, nil
 	}
 	return index, slice
@@ -223,7 +225,10 @@ func zeroed(pass *analysis.Pass, l loop) bool {
 	if !ok {
 		return false
 	}
-	if !same(pass, target.X, l.slice) || !same(pass, target.Index, l.index) {
+	if !astexpr.Same(pass, target.X, l.slice) {
+		return false
+	}
+	if !astexpr.Same(pass, target.Index, l.index) {
 		return false
 	}
 	if t := pass.TypesInfo.TypeOf(target.X); t == nil || !sliceType(t) {
@@ -295,36 +300,6 @@ func constZero(v constant.Value) bool {
 		return constant.StringVal(v) == ""
 	case constant.Int, constant.Float, constant.Complex:
 		return constant.Sign(v) == 0
-	}
-	return false
-}
-
-// same reports whether a and b read the same value: the same identifiers,
-// field names, indexes, literals, and dereferences. A call is left out, since
-// two of them may differ.
-func same(pass *analysis.Pass, a, b ast.Expr) bool {
-	a, b = ast.Unparen(a), ast.Unparen(b)
-	switch a := a.(type) {
-	case *ast.Ident:
-		ident, ok := b.(*ast.Ident)
-		if !ok {
-			return false
-		}
-		obj := pass.TypesInfo.ObjectOf(a)
-		return obj != nil && obj == pass.TypesInfo.ObjectOf(ident)
-	case *ast.SelectorExpr:
-		sel, ok := b.(*ast.SelectorExpr)
-		return ok && a.Sel.Name == sel.Sel.Name && same(pass, a.X, sel.X)
-	case *ast.IndexExpr:
-		index, ok := b.(*ast.IndexExpr)
-		return ok && same(pass, a.X, index.X) &&
-			same(pass, a.Index, index.Index)
-	case *ast.StarExpr:
-		star, ok := b.(*ast.StarExpr)
-		return ok && same(pass, a.X, star.X)
-	case *ast.BasicLit:
-		lit, ok := b.(*ast.BasicLit)
-		return ok && a.Kind == lit.Kind && a.Value == lit.Value
 	}
 	return false
 }

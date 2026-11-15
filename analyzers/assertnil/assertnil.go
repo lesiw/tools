@@ -21,6 +21,8 @@ import (
 	"slices"
 
 	"golang.org/x/tools/go/analysis"
+
+	"lesiw.io/tools/internal/astexpr"
 )
 
 var Analyzer = &analysis.Analyzer{
@@ -52,7 +54,7 @@ func check(pass *analysis.Pass, file *ast.File, ifStmt *ast.IfStmt) {
 	}
 	cs := conjuncts(ifStmt.Cond)
 	guarded := slices.IndexFunc(cs, func(c conjunct) bool {
-		return sameObject(pass, c.expr, guard)
+		return astexpr.Same(pass, c.expr, guard)
 	})
 	checked := slices.IndexFunc(cs, func(c conjunct) bool {
 		return isNotNil(pass, c.expr, value)
@@ -186,13 +188,6 @@ func neverNil(t types.Type) bool {
 	return ok
 }
 
-// sameObject reports whether e is an identifier that names the same object
-// as id.
-func sameObject(pass *analysis.Pass, e ast.Expr, id *ast.Ident) bool {
-	name, ok := ast.Unparen(e).(*ast.Ident)
-	return ok && pass.TypesInfo.ObjectOf(name) == pass.TypesInfo.ObjectOf(id)
-}
-
 // isNotNil reports whether e compares value with nil as not equal.
 func isNotNil(pass *analysis.Pass, e ast.Expr, value *ast.Ident) bool {
 	bin, ok := ast.Unparen(e).(*ast.BinaryExpr)
@@ -200,16 +195,16 @@ func isNotNil(pass *analysis.Pass, e ast.Expr, value *ast.Ident) bool {
 		return false
 	}
 	if isNil(pass, bin.Y) {
-		return sameObject(pass, bin.X, value)
+		return astexpr.Same(pass, bin.X, value)
 	}
-	return isNil(pass, bin.X) && sameObject(pass, bin.Y, value)
+	return isNil(pass, bin.X) && astexpr.Same(pass, bin.Y, value)
 }
 
 // rewritten reports whether an operand can give either name a new value,
 // through its address or from a function literal that writes it.
 func rewritten(pass *analysis.Pass, others []conjunct, value, guard *ast.Ident) bool {
 	mutates := func(e ast.Expr) bool {
-		return sameObject(pass, e, value) || sameObject(pass, e, guard)
+		return astexpr.Same(pass, e, value) || astexpr.Same(pass, e, guard)
 	}
 	for _, c := range others {
 		var found bool

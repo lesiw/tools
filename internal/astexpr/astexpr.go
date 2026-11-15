@@ -1,6 +1,6 @@
 // Package astexpr holds the facts about an expression that the analyzers
-// share: its printed form, whether reading it twice gives one value, and
-// whether its type can hold a NaN.
+// share: how it prints, whether two of them read the same value, whether
+// reading one twice gives one value, and whether its type can hold a NaN.
 package astexpr
 
 import (
@@ -9,14 +9,15 @@ import (
 	"go/printer"
 	"go/token"
 	"go/types"
+	"strings"
 
 	"golang.org/x/tools/go/analysis"
 )
 
-// Text returns e printed on one line. A fresh FileSet drops the source line
-// breaks, so a wrapped expression matches an unwrapped one, and go/printer
-// keeps the elements of a composite literal, which types.ExprString would
-// elide.
+// Text returns e as source text, with the line breaks the printer chooses. A
+// fresh FileSet drops the line breaks of the source, so a wrapped expression
+// matches an unwrapped one, and go/printer keeps the elements of a composite
+// literal, which types.ExprString would elide.
 func Text(e ast.Expr) string {
 	var buf bytes.Buffer
 	// A bytes.Buffer cannot fail.
@@ -28,6 +29,64 @@ func Text(e ast.Expr) string {
 // conversion does, and so does a builtin that only reads its arguments.
 func Pure(pass *analysis.Pass, call *ast.CallExpr) bool {
 	return pureCall(pass, call)
+}
+
+// OneLine returns e as source text on one line, and reports false when it has
+// none, as a raw string holding a newline has none.
+func OneLine(e ast.Expr) (string, bool) {
+	text := Text(e)
+	if strings.ContainsRune(text, '\n') {
+		return "", false
+	}
+	return text, true
+}
+
+// Same reports whether a and b read the same value: the same identifiers and
+// fields by object, and the same indexes, literals, and dereferences. A name
+// is compared by the object it names, so a shadowed one is a different value.
+// A call is left out, since two of them may differ.
+func Same(pass *analysis.Pass, a, b ast.Expr) bool {
+	a, b = ast.Unparen(a), ast.Unparen(b)
+	switch a := a.(type) {
+	case *ast.Ident:
+		ident, ok := b.(*ast.Ident)
+		if !ok {
+			return false
+		}
+		obj := pass.TypesInfo.ObjectOf(a)
+		return obj != nil && obj == pass.TypesInfo.ObjectOf(ident)
+	case *ast.SelectorExpr:
+		sel, ok := b.(*ast.SelectorExpr)
+		if !ok {
+			return false
+		}
+		obj := pass.TypesInfo.ObjectOf(a.Sel)
+		return obj != nil && obj == pass.TypesInfo.ObjectOf(sel.Sel) &&
+			Same(pass, a.X, sel.X)
+	case *ast.IndexExpr:
+		index, ok := b.(*ast.IndexExpr)
+		return ok && Same(pass, a.X, index.X) &&
+			Same(pass, a.Index, index.Index)
+	case *ast.StarExpr:
+		star, ok := b.(*ast.StarExpr)
+		return ok && Same(pass, a.X, star.X)
+	case *ast.BasicLit:
+		lit, ok := b.(*ast.BasicLit)
+		return ok && a.Kind == lit.Kind && a.Value == lit.Value
+	}
+	return false
+}
+
+// Mentions reports whether e mentions s anywhere, in any form.
+func Mentions(pass *analysis.Pass, e ast.Node, s ast.Expr) bool {
+	var found bool
+	ast.Inspect(e, func(n ast.Node) bool {
+		if expr, ok := n.(ast.Expr); ok && Same(pass, expr, s) {
+			found = true
+		}
+		return !found
+	})
+	return found
 }
 
 // Effectful reports whether reading e can give a different value the second

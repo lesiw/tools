@@ -22,6 +22,8 @@ import (
 
 	"golang.org/x/tools/go/analysis"
 	"golang.org/x/tools/go/types/typeutil"
+
+	"lesiw.io/tools/internal/astexpr"
 )
 
 var Analyzer = &analysis.Analyzer{
@@ -68,7 +70,7 @@ func mismatchOf(pass *analysis.Pass, call *ast.CallExpr) (ast.Expr, bool) {
 	if !nameable(slice) || !callFree(slice) || !callFree(less.Body) {
 		return nil, false
 	}
-	return slice, !names(pass, less.Body, slice)
+	return slice, !astexpr.Mentions(pass, less.Body, slice)
 }
 
 // isSort reports whether call is one of the sort package's slice functions.
@@ -116,46 +118,4 @@ func callFree(e ast.Node) bool {
 		return ok
 	})
 	return ok
-}
-
-// names reports whether e mentions s anywhere, in any form.
-func names(pass *analysis.Pass, e ast.Node, s ast.Expr) bool {
-	var found bool
-	ast.Inspect(e, func(n ast.Node) bool {
-		if expr, ok := n.(ast.Expr); ok && same(pass, expr, s) {
-			found = true
-		}
-		return !found
-	})
-	return found
-}
-
-// same reports whether a and b read the same value: the same identifiers,
-// field names, indexes, literals, and dereferences. A call is left out, since
-// two of them may differ.
-func same(pass *analysis.Pass, a, b ast.Expr) bool {
-	a, b = ast.Unparen(a), ast.Unparen(b)
-	switch a := a.(type) {
-	case *ast.Ident:
-		ident, ok := b.(*ast.Ident)
-		if !ok {
-			return false
-		}
-		obj := pass.TypesInfo.ObjectOf(a)
-		return obj != nil && obj == pass.TypesInfo.ObjectOf(ident)
-	case *ast.SelectorExpr:
-		sel, ok := b.(*ast.SelectorExpr)
-		return ok && a.Sel.Name == sel.Sel.Name && same(pass, a.X, sel.X)
-	case *ast.IndexExpr:
-		index, ok := b.(*ast.IndexExpr)
-		return ok && same(pass, a.X, index.X) &&
-			same(pass, a.Index, index.Index)
-	case *ast.StarExpr:
-		star, ok := b.(*ast.StarExpr)
-		return ok && same(pass, a.X, star.X)
-	case *ast.BasicLit:
-		lit, ok := b.(*ast.BasicLit)
-		return ok && a.Kind == lit.Kind && a.Value == lit.Value
-	}
-	return false
 }

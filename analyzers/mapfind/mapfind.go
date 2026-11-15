@@ -19,7 +19,6 @@ package mapfind
 import (
 	"bytes"
 	"go/ast"
-	"go/format"
 	"go/token"
 	"go/types"
 	"slices"
@@ -28,6 +27,7 @@ import (
 	"golang.org/x/tools/go/analysis"
 
 	"lesiw.io/tools/analyzers/linelen"
+	"lesiw.io/tools/internal/astexpr"
 )
 
 var Analyzer = &analysis.Analyzer{
@@ -136,9 +136,9 @@ func (f *finder) condition(keyType types.Type) bool {
 		return false
 	}
 	switch {
-	case sameObject(f.pass, bin.X, f.key):
+	case astexpr.Same(f.pass, bin.X, f.key):
 		f.want = bin.Y
-	case sameObject(f.pass, bin.Y, f.key):
+	case astexpr.Same(f.pass, bin.Y, f.key):
 		f.want = bin.X
 	default:
 		return false
@@ -167,8 +167,8 @@ func (f *finder) returnUses() bool {
 				unusable = true
 			}
 		case *ast.IndexExpr:
-			index := sameObject(f.pass, n.Index, f.key)
-			if sameObject(f.pass, n.X, f.rng.X) && index {
+			index := astexpr.Same(f.pass, n.Index, f.key)
+			if astexpr.Same(f.pass, n.X, f.rng.X) && index {
 				f.lookups = append(f.lookups, n)
 				f.reads = true
 				return false
@@ -220,7 +220,7 @@ func (f *finder) fix() ([]analysis.TextEdit, bool) {
 		return nil, false
 	}
 	end := f.headerEnd(file, src)
-	m, ok := render(f.rng.X)
+	m, ok := astexpr.OneLine(f.rng.X)
 	if !ok {
 		return nil, false
 	}
@@ -231,7 +231,7 @@ func (f *finder) fix() ([]analysis.TextEdit, bool) {
 	if value == m {
 		return nil, false
 	}
-	want, ok := render(ast.Unparen(f.want))
+	want, ok := astexpr.OneLine(ast.Unparen(f.want))
 	if !ok {
 		return nil, false
 	}
@@ -656,50 +656,6 @@ func indexed(e ast.Expr) bool {
 		return true
 	}
 	return false
-}
-
-// sameObject reports whether a and b refer to the same object, so a shadowed
-// name is a different value.
-func sameObject(pass *analysis.Pass, a, b ast.Expr) bool {
-	switch x := ast.Unparen(a).(type) {
-	case *ast.Ident:
-		y, ok := ast.Unparen(b).(*ast.Ident)
-		return ok && pass.TypesInfo.ObjectOf(x) == pass.TypesInfo.ObjectOf(y)
-	case *ast.StarExpr:
-		y, ok := ast.Unparen(b).(*ast.StarExpr)
-		return ok && sameObject(pass, x.X, y.X)
-	case *ast.SelectorExpr:
-		y, ok := ast.Unparen(b).(*ast.SelectorExpr)
-		if !ok {
-			return false
-		}
-		sel := pass.TypesInfo.ObjectOf(x.Sel)
-		return sel != nil && sel == pass.TypesInfo.ObjectOf(y.Sel) &&
-			sameObject(pass, x.X, y.X)
-	case *ast.IndexExpr:
-		y, ok := ast.Unparen(b).(*ast.IndexExpr)
-		return ok && sameObject(pass, x.X, y.X) &&
-			sameObject(pass, x.Index, y.Index)
-	case *ast.BasicLit:
-		// A map held in a slice is named by a literal index.
-		y, ok := ast.Unparen(b).(*ast.BasicLit)
-		return ok && x.Kind == y.Kind && x.Value == y.Value
-	}
-	return false
-}
-
-// render returns e as source text on one line, and fails when e has no
-// one-line form, as a raw string has none. An empty FileSet makes the printer
-// place the expression itself, dropping the author's line breaks.
-func render(e ast.Expr) (string, bool) {
-	var buf bytes.Buffer
-	if err := format.Node(&buf, token.NewFileSet(), e); err != nil {
-		return "", false
-	}
-	if bytes.ContainsRune(buf.Bytes(), '\n') {
-		return "", false
-	}
-	return buf.String(), true
 }
 
 // precedes reports whether a call or a channel receive in node finishes before
