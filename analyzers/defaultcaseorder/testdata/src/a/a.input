@@ -1,0 +1,365 @@
+package a
+
+func middle(n int) int {
+	switch n {
+	case 1:
+		return 1
+	default: // want `default clause is in the middle`
+		return 0
+	case 2:
+		return 2
+	}
+}
+
+func leading(n int) int {
+	switch n {
+	default:
+		return 0
+	case 1:
+		return 1
+	}
+}
+
+func ending(n int) int {
+	switch n {
+	case 1:
+		return 1
+	default:
+		return 0
+	}
+}
+
+func only(n int) int {
+	switch n {
+	default:
+		return 0
+	}
+}
+
+func emptyLast(n int) int {
+	switch n {
+	case 1:
+		return 1
+	default: // want `default clause is in the middle`
+		return 0
+	case 2:
+	}
+	return 2
+}
+
+func emptyDefault(n int) int {
+	switch n {
+	case 1:
+		return 1
+	default: // want `default clause is in the middle`
+	case 2:
+		return 2
+	}
+	return 0
+}
+
+func emptyBody(n int) {
+	switch n {
+	}
+	select {}
+}
+
+func kinds(v any) int {
+	switch v.(type) {
+	case int:
+		return 1
+	default: // want `default clause is in the middle`
+		return 0
+	case string:
+		return 2
+	}
+}
+
+func ready(a, b chan int) int {
+	select {
+	case <-a:
+		return 1
+	default: // want `default clause is in the middle`
+		return 0
+	case <-b:
+		return 2
+	}
+}
+
+func fallInto(n int) int {
+	x := 0
+	switch n {
+	case 1:
+		x = 1
+		fallthrough
+	default:
+		x += 10
+	case 2:
+		x = 2
+	}
+	return x
+}
+
+func fallOutOf(n int) int {
+	x := 0
+	switch n {
+	case 1:
+		x = 1
+	default:
+		fallthrough
+	case 2:
+		x = 2
+	}
+	return x
+}
+
+func labeledFallthrough(n int) int {
+	x := 0
+	switch n {
+	case 1:
+		x = 1
+		goto mid
+	mid:
+		fallthrough
+	default:
+		x += 10
+	case 2:
+		x = 2
+	}
+	return x
+}
+
+func labeledOutOf(n int) int {
+	x := 0
+	switch n {
+	case 1:
+		x = 1
+	default:
+		x += 10
+		goto mid
+	mid:
+		fallthrough
+	case 2:
+		x = 2
+	}
+	return x
+}
+
+func threeWay(a, b int) int {
+	switch {
+	case a > b:
+		return 1
+	default: // want `default clause is in the middle`
+		return 0
+	case a < b:
+		return 2
+	}
+}
+
+func gapBelow(n int) int {
+	switch n {
+	case 1:
+		return 1
+	default: // want `default clause is in the middle`
+		return 0
+
+	case 2:
+		return 2
+	}
+}
+
+func spaced(n int) int {
+	switch n {
+	case 1:
+		return 1
+
+	default: // want `default clause is in the middle`
+		return 0
+	case 2:
+		return 2
+	}
+}
+
+func commented(n int) int {
+	switch n {
+	case 1:
+		return 1
+	// The fallback.
+	default: // want `default clause is in the middle`
+		return 0
+	case 2:
+		return 2
+	}
+}
+
+func paragraphs(n int) int {
+	switch n {
+	case 1:
+		return 1
+	// Small values first.
+
+	// The fallback.
+	default: // want `default clause is in the middle`
+		return 0
+	case 2:
+		return 2
+	}
+}
+
+func caseNote(n int) int {
+	switch n {
+	case 1: // the first case
+		return 1
+	default: // want `default clause is in the middle`
+		return 0
+	case 2:
+		return 2
+	}
+}
+
+func detached(n int) int {
+	switch n {
+	case 1:
+		return 1
+	// Small values first.
+
+	default: // want `default clause is in the middle`
+		return 0
+	case 2:
+		return 2
+	}
+}
+
+func bodyNote(n int) int {
+	switch n {
+	case 1:
+		n = n + 1
+		// n is now one higher.
+	default: // want `default clause is in the middle`
+		return 0
+	case 2:
+		return 2
+	}
+	return n
+}
+
+func nextNote(n int) int {
+	switch n {
+	case 1:
+		return 1
+	default: // want `default clause is in the middle`
+		return 0
+	// Reached when n is 2.
+	case 2:
+		return 2
+	}
+}
+
+func trailing(n int) int {
+	switch n {
+	case 1:
+		return 1
+	default: // want `default clause is in the middle`
+		return 0 // none of the above
+	case 2:
+		return 2
+	}
+}
+
+func blockComment(n int) int {
+	switch n {
+	case 1:
+		return 1
+	default: // want `default clause is in the middle`
+		return 0 /* zero
+		is out of range */
+	case 2:
+		return 2
+	}
+}
+
+func tailBlockComment(n int) int {
+	switch n {
+	case 1:
+		return 1
+	default: // want `default clause is in the middle`
+		return 0
+	case 2:
+		return 2 /* the largest
+		value */
+	}
+}
+
+func bodyTailNote(n int) int {
+	switch n {
+	case 1:
+		return 1
+	default: // want `default clause is in the middle`
+		return 0
+		// No value is out of range.
+	case 2:
+		return 2
+	}
+}
+
+func tailNote(n int) int {
+	switch n {
+	case 1:
+		return 1
+	default: // want `default clause is in the middle`
+		return 0
+	case 2:
+		return 2
+		// The largest value.
+	}
+}
+
+func gapBeforeBrace(n int) int {
+	switch n {
+	case 1:
+		return 1
+	default: // want `default clause is in the middle`
+		return 0
+	case 2:
+		return 2
+
+	}
+}
+
+func innerInDefault(a, b int) int {
+	switch a {
+	case 1:
+		return 1
+	default: // want `default clause is in the middle`
+		switch b {
+		case 2:
+			return 2
+		default: // want `default clause is in the middle`
+			return 0
+		case 3:
+			return 3
+		}
+	case 4:
+		return 4
+	}
+	return 0
+}
+
+func nested(a, b int) int {
+	switch a {
+	case 1:
+		switch b {
+		case 2:
+			return 2
+		default: // want `default clause is in the middle`
+			return 0
+		case 3:
+			return 3
+		}
+	default: // want `default clause is in the middle`
+		return 9
+	case 4:
+		return 4
+	}
+	return 0
+}

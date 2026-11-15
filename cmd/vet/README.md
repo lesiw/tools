@@ -477,6 +477,22 @@ func serve(err error) {
 }
 ```
 
+## defaultcaseorder
+
+Reports a default clause in the middle of a switch, a type switch, or a select. A reader looks for the default at the top of the clause list or at the end.
+
+Adapted from go-critic's defaultCaseOrder.
+
+```
+func f(n int) {
+    switch n {
+    case 1:
+    default:
+    case 2:
+    }
+}
+```
+
 ## defers
 
 Reports a defer statement whose argument calls time.Since. The argument is evaluated where the defer stands, so the elapsed time is measured at once; a func literal that makes the call when the defer runs is the fix.

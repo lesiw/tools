@@ -44,6 +44,7 @@ usually groups values by meaning rather than by value.
 
 A switch whose default clause is in the middle is left alone: the default
 splits the clauses into two runs, so there is no one run to read.
+`defaultcaseorder` moves the clause last.
 
 A switch with a clause that ends in a fallthrough is left alone: the clause
 order is part of the program.
