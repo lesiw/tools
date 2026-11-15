@@ -52,3 +52,14 @@ func Dir(t *testing.T, testdata fs.FS) string {
 	}
 	return dir
 }
+
+// Module writes a go.mod for dir, naming modulePath as the module and
+// goVersion as the value of its go directive.
+func Module(t *testing.T, dir, modulePath, goVersion string) {
+	t.Helper()
+	gomod := "module " + modulePath + "\n\ngo " + goVersion + "\n"
+	err := os.WriteFile(filepath.Join(dir, "go.mod"), []byte(gomod), 0o666)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
