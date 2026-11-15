@@ -1,0 +1,7 @@
+package a
+
+import . "fmt"
+
+func dotted(s string) string {
+	return Sprintf("\"%s\"", s) // want `format string quotes a %s; use %q`
+}

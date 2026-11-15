@@ -1,0 +1,7 @@
+package a
+
+import f "fmt"
+
+func aliased(s string) string {
+	return f.Sprintf("\"%s\"", s) // want `format string quotes a %s; use %q`
+}

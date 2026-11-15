@@ -1,0 +1,142 @@
+package a
+
+import (
+	"fmt"
+	"log"
+	"os"
+	"testing"
+)
+
+func literals(s string) []string {
+	return []string{
+		fmt.Sprintf("\"%s\"", s),                 // want `format string quotes a %s; use %q`
+		fmt.Sprintf(`"%s"`, s),                   // want `format string quotes a %s; use %q`
+		fmt.Sprintf("\x22%s\x22", s),             // want `format string quotes a %s; use %q`
+		fmt.Sprintf("\u0022%s\u0022", s),         // want `format string quotes a %s; use %q`
+		fmt.Sprintf(("\"%s\""), s),               // want `format string quotes a %s; use %q`
+		fmt.Sprintf(`the name "%s" is taken`, s), // want `format string quotes a %s; use %q`
+		fmt.Sprintf("\u00e9 \"%s\"", s),          // want `format string quotes a %s; use %q`
+		fmt.Sprintf("100%% \"%s\"", s),           // want `format string quotes a %s; use %q`
+	}
+}
+
+type label string
+
+func typed(l label, b []byte, sum [32]byte, n int, v any) []string {
+	return []string{
+		fmt.Sprintf("\"%s\"", l),   // want `format string quotes a %s; use %q`
+		fmt.Sprintf("\"%s\"", b),   // want `format string quotes a %s; use %q`
+		fmt.Sprintf("\"%s\"", sum), // want `format string quotes a %s; use %q`
+		fmt.Sprintf("\"%s\"", n),
+		fmt.Sprintf("\"%s\"", v),
+	}
+}
+
+func wrapped(s string) error {
+	return fmt.Errorf("\"%s\"", s) // want `format string quotes a %s; use %q`
+}
+
+func printed(s string) {
+	fmt.Printf("\"%s\"", s)             // want `format string quotes a %s; use %q`
+	fmt.Fprintf(os.Stdout, "\"%s\"", s) // want `format string quotes a %s; use %q`
+	fmt.Appendf(nil, "\"%s\"", s)       // want `format string quotes a %s; use %q`
+}
+
+func logged(s string) {
+	log.Printf("\"%s\"", s) // want `format string quotes a %s; use %q`
+	log.Fatalf("\"%s\"", s) // want `format string quotes a %s; use %q`
+	log.Panicf("\"%s\"", s) // want `format string quotes a %s; use %q`
+}
+
+func loggedFrom(l *log.Logger, s string) {
+	l.Printf("\"%s\"", s) // want `format string quotes a %s; use %q`
+}
+
+func failed(t *testing.T, tb testing.TB, s string) {
+	t.Errorf("\"%s\"", s)  // want `format string quotes a %s; use %q`
+	t.Fatalf("\"%s\"", s)  // want `format string quotes a %s; use %q`
+	t.Logf("\"%s\"", s)    // want `format string quotes a %s; use %q`
+	t.Skipf("\"%s\"", s)   // want `format string quotes a %s; use %q`
+	tb.Errorf("\"%s\"", s) // want `format string quotes a %s; use %q`
+}
+
+func verbs(s string, n int) []string {
+	return []string{
+		fmt.Sprintf("%s", s),
+		fmt.Sprintf("%q", s),
+		fmt.Sprintf("`%s`", s),
+		fmt.Sprintf("%d: \"%s\"", n, s),
+		fmt.Sprintf("\"%s\" \"%s\"", s, s),
+		fmt.Sprintf("\"%s", s),
+		fmt.Sprintf("%s\"", s),
+		fmt.Sprintf("\"%v\"", s),
+	}
+}
+
+func modifiers(w int, s string) []string {
+	return []string{
+		fmt.Sprintf("\"%*s\"", w, s),
+		fmt.Sprintf("\"%5s\"", s),
+		fmt.Sprintf("\"%.2s\"", s),
+		fmt.Sprintf("\"%[1]s\"", s),
+	}
+}
+
+func attributes(s string) []string {
+	return []string{
+		fmt.Sprintf("mode=\"%s\"", s),
+		fmt.Sprintf("mode = \"%s\"", s),
+		fmt.Sprintf("mode=\t\"%s\"", s),
+		fmt.Sprintf("mode: \"%s\"", s), // want `format string quotes a %s; use %q`
+	}
+}
+
+func formatVariable(format, s string) string {
+	return fmt.Sprintf(format, s)
+}
+
+const format = "\"%s\""
+
+func formatConstant(s string) string {
+	return fmt.Sprintf(format, s)
+}
+
+func noValue() string {
+	return fmt.Sprintf("\"%s\"")
+}
+
+func spread(parts []any) string {
+	return fmt.Sprintf("\"%s\"", parts...)
+}
+
+func throughValue(s string) string {
+	sprintf := fmt.Sprintf
+	return sprintf("\"%s\"", s)
+}
+
+type printer struct{}
+
+func (printer) Sprintf(string, ...any) string { return "" }
+
+func shadowedMethod(p printer, s string) string {
+	return p.Sprintf("\"%s\"", s)
+}
+
+type styled string
+
+func (styled) Format(fmt.State, rune) {}
+
+type pointerStyled string
+
+func (*pointerStyled) Format(fmt.State, rune) {}
+
+func formatMethod(f styled, p pointerStyled) []string {
+	return []string{
+		fmt.Sprintf("\"%s\"", f),
+		fmt.Sprintf("\"%s\"", p), // want `format string quotes a %s; use %q`
+	}
+}
+
+func parameterized[T ~string](v T) string {
+	return fmt.Sprintf("\"%s\"", v)
+}
