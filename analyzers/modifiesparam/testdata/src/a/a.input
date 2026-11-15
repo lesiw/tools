@@ -1,0 +1,413 @@
+package a
+
+func overwritten(n int) {
+	n = 1 // want `dead write to parameter n`
+}
+
+func readAfter(n int) int {
+	n = 1
+	return n
+}
+
+func readBefore(n int) int {
+	println(n)
+	n = 2 // want `dead write to parameter n`
+	return 0
+}
+
+func added(n int) {
+	n += 2 // want `dead write to parameter n`
+}
+
+func stepped(n int) {
+	// want +2 `dead write to parameter n`
+	println("start")
+	n++
+	println("end")
+}
+
+func grown(n int) {
+	n = n + 1 // want `dead write to parameter n`
+}
+
+func assigned(n int) {
+	// want +2 `dead write to parameter n`
+	println("start")
+	n = 1
+	println("end")
+}
+
+func swapped(n, m int) {
+	// want +2 `dead write to parameter n` `dead write to parameter m`
+	println("start")
+	n, m = 1, 2
+}
+
+func tupled(n, m int, pair func() (int, int)) {
+	n, m = pair() // want `dead write to parameter n` `dead write to parameter m`
+}
+
+func tupledMixed(n, m int, pair func() (int, int)) int {
+	n, m = pair() // want `dead write to parameter n`
+	return m
+}
+
+func documented(n int) {
+	// want +2 `dead write to parameter n`
+	// why
+	n = 0
+}
+
+func measured(n int, s string) {
+	// want +2 `dead write to parameter n`
+	println("start")
+	n = len(s)
+}
+
+func uncalled(n int) int {
+	_ = func() int { return n }
+	n = 1
+	return 0
+}
+
+func once(n, m int) int {
+	x := 1
+	n, m = x, 2 // want `dead write to parameter n`
+	return m
+}
+
+func mixed(n, m int) int {
+	n, m = 1, 2 // want `dead write to parameter n`
+	return m
+}
+
+func branched(n int, c bool) int {
+	if c {
+		n = 1
+		return 0
+	}
+	return n
+}
+
+func rewritten(n int) int {
+	n = 1
+	n = 2
+	return n
+}
+
+func branchy(c bool, n int) int {
+	if c {
+		n = 1
+	} else {
+		n = 2
+	}
+	return n
+}
+
+func narrowed(xs ...int) {
+	xs = xs[:0] // want `dead write to parameter xs`
+}
+
+func namedResult() (n int) {
+	n = 1
+	return 2
+}
+
+func released(b []byte) {
+	b = nil
+}
+
+func unref(p *item) {
+	q := p
+	p = (*item)(nil)
+	println(q != nil)
+}
+
+func shadowed(n int) int {
+	{
+		n := 0
+		println(n)
+		n = 1
+	}
+	return 1
+}
+
+type item struct{ count int }
+
+func pointerField(p *item) {
+	p.count = 1
+}
+
+func valueField(v item) {
+	v.count = 1
+}
+
+func bumped(v item) {
+	v.count++
+}
+
+func enumerated(xs []int) {
+	xs[0] = 1
+}
+
+func arrayed(a [3]int) {
+	a[0] = 1
+}
+
+func (p *item) repointed() {
+	p = &item{count: 1} // want `dead write to parameter p`
+}
+
+func (v item) replaced() {
+	v = item{} // want `dead write to parameter v`
+}
+
+func (p *item) bump() {
+	p.count++
+}
+
+func called(v item) {
+	v.bump()
+	v = item{}
+}
+
+func sliced(a [3]int) {
+	s := a[:]
+	a = [3]int{1, 2, 3}
+	println(s[0])
+}
+
+func constrained[T interface {
+	~[3]int
+	comparable
+}](a T) {
+	s := a[:]
+	a = T{1, 2, 3}
+	println(s[0])
+}
+
+func sized[T ~[3]int](a T) {
+	s := a[:]
+	a = T{1, 2, 3}
+	println(s[0])
+}
+
+func fieldAddressed(v item) *int {
+	p := &v.count
+	v = item{count: 1}
+	return p
+}
+
+func indirect(p *item) {
+	held := &p.count
+	p = &item{count: 1} // want `dead write to parameter p`
+	println(*held)
+}
+
+func elementAddressed(a [3]int) *int {
+	p := &a[0]
+	a = [3]int{1, 2, 3}
+	return p
+}
+
+func addressed(n int) {
+	ptr := &n
+	n = 1
+	println(*ptr)
+}
+
+func jumped(n int) {
+top:
+	println(n)
+	n = 1
+	goto top
+}
+
+func looped(n int) int {
+	for i := 0; i < 3; i++ {
+		println(n)
+		n = i
+	}
+	return 0
+}
+
+func loopedDead(n int) int {
+	for i := 0; i < 3; i++ {
+		n = i // want `dead write to parameter n`
+	}
+	return 0
+}
+
+func counted(n int) int {
+	for n > 0 {
+		n--
+	}
+	return 0
+}
+
+func countedOut(more func() bool, n int) {
+	for ; more(); n++ {
+		println(0)
+	}
+}
+
+func reset(c bool, n int) {
+	for ; c; n = 1 { // want `dead write to parameter n`
+		println(0)
+	}
+}
+
+func initialized(n int, c bool) {
+	for i := 0; c; n = 1 { // want `dead write to parameter n`
+		println(i)
+	}
+}
+
+func doubled(n int, c bool) {
+	for ; c; n += 2 {
+		println(0)
+	}
+}
+
+func postCall(n int, c bool, s string) {
+	for ; c; n = len(s) { // want `dead write to parameter n`
+		println(0)
+	}
+}
+
+func switched(n int, c bool) {
+	switch n = 1; c { // want `dead write to parameter n`
+	default:
+		println(0)
+	}
+}
+
+func stored(n int) {
+	// want +2 `dead write to parameter n`
+	n = 1
+	n++
+}
+
+func inited(n int, c bool) {
+	for n = 1; c; { // want `dead write to parameter n`
+		println(0)
+	}
+}
+
+func endless(n int) {
+	for ; ; n++ {
+		println(0)
+	}
+}
+
+func annotated(n int, c bool) {
+	for ; c; n = 1 /* why */ { // want `dead write to parameter n`
+		println(0)
+	}
+}
+
+func noted(n int) {
+	// want +2 `dead write to parameter n`
+	println("start")
+	n = 1 // reset
+}
+
+func headed(n int, c bool) {
+	if n = 1; c { // want `dead write to parameter n`
+		println(0)
+	}
+}
+
+func trailing(n int) {
+	n++ // want `dead write to parameter n`
+}
+
+func commented(n int) {
+	// want +2 `dead write to parameter n`
+	println("start")
+	n /* why */ ++
+}
+
+func running(n int) int {
+	for i := 0; i < 3; i++ {
+		n = n + 1
+	}
+	return 0
+}
+
+func captured(n int) int {
+	read := func() int { return n }
+	n = 1
+	return read()
+}
+
+func deferred(n int) {
+	defer func() { println(n) }()
+	n = 1
+}
+
+func outer(n int, use func(func())) {
+	use(func() {
+		n = 1 // want `dead write to parameter n`
+	})
+}
+
+func selfInLiteral(n int, use func(func())) {
+	use(func() {
+		n = n + 1 // want `dead write to parameter n`
+	})
+}
+
+func filled(b []byte, fill func([]byte) []byte) {
+	b = fill(nil) // want `dead write to parameter b`
+}
+
+func endlessAssign(n int) {
+	for ; ; n = 1 { // want `dead write to parameter n`
+		println(0)
+	}
+}
+
+func literal(use func(func(int))) {
+	use(func(n int) {
+		n = 1 // want `dead write to parameter n`
+	})
+}
+
+func ranged(xs []int, n int) {
+	for n = range xs {
+		println(n)
+	}
+}
+
+func rangedDead(xs []int, n int) {
+	for n = range xs { // want `dead write to parameter n`
+		println(0)
+	}
+}
+
+func rangedComment(xs []int, n int) {
+	for n /* why */ = range xs { // want `dead write to parameter n`
+		println(0)
+	}
+}
+
+func valued(xs []int, n int) {
+	var i int
+	for i, n = range xs { // want `dead write to parameter n`
+		println(i)
+	}
+}
+
+func keyed(xs []int, n int) {
+	var i int
+	for n, i = range xs { // want `dead write to parameter n`
+		println(i)
+	}
+}
+
+func blanked(xs []int, n int) {
+	for _, n = range xs { // want `dead write to parameter n`
+		println(0)
+	}
+}

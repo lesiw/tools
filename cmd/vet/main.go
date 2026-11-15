@@ -1288,6 +1288,17 @@
 //		return x
 //	}
 //
+// # modifiesparam
+//
+// Reports a write to a parameter or a receiver that no read follows. Both are
+// a copy the caller does not see.
+//
+// Adapted from revive's modifies-parameter.
+//
+//	func normalize(name string) {
+//		name = strings.TrimSpace(name)
+//	}
+//
 // # newderef
 //
 // Reports a dereference of a fresh allocation. new(T) zeroes a T and the
