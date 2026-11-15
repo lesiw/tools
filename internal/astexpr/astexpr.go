@@ -1,6 +1,10 @@
 // Package astexpr holds the facts about an expression that the analyzers
 // share: how it prints, whether two of them read the same value, whether
 // reading one twice gives one value, and whether its type can hold a NaN.
+// Package astexpr holds the facts about the syntax tree that the analyzers
+// share: an expression's printed form, whether reading it twice gives one
+// value, whether its type can hold a NaN, whether its type set holds only
+// arrays, and whether a statement reads the value it writes.
 package astexpr
 
 import (
@@ -193,4 +197,61 @@ func constraintNaN(c types.Type) bool {
 	}
 	// No element rules a NaN out, so any type with the methods fits.
 	return true
+}
+
+// IsArray reports whether every type in t's type set is an array. A lone array
+// qualifies, and so does a type parameter whose constraint holds only arrays.
+// A constraint that names no type of its own, as comparable does, leaves the
+// set as it was, and a set that names none is no array.
+func IsArray(t types.Type) (found bool) {
+	switch t := t.(type) {
+	case *types.Union:
+		if t.Len() == 0 {
+			return false
+		}
+		for term := range t.Terms() {
+			if !IsArray(term.Type()) {
+				return false
+			}
+		}
+		return true
+	case *types.TypeParam:
+		return IsArray(t.Constraint())
+	}
+	iface, ok := t.Underlying().(*types.Interface)
+	if !ok {
+		_, array := t.Underlying().(*types.Array)
+		return array
+	}
+	for embedded := range iface.EmbeddedTypes() {
+		if unrestricted(embedded) {
+			continue
+		}
+		if !IsArray(embedded) {
+			return false
+		}
+		found = true
+	}
+	return found
+}
+
+// unrestricted reports whether an element of a type set names no type of its
+// own, as an embedding of comparable or any does.
+func unrestricted(t types.Type) bool {
+	iface, ok := t.Underlying().(*types.Interface)
+	return ok && iface.NumEmbeddeds() == 0
+}
+
+// SelfReads reports whether a statement reads the value it writes, as an
+// increment or a compound assignment does.
+func SelfReads(stmt ast.Stmt) bool {
+	switch stmt := stmt.(type) {
+	case *ast.IncDecStmt:
+		return true
+	case *ast.AssignStmt:
+		// A short declaration writes a new variable, so there is no value to
+		// read.
+		return stmt.Tok != token.ASSIGN && stmt.Tok != token.DEFINE
+	}
+	return false
 }

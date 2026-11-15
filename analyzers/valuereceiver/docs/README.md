@@ -20,16 +20,21 @@ A value receiver works on a copy, so a write to its field is dead when nothing
 reads the field after it.
 
 `p.left++` and the target of a range clause, `for p.left = range m`, are
-writes too. The reads a write makes of the field do not count: the statement
-doing the writing, and the address of any assignment target.
+writes too. In a block, the reads a write makes of the field do not count: the
+statement doing the writing, and the address of any assignment target.
 
 A use of the receiver as a value saves the writes before it, whether the value
 is returned, passed on, used as a map key, called as a method, or assigned. A
-read anywhere else in a loop that contains the write saves it, whether or not
-the loop runs again. A read in any func literal in the method also saves every
-write to that field, even one that nothing calls, because the analyzer cannot
-tell which literals are called. The analyzer compares positions, so a read on a
-branch that cannot follow the write still saves it.
+read in a loop that contains the write saves it, whether the read stands in the
+writing statement or after it, and whether or not the loop runs again, because
+the next pass reads what the write left. An increment or a compound assignment
+reads the field it writes, so a loop that contains one saves it.
+
+A read in any func literal in the method also saves every write to that field,
+even one that nothing calls, apart from the read its own writing statement
+makes: a literal's body is a function body, so that read reads the value it
+replaces, as in a block. The analyzer compares positions, so a read on a branch
+that cannot follow the write still saves it.
 
 A nested field is read and written by its path, so a write to `in.left` is dead
 even when the method reads `in.right`. A promoted field is reported by the path

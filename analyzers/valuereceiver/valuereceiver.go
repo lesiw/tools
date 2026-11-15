@@ -4,8 +4,9 @@
 // The Go review comments state the rule as "If the method needs to mutate the
 // receiver, the receiver must be a pointer." A value receiver works on a copy,
 // so a write to its field is dead when nothing reads the field after it, apart
-// from the statement doing the writing. The README states which reads save a
-// write, and which methods are skipped.
+// from the reads that the writing statement itself makes, which a loop turns
+// into reads of the next pass. The README states which reads save a write, and
+// which methods are skipped.
 //
 // Report only: the repair an author wants is a pointer receiver, which changes
 // behavior by sending the write to the caller's value, and it moves the method
@@ -22,6 +23,8 @@ import (
 	"strings"
 
 	"golang.org/x/tools/go/analysis"
+
+	"lesiw.io/tools/internal/astexpr"
 )
 
 var Analyzer = &analysis.Analyzer{
@@ -211,57 +214,7 @@ func (m *method) place(expr ast.Expr) bool {
 // array reports whether expr is an array of the receiver's copy, whose
 // elements live in the copy.
 func (m *method) array(expr ast.Expr) bool {
-	return m.place(expr) && isArray(m.pass.TypesInfo.TypeOf(expr))
-}
-
-// isArray reports whether t is an array, which a type parameter whose type set
-// holds only arrays is.
-func isArray(t types.Type) bool {
-	if tp, ok := t.(*types.TypeParam); ok {
-		t = tp.Constraint()
-	}
-	iface, ok := t.Underlying().(*types.Interface)
-	if !ok {
-		_, array := t.Underlying().(*types.Array)
-		return array
-	}
-	if iface.NumEmbeddeds() == 0 {
-		return false
-	}
-	for embedded := range iface.EmbeddedTypes() {
-		if !arraysOnly(embedded) {
-			return false
-		}
-	}
-	return true
-}
-
-// arraysOnly reports whether every type in t's type set is an array.
-func arraysOnly(t types.Type) bool {
-	switch t := t.(type) {
-	case *types.Union:
-		for term := range t.Terms() {
-			if !arraysOnly(term.Type()) {
-				return false
-			}
-		}
-		return t.Len() > 0
-	case *types.TypeParam:
-		return isArray(t)
-	}
-	if iface, ok := t.Underlying().(*types.Interface); ok {
-		if iface.NumEmbeddeds() == 0 {
-			return false
-		}
-		for embedded := range iface.EmbeddedTypes() {
-			if !arraysOnly(embedded) {
-				return false
-			}
-		}
-		return true
-	}
-	_, array := t.Underlying().(*types.Array)
-	return array
+	return m.place(expr) && astexpr.IsArray(m.pass.TypesInfo.TypeOf(expr))
 }
 
 // indexed returns the array of the copy that expr writes into, when part of
@@ -353,7 +306,13 @@ func (m *method) reads(node ast.Node, skip ast.Stmt) (reads []fieldRead) {
 			return true
 		}
 		sel, ok := n.(*ast.SelectorExpr)
-		if !ok || m.assigned(sel.Pos()) || holds(skip, sel.Pos()) {
+		if !ok || holds(skip, sel.Pos()) {
+			return true
+		}
+		// An increment or a compound assignment reads the field it writes, so
+		// the target counts as a read. The receiver identifier does not: it
+		// names the copy, not the field.
+		if m.assigned(sel.Pos()) && !m.selfRead(sel.Pos()) {
 			return true
 		}
 		selection, ok := m.pass.TypesInfo.Selections[sel]
@@ -375,6 +334,16 @@ func (m *method) reads(node ast.Node, skip ast.Stmt) (reads []fieldRead) {
 		return false
 	})
 	return reads
+}
+
+// selfRead reports whether pos is a target that its own statement reads.
+func (m *method) selfRead(pos token.Pos) bool {
+	for _, w := range m.writes {
+		if holds(w.target, pos) && astexpr.SelfReads(w.stmt) {
+			return true
+		}
+	}
+	return false
 }
 
 // readsIdent reports whether id reads the receiver rather than being the base
@@ -405,25 +374,31 @@ func overlaps(a, b []types.Object) bool {
 	return true
 }
 
-// delayed reports whether a loop or func literal reads the written fields
-// outside the statement doing the write. A loop that contains the write can
-// read the field again on its next pass, and a func literal anywhere in the
-// body counts, because the tool cannot tell when it runs.
+// delayed reports whether a loop or func literal reads the written fields. A
+// loop that contains the write reads the field again on its next pass, in the
+// writing statement or after it, and a func literal anywhere in the body
+// counts, because the tool cannot tell when it runs. A literal's body is a
+// function body, so the reads its writing statement makes are its own.
 func (m *method) delayed(w write) bool {
 	var found bool
 	ast.Inspect(m.body, func(n ast.Node) bool {
 		if found {
 			return false
 		}
-		var governed bool
-		switch n.(type) {
-		case *ast.FuncLit:
+		var (
 			governed = true
+			skip     ast.Stmt
+		)
+		switch n := n.(type) {
+		case *ast.FuncLit:
+			skip = w.stmt
 		case *ast.ForStmt, *ast.RangeStmt:
 			governed = holds(n, w.target.Pos())
+		default:
+			governed = false
 		}
 		if governed {
-			found = after(m.reads(n, w.stmt), token.NoPos, w.path)
+			found = after(m.reads(n, skip), token.NoPos, w.path)
 		}
 		return !found
 	})

@@ -27,8 +27,14 @@ func (p pair) Twice() {
 }
 
 func (p pair) StoreThenBump() {
-	p.left = 1 // want `dead write to field left of a value receiver`
-	p.left++   // want `dead write to field left of a value receiver`
+	p.left = 1
+	p.left++ // want `dead write to field left of a value receiver`
+}
+
+func (p pair) SelfInLiteral() {
+	func() {
+		p.left = p.left + 1 // want `dead write to field left of a value receiver`
+	}()
 }
 
 func (p pair) Before() int {
@@ -66,7 +72,14 @@ func (p pair) WrittenInLoop(n int) {
 
 func (p pair) SelfReadInLoop(n int) {
 	for range n {
-		p.left = p.left + 1 // want `dead write to field left of a value receiver`
+		p.left = p.left + 1
+	}
+}
+
+func (p pair) SelfAddedInLoop(n int) {
+	for range n {
+		p.left += n
+		p.left++
 	}
 }
 
@@ -407,3 +420,11 @@ func (p pair) total() int { return p.left + p.right }
 func sum(p pair) int { return p.left + p.right }
 
 func use(p pair) {}
+
+type counted[T interface{ ~[2]int; comparable }] struct{ cells T }
+
+func (c counted[T]) Sliced() *int {
+	s := c.cells[:]
+	c.cells = T{}
+	return &s[0]
+}
