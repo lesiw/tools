@@ -155,6 +155,7 @@ import (
 	"lesiw.io/tools/analyzers/uselessconcat"
 	"lesiw.io/tools/analyzers/uuid"
 	"lesiw.io/tools/analyzers/valswap"
+	"lesiw.io/tools/analyzers/valuereceiver"
 	"lesiw.io/tools/analyzers/whitespace"
 	"lesiw.io/tools/analyzers/wrapperfunc"
 	"lesiw.io/tools/analyzers/yoda"
@@ -315,6 +316,7 @@ var (
 		uselessconcat.Analyzer,
 		uuid.Analyzer,
 		valswap.Analyzer,
+		valuereceiver.Analyzer,
 		waitgroup.Analyzer,
 		whitespace.Analyzer,
 		wrapperfunc.Analyzer,

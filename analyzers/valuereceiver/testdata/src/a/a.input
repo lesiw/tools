@@ -1,0 +1,409 @@
+package a
+
+type pair struct {
+	left, right int
+	nums        [2]int
+}
+
+func (p pair) Set(left int) {
+	p.left = left // want `dead write to field left of a value receiver`
+}
+
+func (p pair) Bump() {
+	p.left++ // want `dead write to field left of a value receiver`
+}
+
+func (p pair) Add(n int) {
+	p.left += n // want `dead write to field left of a value receiver`
+}
+
+func (p pair) SelfRead() {
+	p.left = p.left + 1 // want `dead write to field left of a value receiver`
+}
+
+func (p pair) Twice() {
+	p.left = 1 // want `dead write to field left of a value receiver`
+	p.left = 2 // want `dead write to field left of a value receiver`
+}
+
+func (p pair) StoreThenBump() {
+	p.left = 1 // want `dead write to field left of a value receiver`
+	p.left++   // want `dead write to field left of a value receiver`
+}
+
+func (p pair) Before() int {
+	n := p.left
+	p.left = 1 // want `dead write to field left of a value receiver`
+	return n
+}
+
+func (p pair) Zeroed() {
+	if p.left < 0 {
+		p.left = 0 // want `dead write to field left of a value receiver`
+	}
+}
+
+func (p pair) OtherField() int {
+	p.left = 1 // want `dead write to field left of a value receiver`
+	return p.right
+}
+
+func (p pair) OtherCopy(q pair) int {
+	p.left = 1 // want `dead write to field left of a value receiver`
+	return q.left
+}
+
+func (p pair) UsedBefore() {
+	use(p)
+	p.left = 1 // want `dead write to field left of a value receiver`
+}
+
+func (p pair) WrittenInLoop(n int) {
+	for range n {
+		p.left = n // want `dead write to field left of a value receiver`
+	}
+}
+
+func (p pair) SelfReadInLoop(n int) {
+	for range n {
+		p.left = p.left + 1 // want `dead write to field left of a value receiver`
+	}
+}
+
+func (p pair) Broke(n int) {
+	for i := 0; i < n; i++ {
+		p.left = i // want `dead write to field left of a value receiver`
+		break
+	}
+}
+
+func (p pair) Ranged(m map[int]int) {
+	for p.left = range m { // want `dead write to field left of a value receiver`
+	}
+}
+
+func (p pair) RangedValue(m map[int]int) {
+	for _, p.left = range m { // want `dead write to field left of a value receiver`
+	}
+}
+
+type cells struct {
+	n    int
+	row  [2]int
+	rows []int
+}
+
+func (c cells) Reset(n int) {
+	c.row = [2]int{} // want `dead write to field row of a value receiver`
+	c.row[0] = n
+}
+
+func (c cells) ReadIndex(n int) {
+	c.n = 1
+	c.row[c.n] = n
+}
+
+func (c cells) Addressed() *int {
+	q := &c.row[0]
+	c.row = [2]int{1, 2}
+	return q
+}
+
+func (c cells) Summed() int {
+	s := c.row[:]
+	c.row = [2]int{1, 2}
+	n := 0
+	for _, v := range s {
+		n += v
+	}
+	return n
+}
+
+func (c cells) Sliced() int {
+	s := c.rows[:]
+	c.rows = nil // want `dead write to field rows of a value receiver`
+	_ = s
+	return 0
+}
+
+type matrix struct{ cells [2][2]pair }
+
+func (m matrix) Nested() *int {
+	p := &m.cells[1][1].left
+	m.cells = [2][2]pair{}
+	return p
+}
+
+func (m matrix) ElementWrite(n int) {
+	m.cells = [2][2]pair{} // want `dead write to field cells of a value receiver`
+	m.cells[0][1].left = n
+}
+
+func (m matrix) SliceElement() []int {
+	s := m.cells[1][1].nums[:]
+	m.cells = [2][2]pair{}
+	return s
+}
+
+func (m matrix) CalledElement() {
+	m.cells[1][1].SetPointer(1)
+	m.cells = [2][2]pair{}
+}
+
+type mat struct {
+	n     int
+	cells [2][2]int
+}
+
+func (m mat) Indexed(i int) {
+	m.n = 1
+	m.cells[m.n][0] = i
+}
+
+func (m mat) Written(n int) {
+	m.cells = [2][2]int{} // want `dead write to field cells of a value receiver`
+	m.cells[n][0] = 1
+}
+
+type at[T ~[2]int] struct{ cells T }
+
+func (a at[T]) Kept(n T) *int {
+	q := &a.cells[1]
+	a.cells = n
+	return q
+}
+
+func (a at[T]) Dead(n T) {
+	a.cells = n // want `dead write to field cells of a value receiver`
+}
+
+type cell struct{ n int }
+
+type row struct{ cells [2]cell }
+
+func (c *cell) Self() *cell { return c }
+
+func (r row) Reset() *cell {
+	p := r.cells[0].Self()
+	r.cells = [2]cell{}
+	return p
+}
+
+func (p pair) Branched(n int) {
+	if n > 0 {
+		p.left = 1
+	} else {
+		_ = p.left
+	}
+}
+
+func (p pair) Captured() {
+	func() { p.left = 1 }() // want `dead write to field left of a value receiver`
+}
+
+type outer struct{ in pair }
+
+func (o outer) Move(left int) {
+	o.in.left = left // want `dead write to field in.left of a value receiver`
+}
+
+func (o outer) Siblings() int {
+	o.in.left = 1 // want `dead write to field in.left of a value receiver`
+	return o.in.right
+}
+
+type embedded struct{ pair }
+
+func (e embedded) Poke(left int) {
+	e.left = left // want `dead write to field pair.left of a value receiver`
+}
+
+type box[T any] struct{ v T }
+
+func (b box[T]) Set(v T) {
+	b.v = v // want `dead write to field v of a value receiver`
+}
+
+type element[T any] struct{ box[T] }
+
+func (e element[T]) Poke(v T) {
+	e.box.v = v // want `dead write to field box.v of a value receiver`
+}
+
+func (p *pair) SetPointer(left int) {
+	p.left = left
+}
+
+func (pair) Nop() {}
+
+func (_ pair) Blank() {}
+
+func (p pair) Swapped() pair {
+	p.left, p.right = p.right, p.left
+	return p
+}
+
+func (p pair) Clamp(lo, hi int) pair {
+	if p.left < lo {
+		p.left = lo
+	}
+	if p.left > hi {
+		p.left = hi
+	}
+	return p
+}
+
+func (p pair) ReadAfter() int {
+	p.left = 0
+	return p.left
+}
+
+func (p pair) Uncalled() {
+	_ = func() { _ = p.left }
+	p.left = 1
+}
+
+func (p pair) Counted(n int) {
+	for p.left = 0; p.left < n; p.left++ {
+	}
+}
+
+func (p pair) Looped(n int) {
+	for i := 0; i < n; i++ {
+		_ = p.left
+		p.left = i
+	}
+}
+
+func (p pair) ExitsAtOnce() {
+	for {
+		_ = p.left
+		p.left = 1
+		break
+	}
+}
+
+func (p pair) Passed() int {
+	p.left = 1
+	return sum(p)
+}
+
+func (p pair) Called() int {
+	p.left = 1
+	return p.total()
+}
+
+func (p pair) Ignored() {
+	p.left = 1
+	_ = p
+}
+
+func (p pair) Keyed(m map[pair]int) {
+	p.left = 1
+	m[p] = 2
+}
+
+func (o outer) CalledThrough() int {
+	o.in.left = 1
+	return o.in.total()
+}
+
+func (o outer) Normalized() int {
+	o.in = pair{left: 1}
+	return o.in.left
+}
+
+func (e embedded) PromotedWrite(left int) int {
+	e.pair.left = left
+	return e.left
+}
+
+func (e embedded) PromotedRead(left int) int {
+	e.left = left
+	return e.pair.left
+}
+
+func (e element[T]) Kept(v T) T {
+	e.box.v = v
+	return e.box.v
+}
+
+type node struct{ link *pair }
+
+func (n node) Relink() int {
+	n.link = &pair{left: 1}
+	return n.link.left
+}
+
+type holder struct{ ptr *pair }
+
+func (h holder) Reset() {
+	h.ptr.left = 0
+	*h.ptr = pair{}
+}
+
+type wrapped struct{ *pair }
+
+func (w wrapped) Poke(left int) {
+	w.left = left
+}
+
+type bag struct{ items map[string]int }
+
+func (b bag) Put(key string, n int) { b.items[key] = n }
+
+type sheet struct{ rows []int }
+
+func (s sheet) Fill(n int) { s.rows[0] = n }
+
+type grid struct{ cells [2]int }
+
+func (g grid) Fill(n int) { g.cells[0] = n }
+
+type vec [2]int
+
+func (v vec) Fill(n int) { v[0] = n }
+
+func (p pair) Shadow() {
+	{
+		p := pair{}
+		p.left = 1
+	}
+}
+
+func (p pair) Escaped() *pair {
+	q := &p
+	p.left = 1
+	return q
+}
+
+func (p pair) FieldAddressed() *int {
+	q := &p.left
+	p.left = 1
+	return q
+}
+
+func (p pair) CalledPointer() {
+	p.SetPointer(1)
+	p.left = 2
+}
+
+func (p pair) Jumped(n int) int {
+loop:
+	p.left = n
+	n--
+	if n > 0 {
+		goto loop
+	}
+	return 0
+}
+
+func (p pair) Pointed() { (&p).left = 1 }
+
+func (p pair) Rebound() { p = pair{left: 1} }
+
+func (p pair) total() int { return p.left + p.right }
+
+func sum(p pair) int { return p.left + p.right }
+
+func use(p pair) {}
