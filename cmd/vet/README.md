@@ -1385,6 +1385,18 @@ Imported from golang.org/x/tools' modernize suite.
 package p
 ```
 
+## poolarg
+
+Reports a value stored in a sync.Pool that is not one pointer word. The compiler stores a value in the data word only when the value is one pointer word, and points the data word at memory holding any other value.
+
+Adapted from staticcheck's SA6002.
+
+```
+func keep(p *sync.Pool, b []byte) {
+    p.Put(b)
+}
+```
+
 ## preferdecoderune
 
 Reports a string converted to a rune slice to read its first rune. The conversion decodes every rune, where utf8.DecodeRuneInString decodes one.

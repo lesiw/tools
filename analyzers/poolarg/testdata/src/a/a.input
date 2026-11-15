@@ -1,0 +1,126 @@
+package a
+
+import (
+	"sync"
+	"unsafe"
+)
+
+type item struct {
+	name  string
+	count int
+}
+
+type count struct{ n int }
+
+func bytes(p *sync.Pool, b []byte) {
+	p.Put(b) // want `value stored in the pool is not a pointer; store a pointer`
+}
+
+func text(p *sync.Pool, s string) {
+	p.Put(s) // want `value stored in the pool is not a pointer; store a pointer`
+}
+
+func small(p *sync.Pool, i int) {
+	p.Put(i) // want `value stored in the pool is not a pointer; store a pointer`
+}
+
+func zero(p *sync.Pool) {
+	p.Put(item{}) // want `value stored in the pool is not a pointer; store a pointer`
+}
+
+func oneWord(p *sync.Pool, c count) {
+	p.Put(c) // want `value stored in the pool is not a pointer; store a pointer`
+}
+
+func embedded(e *struct{ sync.Pool }, b []byte) {
+	e.Put(b) // want `value stored in the pool is not a pointer; store a pointer`
+}
+
+func parenthesized(p *sync.Pool, b []byte) {
+	(p.Put)(b) // want `value stored in the pool is not a pointer; store a pointer`
+}
+
+func twoPointerWords(p *sync.Pool, w struct{ a, b *item }, a [2]*item) {
+	p.Put(w) // want `value stored in the pool is not a pointer; store a pointer`
+	p.Put(a) // want `value stored in the pool is not a pointer; store a pointer`
+}
+
+func methodExpression(p *sync.Pool, b []byte) {
+	(*sync.Pool).Put(p, b) // want `value stored in the pool is not a pointer; store a pointer`
+}
+
+func paddedWord(p *sync.Pool, w struct {
+	next *item
+	_    [0]sync.Mutex
+}) {
+	p.Put(w) // want `value stored in the pool is not a pointer; store a pointer`
+}
+
+func parameterSlice[V any](p *sync.Pool, v []V) {
+	p.Put(v) // want `value stored in the pool is not a pointer; store a pointer`
+}
+
+func pointer(p *sync.Pool, b []byte) {
+	p.Put(&b)
+}
+
+func behindInterface(p *sync.Pool, v any) {
+	p.Put(v)
+}
+
+func mapping(p *sync.Pool, m map[string]int) {
+	p.Put(m)
+}
+
+func channel(p *sync.Pool, c chan int) {
+	p.Put(c)
+}
+
+func function(p *sync.Pool, f func()) {
+	p.Put(f)
+}
+
+func unsafePointer(p *sync.Pool, u unsafe.Pointer) {
+	p.Put(u)
+}
+
+func nothing(p *sync.Pool) {
+	p.Put(nil)
+}
+
+func constant(p *sync.Pool) {
+	p.Put(0)
+}
+
+func noBytes(p *sync.Pool, s struct{}) {
+	p.Put(s)
+}
+
+func onePointerWord(p *sync.Pool, w struct{ next *item }, a [1]*item) {
+	p.Put(w)
+	p.Put(a)
+}
+
+func methodValue(p *sync.Pool, b []byte) {
+	put := p.Put
+	put(b)
+}
+
+func aliasParameter[V any](p *sync.Pool, v V) {
+	type A = V
+	p.Put(struct{ v A }{v})
+}
+
+func parameter[V any](p *sync.Pool, v V, w struct{ v V }, a [1]V) {
+	p.Put(v)
+	p.Put(w)
+	p.Put(a)
+}
+
+type holder struct{}
+
+func (holder) Put(any) {}
+
+func ownPut(h holder, b []byte) {
+	h.Put(b)
+}
