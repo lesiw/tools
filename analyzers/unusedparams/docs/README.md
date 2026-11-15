@@ -28,8 +28,11 @@ func unread(_ int, b string) string {
 The rule stands down where the name may be read or copied from elsewhere:
 
 - an exported function or method, which is documented by its parameter names;
-- an unexported method whose name matches an interface method in the package,
-  which may be written to match it;
+- an unexported method whose signature matches one an interface in the package
+  declares, which may have been written to match it. A method declared here
+  cannot satisfy a name from another package, so an interface embedded from
+  one constrains nothing, and a same-named method with a different signature
+  is reported;
 - any function used as a value rather than called, which may have to match a
   func type;
 - a function with no body, or one that only panics, which is a placeholder.

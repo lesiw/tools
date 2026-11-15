@@ -1,5 +1,7 @@
 package a
 
+import "foreign"
+
 func unread(_ int, b string) string { // want `parameter a is never read`
 	return b
 }
@@ -18,13 +20,47 @@ func held(a int, b string) string {
 
 var heldValue = held
 
+type genericGetter[T any] interface {
+	get(a int) T
+}
+
+type genericCache struct{}
+
+func (genericCache) get(v int) string {
+	return "x"
+}
+
+var _ genericGetter[string] = genericCache{}
+
+type genericNotifier[T any] interface {
+	notify(v T)
+}
+
+type genericBox[T any] struct{}
+
+func (genericBox[T]) notify(v T) {
+	_ = 0
+}
+
 type reader interface {
 	read(a int, b string) string
 }
 
+type namer interface{ name() }
+
+type embeds interface{ foreign.Sealed }
+
 type impl struct{}
 
 func (impl) read(a int, b string) string {
+	return b
+}
+
+func (impl) name(_ int, b string) string { // want `parameter a is never read`
+	return b
+}
+
+func (impl) step(_ int, b string) string { // want `parameter a is never read`
 	return b
 }
 
@@ -53,6 +89,8 @@ func use() {
 	_ = Exported(1, "b")
 	_ = heldValue(1, "b")
 	_ = impl{}.read(1, "b")
+	_ = impl{}.name(1, "b")
+	_ = impl{}.step(1, "b")
 	_ = impl{}.other(1, "b")
 	_ = read(1, "b")
 	_ = literal()(1, "b")

@@ -1,0 +1,3 @@
+package foreign
+
+type Sealed interface{ step(a int, b string) string }

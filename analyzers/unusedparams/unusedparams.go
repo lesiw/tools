@@ -9,9 +9,9 @@
 // A parameter that is never read is either a leftover or a signature the
 // author meant to keep. Renaming it to the blank identifier says which, and
 // costs nothing. The rule stands down where the name may be read or copied
-// from elsewhere: an exported function or method is documented by its
-// parameter names, an unexported method whose name matches an interface method
-// in the package may be written to match it, and any function used as a value
+// from elsewhere. An exported function or method is documented by its
+// parameter names. An unexported method may be written to match a method that
+// an interface in the package declares itself. Any function used as a value
 // rather than called may have to match a func type. A function with no body,
 // or one that only panics, is a placeholder, so its parameters stay as
 // written.
@@ -38,10 +38,10 @@ var Analyzer = &analysis.Analyzer{
 
 func run(pass *analysis.Pass) (any, error) {
 	var (
-		info  = pass.TypesInfo
-		iface = uses.InterfaceMethods(pass)
-		read  = readVars(pass)
-		held  = uses.Held(pass)
+		info    = pass.TypesInfo
+		methods = uses.InterfaceMethods(pass)
+		read    = readVars(pass)
+		held    = uses.Held(pass)
 	)
 	for _, file := range pass.Files {
 		for _, decl := range file.Decls {
@@ -52,10 +52,10 @@ func run(pass *analysis.Pass) (any, error) {
 			if fn.Name.IsExported() {
 				continue // another package may take its address
 			}
-			if _, conforms := iface[fn.Name.Name]; fn.Recv != nil && conforms {
-				continue // the signature may conform to the interface
+			self, ok := info.Defs[fn.Name].(*types.Func)
+			if ok && methods.Has(self) {
+				continue // the method may be written to match the interface
 			}
-			self, _ := info.Defs[fn.Name].(*types.Func)
 			if _, isHeld := held[self]; isHeld {
 				continue // used as a value, so the signature is fixed
 			}
