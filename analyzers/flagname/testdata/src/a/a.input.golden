@@ -1,0 +1,96 @@
+package a
+
+import "flag"
+
+var level = flag.Int("level", 0, "") // want `flag name "-level" begins with a hyphen`
+
+func leadingHyphen() {
+	var output string
+	flag.String("name", "", "")               // want `flag name "--name" begins with a hyphen`
+	flag.String("-", "", "")                  // want `flag name "-" begins with a hyphen`
+	flag.String("-margin ", "", "")           // want `flag name "-margin " begins with a hyphen`
+	flag.String("tail-", "", "")              // want `flag name "-tail-" begins with a hyphen`
+	flag.String("a", "", "")                  // want `flag name "-a=b" begins with a hyphen`
+	flag.StringVar(&output, "output", "", "") // want `flag name "-output" begins with a hyphen`
+}
+
+func equalSign() {
+	var count int
+	flag.String("addr", "localhost", "") // want `flag name "addr=host" contains an equal sign`
+	flag.String(" a=b", "", "")          // want `flag name " a=b" contains an equal sign`
+	flag.IntVar(&count, "count", 0, "")  // want `flag name "count=1" contains an equal sign`
+}
+
+const preset = "-preset"
+
+func constantName() {
+	flag.String(preset, "", "")   // want `flag name "-preset" begins with a hyphen`
+	flag.String("-x"+"y", "", "") // want `flag name "-xy" begins with a hyphen`
+}
+
+func parenthesized() {
+	flag.String(("paren"), "", "") // want `flag name "-paren" begins with a hyphen`
+}
+
+func backticked() {
+	flag.String("raw", "", "") // want `flag name "-raw" begins with a hyphen`
+}
+
+func setMethods() {
+	var (
+		trace  bool
+		filter string
+	)
+	fs := flag.NewFlagSet("set", flag.ExitOnError)
+	fs.BoolVar(&trace, "trace", false, "")         // want `flag name "-trace" begins with a hyphen`
+	fs.StringVar(&filter, "depth", "", "")         // want `flag name "depth=2" contains an equal sign`
+	fs.BoolFunc("verbose", "", nil)                // want `flag name "-verbose" begins with a hyphen`
+	fs.Func("sort", "", nil)                       // want `flag name "-sort" begins with a hyphen`
+	fs.Var(nil, "mode", "")                        // want `flag name "mode=fast" contains an equal sign`
+	fs.TextVar(nil, "path", nil, "")               // want `flag name "path=root" contains an equal sign`
+	(*flag.FlagSet).String(fs, "expr", "", "")     // want `flag name "-expr" begins with a hyphen`
+	((*flag.FlagSet).String)(fs, "callee", "", "") // want `flag name "-callee" begins with a hyphen`
+	(*flag.FlagSet).Var(fs, nil, "varx", "")       // want `flag name "-varx" begins with a hyphen`
+}
+
+func repeated() {
+	flag.Var(nil, "value", "")   // want `flag name "-value" begins with a hyphen`
+	flag.String("-back", "", "") // want `flag name "-back" begins with a hyphen`
+	flag.String("back", "", "")
+	flag.String("seed", "", "")
+	flag.String("-seed", "", "") // want `flag name "-seed" begins with a hyphen`
+}
+
+func otherSet() {
+	other := flag.NewFlagSet("other", flag.ExitOnError)
+	other.String("twin", "", "")
+	flag.String("-twin", "", "") // want `flag name "-twin" begins with a hyphen`
+}
+
+func dynamic(name string) {
+	flag.String(name, "", "")
+	flag.String("loose", "", "") // want `flag name "-loose" begins with a hyphen`
+}
+
+func accepted() {
+	flag.String("target", "", "")
+	flag.String("plain", "", "-hyphenate this usage")
+	flag.String("", "", "")
+	flag.String(" note ", "", "")
+	_ = flag.Set("-target", "")
+	_ = flag.Lookup("-target")
+}
+
+func functionValue() {
+	g := flag.String
+	g("-held", "", "")
+}
+
+type set struct{}
+
+func (set) Bool(string, bool, string) {}
+
+func lookalike() {
+	var s set
+	s.Bool("-local", false, "")
+}

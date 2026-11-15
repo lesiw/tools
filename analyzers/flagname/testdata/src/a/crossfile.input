@@ -1,0 +1,7 @@
+package a
+
+import "flag"
+
+func declaredInAnotherFile() {
+	flag.String("-target", "", "") // want `flag name "-target" begins with a hyphen`
+}

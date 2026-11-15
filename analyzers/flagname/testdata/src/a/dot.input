@@ -1,0 +1,7 @@
+package a
+
+import . "flag"
+
+func dotted() {
+	String("route=local", "", "") // want `flag name "route=local" contains an equal sign`
+}

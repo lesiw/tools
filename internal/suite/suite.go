@@ -94,6 +94,7 @@ import (
 	"lesiw.io/tools/analyzers/filepathjoin"
 	"lesiw.io/tools/analyzers/findallzero"
 	"lesiw.io/tools/analyzers/flagderef"
+	"lesiw.io/tools/analyzers/flagname"
 	"lesiw.io/tools/analyzers/gospell"
 	"lesiw.io/tools/analyzers/ifelsechain"
 	"lesiw.io/tools/analyzers/importgroup"
@@ -232,6 +233,7 @@ var (
 		evalorder.Analyzer,
 		findallzero.Analyzer,
 		flagderef.Analyzer,
+		flagname.Analyzer,
 		framepointer.Analyzer,
 		gofix.Analyzer,
 		gospell.Analyzer,
