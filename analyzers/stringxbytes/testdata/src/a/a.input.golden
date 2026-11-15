@@ -1,0 +1,434 @@
+package a
+
+import (
+	"bytes"
+	"io"
+)
+
+type (
+	text  string
+	octet byte
+	octs  []octet
+	blob  []byte
+)
+
+func fill(dst []byte, src string) int {
+	return copy(dst, src) // want `conversion only to copy; copy takes a string`
+}
+
+func fillText(dst []byte, src text) int {
+	return copy(dst, src) // want `conversion only to copy; copy takes a string`
+}
+
+func fillBytes(dst, src []byte) int {
+	return copy(dst, []byte(src))
+}
+
+func fillOctets(dst []octet, src string) int {
+	return copy(dst, octs(src))
+}
+
+func attachBlob(dst blob, src string) blob {
+	return append(dst, src...) // want `conversion only to append; append takes a string`
+}
+
+func search(buf []byte, src string) bool {
+	return bytes.Contains(buf, []byte(src))
+}
+
+func attachMany(dst [][]byte, src string) [][]byte {
+	return append(dst, []byte(src))
+}
+
+func attach(dst []byte, src string) []byte {
+	return append(dst, src...) // want `conversion only to append; append takes a string`
+}
+
+func noted(dst []byte, src string) int {
+	return copy(dst, []byte( /* kept */ src)) // want `conversion only to copy; copy takes a string`
+}
+
+func parenthesizedBuiltin(dst []byte, src string) int {
+	return (copy)(dst, src) // want `conversion only to copy; copy takes a string`
+}
+
+func trailing(dst []byte, src string) int {
+	return copy(dst, []byte(src /* kept */)) // want `conversion only to copy; copy takes a string`
+}
+
+func parenthesized(dst []byte, src string) int {
+	return copy(dst, src) // want `conversion only to copy; copy takes a string`
+}
+
+func note(buf *bytes.Buffer, src string) (int, error) {
+	return buf.WriteString(src) // want `conversion only to call Write; WriteString takes a string`
+}
+
+func blank(b []byte) bool {
+	return len(b) == 0 // want `conversion only to compare with an empty string; use len`
+}
+
+func annotated(b []byte) bool {
+	return string( /* kept */ b) == "" // want `conversion only to compare with an empty string; use len`
+}
+
+func literalComment(b []byte) bool {
+	return string(b) == ( /* kept */ "") // want `conversion only to compare with an empty string; use len`
+}
+
+func parenthesizedCompare(b []byte) bool {
+	return len(b) == 0 // want `conversion only to compare with an empty string; use len`
+}
+
+func shadowedCompare(b []byte) bool {
+	len := func(p []byte) int { return 9 }
+	return string(b) == "" || len(b) > 0
+}
+
+func parenthesizedEmpty(b []byte) bool {
+	return len(b) == 0 // want `conversion only to compare with an empty string; use len`
+}
+
+func unblank(b []byte) bool {
+	return len(b) != 0 // want `conversion only to compare with an empty string; use len`
+}
+
+func size(b []byte) int {
+	return len(b) // want `conversion only to take its length; len reads it directly`
+}
+
+func blobSize(b blob) int {
+	return len(b) // want `conversion only to take its length; len reads it directly`
+}
+
+func byteLength(src string) int {
+	return len(src) // want `conversion only to take its length; len reads it directly`
+}
+
+func blobBlank(b blob) bool {
+	return len(b) == 0 // want `conversion only to compare with an empty string; use len`
+}
+
+func sizeRunes(r []rune) int {
+	return len(string(r))
+}
+
+func blankInt() bool {
+	return string(65) == ""
+}
+
+func shadowedLen(b []byte) int {
+	len := func(s string) int { return 0 }
+	return len(string(b))
+}
+
+func ordered(b []byte) bool {
+	return string(b) < ""
+}
+
+func stored(buf *bytes.Buffer, src string) (int, error) {
+	p := []byte(src)
+	return buf.Write(p)
+}
+
+func named(b []byte) bool {
+	s := string(b)
+	return s == ""
+}
+
+func blankFirst(b []byte) bool {
+	return "" == string(b)
+}
+
+func literal(b []byte) bool {
+	return string(b) == "alpha"
+}
+
+func measured(b []byte) int {
+	return len(b)
+}
+
+func written(buf *bytes.Buffer, src string) (int, error) {
+	return buf.WriteString(src)
+}
+
+func equal(x, y []byte) bool {
+	return string(x) == string(y)
+}
+
+func sliced(b []byte) bool {
+	switch string(b) {
+	case "":
+		return true
+	}
+	return false
+}
+
+type recorder struct{}
+
+func (recorder) Write(p []byte) (int, error) { return len(p), nil }
+
+func unnamed(w recorder, src string) (int, error) {
+	return w.Write([]byte(src))
+}
+
+type counter struct{ n int }
+
+func (c *counter) Write(p []byte) (int, error) {
+	c.n += len(p)
+	return len(p), nil
+}
+
+func (c *counter) WriteString(s string) int {
+	c.n += len(s)
+	return len(s)
+}
+
+func resultsDiffer(c *counter, src string) (int, error) {
+	return c.Write([]byte(src))
+}
+
+type loose struct{}
+
+func (loose) Write(p []byte) (int, error) { return 0, nil }
+
+func (loose) WriteString(v any) (int, error) { return 0, nil }
+
+func acceptsAny(w loose, src string) (int, error) {
+	return w.Write([]byte(src))
+}
+
+type pipe struct{}
+
+func (pipe) Write(p []byte) (int, error) { return 0, nil }
+
+func (pipe) WriteString(s string, n int) (int, error) { return 0, nil }
+
+func extraParam(p pipe, src string) (int, error) {
+	return p.Write([]byte(src))
+}
+
+type Relay struct{}
+
+func (Relay) Write(p []byte) (int, error) { return len(p), nil }
+
+func (r Relay) WriteString(s string) (int, error) {
+	return r.Write([]byte(s))
+}
+
+func (r Relay) verbose(s string) (int, error) {
+	f := func() (int, error) { return r.Write([]byte(s)) }
+	return f()
+}
+
+type pointed struct{}
+
+func (*pointed) Write(p []byte) (int, error) { return len(p), nil }
+
+func (*pointed) WriteString(s string) (int, error) { return len(s), nil }
+
+func addressable(p pointed, src string) (int, error) {
+	return p.WriteString(src) // want `conversion only to call Write; WriteString takes a string`
+}
+
+type split struct{}
+
+func (split) Write(p []byte) (int, error) { return len(p), nil }
+
+func (*split) WriteString(s string) (int, error) { return len(s), nil }
+
+func fetch() split { return split{} }
+
+func temporary(src string) (int, error) {
+	return fetch().Write([]byte(src))
+}
+
+func addressableSplit(sp split, src string) (int, error) {
+	return sp.Write([]byte(src))
+}
+
+func namedSibling(buf *bytes.Buffer, src text) (int, error) {
+	return buf.Write([]byte(src))
+}
+
+type stringWriter interface {
+	io.Writer
+	WriteString(s string) (int, error)
+}
+
+func widened(w stringWriter, src string) (int, error) {
+	return w.WriteString(src) // want `conversion only to call Write; WriteString takes a string`
+}
+
+func plain(w io.Writer, src string) (int, error) {
+	return w.Write([]byte(src))
+}
+
+type dual struct{ *bytes.Buffer }
+
+func (dual) Write(p []byte) (int, error) { return len(p), nil }
+
+func shadowed(d dual, src string) (int, error) {
+	return d.Write([]byte(src))
+}
+
+type lifted struct{ *bytes.Buffer }
+
+func promoted(l lifted, src string) (int, error) {
+	return l.WriteString(src) // want `conversion only to call Write; WriteString takes a string`
+}
+
+type ledger struct{}
+
+func (ledger) Write(p []byte) (int, error) { return len(p), nil }
+
+func (ledger) WriteString(s string) (int, error) { return 0, nil }
+
+func (ledger) Record(p []byte) (int, error) { return len(p), nil }
+
+func recorded(l ledger, src string) (int, error) {
+	return l.Record([]byte(src))
+}
+
+type anyWrite struct{}
+
+func (anyWrite) Write(v any) (int, error) { return 0, nil }
+
+func (anyWrite) WriteString(s string) (int, error) { return len(s), nil }
+
+func anyArg(w anyWrite, src string) (int, error) {
+	return w.Write([]byte(src))
+}
+
+type byteSpread struct{}
+
+func (byteSpread) Write(p ...byte) (int, error) { return len(p), nil }
+
+func (byteSpread) WriteString(s string) (int, error) { return len(s), nil }
+
+func spread(w byteSpread, src string) (int, error) {
+	return w.Write([]byte(src)...)
+}
+
+type wire []byte
+
+func (wire) Write(p []byte) (int, error) { return len(p), nil }
+
+func (wire) WriteString(s string) (int, error) { return len(s), nil }
+
+func methodExpression(a, b string) (int, error) {
+	return wire.Write([]byte(a), []byte(b))
+}
+
+type delegating struct{}
+
+func (delegating) Write(p []byte) (int, error) { return len(p), nil }
+
+func (d delegating) WriteString(s string) (int, error) { return d.write(s) }
+
+func (d delegating) write(s string) (int, error) {
+	return d.Write([]byte(s))
+}
+
+type aside struct{}
+
+func (*aside) Write(p []byte) (int, error) { return len(p), nil }
+
+func (*aside) WriteString(s string) (int, error) {
+	var a aside
+	return a.Write([]byte(s))
+}
+
+type address struct{}
+
+func (*address) Write(p []byte) (int, error) { return len(p), nil }
+
+func (a *address) WriteString(s string) (int, error) { return a.write(s) }
+
+func (a address) write(s string) (int, error) {
+	return (&a).Write([]byte(s))
+}
+
+func parenthesizedCall(buf *bytes.Buffer, src string) (int, error) {
+	return (buf.WriteString)(src) // want `conversion only to call Write; WriteString takes a string`
+}
+
+func grown(src string) []byte { return []byte(src) }
+
+func growCall(buf *bytes.Buffer, src string) (int, error) {
+	return buf.Write(grown(src))
+}
+
+type inner struct{}
+
+func (inner) Write(p []byte) (int, error) { return 0, nil }
+
+func (inner) WriteString(s string) (int, error) { return 0, nil }
+
+type outer struct{ inner }
+
+func (outer) Write(p []byte) (int, error) { return 0, nil }
+
+func shadowedPromoted(o outer, src string) (int, error) {
+	return o.Write([]byte(src))
+}
+
+type writerPart struct{}
+
+func (writerPart) Write(p []byte) (int, error) { return 0, nil }
+
+type stringPart struct{}
+
+func (stringPart) WriteString(s string) (int, error) { return 0, nil }
+
+type embeds struct {
+	writerPart
+	stringPart
+}
+
+func twoEmbeds(x embeds, src string) (int, error) {
+	return x.Write([]byte(src))
+}
+
+func notedCall(buf *bytes.Buffer, src string) (int, error) {
+	return buf.Write([]byte( /* kept */ src)) // want `conversion only to call Write; WriteString takes a string`
+}
+
+type hooked struct{ WriteString func(string) (int, error) }
+
+func (hooked) Write(p []byte) (int, error) { return len(p), nil }
+
+func hook(h hooked, src string) (int, error) {
+	return h.Write([]byte(src))
+}
+
+func name[T ~string](b []byte) bool {
+	return T(b) == ""
+}
+
+func attachText(dst []byte, src text) []byte {
+	return append(dst, src...) // want `conversion only to append; append takes a string`
+}
+
+func paramLen[T ~[]byte](v T) int {
+	return len(string(v))
+}
+
+type writeValue struct{}
+
+func (writeValue) WriteString(s string) (int, error) { return len(s), nil }
+
+func (*writeValue) Write(p []byte) (int, error) { return len(p), nil }
+
+func pointerWrite(w *writeValue, src string) (int, error) {
+	return w.Write([]byte(src))
+}
+
+type both interface {
+	io.Writer
+	io.StringWriter
+}
+
+func widenedInterface(w both, src string) (int, error) {
+	return w.WriteString(src) // want `conversion only to call Write; WriteString takes a string`
+}

@@ -133,6 +133,7 @@ import (
 	"lesiw.io/tools/analyzers/strcompare"
 	"lesiw.io/tools/analyzers/strconcat"
 	"lesiw.io/tools/analyzers/strictvar"
+	"lesiw.io/tools/analyzers/stringxbytes"
 	"lesiw.io/tools/analyzers/switchtrue"
 	"lesiw.io/tools/analyzers/testcmp"
 	"lesiw.io/tools/analyzers/testhelpers"
@@ -288,6 +289,7 @@ var (
 		strconcat.Analyzer,
 		strictvar.Analyzer,
 		stringintconv.Analyzer,
+		stringxbytes.Analyzer,
 		structtag.Analyzer,
 		switchtrue.Analyzer,
 		testcmp.Analyzer,

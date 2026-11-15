@@ -1,0 +1,15 @@
+package a
+
+import "bytes"
+
+func testOwn(r Relay, src string) (int, error) {
+	return r.Write([]byte(src))
+}
+
+func testOther(buf *bytes.Buffer, src string) (int, error) {
+	return buf.WriteString(src) // want `conversion only to call Write; WriteString takes a string`
+}
+
+func testFill(dst []byte, src string) int {
+	return copy(dst, src) // want `conversion only to copy; copy takes a string`
+}
