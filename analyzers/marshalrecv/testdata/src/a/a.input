@@ -1,0 +1,173 @@
+package a
+
+type item struct {
+	text []byte
+}
+
+func (i item) MarshalText() ([]byte, error) {
+	if i.text == nil {
+		i.text = []byte("0") // want `writes to a copy of item; the caller never sees it`
+	}
+	return i.text, nil
+}
+
+func (i *item) MarshalJSON() ([]byte, error) {
+	i.text = nil
+	return i.text, nil
+}
+
+func (i item) GobEncode() ([]byte, error) {
+	return append([]byte(nil), i.text...), nil
+}
+
+func (i item) MarshalBinary() ([]byte, error) {
+	shadow := func(i item) { i.text = nil }
+	shadow(i)
+	return nil, nil
+}
+
+type pair struct{ first, second int }
+
+type holder struct {
+	inner   pair
+	lines   []string
+	lookup  map[string]int
+	pointer *pair
+}
+
+func (h holder) MarshalJSON() ([]byte, error) {
+	h.inner.first = 1 // want `writes to a copy of holder; the caller never sees it`
+	return nil, nil
+}
+
+func (h holder) MarshalText() ([]byte, error) {
+	h.lines[0] = ""
+	h.lookup[""] = 0
+	h.pointer.first = 0
+	return nil, nil
+}
+
+func (h holder) GobEncode() ([]byte, error) {
+	local := h
+	local.inner.first = 1
+	return nil, nil
+}
+
+type cells [2]int
+
+func (c cells) MarshalBinary() ([]byte, error) {
+	c[0] = 0 // want `writes to a copy of cells; the caller never sees it`
+	return nil, nil
+}
+
+type sliced [3]int
+
+func (s sliced) MarshalText() ([]byte, error) {
+	s[:][0] = 1 // want `writes to a copy of sliced; the caller never sees it`
+	return nil, nil
+}
+
+func (c cells) String() string {
+	c[0] = 0
+	return ""
+}
+
+func (cells) GobEncode() ([]byte, error) { return nil, nil }
+
+type stamp struct{ second int }
+
+func (s stamp) GobEncode() ([]byte, error) {
+	s = stamp{} // want `writes to a copy of stamp; the caller never sees it`
+	return nil, nil
+}
+
+func (s stamp) MarshalBinary() ([]byte, error) {
+	s.second++ // want `writes to a copy of stamp; the caller never sees it`
+	return nil, nil
+}
+
+func (s stamp) MarshalText() ([]byte, error) {
+	(s).second = 0 // want `writes to a copy of stamp; the caller never sees it`
+	return nil, nil
+}
+
+func (s stamp) MarshalJSON(depth int) string {
+	s.second = depth
+	return ""
+}
+
+type rangeKey struct{ cell int }
+
+func (r rangeKey) GobEncode() ([]byte, error) {
+	for r.cell = range []int{1} { // want `writes to a copy of rangeKey; the caller never sees it`
+	}
+	return nil, nil
+}
+
+type rangeValue struct{ cell int }
+
+func (i rangeValue) MarshalBinary() ([]byte, error) {
+	for _, i.cell = range []int{1} { // want `writes to a copy of rangeValue; the caller never sees it`
+	}
+	return nil, nil
+}
+
+type box struct{ item }
+
+func (b box) GobEncode() ([]byte, error) {
+	b.text = nil // want `writes to a copy of box; the caller never sees it`
+	return nil, nil
+}
+
+type embedded struct{ *item }
+
+func (e embedded) MarshalText() ([]byte, error) {
+	e.text = nil
+	return nil, nil
+}
+
+type ref struct{ n int }
+
+func (r *ref) reset() { r.n = 0 }
+
+func fill(r *ref) { r.n = 0 }
+
+func (r ref) MarshalText() ([]byte, error) {
+	(&r).n = 0 // want `writes to a copy of ref; the caller never sees it`
+	return nil, nil
+}
+
+func (r ref) GobEncode() ([]byte, error) {
+	r.reset()
+	return nil, nil
+}
+
+func (r ref) MarshalBinary() ([]byte, error) {
+	fill(&r)
+	return nil, nil
+}
+
+func MarshalJSON() ([]byte, error) { return nil, nil }
+
+type stub struct{ n int }
+
+func (stub) GobEncode() ([]byte, error)
+
+type grid struct{ cells [2]int }
+
+func (g grid) MarshalText() ([]byte, error) {
+	g.cells[0] = 0 // want `writes to a copy of grid; the caller never sees it`
+	return nil, nil
+}
+
+func (g grid) MarshalBinary() ([]byte, error) {
+	g.cells[:][0] = 0 // want `writes to a copy of grid; the caller never sees it`
+	return nil, nil
+}
+
+type slicedRef struct{ cells []int }
+
+func (s slicedRef) MarshalBinary() ([]byte, error) {
+	s.cells[:][0] = 1
+	return nil, nil
+}
