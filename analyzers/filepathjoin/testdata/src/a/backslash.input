@@ -1,0 +1,11 @@
+//go:build !windows
+
+package a
+
+import "path/filepath"
+
+var _ = filepath.Separator
+
+func backslash(dir, name string) string {
+	return dir + "\\" + name
+}

@@ -1,0 +1,165 @@
+package a
+
+import (
+	"path/filepath"
+	"strings"
+)
+
+func config(dir, name string) string {
+	// want +1 `path concatenated with a literal separator can be replaced by filepath.Join`
+	return filepath.Join(dir, name)
+}
+
+func nested(root, kind, name string) string {
+	// want +1 `path concatenated with a literal separator can be replaced by filepath.Join`
+	return filepath.Join(root, kind, name)
+}
+
+func parenthesized(dir, name string) string {
+	// want +1 `path concatenated with a literal separator can be replaced by filepath.Join`
+	return filepath.Join(dir, name)
+}
+
+func prefixed(dir, name string) string {
+	// want +1 `path concatenated with a literal separator can be replaced by filepath.Join`
+	return "-" + filepath.Join(dir, name)
+}
+
+func groupedPrefix(dir, prefix, name string) string {
+	// want +1 `path concatenated with a literal separator can be replaced by filepath.Join`
+	return filepath.Join(dir+prefix, name)
+}
+
+func joined(dir, sub, name string) string {
+	// want +1 `path concatenated with a literal separator can be replaced by filepath.Join`
+	return filepath.Join(dir, sub, name)
+}
+
+func called(dir, kind string) string {
+	// want +1 `path concatenated with a literal separator can be replaced by filepath.Join`
+	return filepath.Join(dir, strings.Join([]string{kind, kind}, "-"))
+}
+
+func parent(dir, name string) string {
+	// want +1 `path concatenated with a literal separator can be replaced by filepath.Join`
+	return filepath.Join(dir, "..", name)
+}
+
+func slashy(dir string) string {
+	// want +1 `path concatenated with a literal separator can be replaced by filepath.Join`
+	return filepath.Join(dir, "sub/")
+}
+
+func spread(dir string, parts []string) string {
+	// want +1 `path concatenated with a literal separator can be replaced by filepath.Join`
+	return filepath.Join(dir, filepath.Join(parts...))
+}
+
+func opaque(u, name string) string {
+	// want +1 `path concatenated with a literal separator can be replaced by filepath.Join`
+	return filepath.Join(u, name)
+}
+
+func wrapped(dir, name string) string {
+	// want +1 `path concatenated with a literal separator can be replaced by filepath.Join`
+	return dir +
+		"/" + name
+}
+
+func noted(dir, name string) string {
+	// want +1 `path concatenated with a literal separator can be replaced by filepath.Join`
+	return dir + /* the separator */ "/" + name
+}
+
+func wide(
+	theRepositorySourceDirectory, theCompleteFinalFileName string,
+) string {
+	// want +1 `path concatenated with a literal separator can be replaced by filepath.Join`
+	return theRepositorySourceDirectory + "/" + theCompleteFinalFileName
+}
+
+func already(dir, name string) string {
+	return filepath.Join(dir, name)
+}
+
+func suffixed(dir, name string) string {
+	return dir + "/" + name + ".log"
+}
+
+func elsewhere(dir, name string) string {
+	return dir + "-" + name
+}
+
+func doubled(dir, name string) string {
+	return dir + "//" + name
+}
+
+func repeated(name string) string {
+	return "/" + "/" + name
+}
+
+func repeatedInner(dir, name string) string {
+	return dir + "/" + "/" + name
+}
+
+func absolute(name string) string {
+	return "" + "/" + name
+}
+
+func emptied(dir string) string {
+	return dir + "/" + filepath.Join()
+}
+
+func lead(name string) string {
+	return "/" + name
+}
+
+func trail(dir string) string {
+	return dir + "/"
+}
+
+func glued(dir, name string) string {
+	return dir + "/sub" + name
+}
+
+func bracketedElement(dir, kind, name string) string {
+	return dir + (kind + "/" + name)
+}
+
+func bracketedPath(dir, kind, name, tail string) string {
+	return dir + (kind + "/" + name) + "/" + tail
+}
+
+func bracketedPrefix(dir, name string) string {
+	return (dir + "/") + name
+}
+
+func endpoint(host, name string) string {
+	return "https://" + host + "/" + name
+}
+
+func layout(dir string) string {
+	return dir + "/" + "%s-%d"
+}
+
+func glob(dir string) string {
+	return dir + "/" + "*.txt"
+}
+
+func match(dir string) string {
+	return dir + "/" + "[ab]?.txt"
+}
+
+func literal() string {
+	return "opt" + "/" + "cache"
+}
+
+type label string
+
+func named(a, b label) label {
+	return a + "/" + b
+}
+
+func generic[T ~string](a, b T) T {
+	return a + "/" + b
+}

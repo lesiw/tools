@@ -89,6 +89,7 @@ import (
 	"lesiw.io/tools/analyzers/errfmt"
 	"lesiw.io/tools/analyzers/errorlast"
 	"lesiw.io/tools/analyzers/errstrings"
+	"lesiw.io/tools/analyzers/filepathjoin"
 	"lesiw.io/tools/analyzers/findallzero"
 	"lesiw.io/tools/analyzers/flagderef"
 	"lesiw.io/tools/analyzers/gospell"
@@ -214,6 +215,7 @@ var (
 		errorlast.Analyzer,
 		errorsas.Analyzer,
 		errstrings.Analyzer,
+		filepathjoin.Analyzer,
 		findallzero.Analyzer,
 		flagderef.Analyzer,
 		framepointer.Analyzer,
