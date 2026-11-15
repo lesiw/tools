@@ -1,0 +1,267 @@
+package a
+
+func differentNames(x any) {
+	if v, ok := x.(int); ok {
+		_ = v
+	} else if w, ok := x.(string); ok {
+		_ = w
+	}
+}
+
+func readsOk(x any) {
+	if v, ok := x.(int); ok {
+		_, _ = v, ok
+	} else if v, ok := x.(string); ok {
+		_ = v
+	}
+}
+
+func readsOkInElse(x any) bool {
+	if v, isInt := x.(int); isInt {
+		_ = v
+		return true
+	} else if v, isString := x.(string); isString {
+		_ = v
+		return true
+	} else {
+		return isInt || isString
+	}
+}
+
+func redeclaresGuard(x any) {
+	if v, ok := x.(int); ok { // want `if-else chain of type assertions; use a type switch`
+		_ = v
+		v := 1
+		_ = v
+	} else if v, ok := x.(string); ok {
+		_ = v
+	}
+}
+
+func redeclaresInElse(x any) {
+	if v, ok := x.(int); ok { // want `if-else chain of type assertions; use a type switch`
+		_ = v
+	} else if v, ok := x.(string); ok {
+		_ = v
+	} else {
+		var v int
+		_ = v
+	}
+}
+
+func readsValueInElse(x any) string {
+	if v, ok := x.(int); ok {
+		_ = v
+		return "int"
+	} else if v, ok := x.(string); ok {
+		return v
+	} else {
+		return any(v).(string)
+	}
+}
+
+func breaksOut(xs []any) {
+	for _, x := range xs {
+		if v, ok := x.(int); ok {
+			_ = v
+			break
+		} else if v, ok := x.(string); ok {
+			_ = v
+		}
+	}
+}
+
+func breaksInElse(xs []any) {
+	for _, x := range xs {
+		if v, ok := x.(int); ok {
+			_ = v
+		} else if v, ok := x.(string); ok {
+			_ = v
+		} else {
+			break
+		}
+	}
+}
+
+func readsEarlier(x any) {
+	if v, isInt := x.(int); isInt {
+		_ = v
+	} else if v, isString := x.(string); isString {
+		_, _ = v, isInt
+	}
+}
+
+func sharesLine(x any) { if v, ok := x.(int); ok { // want `if-else chain of type assertions; use a type switch`
+		_ = v
+	} else if v, ok := x.(string); ok {
+		_ = v
+	}
+}
+
+func oneLineBody(x any) {
+	if v, ok := x.(int); ok { _ = v } else if v, ok := x.(string); ok { _ = v } // want `if-else chain of type assertions; use a type switch`
+}
+
+func headerComment(x any) {
+	if v, ok := x.(int); /* why */ ok { // want `if-else chain of type assertions; use a type switch`
+		_ = v
+	} else if v, ok := x.(string); ok {
+		_ = v
+	}
+}
+
+func single(x any) {
+	if v, ok := x.(int); ok {
+		_ = v
+	}
+}
+
+func otherExpr(x, y any) {
+	if v, ok := x.(int); ok {
+		_ = v
+	} else if v, ok := y.(string); ok {
+		_ = v
+	}
+}
+
+func duplicate(x any) {
+	if v, ok := x.(int); ok {
+		_ = v
+	} else if v, ok := x.(int); ok {
+		_ = v
+	}
+}
+
+type number = int
+
+func alias(x any) {
+	if v, ok := x.(int); ok {
+		_ = v
+	} else if v, ok := x.(number); ok {
+		_ = v
+	}
+}
+
+func trailing(x any) {
+	if v, ok := x.(int); ok {
+		_ = v
+	} else if v, ok := x.(string); ok {
+		_ = v
+	} else if x == nil {
+		return
+	}
+}
+
+func pull(x any) any { return x }
+
+func call(x any) {
+	if v, ok := pull(x).(int); ok {
+		_ = v
+	} else if v, ok := pull(x).(string); ok {
+		_ = v
+	}
+}
+
+func receive(ch chan any) {
+	if v, ok := (<-ch).(int); ok {
+		_ = v
+	} else if v, ok := (<-ch).(string); ok {
+		_ = v
+	}
+}
+
+func elseIfHead(x any, n int) {
+	if n > 0 {
+		return
+	} else if v, ok := x.(int); ok {
+		_ = v
+	} else if v, ok := x.(string); ok {
+		_ = v
+	}
+}
+
+func notOk(x any) {
+	if v, ok := x.(int); !ok {
+		_ = v
+	} else if v, ok := x.(string); ok {
+		_ = v
+	}
+}
+
+type inner struct{ y any }
+
+type outer struct{ y any }
+
+func shadowField(x outer) int {
+	if x, ok := x.y.(inner); ok {
+		_ = x
+		return 1
+	} else if x, ok := x.y.(int); ok {
+		return 2 + x
+	}
+	return 0
+}
+
+func callInConversion(x any) {
+	if v, ok := any(pull(x)).(int); ok {
+		_ = v
+	} else if v, ok := any(pull(x)).(string); ok {
+		_ = v
+	}
+}
+
+func elseBlock(x any, n int) {
+	if n > 0 {
+		return
+	} else {
+		if v, ok := x.(int); ok { // want `if-else chain of type assertions; use a type switch`
+			_ = v
+		} else if v, ok := x.(string); ok {
+			_ = v
+		}
+	}
+}
+
+func shadowsGuard(x any) {
+	v := 1
+	if _, ok := x.(int); ok {
+		_ = v
+	} else if v, ok := x.(string); ok {
+		_ = v
+	}
+}
+
+func commentOnElse(x any) {
+	if v, ok := x.(int); ok { // want `if-else chain of type assertions; use a type switch`
+		_ = v
+	} else if /* why */ v, ok := x.(string); ok {
+		_ = v
+	}
+}
+
+func readsFirstValue(x any) any {
+	if v, ok := x.(int); ok {
+		return v
+	} else if _, ok := x.(string); ok {
+		return "string"
+	} else {
+		return v
+	}
+}
+
+func reasserts(x any) any {
+	if _, ok := x.(int); ok { // want `if-else chain of type assertions; use a type switch`
+		return x.(int)
+	} else if _, ok := x.(string); ok {
+		return len(x.(string))
+	}
+	return nil
+}
+
+func pickOtherKey(m map[key]any) {
+	if v, ok := m[key{a: 1}].(int); ok {
+		_ = v
+	} else if v, ok := m[key{a: 2}].(string); ok {
+		_ = v
+	}
+}

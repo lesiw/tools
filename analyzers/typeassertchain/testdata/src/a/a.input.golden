@@ -1,0 +1,210 @@
+package a
+
+func pair(x any) {
+	switch v := x.(type) {
+	case int: // want `if-else chain of type assertions; use a type switch`
+		_ = v
+	case string:
+		_ = v
+	}
+}
+
+func withElse(x any) string {
+	switch v := x.(type) {
+	case int: // want `if-else chain of type assertions; use a type switch`
+		_ = v
+		return "int"
+	case bool:
+		_ = v
+		return "bool"
+	default:
+		return "other"
+	}
+}
+
+func four(x any) {
+	switch v := x.(type) {
+	case int: // want `if-else chain of type assertions; use a type switch`
+		_ = v
+	case int8:
+		_ = v
+	case int16:
+		_ = v
+	case int32:
+		_ = v
+	}
+}
+
+func blank(x any) {
+	switch x.(type) {
+	case int: // want `if-else chain of type assertions; use a type switch`
+	case string:
+	}
+}
+
+type box struct{ v any }
+
+func field(b box) {
+	switch v := b.v.(type) {
+	case int: // want `if-else chain of type assertions; use a type switch`
+		_ = v
+	case *string:
+		_ = v
+	}
+}
+
+func nested(x, y any) {
+	switch v := x.(type) {
+	case int: // want `if-else chain of type assertions; use a type switch`
+		switch w := y.(type) {
+		case bool: // want `if-else chain of type assertions; use a type switch`
+			_, _ = v, w
+		case string:
+			_, _ = v, w
+		}
+	case string:
+		_ = v
+	}
+}
+
+func okNamesDiffer(x any) {
+	switch v := x.(type) {
+	case int: // want `if-else chain of type assertions; use a type switch`
+		_ = v
+	case string:
+		_ = v
+	}
+}
+
+func convert(x any) {
+	switch v := any(x).(type) {
+	case int: // want `if-else chain of type assertions; use a type switch`
+		_ = v
+	case string:
+		_ = v
+	}
+}
+
+func declaresLocal(x any) {
+	switch v := x.(type) {
+	case int: // want `if-else chain of type assertions; use a type switch`
+		n := 1
+		_ = v + n
+	case string:
+		_ = v
+	}
+}
+
+func breaksInner(xs any) {
+	switch v := xs.(type) {
+	case []int: // want `if-else chain of type assertions; use a type switch`
+		for _, n := range v {
+			_ = n
+			break
+		}
+	case []string:
+		_ = v
+	}
+}
+
+func writesValue(x any) {
+	switch v := x.(type) {
+	case int: // want `if-else chain of type assertions; use a type switch`
+		_ = v
+		x = "s"
+	case string:
+		_ = v
+	}
+}
+
+func callsInBody(b *box) {
+	switch v := b.v.(type) {
+	case int: // want `if-else chain of type assertions; use a type switch`
+		_ = v
+		reset()
+	case string:
+		_ = v
+	}
+}
+
+func index(m map[int]any, i int) {
+	switch v := m[i+1].(type) {
+	case int: // want `if-else chain of type assertions; use a type switch`
+		_ = v
+	case string:
+		_ = v
+	}
+}
+
+func reset() {}
+
+func assertInGuard(x any) {
+	switch v := x.(any).(type) {
+	case int: // want `if-else chain of type assertions; use a type switch`
+		_ = v
+	case string:
+		_ = v
+	}
+}
+
+func elseWithTwo(x any, n int) {
+	if n > 0 {
+		_ = n
+	} else {
+		_ = n
+		switch v := x.(type) {
+		case int: // want `if-else chain of type assertions; use a type switch`
+			_ = v
+		case string:
+			_ = v
+		}
+	}
+}
+
+func oneNameElsewhere(x any) {
+	switch v := x.(type) {
+	case int: // want `if-else chain of type assertions; use a type switch`
+	case string:
+		_ = v
+	}
+}
+
+func blankElse(x any) {
+	switch x.(type) {
+	case int: // want `if-else chain of type assertions; use a type switch`
+	case string:
+	default:
+		println("other")
+	}
+}
+
+func fieldNamedGuard(box box, x any) any {
+	switch v := x.(type) {
+	case int: // want `if-else chain of type assertions; use a type switch`
+		return box.v
+	case string:
+		return v
+	}
+	return nil
+}
+
+type key struct{ a int }
+
+func pickKey(m map[key]any) {
+	switch v := m[key{a: 1}].(type) {
+	case int: // want `if-else chain of type assertions; use a type switch`
+		_ = v
+	case string:
+		_ = v
+	}
+}
+
+func oneReasserts(x any) any {
+	switch x.(type) {
+	case int: // want `if-else chain of type assertions; use a type switch`
+		return x.(int)
+	case string:
+		return 0
+	}
+	return nil
+}

@@ -1,0 +1,189 @@
+package a
+
+func pair(x any) {
+	if v, ok := x.(int); ok { // want `if-else chain of type assertions; use a type switch`
+		_ = v
+	} else if v, ok := x.(string); ok {
+		_ = v
+	}
+}
+
+func withElse(x any) string {
+	if v, ok := x.(int); ok { // want `if-else chain of type assertions; use a type switch`
+		_ = v
+		return "int"
+	} else if v, ok := x.(bool); ok {
+		_ = v
+		return "bool"
+	} else {
+		return "other"
+	}
+}
+
+func four(x any) {
+	if v, ok := x.(int); ok { // want `if-else chain of type assertions; use a type switch`
+		_ = v
+	} else if v, ok := x.(int8); ok {
+		_ = v
+	} else if v, ok := x.(int16); ok {
+		_ = v
+	} else if v, ok := x.(int32); ok {
+		_ = v
+	}
+}
+
+func blank(x any) {
+	if _, ok := x.(int); ok { // want `if-else chain of type assertions; use a type switch`
+	} else if _, ok := x.(string); ok {
+	}
+}
+
+type box struct{ v any }
+
+func field(b box) {
+	if v, ok := b.v.(int); ok { // want `if-else chain of type assertions; use a type switch`
+		_ = v
+	} else if v, ok := b.v.(*string); ok {
+		_ = v
+	}
+}
+
+func nested(x, y any) {
+	if v, ok := x.(int); ok { // want `if-else chain of type assertions; use a type switch`
+		if w, ok := y.(bool); ok { // want `if-else chain of type assertions; use a type switch`
+			_, _ = v, w
+		} else if w, ok := y.(string); ok {
+			_, _ = v, w
+		}
+	} else if v, ok := x.(string); ok {
+		_ = v
+	}
+}
+
+func okNamesDiffer(x any) {
+	if v, isInt := x.(int); isInt { // want `if-else chain of type assertions; use a type switch`
+		_ = v
+	} else if v, isString := x.(string); isString {
+		_ = v
+	}
+}
+
+func convert(x any) {
+	if v, ok := any(x).(int); ok { // want `if-else chain of type assertions; use a type switch`
+		_ = v
+	} else if v, ok := any(x).(string); ok {
+		_ = v
+	}
+}
+
+func declaresLocal(x any) {
+	if v, ok := x.(int); ok { // want `if-else chain of type assertions; use a type switch`
+		n := 1
+		_ = v + n
+	} else if v, ok := x.(string); ok {
+		_ = v
+	}
+}
+
+func breaksInner(xs any) {
+	if v, ok := xs.([]int); ok { // want `if-else chain of type assertions; use a type switch`
+		for _, n := range v {
+			_ = n
+			break
+		}
+	} else if v, ok := xs.([]string); ok {
+		_ = v
+	}
+}
+
+func writesValue(x any) {
+	if v, ok := x.(int); ok { // want `if-else chain of type assertions; use a type switch`
+		_ = v
+		x = "s"
+	} else if v, ok := x.(string); ok {
+		_ = v
+	}
+}
+
+func callsInBody(b *box) {
+	if v, ok := b.v.(int); ok { // want `if-else chain of type assertions; use a type switch`
+		_ = v
+		reset()
+	} else if v, ok := b.v.(string); ok {
+		_ = v
+	}
+}
+
+func index(m map[int]any, i int) {
+	if v, ok := m[i+1].(int); ok { // want `if-else chain of type assertions; use a type switch`
+		_ = v
+	} else if v, ok := m[i+1].(string); ok {
+		_ = v
+	}
+}
+
+func reset() {}
+
+func assertInGuard(x any) {
+	if v, ok := x.(any).(int); ok { // want `if-else chain of type assertions; use a type switch`
+		_ = v
+	} else if v, ok := x.(any).(string); ok {
+		_ = v
+	}
+}
+
+func elseWithTwo(x any, n int) {
+	if n > 0 {
+		_ = n
+	} else {
+		_ = n
+		if v, ok := x.(int); ok { // want `if-else chain of type assertions; use a type switch`
+			_ = v
+		} else if v, ok := x.(string); ok {
+			_ = v
+		}
+	}
+}
+
+func oneNameElsewhere(x any) {
+	if _, ok := x.(int); ok { // want `if-else chain of type assertions; use a type switch`
+	} else if v, ok := x.(string); ok {
+		_ = v
+	}
+}
+
+func blankElse(x any) {
+	if _, ok := x.(int); ok { // want `if-else chain of type assertions; use a type switch`
+	} else if _, ok := x.(string); ok {
+	} else {
+		println("other")
+	}
+}
+
+func fieldNamedGuard(box box, x any) any {
+	if _, ok := x.(int); ok { // want `if-else chain of type assertions; use a type switch`
+		return box.v
+	} else if v, ok := x.(string); ok {
+		return v
+	}
+	return nil
+}
+
+type key struct{ a int }
+
+func pickKey(m map[key]any) {
+	if v, ok := m[key{a: 1}].(int); ok { // want `if-else chain of type assertions; use a type switch`
+		_ = v
+	} else if v, ok := m[key{a: 1}].(string); ok {
+		_ = v
+	}
+}
+
+func oneReasserts(x any) any {
+	if _, ok := x.(int); ok { // want `if-else chain of type assertions; use a type switch`
+		return x.(int)
+	} else if _, ok := x.(string); ok {
+		return 0
+	}
+	return nil
+}
