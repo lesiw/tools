@@ -126,6 +126,7 @@ import (
 	"lesiw.io/tools/analyzers/nowsub"
 	"lesiw.io/tools/analyzers/octal"
 	"lesiw.io/tools/analyzers/offby1"
+	"lesiw.io/tools/analyzers/packagename"
 	"lesiw.io/tools/analyzers/poolarg"
 	"lesiw.io/tools/analyzers/preferdecoderune"
 	"lesiw.io/tools/analyzers/preferfprint"
@@ -305,6 +306,7 @@ var (
 		nowsub.Analyzer,
 		octal.Analyzer,
 		offby1.Analyzer,
+		packagename.Analyzer,
 		poolarg.Analyzer,
 		preferdecoderune.Analyzer,
 		preferfprint.Analyzer,

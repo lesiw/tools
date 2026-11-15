@@ -1,0 +1,1 @@
+package some_name // want `package name "some_name" contains an underscore`

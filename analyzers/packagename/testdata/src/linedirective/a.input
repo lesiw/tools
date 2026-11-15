@@ -1,0 +1,2 @@
+//line elsewhere.go:1
+package utils // want `gives no sense of its contents`

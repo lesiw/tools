@@ -1,0 +1,1 @@
+package mixedCaps // want `package name "mixedCaps" is not all lower case`

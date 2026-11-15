@@ -1424,6 +1424,16 @@ type item struct {
 }
 ```
 
+## packagename
+
+Reports a meaningless package name, a name with an underscore, or a name with a capital letter. The package name prefixes every exported identifier a client uses, so a name that gives no sense of the contents is read at every use.
+
+Adapted from revive's package-naming.
+
+```
+package util
+```
+
 ## plusbuild
 
 Reports a // +build line in a file that also holds a //go:build line. The older line is obsolete since Go 1.18, and gofmt removes it.
