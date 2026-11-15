@@ -1,0 +1,3 @@
+package foreign
+
+type Level uint8

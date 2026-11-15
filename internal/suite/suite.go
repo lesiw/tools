@@ -177,6 +177,7 @@ import (
 	"lesiw.io/tools/analyzers/unnecessaryblock"
 	"lesiw.io/tools/analyzers/unnecessarydefer"
 	"lesiw.io/tools/analyzers/unnecessaryformat"
+	"lesiw.io/tools/analyzers/unsignedcmp"
 	"lesiw.io/tools/analyzers/unslice"
 	"lesiw.io/tools/analyzers/unusedparams"
 	"lesiw.io/tools/analyzers/unusedrecv"
@@ -375,6 +376,7 @@ var (
 		unnecessaryformat.Analyzer,
 		unreachable.Analyzer,
 		unsafeptr.Analyzer,
+		unsignedcmp.Analyzer,
 		unslice.Analyzer,
 		unusedparams.Analyzer,
 		unusedrecv.Analyzer,

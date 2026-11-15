@@ -2459,6 +2459,18 @@ func f(u uintptr) *int {
 }
 ```
 
+## unsignedcmp
+
+Reports a comparison of an unsigned value against a limit of its type. A value of type uint8 is never negative and never above 255, so a comparison against either limit is always false or always true.
+
+Adapted from staticcheck's SA4003, which also reports the bounds of a signed type.
+
+```
+func below(n uint8) bool {
+    return n < 0
+}
+```
+
 ## unslice
 
 Reports a slice expression that takes the whole value, as s\[:]. The expression returns the value it was given.

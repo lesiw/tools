@@ -10,6 +10,8 @@ import (
 	"go/token"
 
 	"golang.org/x/tools/go/analysis"
+
+	"lesiw.io/tools/internal/source"
 )
 
 var Analyzer = &analysis.Analyzer{
@@ -30,8 +32,8 @@ func run(pass *analysis.Pass) (any, error) {
 			if !ok || len(gen.Specs) != 0 {
 				continue
 			}
-			start := lineStart(src, pass.Fset.Position(gen.Pos()).Offset)
-			end := lineEnd(src, pass.Fset.Position(gen.End()).Offset)
+			start := source.Start(src, pass.Fset.Position(gen.Pos()).Offset)
+			end := source.End(src, pass.Fset.Position(gen.End()).Offset)
 			pass.Report(analysis.Diagnostic{
 				Pos:     gen.Pos(),
 				End:     gen.End(),
@@ -47,23 +49,4 @@ func run(pass *analysis.Pass) (any, error) {
 		}
 	}
 	return nil, nil
-}
-
-// lineStart returns the offset of the line start at or before off.
-func lineStart(src []byte, off int) int {
-	for off > 0 && src[off-1] != '\n' {
-		off--
-	}
-	return off
-}
-
-// lineEnd returns the offset just past the newline that ends the line at off.
-func lineEnd(src []byte, off int) int {
-	for off < len(src) && src[off] != '\n' {
-		off++
-	}
-	if off < len(src) {
-		off++
-	}
-	return off
 }

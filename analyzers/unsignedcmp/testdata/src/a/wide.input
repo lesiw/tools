@@ -1,0 +1,7 @@
+//go:build !386 && !arm && !mips && !mipsle
+
+package a
+
+func wordSized(n uint) bool {
+	return n > 1<<64-1
+}

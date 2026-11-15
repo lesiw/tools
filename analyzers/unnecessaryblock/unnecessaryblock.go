@@ -15,11 +15,12 @@
 package unnecessaryblock
 
 import (
-	"bytes"
 	"go/ast"
 	"go/token"
 
 	"golang.org/x/tools/go/analysis"
+
+	"lesiw.io/tools/internal/source"
 )
 
 var Analyzer = &analysis.Analyzer{
@@ -182,11 +183,11 @@ func (c checker) emptyBlock(block *ast.BlockStmt) (analysis.TextEdit, bool) {
 		file   = c.pass.Fset.File(block.Pos())
 		open   = file.Offset(block.Lbrace)
 		close  = file.Offset(block.Rbrace)
-		first  = lineStart(c.src, open)
-		last   = lineEnd(c.src, close)
-		before = blank(c.src[first:open])
-		after  = blank(c.src[close+1 : last])
-		inside = blank(c.src[open+1 : close])
+		first  = source.Start(c.src, open)
+		last   = source.End(c.src, close)
+		before = source.Blank(c.src[first:open])
+		after  = source.Blank(c.src[close+1 : last])
+		inside = source.Blank(c.src[open+1 : close])
 	)
 	if !(before && after && inside) {
 		return analysis.TextEdit{}, false
@@ -201,41 +202,11 @@ func (c checker) brace(pos token.Pos) analysis.TextEdit {
 		file = c.pass.Fset.File(pos)
 		off  = file.Offset(pos)
 	)
-	if !alone(c.src, off) {
+	if !source.Alone(c.src, off, off+1) {
 		return analysis.TextEdit{Pos: pos, End: pos + 1}
 	}
 	return analysis.TextEdit{
-		Pos: file.Pos(lineStart(c.src, off)),
-		End: file.Pos(lineEnd(c.src, off)),
+		Pos: file.Pos(source.Start(c.src, off)),
+		End: file.Pos(source.End(c.src, off)),
 	}
-}
-
-// alone reports whether the text at off is the only thing on its line, and the
-// line ends in a newline.
-func alone(src []byte, off int) bool {
-	first, last := lineStart(src, off), lineEnd(src, off)
-	return src[last-1] == '\n' &&
-		blank(src[first:off]) && blank(src[off+1:last-1])
-}
-
-// blank reports whether b holds nothing but white space.
-func blank(b []byte) bool { return len(bytes.TrimSpace(b)) == 0 }
-
-// lineStart returns the offset of the line start at or before off.
-func lineStart(src []byte, off int) int {
-	for off > 0 && src[off-1] != '\n' {
-		off--
-	}
-	return off
-}
-
-// lineEnd returns the offset just past the newline that ends the line at off.
-func lineEnd(src []byte, off int) int {
-	for off < len(src) && src[off] != '\n' {
-		off++
-	}
-	if off < len(src) {
-		off++
-	}
-	return off
 }

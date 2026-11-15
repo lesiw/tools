@@ -1,0 +1,603 @@
+package a
+
+import (
+	lvl "foreign"
+	"math"
+)
+
+func negative(n uint) bool {
+	return n < 0 // want `uint is never negative; this is always false`
+}
+
+func notNegative(n uint8) bool {
+	return n >= 0 // want `uint8 is never negative; this is always true`
+}
+
+func mirrored(n uint32) bool {
+	return 0 > n // want `uint32 is never negative; this is always false`
+}
+
+func mirroredBack(n uint16) bool {
+	return 0 <= n // want `uint16 is never negative; this is always true`
+}
+
+func over(n uint8) bool {
+	return n > 255 // want `uint8 cannot exceed 255; this is always false`
+}
+
+func atMost(n uint8) bool {
+	return n <= 255 // want `uint8 cannot exceed 255; this is always true`
+}
+
+func swapped(n uint8) bool {
+	return 255 < n // want `uint8 cannot exceed 255; this is always false`
+}
+
+func swappedBack(n uint8) bool {
+	return 255 >= n // want `uint8 cannot exceed 255; this is always true`
+}
+
+func widest(n uint64) bool {
+	return n > 1<<64-1 // want `uint64 cannot exceed 18446744073709551615; this is always false`
+}
+
+type level uint8
+
+func named(l level) bool {
+	return l < 0 // want `level is never negative; this is always false`
+}
+
+func namedTop(l level) bool {
+	return l > 255 // want `level cannot exceed 255; this is always false`
+}
+
+func qualified(l lvl.Level) bool {
+	return l < 0 // want `lvl.Level is never negative; this is always false`
+}
+
+const widestByte uint8 = math.MaxUint8
+
+func fromMath(n uint8) bool {
+	return n > math.MaxUint8 // want `uint8 cannot exceed 255; this is always false`
+}
+
+func fromConst(n uint8) bool {
+	return n > widestByte
+}
+
+func converted(n uint8) bool {
+	return n > uint8(255) // want `uint8 cannot exceed 255; this is always false`
+}
+
+func complemented(n uint8) bool {
+	return ^n > ^uint8(0) // want `uint8 cannot exceed 255; this is always false`
+}
+
+func convertedWord(n uint8) bool {
+	return n > uint8(uintptr(255))
+}
+
+func pointer(n uintptr) bool {
+	return n < 0 // want `uintptr is never negative; this is always false`
+}
+
+func signed(n int) bool {
+	return n < 0
+}
+
+func signedNegative(n int8) bool {
+	return n <= -1
+}
+
+func fractional(n float64) bool {
+	return n < 0
+}
+
+func zeroBound(n uint) bool {
+	return n <= 0
+}
+
+func nonZero(n uint) bool {
+	return n > 0
+}
+
+func belowTop(n uint8) bool {
+	return n < 255
+}
+
+func reachedTop(n uint8) bool {
+	return n >= 255
+}
+
+func equality(n uint) bool {
+	return n == 0
+}
+
+func inequality(n uint) bool {
+	return n != 0
+}
+
+func pair(n, m uint) bool {
+	return n < m
+}
+
+func large(n uint16) bool {
+	return n > 1000
+}
+
+func folded() bool {
+	return uint8(3) < 0
+}
+
+const top uint8 = 255
+
+func namedBound(n uint8) bool {
+	return n > top
+}
+
+func pointerWidth(n uint64) bool {
+	const max = ^uintptr(0)
+	return n > uint64(max)
+}
+
+func parameter[P ~uint](n P) bool {
+	return n < 0
+}
+
+func narrowParameter[P ~uint8](n P) bool {
+	return n > 255
+}
+
+func dropped(n uint) {
+	// want +1 `uint is never negative; this is always false`
+	if n < 0 {
+		report()
+	}
+	println("after")
+}
+
+func kept(n uint) {
+	// want +1 `uint is never negative; this is always true`
+	if n >= 0 {
+		report()
+	}
+	println("after")
+}
+
+func chosen(n uint) {
+	// want +1 `uint is never negative; this is always false`
+	if n < 0 {
+		dead()
+	} else {
+		live()
+	}
+}
+
+func settled(n uint) {
+	// want +1 `uint is never negative; this is always true`
+	if n >= 0 {
+		live()
+	} else {
+		dead()
+	}
+}
+
+func emptied(n uint) {
+	// want +1 `uint is never negative; this is always true`
+	if n >= 0 {
+	}
+	println("after")
+}
+
+func besideElse(n uint) {
+	// want +1 `uint is never negative; this is always false`
+	if n < 0 {
+	} else {
+		live()
+	}
+}
+
+func deadElse(n uint) {
+	// want +1 `uint is never negative; this is always true`
+	if n >= 0 {
+	} else {
+		report()
+	}
+	println("after")
+}
+
+func chained(n uint, ok bool) {
+	if ok {
+		report()
+		// want +1 `uint is never negative; this is always false`
+	} else if n < 0 {
+		report()
+	}
+}
+
+func next(n uint, ok bool) {
+	// want +1 `uint is never negative; this is always false`
+	if n < 0 {
+		report()
+	} else if ok {
+		report()
+	}
+}
+
+func trailing(n uint, ok bool) {
+	if ok {
+		report()
+		// want +1 `uint is never negative; this is always false`
+	} else if n < 0 {
+	}
+}
+
+func wrapped(n uint) {
+	// want +1 `uint is never negative; this is always false`
+	if (n) < (0) {
+		report()
+	}
+}
+
+func eitherSide(n uint, ok bool) {
+	if n < 0 || ok { // want `uint is never negative; this is always false`
+		report()
+	}
+}
+
+func trailingSide(n uint, ok bool) {
+	if ok || n < 0 { // want `uint is never negative; this is always false`
+		report()
+	}
+}
+
+func conjoined(n uint, ok bool) {
+	if n >= 0 && ok { // want `uint is never negative; this is always true`
+		report()
+	}
+}
+
+func bracketed(n uint, ok bool) {
+	if (n < 0) || ok { // want `uint is never negative; this is always false`
+		report()
+	}
+}
+
+func decidedElsewhere(n uint, ok bool) {
+	if n >= 0 || ok { // want `uint is never negative; this is always true`
+		report()
+	}
+	if n < 0 && ok { // want `uint is never negative; this is always false`
+		report()
+	}
+}
+
+func loop(n uint, ok bool) {
+	for n < 0 { // want `uint is never negative; this is always false`
+		report()
+	}
+	for n >= 0 || ok { // want `uint is never negative; this is always true`
+		report()
+	}
+}
+
+func branched(n uint) {
+	if m := n + 1; m < 0 { // want `uint is never negative; this is always false`
+		report()
+	}
+}
+
+func computed() uint { return 0 }
+
+func called() {
+	if computed() < 0 { // want `uint is never negative; this is always false`
+		report()
+	}
+}
+
+func labelled(n uint) {
+again:
+	if n < 0 { // want `uint is never negative; this is always false`
+		return
+	}
+	if n > 10 {
+		goto again
+	}
+}
+
+func jumpedBranch(n uint) {
+retry:
+	if n < 0 { // want `uint is never negative; this is always false`
+		goto retry
+	} else {
+		report()
+	}
+}
+
+func jumpedElsewhere(n uint, ok bool) {
+retry:
+	if ok {
+		report()
+	} else if n < 0 { // want `uint is never negative; this is always false`
+		goto retry
+	}
+}
+
+func negated(n uint) bool {
+	return !(n < 0) // want `uint is never negative; this is always false`
+}
+
+func negatedBranch(n uint) {
+	// want +1 `uint is never negative; this is always false`
+	if !(n < 0) {
+		report()
+	}
+}
+
+func tagged(n uint) {
+	switch n < 0 { // want `uint is never negative; this is always false`
+	case true:
+		report()
+	}
+}
+
+func cased(n uint, other bool) {
+	switch {
+	case other:
+		report()
+	case n < 0: // want `uint is never negative; this is always false`
+		report()
+	}
+}
+
+func received(ch chan uint) {
+	if <-ch < 0 { // want `uint is never negative; this is always false`
+		report()
+	}
+}
+
+func incremented(n uint) {
+	count := n
+	count++
+	// want +1 `uint is never negative; this is always false`
+	if count < 0 {
+		report()
+	}
+}
+
+func accumulated(n uint) {
+	total := n
+	total += 1
+	// want +1 `uint is never negative; this is always false`
+	if total < 0 {
+		report()
+	}
+}
+
+func ranged(n uint, xs []uint) {
+	for _, value := range xs {
+		// want +1 `uint is never negative; this is always false`
+		if n < 0 {
+			_ = value
+		}
+	}
+}
+
+type counter struct{ total uint }
+
+func (c counter) guarded() {
+	// want +1 `uint is never negative; this is always false`
+	if c.total < 0 {
+		report()
+	}
+}
+
+func addressed() {
+	if (&counter{}).total < 0 { // want `uint is never negative; this is always false`
+		report()
+	}
+}
+
+func fieldRead(n uint, c counter) {
+	// want +1 `uint is never negative; this is always false`
+	if n < 0 {
+		_ = c.total
+	}
+}
+
+func reported(n uint) (count uint) {
+	// want +1 `uint is never negative; this is always false`
+	if count < 0 {
+		report()
+	}
+	return n
+}
+
+func switched(v any) {
+	switch count := v.(type) {
+	case uint:
+		// want +1 `uint is never negative; this is always false`
+		if count < 0 {
+			report()
+		}
+	case string:
+		report()
+		_ = count
+	}
+}
+
+func afterComment(n uint) {
+	// want +1 `uint is never negative; this is always false`
+	if n < 0 {
+		report()
+	}
+	// the input is unsigned here
+	println("after")
+}
+
+func stopped(n uint) {
+	for range 3 {
+		// want +1 `uint is never negative; this is always true`
+		if n >= 0 {
+			continue
+		}
+		report()
+	}
+}
+
+func switchAlone(v any) {
+	switch x := v.(type) {
+	case uint:
+		if x < 0 { // want `uint is never negative; this is always false`
+			return
+		}
+	}
+}
+
+func pairedSides(n, m uint) {
+	// want +1 `uint is never negative; this is always false` `uint is never negative; this is always false`
+	if n < 0 || m < 0 {
+		report()
+	}
+}
+
+func dereferenced(p *uint) bool {
+	return *p < 0 // want `uint is never negative; this is always false`
+}
+
+func indexed(xs []uint) bool {
+	return xs[0] < 0 // want `uint is never negative; this is always false`
+}
+
+func asserted(v any) bool {
+	return v.(uint8) < 0 // want `uint8 is never negative; this is always false`
+}
+
+func divided(n, d uint) bool {
+	return n/d < 0 // want `uint is never negative; this is always false`
+}
+
+func trailingComment(n uint) {
+	if n < 0 { // want `uint is never negative; this is always false`
+		report()
+	} // the input is unsigned here
+	println("after")
+}
+
+func redeclared(n uint) {
+	spare := uint(1)
+	spare, ok := n, true
+	_ = ok
+	if spare < 0 { // want `uint is never negative; this is always false`
+		report()
+	}
+}
+
+func rangedAssign(n uint) {
+	spare := uint(1)
+	for spare = range 3 {
+		report()
+	}
+	if spare < 0 { // want `uint is never negative; this is always false`
+		report()
+	}
+}
+
+func namedZero(n uint) bool {
+	const zero = 0
+	return n >= zero
+}
+
+func unread(n uint) {
+	spare := n + 1
+	if spare < 0 { // want `uint is never negative; this is always false`
+		report()
+	}
+}
+
+func droppedRead(n uint) {
+	shown := n + 1
+	if n < 0 { // want `uint is never negative; this is always false`
+		_ = shown
+	}
+}
+
+func assignedTwice(n uint) {
+	count := n
+	count = n + 1
+	if count < 0 { // want `uint is never negative; this is always false`
+		report()
+	}
+}
+
+func twiceRead(n uint) {
+	spare := n + 1
+	if n < 0 { // want `uint is never negative; this is always false`
+		_ = spare
+	}
+	if n < 0 { // want `uint is never negative; this is always false`
+		_ = spare
+	}
+}
+
+func insideBranch(n uint) {
+	// want +1 `uint is never negative; this is always false`
+	if n < 0 {
+		spare := n + 1
+		report()
+		_ = spare
+	}
+}
+
+var packageTotal uint
+
+func packageRead(n uint) {
+	// want +1 `uint is never negative; this is always false`
+	if n < 0 {
+		_ = packageTotal
+	}
+}
+
+func literalParam() func(uint) {
+	return func(n uint) {
+		// want +1 `uint is never negative; this is always false`
+		if n < 0 {
+			report()
+		}
+	}
+}
+
+func keyed(n uint) map[bool]int {
+	return map[bool]int{false: 1, n < 0: 2} // want `uint is never negative; this is always false`
+}
+
+func enclosing(n uint) func() {
+	return func() {
+		// want +1 `uint is never negative; this is always false`
+		if n < 0 {
+			report()
+		}
+	}
+}
+
+func literalLocal() func() {
+	spare := uint(1)
+	return func() {
+		if spare < 0 { // want `uint is never negative; this is always false`
+			report()
+		}
+	}
+}
+
+func commented(n uint) {
+	if n < 0 { // want `uint is never negative; this is always false`
+		// a comment inside the branch
+		report()
+	}
+}
+
+func dead() {}
+
+func live() {}
+
+func report() {}
