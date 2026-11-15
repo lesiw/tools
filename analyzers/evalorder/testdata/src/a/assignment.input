@@ -1,0 +1,6 @@
+package a
+
+func assigned(n int) (int, int) {
+	x, y := n, add(&n)
+	return x, y
+}

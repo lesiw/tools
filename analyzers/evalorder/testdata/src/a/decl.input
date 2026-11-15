@@ -1,0 +1,104 @@
+package a
+
+type tally struct{ n int }
+
+func (t *tally) bump() int {
+	t.n++
+	return t.n
+}
+
+func (t tally) peek() int { return t.n }
+
+type holder struct{ t *tally }
+
+type entry struct {
+	name string
+	size int
+}
+
+type base struct{ n int }
+
+type outer struct{ base }
+
+type leaf struct{ n int }
+
+type embeds struct{ *leaf }
+
+type boxed interface {
+	~*[2]int
+	comparable
+}
+
+type myInt int
+
+type core struct{ x int }
+
+func (c core) peek() int { return c.x }
+
+type decorated struct {
+	core
+	z int
+}
+
+type numbers []int
+
+type sink func(*int) int
+
+var pour sink
+
+type anySlice interface{ ~[]int }
+
+type anySliceAny interface{ anySlice; any }
+
+var counter int
+
+func add(p *int) int {
+	*p++
+	return *p
+}
+
+func mark(ps ...*int) int { return len(ps) }
+
+func refill(p **int) int {
+	*p = new(int)
+	return **p
+}
+
+func grow(p *[]string) int { return len(*p) }
+
+func same(n int) int { return n }
+
+func items() []int { return nil }
+
+func count(m map[string]int) int { return len(m) }
+
+func fill(s []int) int { return len(s) }
+
+func use(p *int) int { return *p }
+
+func accept(v any) int { return 0 }
+
+func both(p *int, n int) int { return *p + n }
+
+func bumpAll(p *tally) int { return p.bump() }
+
+func intp(p *int) *int { return p }
+
+func addS(p *string) int {
+	*p += "!"
+	return len(*p)
+}
+
+func refillE(p **entry) int {
+	*p = new(entry)
+	return 0
+}
+
+func whole(p *entry) entry { return *p }
+
+func refillT(p **tally) int {
+	*p = nil
+	return 0
+}
+
+func take[T any](p *T) int { return 0 }

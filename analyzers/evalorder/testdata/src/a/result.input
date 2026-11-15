@@ -1,0 +1,74 @@
+package a
+
+func incremented(n int) (int, int) {
+	return n, add(&n) // want `n is read before or after a call that may write it`
+}
+
+func calledFirst(n int) (int, int) {
+	return add(&n), n // want `n is read before or after a call that may write it`
+}
+
+func lateArgument(n int) (int, int) {
+	return add(&n), same(n) // want `n is read before or after a call that may write it`
+}
+
+func summed(n int) (int, int) {
+	return add(&n) + n, 0 // want `n is read before or after a call that may write it`
+}
+
+func singleResult(n int) int {
+	return n + add(&n) // want `n is read before or after a call that may write it`
+}
+
+func computed(n int) (int, int) {
+	return n + 1, add(&n) // want `n is read before or after a call that may write it`
+}
+
+func repeated(n int) (int, int, int) {
+	return n, n, add(&n) // want `n is read before or after a call that may write it`
+}
+
+func wrapped(n int) (int, int) {
+	return n, // want `n is read before or after a call that may write it`
+		add(&n)
+}
+
+func inChain(n int) bool {
+	return (n+add(&n)) > 0 && n > 0 // want `n is read before or after a call that may write it`
+}
+
+func earlyArgument(n int) (int, int) {
+	return same(n), add(&n)
+}
+
+func chainedLate(n int) bool {
+	return add(&n) > 0 && same(n) > 0
+}
+
+func chained(n int) bool {
+	return n > 0 && add(&n) > 0
+}
+
+func alternated(n int) bool {
+	return n > 0 || add(&n) > 0
+}
+
+func negated(n int) bool {
+	return !(n > 0 && add(&n) > 0)
+}
+
+func siblingArguments(n int) (int, int) {
+	return both(&n, n), 0
+}
+
+func separate(x, y int) (int, int) {
+	return x, add(&y)
+}
+
+func noAddress(n int) (int, int) {
+	return n, same(n)
+}
+
+func noRead(n int) (int, int) {
+	return add(&n), mark(&n)
+}

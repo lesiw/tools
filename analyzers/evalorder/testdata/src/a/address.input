@@ -1,0 +1,108 @@
+package a
+
+import "os"
+
+func convertedAddress(n int) (int, int) {
+	return n, use((*int)(&n)) // want `n is read before or after a call that may write it`
+}
+
+func convertedRead(n int) (myInt, int) {
+	return myInt(n), add(&n) // want `n is read before or after a call that may write it`
+}
+
+func convertedPair(n int) (int, int) {
+	return both((*int)(&n), same(n)), 0
+}
+
+func convertedTwice(n int) (int, int) {
+	return n, use((*int)((*int)(&n))) // want `n is read before or after a call that may write it`
+}
+
+func literalCallee(n int) (int, int) {
+	return n, func(p *int) int { *p++; return *p }(&n) // want `n is read before or after a call that may write it`
+}
+
+func literalReturn(n int) (int, int) {
+	return (func() (int, int) { return n, add(&n) })() // want `n is read before or after a call that may write it`
+}
+
+func parenthesizedMethod(t tally) (func() int, int) {
+	return (t.bump), bumpAll(&t)
+}
+
+func promotedMethod(d decorated) (func() int, int) {
+	return d.peek, add(&d.z)
+}
+
+func stringSlice(s string) (string, int) {
+	return s[1:], addS(&s) // want `s is read before or after a call that may write it`
+}
+
+func fieldAddress(e *entry) (*int, int) {
+	return &e.size, refillE(&e) // want `e is read before or after a call that may write it`
+}
+
+func typeParamCallee[F func(*int) int](g F, n int) (int, int) {
+	return n, g(&n) // want `n is read before or after a call that may write it`
+}
+
+func variadic(n int) (int, int) {
+	return n, mark(&n) // want `n is read before or after a call that may write it`
+}
+
+func extraVariadic(n, m int) (int, int) {
+	return n, mark(&n, &m) // want `n is read before or after a call that may write it`
+}
+
+func qualified() ([]string, int) {
+	return os.Args, grow(&os.Args) // want `os.Args is read before or after a call that may write it`
+}
+
+func global() (int, int) {
+	return counter, add(&counter) // want `counter is read before or after a call that may write it`
+}
+
+func methodExpr(t tally) (tally, int) {
+	return t, (*tally).bump(&t) // want `t is read before or after a call that may write it`
+}
+
+func pointerSelf(p *int) (*int, int) {
+	return p, refill(&p) // want `p is read before or after a call that may write it`
+}
+
+func addressOnly(n int) (int, *int) {
+	return n, &n
+}
+
+func conversionOnly(n int) (int, *int) {
+	return n, (*int)(&n)
+}
+
+func heldAddress(n int) (int, int) {
+	p := &n
+	return n, use(p)
+}
+
+func namedCallee(n int) (int, int) {
+	return n, pour(&n) // want `n is read before or after a call that may write it`
+}
+
+func interfaceParam(n int) (int, int) {
+	return n, accept(&n)
+}
+
+func appendedAddress(n int, ps []*int) ([]*int, int) {
+	return append(ps, &n), n
+}
+
+func nestedAddress(n int) (int, int) {
+	return n, use(intp(&n)) // want `n is read before or after a call that may write it`
+}
+
+func uncalledLiteral(n int) (int, func() int) {
+	return n, func() int { return add(&n) }
+}
+
+func methodCall(t tally) (tally, int) {
+	return t, t.bump()
+}

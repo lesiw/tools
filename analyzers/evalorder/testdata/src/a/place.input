@@ -1,0 +1,137 @@
+package a
+
+func sameField(e entry) (int, int) {
+	return e.size, add(&e.size) // want `e.size is read before or after a call that may write it`
+}
+
+func wholeRead(e entry) (entry, int) {
+	return e, add(&e.size) // want `e is read before or after a call that may write it`
+}
+
+func pointerField(p *tally) (int, int) {
+	return p.n, add(&p.n) // want `p.n is read before or after a call that may write it`
+}
+
+func heldData(h holder) (tally, int) {
+	return *h.t, add(&h.t.n) // want `[*]h.t is read before or after a call that may write it`
+}
+
+func sameElement(s []int) (int, int) {
+	return s[0], add(&s[0]) // want `s\[0\] is read before or after a call that may write it`
+}
+
+func variableElement(s []int, i int) (int, int) {
+	return s[i], add(&s[0]) // want `s\[i\] is read before or after a call that may write it`
+}
+
+func variableWrite(s []int, i int) (int, int) {
+	return s[0], add(&s[i]) // want `s\[0\] is read before or after a call that may write it`
+}
+
+func indexRead(s []int, i int) (int, int) {
+	return s[i], add(&i) // want `i is read before or after a call that may write it`
+}
+
+func sameArrayElement(a [2]int) (int, int) {
+	return a[0], add(&a[0]) // want `a\[0\] is read before or after a call that may write it`
+}
+
+func wholeArray(a [2]int) ([2]int, int) {
+	return a, add(&a[0]) // want `a is read before or after a call that may write it`
+}
+
+func namedTerm[S numbers](x S) (S, int) {
+	return x, add(&x[0])
+}
+
+func sliceTerm[S []int](x S) (S, int) {
+	return x, add(&x[0])
+}
+
+func embeddedAny[S anySliceAny](x S) (S, int) {
+	return x, add(&x[0])
+}
+
+func sliceElement[S ~[]int](x S) (int, int) {
+	return x[0], add(&x[0]) // want `x\[0\] is read before or after a call that may write it`
+}
+
+func anyConstraint[T any](x T) (T, int) {
+	return x, take(&x) // want `x is read before or after a call that may write it`
+}
+
+func embeddedField(o outer) (int, int) {
+	return o.n, add(&o.base.n) // want `o\.n is read before or after a call that may write it`
+}
+
+func methodValueCopied(t tally) (func() int, int) {
+	return t.peek, bumpAll(&t) // want `t is read before or after a call that may write it`
+}
+
+func methodValueBound(t tally) (func() int, int) {
+	return t.bump, bumpAll(&t)
+}
+
+func wholeWrite(e entry) (int, entry) {
+	return e.size, whole(&e) // want `e.size is read before or after a call that may write it`
+}
+
+func arraySlice(a [2]int) ([]int, int) {
+	return a[:], add(&a[0])
+}
+
+func methodValuePointer(p *tally) (func() int, int) {
+	return p.bump, refillT(&p) // want `p is read before or after a call that may write it`
+}
+
+func embeddedPointer(e embeds) (embeds, int) {
+	return e, add(&e.n)
+}
+
+func embeddedPointerValue(e embeds) (int, int) {
+	return e.n, add(&e.leaf.n) // want `e.n is read before or after a call that may write it`
+}
+
+func boxedPointer[S boxed](x S) (S, int) {
+	return x, take(&x[0])
+}
+
+func mapArgument(m map[string]int) (int, int) {
+	return m["k"], count(m)
+}
+
+func sliceArgument(s []int) (int, int) {
+	return s[0], fill(s)
+}
+
+func calledBase(e entry) (int, int) {
+	return items()[0], add(&e.size)
+}
+
+func otherField(e entry) (string, int) {
+	return e.name, add(&e.size)
+}
+
+func pointerValue(p *tally) (*tally, int) {
+	return p, add(&p.n)
+}
+
+func holderValue(h holder) (holder, int) {
+	return h, add(&h.t.n)
+}
+
+func otherElement(s []int) (int, int) {
+	return s[1], add(&s[0])
+}
+
+func sliceHeader(s []int) ([]int, int) {
+	return s, add(&s[0])
+}
+
+func otherArrayElement(a [2]int) (int, int) {
+	return a[1], add(&a[0])
+}
+
+func sliceConstraint[S ~[]int](x S) (S, int) {
+	return x, add(&x[0])
+}
