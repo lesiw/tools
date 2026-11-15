@@ -1858,19 +1858,6 @@
 //		return x
 //	}
 //
-// # stringintconv
-//
-// Reports a conversion of an integer to a string. The conversion yields the
-// UTF-8 encoding of the number as a code point, where the decimal digits are
-// what the code usually means. A rune or a byte is left alone, since the
-// conversion is the intended form for both.
-//
-// Imported from the x/tools vet suite.
-//
-//	func f(n int) string {
-//		return string(n)
-//	}
-//
 // # stringsbuilder
 //
 // Reports string concatenation with +=. strings.Builder accumulates the text
