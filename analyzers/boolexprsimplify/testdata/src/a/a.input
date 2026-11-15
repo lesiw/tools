@@ -1,0 +1,190 @@
+package a
+
+type flag bool
+
+func compared(b bool) bool {
+	if b == true { // want `comparison with true; write the operand`
+		return true
+	}
+	if b != false { // want `comparison with false; write the operand`
+		return true
+	}
+	if true == b { // want `comparison with true; write the operand`
+		return true
+	}
+	if false != b { // want `comparison with false; write the operand`
+		return true
+	}
+	if (b) == true { // want `comparison with true; write the operand`
+		return true
+	}
+	for b == true { // want `comparison with true; write the operand`
+		return true
+	}
+	switch {
+	case b != false: // want `comparison with false; write the operand`
+		return true
+	}
+	switch b {
+	case b == true: // want `comparison with true; write the operand`
+	}
+	return false
+}
+
+func operated(a, b bool) bool {
+	return a && b == true // want `comparison with true; write the operand`
+}
+
+func declared(b bool) bool {
+	var x = b == true // want `comparison with true; write the operand`
+	y := b != false   // want `comparison with false; write the operand`
+	z := false
+	z = b != false // want `comparison with false; write the operand`
+	_ = b == true  // want `comparison with true; write the operand`
+	return x && y && z
+}
+
+func argument(b bool) bool {
+	return takes(b == true) // want `comparison with true; write the operand`
+}
+
+func takes(b bool) bool { return b }
+
+func variadic(b bool) bool {
+	return many(b == true) // want `comparison with true; write the operand`
+}
+
+func many(bs ...bool) bool { return len(bs) > 0 }
+
+func converted(b bool) bool {
+	return bool(b == true) // want `comparison with true; write the operand`
+}
+
+func sent(b bool, ch chan bool) {
+	ch <- b != false // want `comparison with false; write the operand`
+}
+
+func interfaced(b bool) {
+	var x any = b == true // want `comparison with true; write the operand`
+	_ = x
+}
+
+func composite(b bool) []bool {
+	return []bool{b == true} // want `comparison with true; write the operand`
+}
+
+func result(b bool) bool {
+	return b == true // want `comparison with true; write the operand`
+}
+
+func commented(b bool) bool {
+	return b /* why */ == true // want `comparison with true; write the operand`
+}
+
+func commentedFirst(b bool) bool {
+	return true /* why */ == b // want `comparison with true; write the operand`
+}
+
+func negated(b bool) bool {
+	return !!b // want `negation of a negation; write the operand`
+}
+
+func tripled(b bool) bool {
+	return !!!b // want `negation of a negation; write the operand`
+}
+
+func parenthesized(b bool) bool {
+	return !(!b) // want `negation of a negation; write the operand`
+}
+
+func grouped(a, b, c bool) bool {
+	return !(!(a || b)) && c // want `negation of a negation; write the operand`
+}
+
+func nested(b bool) bool {
+	return !(b == true) // want `comparison with true; write the operand`
+}
+
+func doubledComparison(a, b bool) bool {
+	return !(!(a == b)) // want `negation of a negation; write the operand`
+}
+
+func named(f flag) bool {
+	return f == true
+}
+
+func namedCondition(f flag) bool {
+	if f == true {
+		return true
+	}
+	return false
+}
+
+func namedBeside(f flag, b bool) {
+	_ = f == (b == true)
+	_ = f && (b == true)
+	_ = (b == true) == f
+}
+
+func typed[T ~bool](x T, b bool) {
+	_ = x == (b == true)
+}
+
+func typedResult[T ~bool](x T) bool {
+	return x == true
+}
+
+func typedOperand(b bool) {
+	var f flag = b == true
+	_ = f
+}
+
+func typedConversion(b bool) {
+	_ = flag(b != false)
+}
+
+func typedResultValue(b bool) flag {
+	return b == true
+}
+
+func typedSwitch(b bool, f flag) {
+	switch f {
+	case b == true:
+	}
+}
+
+func redeclared(b bool) {
+	var f flag
+	f, ok := b == true, true
+	_, _ = f, ok
+}
+
+func shadowed(ok bool) bool {
+	true, false := ok, !ok
+	return ok == true && !false
+}
+
+type pair struct {
+	on bool
+}
+
+func compositeOperand() bool {
+	return !(!pair{}.on) // want `negation of a negation; write the operand`
+}
+
+func commentedNegation(b bool) bool {
+	return !(!b /* why */) // want `negation of a negation; write the operand`
+}
+
+func inverting(b bool) bool {
+	return b == false || b != true || false == b || true != b
+}
+
+func constants() bool {
+	return true == true
+}
+
+func folded() flag {
+	const c = true
+	return c == true
+}

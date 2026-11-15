@@ -233,6 +233,18 @@
 //			2}
 //	}
 //
+// # boolexprsimplify
+//
+// Reports a boolean expression with a redundant negation or comparison: a
+// negation of a negation, or a comparison of a bool with true using == or with
+// false using !=. The operand is written in place of the expression.
+//
+// Inspired by go-critic's boolExprSimplify and staticcheck's S1002.
+//
+//	func f(ok bool) bool {
+//		return ok != false
+//	}
+//
 // # boolreturn
 //
 // Reports an if whose branches return the opposite boolean constants, where
