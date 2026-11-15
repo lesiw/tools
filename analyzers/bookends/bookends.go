@@ -986,8 +986,9 @@ type layoutFill struct {
 
 // overWide reports whether a line of the list's own layout is longer than the
 // width allows. Only the lines an element starts on are measured, and a line
-// linelen exempts is not measured at all: a declared signature wraps as it was
-// written, and the join rule restores that wrap whatever its width.
+// written inside a declared signature is not measured here: a signature wraps
+// as its author chose, and the join rule restores that wrap whatever its
+// width.
 func overWide(l *layout, file *ast.File, p pair) bool {
 	seen := make(map[int]struct{}, len(p.elts))
 	for _, e := range p.elts {
@@ -1006,11 +1007,12 @@ func overWide(l *layout, file *ast.File, p pair) bool {
 	return false
 }
 
-// inSignature reports whether pos falls in a span linelen exempts as a
-// signature: a function or method declaration up to its body, or a method in
-// an interface. A signature has a list only in an array length, as in
-// func f(x [len([]int{1, 2, 3})]int), and measuring that line would leave the
-// join rule restoring the wrap forever.
+// inSignature reports whether pos falls in a declared signature's span: a
+// function or method declaration from its keyword through its type, or a
+// method in an interface. A signature can hold a bracketed list, as in
+// func f(m Map[string, int]), and a signature wraps as its author chose, so
+// the list is not measured; measuring it would leave the join rule restoring
+// the wrap forever.
 func inSignature(file *ast.File, pos token.Pos) bool {
 	var found bool
 	ast.Inspect(file, func(n ast.Node) bool {
@@ -1022,11 +1024,7 @@ func inSignature(file *ast.File, pos token.Pos) bool {
 			if n.Type == nil {
 				return true
 			}
-			end := n.Type.End()
-			if n.Body != nil {
-				end = n.Body.Lbrace
-			}
-			found = pos >= n.Pos() && pos <= end
+			found = pos >= n.Pos() && pos <= n.Type.End()
 		case *ast.InterfaceType:
 			for _, field := range n.Methods.List {
 				if _, ok := field.Type.(*ast.FuncType); !ok {

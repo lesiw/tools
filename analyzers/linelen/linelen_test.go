@@ -49,6 +49,6 @@ func TestAnalysisTest(t *testing.T) {
 	Config.Len = 79
 	analysistest.Run(t, fixtures.Dir(t, testdata), Analyzer,
 		"basic", "longimportblock", "longimportstmt",
-		"methodwrap", "continuous", "linedirective",
+		"methodwrap", "oneline", "continuous", "linedirective",
 	)
 }

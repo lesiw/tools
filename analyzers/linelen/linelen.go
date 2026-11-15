@@ -68,8 +68,7 @@ func CheckLine(line []byte) bool {
 
 // CheckFile returns f's overlong lines: every line of src whose width
 // exceeds the limit, which f measures, and which is not continuous.
-// Positions where wrapping is the author's layout, and generated
-// files, are the caller's to skip.
+// Generated files are the caller's to skip.
 func CheckFile(fset *token.FileSet, f *ast.File, src []byte) (long []Line) {
 	if Config.Len <= 0 {
 		return nil
@@ -200,11 +199,17 @@ func scanLits(line []byte) (out []span) {
 	return out
 }
 
+// writtenLine returns the line pos is written on, ignoring //line
+// directives.
+func writtenLine(fset *token.FileSet, pos token.Pos) int {
+	return fset.PositionFor(pos, false).Line
+}
+
 // writtenLines returns the first and last line pos and end are written on,
 // ignoring //line directives. The line table is indexed by the lines the file
 // is written on, and a directive can name a line past its end.
 func writtenLines(fset *token.FileSet, pos, end token.Pos) (first, last int) {
-	return fset.PositionFor(pos, false).Line, fset.PositionFor(end, false).Line
+	return writtenLine(fset, pos), writtenLine(fset, end)
 }
 
 // astLits maps a line number to the parts of string literals on it,
@@ -245,36 +250,35 @@ func astLits(fset *token.FileSet, f *ast.File) map[int][]span {
 }
 
 // checked returns a predicate reporting whether the limit applies to
-// a line of f. It does not apply to import declarations, and to
-// function, method, and interface method signatures, whose wrapping
-// is the author's chosen layout; a function's body is measured.
+// a line of f. An import declaration is not measured, and neither is a
+// line of a function, method, or interface method signature: a
+// signature wraps as its author chose. A signature line a statement of
+// the body starts on is measured.
 func checked(fset *token.FileSet, f *ast.File) func(line int) bool {
 	var (
-		skip = make(map[int]struct{})
-		mark = func(start, end token.Pos) {
-			s, e := writtenLines(fset, start, end)
-			for line := s; line <= e; line++ {
+		skip      = make(map[int]struct{})
+		markLines = func(first, last int) {
+			for line := first; line <= last; line++ {
 				skip[line] = struct{}{}
 			}
 		}
 	)
 	ast.Inspect(f, func(n ast.Node) bool {
 		switch node := n.(type) {
-		case *ast.ImportSpec:
-			mark(node.Pos(), node.Pos())
 		case *ast.GenDecl:
-			if node.Tok.String() == "import" {
-				mark(node.Pos(), node.End())
+			if node.Tok == token.IMPORT {
+				markLines(writtenLines(fset, node.Pos(), node.End()))
 			}
 		case *ast.FuncDecl:
-			// Function and method signatures may wrap across lines;
-			// the wrap is the user's chosen layout. The body still
-			// gets checked.
-			end := node.Type.End()
-			if node.Body != nil {
-				end = node.Body.Lbrace
+			first, last := writtenLines(fset, node.Pos(), node.Type.End())
+			// The exempt range is the signature's lines, less the one
+			// the body starts on. A body with no statements starts
+			// nowhere.
+			if body := node.Body; body != nil && len(body.List) > 0 {
+				start := writtenLine(fset, body.List[0].Pos())
+				last = min(last, start-1)
 			}
-			mark(node.Pos(), end)
+			markLines(first, last)
 		case *ast.InterfaceType:
 			// Interface methods are *ast.Field entries whose Type
 			// is *ast.FuncType. The whole field span is the
@@ -286,7 +290,7 @@ func checked(fset *token.FileSet, f *ast.File) func(line int) bool {
 				if _, ok := field.Type.(*ast.FuncType); !ok {
 					continue
 				}
-				mark(field.Pos(), field.End())
+				markLines(writtenLines(fset, field.Pos(), field.End()))
 			}
 		}
 		return true

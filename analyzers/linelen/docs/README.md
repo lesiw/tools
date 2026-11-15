@@ -22,9 +22,9 @@ A line wider than the limit is reported with its measured width.
 A tab counts four columns by default. A line is not reported when:
 
 - It is an import declaration.
-- It is a function, method, or interface method signature. A
-  signature stays on one line or wraps as its author chose, while
-  the body is still measured.
+- It is the signature of a function, method, or interface method
+  declaration, unless a statement of the body starts on that line. A
+  signature wraps as its author chose.
 - It is in a generated file.
 - One continuous string literal or URL takes up more than half of
   the line's width, ignoring indentation.

@@ -6,21 +6,22 @@ import (
 )
 
 // signature is one declared signature: the type that defines it and the span
-// the width limit exempts. The span is invalid for a signature the limit
-// measures like any other line.
+// of source it occupies. An interface method's span starts at its name, where
+// its type starts after it. The span is invalid for a function-type
+// declaration, which the limit measures like any other line.
 type signature struct {
 	typ  *ast.FuncType
 	span [2]token.Pos
 }
 
 // signatures returns every declared signature in file — function and method
-// declarations, interface methods, and function-type declarations. The exempt
-// span mirrors the one linelen skips: a declaration from its keyword through
-// its body's opening brace, and an interface method's whole field.
+// declarations, interface methods, and function-type declarations. The span is
+// the text a declared signature occupies: a declaration from its keyword
+// through its type, and an interface method's whole field.
 //
-// A function-type declaration has no exempt span. linelen measures it like any
-// other line, so pulling one onto a single line could put it over the limit
-// with no exemption to land on.
+// A function-type declaration has no span. linelen measures it like any other
+// line, so pulling one onto a single line could put it over the limit with no
+// exemption to land on.
 func signatures(file *ast.File) (out []signature) {
 	ast.Inspect(file, func(n ast.Node) bool {
 		switch node := n.(type) {
@@ -28,13 +29,9 @@ func signatures(file *ast.File) (out []signature) {
 			if node.Type == nil {
 				return true
 			}
-			end := node.Type.End()
-			if node.Body != nil {
-				end = node.Body.Lbrace
-			}
 			out = append(out, signature{
 				typ:  node.Type,
-				span: [2]token.Pos{node.Pos(), end},
+				span: [2]token.Pos{node.Pos(), node.Type.End()},
 			})
 		case *ast.TypeSpec:
 			if ft, ok := node.Type.(*ast.FuncType); ok {
@@ -59,11 +56,10 @@ func signatures(file *ast.File) (out []signature) {
 }
 
 // collapseSignatures pulls every wrapped declared signature back onto one
-// line. The width limit exempts these lines, and the exemption exists so a
-// signature reads as one line, so the merge does not consult width. It skips a
-// signature with no exempt span — a function-type declaration, which the limit
-// measures like any other line — and one whose merge would swallow a line
-// comment.
+// line. A signature wraps as its author chose, so the merge does not consult
+// width. It skips a signature with no span — a function-type declaration,
+// which the limit measures like any other line — and one whose merge would
+// swallow a line comment.
 func collapseSignatures(r *renderer) {
 	var (
 		tokFile = r.tokFile

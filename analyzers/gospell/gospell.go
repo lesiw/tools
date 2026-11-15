@@ -195,7 +195,9 @@ func split(text string) []string {
 }
 
 // letter reports whether b is an ASCII letter.
-func letter(b byte) bool { return 'a' <= b && b <= 'z' || 'A' <= b && b <= 'Z' }
+func letter(b byte) bool {
+	return 'a' <= b && b <= 'z' || 'A' <= b && b <= 'Z'
+}
 
 // joins reports whether b glues a word to what follows or precedes it.
 func joins(b byte) bool {

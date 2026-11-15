@@ -19,7 +19,9 @@ type file struct {
 
 // Format applies the spacing rules to one Go source file, named for a
 // diagnostic.
-func Format(name string, src []byte) ([]byte, error) { return space(name, src) }
+func Format(name string, src []byte) ([]byte, error) {
+	return space(name, src)
+}
 
 // space applies the spacing rules to one Go source file and returns the file
 // gofmt leaves.

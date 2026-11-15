@@ -55,8 +55,7 @@ The printer then places the closer under its opener.
 - A closer that already starts a line is left alone. The printer places it
   at the opener's indent whatever the source says, so the pair is already
   balanced.
-- A parameter list is left alone. A signature stays on one line or wraps
-  as its author chose, the same exemption the width check makes.
+- A parameter list is left alone. A signature wraps as its author chose.
 - The comments between the last item and the closer are kept, with the comma
   ahead of them and the new line behind them.
 

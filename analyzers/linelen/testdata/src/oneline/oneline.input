@@ -1,0 +1,15 @@
+package oneline
+
+func OneLine(someLongParameterNameThatPushesPastTheLimit string, b int) bool { return b > 0 } // want "line is .* characters long, exceeds 79 limit"
+
+func WrappedHere(
+	someLongParameterNameThatPushesPastTheLimitForSure string) bool { return true } // want "line is .* characters long, exceeds 79 limit"
+
+func BodyBelow(
+	first int,
+	secondSomeLongParameterNameThatPushesPastTheLimit string) (int, string, error) {
+	// the three results are returned as written, and this comment runs well past the limit // want "line is .* characters long, exceeds 79 limit"
+	return 0, "", nil
+}
+
+func EmptyBody(someLongParameterNameThatPushesPastTheLimitForSure string, b int) {}
