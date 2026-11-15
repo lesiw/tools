@@ -8,8 +8,11 @@ import (
 	"flag"
 	"fmt"
 	"go/ast"
+	"go/doc"
 	"go/scanner"
 	"go/token"
+	"slices"
+	"strings"
 
 	"golang.org/x/tools/go/analysis"
 )
@@ -75,7 +78,7 @@ func CheckFile(fset *token.FileSet, f *ast.File, src []byte) (long []Line) {
 	}
 	var (
 		n, pos   int
-		measured = checked(fset, f)
+		measured = checked(fset, f, src)
 		file     = fset.File(f.FileStart)
 		lits     = astLits(fset, f)
 	)
@@ -254,7 +257,7 @@ func astLits(fset *token.FileSet, f *ast.File) map[int][]span {
 // line of a function, method, or interface method signature: a
 // signature wraps as its author chose. A signature line a statement of
 // the body starts on is measured.
-func checked(fset *token.FileSet, f *ast.File) func(line int) bool {
+func checked(fset *token.FileSet, f *ast.File, src []byte) func(line int) bool {
 	var (
 		skip      = make(map[int]struct{})
 		markLines = func(first, last int) {
@@ -263,6 +266,7 @@ func checked(fset *token.FileSet, f *ast.File) func(line int) bool {
 			}
 		}
 	)
+	markExpectedOutput(fset, f, src, markLines)
 	ast.Inspect(f, func(n ast.Node) bool {
 		switch node := n.(type) {
 		case *ast.GenDecl:
@@ -299,6 +303,59 @@ func checked(fset *token.FileSet, f *ast.File) func(line int) bool {
 		_, skipped := skip[line]
 		return !skipped
 	}
+}
+
+// markExpectedOutput marks the lines of the comment holding an example's
+// expected output, which a test compares. go/doc reports which functions are
+// examples and which have output; it leaves the test-file check to its caller,
+// because only a test file's examples run.
+func markExpectedOutput(fset *token.FileSet, f *ast.File, src []byte, mark func(first, last int)) {
+	if !strings.HasSuffix(fset.File(f.FileStart).Name(), "_test.go") {
+		return
+	}
+	// doc.Example.Name is the name with its prefix stripped.
+	withOutput := make(map[string]struct{})
+	for _, ex := range doc.Examples(f) {
+		if ex.Output != "" {
+			withOutput["Example"+ex.Name] = struct{}{}
+		}
+	}
+	for _, decl := range f.Decls {
+		node, ok := decl.(*ast.FuncDecl)
+		// A method may share an example's name.
+		if !ok || node.Recv != nil {
+			continue
+		}
+		if _, ok := withOutput[node.Name.Name]; !ok {
+			continue
+		}
+		// go/doc reads the output from the body's last comment, so that
+		// is the comment this covers.
+		for _, cg := range slices.Backward(f.Comments) {
+			if cg.End() > node.Body.End() || cg.Pos() < node.Body.Pos() {
+				continue
+			}
+			// A line that carries a statement is measured; the
+			// comment can move down instead.
+			first, last := writtenLines(fset, cg.Pos(), cg.End())
+			if !leadsLine(src, fset, cg.Pos()) {
+				first++
+			}
+			if first <= last {
+				mark(first, last)
+			}
+			break
+		}
+	}
+}
+
+// leadsLine reports whether only indentation comes before pos on its line.
+func leadsLine(src []byte, fset *token.FileSet, pos token.Pos) bool {
+	var (
+		file  = fset.File(pos)
+		start = file.Offset(file.LineStart(writtenLine(fset, pos)))
+	)
+	return len(bytes.TrimSpace(src[start:file.Offset(pos)])) == 0
 }
 
 var Analyzer = &analysis.Analyzer{

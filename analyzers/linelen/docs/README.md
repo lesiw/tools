@@ -26,6 +26,8 @@ A tab counts four columns by default. A line is not reported when:
   declaration, unless a statement of the body starts on that line. A
   signature wraps as its author chose.
 - It is in a generated file.
+- It holds an example's expected output in a test file. That text is
+  program output, so wrapping it changes what the test compares.
 - One continuous string literal or URL takes up more than half of
   the line's width, ignoring indentation.
 

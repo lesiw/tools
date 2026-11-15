@@ -7,6 +7,7 @@ import (
 	"golang.org/x/tools/go/analysis/analysistest"
 
 	"lesiw.io/tools/internal/fixtures"
+	"lesiw.io/tools/internal/ignore"
 )
 
 //go:embed testdata
@@ -47,8 +48,10 @@ func TestAnalysisTest(t *testing.T) {
 	// The suite's driver gives the analyzer a width; a bare test binary
 	// has none.
 	Config.Len = 79
-	analysistest.Run(t, fixtures.Dir(t, testdata), Analyzer,
-		"basic", "longimportblock", "longimportstmt",
+	// The filter drops the generated test main, which embeds a fixture's
+	// expected output.
+	analysistest.Run(t, fixtures.Dir(t, testdata), ignore.Apply(Analyzer)[0],
+		"basic", "longimportblock", "longimportstmt", "exampleoutput",
 		"methodwrap", "oneline", "continuous", "linedirective",
 	)
 }

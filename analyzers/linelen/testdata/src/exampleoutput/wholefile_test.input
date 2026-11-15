@@ -1,0 +1,11 @@
+// The file holds one example and one other declaration.
+package exampleoutput
+
+func ExampleOnly() {
+	println("5555 aaaa 5555 aaaa 5555 aaaa 5555 aaaa 5555 aaaa 5555 aaaa 5555 aaaa 5555")
+	// Output:
+	// 5555 aaaa 5555 aaaa 5555 aaaa 5555 aaaa 5555 aaaa 5555 aaaa 5555 aaaa 5555
+}
+
+// The last comment in the file is not program output. // want "line is .* characters long, exceeds 79 limit"
+func only() {}

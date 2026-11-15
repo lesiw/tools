@@ -1,0 +1,57 @@
+package exampleoutput
+
+// The comment holds program text, so its line is not measured.
+func Example() {
+	println("0102 0304 0506 0708 090a 0b0c 0d0e 0f10 1112 1314 1516 1718 191a 1b1c 1d1e")
+	// Output:
+	// 0102 0304 0506 0708 090a 0b0c 0d0e 0f10 1112 1314 1516 1718 191a 1b1c 1d1e
+}
+
+// The statement shares its line with the output, so the comment moves down.
+func ExampleTrailing() {
+	println("aaaa bbbb cccc dddd eeee ffff 0000 1111 2222 3333 4444 5555 6666 7777 8888") // Output: aaaa bbbb cccc dddd eeee ffff 0000 1111 2222 3333 4444 5555 6666 7777 8888 // want "line is .* characters long, exceeds 79 limit"
+}
+
+// The marker is written in lowercase, which go/doc still reads as output.
+func ExampleLower() {
+	println("abcd ef01 2345 6789 abcd ef01 2345 6789 abcd ef01 2345 6789 abcd ef01 2345")
+	// output:
+	// abcd ef01 2345 6789 abcd ef01 2345 6789 abcd ef01 2345 6789 abcd ef01 2345
+}
+
+// The name carries a suffix, which go/doc keeps in the name it reports.
+func ExampleAlpha_golden() {
+	println("1234 5678 9012 3456 7890 1234 5678 9012 3456 7890 1234 5678 9012 3456 7890")
+	// Output:
+	// 1234 5678 9012 3456 7890 1234 5678 9012 3456 7890 1234 5678 9012 3456 7890
+}
+
+// A comment after the output leaves go/doc reading none, so both are measured.
+func ExampleNote() {
+	println("cafe babe 0bad 1234 5678 9abc def0 1111 2222 3333 4444 5555 6666 7777 8888")
+	// Output:
+	// cafe babe 0bad 1234 5678 9abc def0 1111 2222 3333 4444 5555 6666 7777 8888 // want "line is .* characters long, exceeds 79 limit"
+
+	// abcd ef01 2345 6789 abcd ef01 2345 6789 abcd ef01 2345 6789 abcd ef01 2345 // want "line is .* characters long, exceeds 79 limit"
+}
+
+// The name continues in lowercase, so go/doc reads no example here.
+func Examplelowercase() {
+	println("abcd ef01 2345 6789 abcd ef01 2345 6789 abcd ef01 2345 6789 abcd ef01 2345")
+	// Output:
+	// abcd ef01 2345 6789 abcd ef01 2345 6789 abcd ef01 2345 6789 abcd ef01 2345 // want "line is .* characters long, exceeds 79 limit"
+}
+
+type sample struct{}
+
+// A method may share an example's name.
+func (sample) Example() {
+	println("0102 0304 0506 0708 090a 0b0c 0d0e 0f10 1112 1314 1516 1718 191a 1b1c 1d1e")
+	// Output:
+	// 0102 0304 0506 0708 090a 0b0c 0d0e 0f10 1112 1314 1516 1718 191a 1b1c 1d1e // want "line is .* characters long, exceeds 79 limit"
+}
+
+// The body of an example is measured.
+func ExampleBody() {
+	println("alpha", "beta", "alpha", "beta", "alpha", "beta", "alpha", "beta") // want "line is .* characters long, exceeds 79 limit"
+}
