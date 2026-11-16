@@ -136,6 +136,7 @@ import (
 	"lesiw.io/tools/analyzers/initclause"
 	"lesiw.io/tools/analyzers/initialisms"
 	"lesiw.io/tools/analyzers/ipliteral"
+	"lesiw.io/tools/analyzers/isnilbool"
 	"lesiw.io/tools/analyzers/joinseparator"
 	"lesiw.io/tools/analyzers/lenzero"
 	"lesiw.io/tools/analyzers/linelen"
@@ -365,6 +366,7 @@ var (
 		initclause.Analyzer,
 		initialisms.Analyzer,
 		ipliteral.Analyzer,
+		isnilbool.Analyzer,
 		joinseparator.Analyzer,
 		lenzero.Analyzer,
 		linelen.Analyzer,

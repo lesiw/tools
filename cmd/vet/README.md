@@ -1436,6 +1436,18 @@ func dial() string {
 }
 ```
 
+## isnilbool
+
+Reports a comparison of a comparison with true using == or with false using !=, as in (a == b) == true. The inner comparison already has the value, so the outer comparison adds nothing.
+
+Adapted from staticcheck's S1002.
+
+```
+func f(a, b int) bool {
+    return (a == b) == true
+}
+```
+
 ## joinseparator
 
 Reports a literal element of a path.Join or filepath.Join call that ends with a redundant separator. Join cleans the result, so an element that ends with a separator names the same path without it.

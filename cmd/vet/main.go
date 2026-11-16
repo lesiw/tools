@@ -1458,6 +1458,18 @@
 //		return "203.0.113.9:22"
 //	}
 //
+// # isnilbool
+//
+// Reports a comparison of a comparison with true using == or with false using
+// !=, as in (a == b) == true. The inner comparison already has the value, so
+// the outer comparison adds nothing.
+//
+// Adapted from staticcheck's S1002.
+//
+//	func f(a, b int) bool {
+//		return (a == b) == true
+//	}
+//
 // # joinseparator
 //
 // Reports a literal element of a path.Join or filepath.Join call that ends

@@ -1,0 +1,100 @@
+package a
+
+type flag bool
+
+func result(a, b int) bool {
+	return (a == b) == true // want `comparison with true; write the inner comparison`
+}
+
+func reversed(a, b int) bool {
+	return true == (a == b) // want `comparison with true; write the inner comparison`
+}
+
+func unequal(a, b int) bool {
+	return (a != b) != false // want `comparison with false; write the inner comparison`
+}
+
+func unequalFirst(a, b int) bool {
+	return false != (a != b) // want `comparison with false; write the inner comparison`
+}
+
+func ordered(a, b int) bool {
+	return (a < b) == true // want `comparison with true; write the inner comparison`
+}
+
+func orderedFirst(a, b int) bool {
+	return true == (a >= b) // want `comparison with true; write the inner comparison`
+}
+
+func parenthesized(a, b int) bool {
+	return (a == b) == (true) // want `comparison with true; write the inner comparison`
+}
+
+func nilComparison(p *int) bool {
+	return (p == nil) == true // want `comparison with true; write the inner comparison`
+}
+
+func condition(a, b int) {
+	if (a == b) == true { // want `comparison with true; write the inner comparison`
+	}
+	for (a < b) != false { // want `comparison with false; write the inner comparison`
+		break
+	}
+	switch {
+	case (a != b) == true: // want `comparison with true; write the inner comparison`
+	}
+}
+
+func declared(a, b int) {
+	ok := (a == b) == true // want `comparison with true; write the inner comparison`
+	_ = ok
+}
+
+func argument(a, b int) bool {
+	return takes((a == b) == true) // want `comparison with true; write the inner comparison`
+}
+
+func takes(v bool) bool { return v }
+
+func composite(a, b int) []bool {
+	return []bool{(a == b) == true} // want `comparison with true; write the inner comparison`
+}
+
+func named(a, b int) flag {
+	return (a == b) == true // want `comparison with true; write the inner comparison`
+}
+
+func inverted(a, b int) bool {
+	return (a == b) == false || (a == b) != true ||
+		false == (a == b) || true != (a == b)
+}
+
+func name(ok bool) bool {
+	return ok == true
+}
+
+func logical(ok, other bool) bool {
+	return (ok && other) == true
+}
+
+func constant(a, b int) bool {
+	const yes = true
+	return (a == b) == yes
+}
+
+func shadowed(a, b int) bool {
+	true := a == b
+	return (a == b) == true
+}
+
+func commented(a, b int) bool {
+	return (a == b) /* why */ == true // want `comparison with true; write the inner comparison`
+}
+
+func commentedFirst(a, b int) bool {
+	return true /* why */ == (a == b) // want `comparison with true; write the inner comparison`
+}
+
+func commentedInside(a, b int) bool {
+	return (a /* why */ == b) == true // want `comparison with true; write the inner comparison`
+}
