@@ -1,0 +1,23 @@
+package a
+
+import (
+	"path/filepath"
+	"strings"
+)
+
+type joiner struct{}
+
+func (joiner) Join(elems ...string) string { return strings.Join(elems, "/") }
+
+func shadowed(dir string) []string {
+	hidden := filepath.Join
+	filepath := struct{ Join func(...string) string }{
+		Join: func(elems ...string) string { return strings.Join(elems, "/") },
+	}
+	return []string{
+		hidden(dir, "alpha/"),
+		filepath.Join("alpha/", dir),
+		joiner{}.Join("alpha/", dir),
+		strings.Join([]string{"alpha/", dir}, "/"),
+	}
+}

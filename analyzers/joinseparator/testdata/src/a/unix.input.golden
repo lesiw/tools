@@ -1,0 +1,19 @@
+//go:build !windows
+
+package a
+
+import "path/filepath"
+
+func args(dir, name string) []string {
+	return []string{
+		filepath.Join(dir, "alpha"),     // want `element ends with a redundant separator`
+		filepath.Join("some-dir", name), // want `element ends with a redundant separator`
+	}
+}
+
+func unix() []string {
+	return []string{
+		filepath.Join("dir", `alpha\`),
+		filepath.Join("C:", "dir"), // want `element ends with a redundant separator`
+	}
+}

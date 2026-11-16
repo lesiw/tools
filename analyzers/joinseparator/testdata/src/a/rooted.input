@@ -1,0 +1,15 @@
+package a
+
+import (
+	"path"
+	"path/filepath"
+)
+
+func rooted() []string {
+	return []string{
+		path.Join("/", "name"),
+		filepath.Join("/", "name"),
+		filepath.Join("//", "name"),
+		filepath.Join("dir", "/", "name"),
+	}
+}

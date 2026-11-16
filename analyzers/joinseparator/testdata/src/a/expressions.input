@@ -1,0 +1,11 @@
+package a
+
+import "path/filepath"
+
+func expressions(dir, name string) []string {
+	return []string{
+		filepath.Join(dir+"/", name),
+		filepath.Join(dir, name[:1]+"/"),
+		filepath.Join(dir, "alpha/"+name),
+	}
+}

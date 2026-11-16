@@ -1424,6 +1424,18 @@ func dial() string {
 }
 ```
 
+## joinseparator
+
+Reports a literal element of a path.Join or filepath.Join call that ends with a redundant separator. Join cleans the result, so an element that ends with a separator names the same path without it.
+
+Adapted from go-critic's filepathJoin, which reports a literal argument that holds a separator.
+
+```
+func config() string {
+    return filepath.Join("dir", "alpha/")
+}
+```
+
 ## lenzero
 
 Reports a comparison of len with zero that is always true or always false. len returns a count, and a count is never negative.

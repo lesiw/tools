@@ -1,0 +1,10 @@
+package a
+
+import "path/filepath"
+
+func markers() []string {
+	return []string{
+		filepath.Join("../", "dir"), // want `element ends with a redundant separator`
+		filepath.Join("./", "dir"),  // want `element ends with a redundant separator`
+	}
+}

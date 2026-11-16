@@ -1,0 +1,24 @@
+package a
+
+import (
+	"path"
+	"path/filepath"
+)
+
+func joined() []string {
+	return []string{
+		filepath.Join("dir", "alpha/"),               // want `element ends with a redundant separator`
+		filepath.Join("some-dir/", "name"),           // want `element ends with a redundant separator`
+		filepath.Join("dir", "alpha//"),              // want `element ends with a redundant separator`
+		filepath.Join("/some-dir/", "name"),          // want `element ends with a redundant separator`
+		filepath.Join("alpha", "beta/gamma/", "dir"), // want `element ends with a redundant separator`
+		filepath.Join("dir", `alpha/`),               // want `element ends with a redundant separator`
+		filepath.Join("dir", ("alpha/")),             // want `element ends with a redundant separator`
+		filepath.Join("dir", "\u0061lpha/"),          // want `element ends with a redundant separator`
+		filepath.Join("dir", "alpha/\u002f"),         // want `element ends with a redundant separator`
+		filepath.Join("alpha/"),                      // want `element ends with a redundant separator`
+		filepath.Join("alpha/", "beta/"),             // want `element ends with a redundant separator` `element ends with a redundant separator`
+		path.Join("dir", "alpha/"),                   // want `element ends with a redundant separator`
+		path.Join("C:/", "dir"),                      // want `element ends with a redundant separator`
+	}
+}
