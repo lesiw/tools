@@ -74,6 +74,7 @@ import (
 	"lesiw.io/tools/analyzers/benchassign"
 	"lesiw.io/tools/analyzers/blankassign"
 	"lesiw.io/tools/analyzers/blankimports"
+	"lesiw.io/tools/analyzers/blankrange"
 	"lesiw.io/tools/analyzers/bookends"
 	"lesiw.io/tools/analyzers/boolexprsimplify"
 	"lesiw.io/tools/analyzers/boolliteral"
@@ -341,6 +342,7 @@ var (
 		benchassign.Analyzer,
 		blankassign.Analyzer,
 		blankimports.Analyzer,
+		blankrange.Analyzer,
 		bookends.Analyzer,
 		boolexprsimplify.Analyzer,
 		boolliteral.Analyzer,

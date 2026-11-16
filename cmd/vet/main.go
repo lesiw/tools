@@ -385,6 +385,17 @@
 //
 //	import _ "net/http/pprof"
 //
+// # blankrange
+//
+// Reports a range clause with an unnecessary blank identifier.
+//
+// Inspired by revive's range.
+//
+//	func f(xs []int) {
+//		for _ = range xs {
+//		}
+//	}
+//
 // # bookends
 //
 // Reports bracket layout that the printer would place differently, where a fix

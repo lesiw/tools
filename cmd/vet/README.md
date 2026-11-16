@@ -376,6 +376,19 @@ package a
 import _ "net/http/pprof"
 ```
 
+## blankrange
+
+Reports a range clause with an unnecessary blank identifier.
+
+Inspired by revive's range.
+
+```
+func f(xs []int) {
+    for _ = range xs {
+    }
+}
+```
+
 ## bookends
 
 Reports bracket layout that the printer would place differently, where a fix moves a bracket or a line break and no element changes. The shapes are a closer that does not sit at its opener's column, an elided literal whose elements start at different columns, a table whose rows do not read down or whose row runs past the width, a list with one indented line or a line past the width, and a keyed literal on one line past the width.
