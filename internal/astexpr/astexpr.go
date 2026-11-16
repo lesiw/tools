@@ -92,6 +92,34 @@ func Mentions(pass *analysis.Pass, e ast.Node, s ast.Expr) bool {
 	return found
 }
 
+// Stable reports whether reading e twice gives the same value. Creating a
+// function literal runs nothing, so its body is skipped.
+func Stable(pass *analysis.Pass, e ast.Expr) bool {
+	var unstable bool
+	ast.Inspect(e, func(n ast.Node) bool {
+		if unstable {
+			return false
+		}
+		switch n := n.(type) {
+		case *ast.FuncLit:
+			return false
+		case *ast.CallExpr:
+			if !pureCall(pass, n) || !StableLength(pass, n) {
+				unstable = true
+			}
+		case *ast.UnaryExpr:
+			switch n.Op {
+			case token.ARROW:
+				unstable = true
+			case token.AND:
+				unstable = hasLiteral(n.X)
+			}
+		}
+		return !unstable
+	})
+	return !unstable
+}
+
 // Effectful reports whether reading e can give a different value the second
 // time.
 func Effectful(pass *analysis.Pass, e ast.Expr) bool {
