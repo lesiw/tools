@@ -1,0 +1,15 @@
+package aliasdup
+
+import (
+	sa "sort"
+	sb "sort"
+)
+
+func keep(names []string) {
+	_ = sa.StringSlice(names)
+}
+
+func f(sa, names []string) {
+	names = sb.StringSlice(names) // want `sort\.StringSlice is a type, so the assignment sorts nothing; write sb\.Strings\(names\)$`
+	_ = sa
+}

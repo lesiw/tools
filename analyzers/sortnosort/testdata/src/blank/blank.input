@@ -1,0 +1,10 @@
+package blank
+
+import (
+	"foreign"
+	_ "sort"
+)
+
+func blankImport(names []string) {
+	names = foreign.Names(names) // want `sort\.StringSlice is a type, so the assignment sorts nothing$`
+}

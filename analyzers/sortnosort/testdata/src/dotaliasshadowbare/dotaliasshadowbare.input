@@ -1,0 +1,17 @@
+package dotaliasshadowbare
+
+import (
+	. "sort"
+	stdsort "sort"
+)
+
+func keep(names []string) {
+	_ = StringSlice(names)
+	_ = stdsort.StringSlice(names)
+}
+
+func f(names []string) {
+	Strings := func([]string) {}
+	names = StringSlice(names) // want `sort\.StringSlice is a type, so the assignment sorts nothing; write stdsort\.Strings\(names\)$`
+	Strings(names)
+}

@@ -1,0 +1,8 @@
+package dotaliasmixed
+
+import . "foreign"
+
+func mixed(left, right []string) {
+	left = Names( /* keep */ left) // want `sort\.StringSlice is a type, so the assignment sorts nothing; write sort\.Strings\(left\)$`
+	right = Names(right)           // want `sort\.StringSlice is a type, so the assignment sorts nothing; write sort\.Strings\(right\)$`
+}

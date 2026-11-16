@@ -1,0 +1,7 @@
+package a
+
+import stdsort "sort"
+
+func aliased(names []string) {
+	stdsort.Strings(names) // want `sort\.StringSlice is a type, so the assignment sorts nothing; write stdsort\.Strings\(names\)$`
+}

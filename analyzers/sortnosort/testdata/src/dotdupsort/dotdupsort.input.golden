@@ -1,0 +1,18 @@
+package dotdupsort
+
+import (
+	. "sort"
+	stdsort "sort"
+)
+
+func dup(names []string) {
+	Strings(names) // want `sort\.StringSlice is a type, so the assignment sorts nothing; write Strings\(names\)$`
+}
+
+func named(names []string) {
+	stdsort.Strings(names) // want `sort\.StringSlice is a type, so the assignment sorts nothing; write stdsort\.Strings\(names\)$`
+}
+
+func keep(names []string) {
+	_ = stdsort.StringSlice(names)
+}

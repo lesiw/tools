@@ -1,0 +1,14 @@
+package dotaliasdup
+
+import (
+	. "foreign"
+	f "foreign"
+)
+
+func dup(names []string) {
+	names = Names(names) // want `sort\.StringSlice is a type, so the assignment sorts nothing$`
+}
+
+func keep() {
+	_ = f.Values
+}

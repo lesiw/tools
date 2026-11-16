@@ -1,0 +1,14 @@
+package dotaliasfield
+
+import (
+	. "foreign"
+	"other"
+)
+
+func field(item other.Box) {
+	item.Values = Names(item.Values) // want `sort\.StringSlice is a type, so the assignment sorts nothing$`
+}
+
+func keyed() {
+	_ = other.Box{Values: nil}
+}

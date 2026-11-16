@@ -3168,6 +3168,19 @@
 //		sort.Slice(rows, func(i, j int) bool { return keys[i] < keys[j] })
 //	}
 //
+// # sortnosort
+//
+// Reports an assignment that converts a slice to a sort slice type and assigns
+// it back. The converted value has a type whose Sort method orders the
+// elements, and nothing calls it, so the assignment sorts nothing. The
+// suggested fix sorts the slice, which changes behavior.
+//
+// Adapted from staticcheck's SA4029.
+//
+//	func f(names []string) {
+//		names = sort.StringSlice(names)
+//	}
+//
 // # sortslice
 //
 // Reports a sort.Slice call whose first argument is not a slice. The call

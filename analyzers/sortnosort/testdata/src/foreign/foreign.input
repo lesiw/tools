@@ -1,0 +1,17 @@
+package foreign
+
+import "sort"
+
+type Names = sort.StringSlice
+
+type StringSlice []string
+
+var Values []string
+
+type Box struct {
+	Values []string
+}
+
+type Float64Slice []float64
+
+type IntSlice []int

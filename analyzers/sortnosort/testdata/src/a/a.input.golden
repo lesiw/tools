@@ -1,0 +1,174 @@
+package a
+
+import (
+	"foreign"
+	"sort"
+)
+
+type names = []string
+
+type sortNames = sort.StringSlice
+
+type sortIntSlice = sort.IntSlice
+
+type StringSlice []string
+
+type sortFloat64Slice = sort.Float64Slice
+
+type Float64Slice []float64
+
+type IntSlice []int
+
+type box struct {
+	values []string
+}
+
+func strings(names []string) {
+	sort.Strings(names) // want `sort\.StringSlice is a type, so the assignment sorts nothing; write sort\.Strings\(names\)$`
+}
+
+func ints(values []int) {
+	sort.Ints(values) // want `sort\.IntSlice is a type, so the assignment sorts nothing; write sort\.Ints\(values\)$`
+}
+
+func float64s(values []float64) {
+	sort.Float64s(values) // want `sort\.Float64Slice is a type, so the assignment sorts nothing; write sort\.Float64s\(values\)$`
+}
+
+func parenthesized(names []string) {
+	sort.Strings(names) // want `sort\.StringSlice is a type, so the assignment sorts nothing; write sort\.Strings\(names\)$`
+}
+
+func alias(names names) {
+	sort.Strings(names) // want `sort\.StringSlice is a type, so the assignment sorts nothing; write sort\.Strings\(names\)$`
+}
+
+func throughAlias(names []string) {
+	sort.Strings(names) // want `sort\.StringSlice is a type, so the assignment sorts nothing; write sort\.Strings\(names\)$`
+}
+
+func throughIntAlias(values []int) {
+	sort.Ints(values) // want `sort\.IntSlice is a type, so the assignment sorts nothing; write sort\.Ints\(values\)$`
+}
+
+func commented(names []string) {
+	names = sort.StringSlice( /* why */ names) // want `sort\.StringSlice is a type, so the assignment sorts nothing; write sort\.Strings\(names\)$`
+}
+
+func trailing(names []string) {
+	sort.Strings(names) /* keep me */ // want `sort\.StringSlice is a type, so the assignment sorts nothing; write sort\.Strings\(names\)$`
+}
+
+func sortNamedType(ordered sort.StringSlice) {
+	ordered = sort.StringSlice(ordered)
+}
+
+func sortAliasType(ordered sortNames) {
+	ordered = sort.StringSlice(ordered)
+}
+
+func floatSortType(ordered sort.Float64Slice) {
+	ordered = sort.Float64Slice(ordered)
+}
+
+func intSortType(ordered sort.IntSlice) {
+	ordered = sort.IntSlice(ordered)
+}
+
+func localType(names []string) {
+	names = StringSlice(names)
+}
+
+func selector(b box) {
+	sort.Strings(b.values) // want `sort\.StringSlice is a type, so the assignment sorts nothing; write sort\.Strings\(b\.values\)$`
+}
+
+func indexed(rows [][]string) {
+	sort.Strings(rows[0]) // want `sort\.StringSlice is a type, so the assignment sorts nothing; write sort\.Strings\(rows\[0\]\)$`
+}
+
+func indexedVar(rows [][]string, i int) {
+	sort.Strings(rows[i]) // want `sort\.StringSlice is a type, so the assignment sorts nothing; write sort\.Strings\(rows\[i\]\)$`
+}
+
+func indexedExpr(rows [][]string, i int) {
+	rows[i+1] = sort.StringSlice(rows[i+1])
+}
+
+func mapped(m map[string][]string, key string) {
+	m[key] = sort.StringSlice(m[key]) // want `sort\.StringSlice is a type, so the assignment sorts nothing$`
+}
+
+func pointed(p *[]string) {
+	sort.Strings(*p) // want `sort\.StringSlice is a type, so the assignment sorts nothing; write sort\.Strings\(\*p\)$`
+}
+
+func shadowedName(sort []string) {
+	sort = foreign.Names(sort) // want `sort\.StringSlice is a type, so the assignment sorts nothing$`
+}
+
+func localAlias(values []float64) {
+	sort.Float64s(values) // want `sort\.Float64Slice is a type, so the assignment sorts nothing; write sort\.Float64s\(values\)$`
+}
+
+func localInts(values []int) {
+	values = IntSlice(values)
+}
+
+func localFloat(values []float64) {
+	values = Float64Slice(values)
+}
+
+func foreignType(names []string) {
+	names = foreign.StringSlice(names)
+}
+
+func foreignFloat(values []float64) {
+	values = foreign.Float64Slice(values)
+}
+
+func foreignInts(values []int) {
+	values = foreign.IntSlice(values)
+}
+
+func other(names, spare []string) {
+	names = sort.StringSlice(spare)
+}
+
+func subslice(names []string) {
+	names = sort.StringSlice(names[:0])
+}
+
+func wholeSubslice(names []string) {
+	sort.Strings(names) // want `sort\.StringSlice is a type, so the assignment sorts nothing; write sort\.Strings\(names\)$`
+}
+
+func zeroSubslice(names []string) {
+	names = sort.StringSlice(names[0:])
+}
+
+func lowSubslice(names []string) {
+	names = sort.StringSlice(names[1:])
+}
+
+func threeIndexSubslice(names []string) {
+	names = sort.StringSlice(names[1:2:3])
+}
+
+func multiple(names []string, count int) {
+	names, count = sort.StringSlice(names), count
+}
+
+func defined(names []string) {
+	if true {
+		names := sort.StringSlice(names)
+		_ = names
+	}
+}
+
+func use(names []string) {
+	sort.Sort(sort.StringSlice(names))
+	sort.StringSlice(names).Sort()
+	sort.Strings(names)
+	_ = sort.StringSlice(names)
+}

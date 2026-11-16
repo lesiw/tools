@@ -1,0 +1,13 @@
+package dot
+
+import . "sort"
+
+func dotted(names []string) {
+	names = StringSlice(names) // want `sort\.StringSlice is a type, so the assignment sorts nothing; write Strings\(names\)$`
+}
+
+func shadowed(names []string) {
+	Strings := func([]string) {}
+	names = StringSlice(names) // want `sort\.StringSlice is a type, so the assignment sorts nothing$`
+	Strings(names)
+}

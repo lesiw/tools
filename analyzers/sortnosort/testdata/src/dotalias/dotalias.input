@@ -1,0 +1,12 @@
+package dotalias
+
+import . "foreign"
+
+func alias(names []string) {
+	names = Names(names) // want `sort\.StringSlice is a type, so the assignment sorts nothing$`
+}
+
+func alias2(left, right []string) {
+	left = Names(left)   // want `sort\.StringSlice is a type, so the assignment sorts nothing$`
+	right = Names(right) // want `sort\.StringSlice is a type, so the assignment sorts nothing$`
+}

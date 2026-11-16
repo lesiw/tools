@@ -245,6 +245,7 @@ import (
 	"lesiw.io/tools/analyzers/sloppyreassign"
 	"lesiw.io/tools/analyzers/slowloris"
 	"lesiw.io/tools/analyzers/sortmismatch"
+	"lesiw.io/tools/analyzers/sortnosort"
 	"lesiw.io/tools/analyzers/sortstrings"
 	"lesiw.io/tools/analyzers/sprintfquotedstring"
 	"lesiw.io/tools/analyzers/strcompare"
@@ -554,6 +555,7 @@ var (
 		sloppyreassign.Analyzer,
 		slowloris.Analyzer,
 		sortmismatch.Analyzer,
+		sortnosort.Analyzer,
 		sortslice.Analyzer,
 		sortstrings.Analyzer,
 		sprintfquotedstring.Analyzer,

@@ -1,0 +1,7 @@
+package dotaliasused
+
+import . "foreign"
+
+func alias() {
+	Values = Names(Values) // want `sort\.StringSlice is a type, so the assignment sorts nothing; write sort\.Strings\(Values\)$`
+}
