@@ -200,6 +200,7 @@ import (
 	"lesiw.io/tools/analyzers/unnecessaryblock"
 	"lesiw.io/tools/analyzers/unnecessarydefer"
 	"lesiw.io/tools/analyzers/unnecessaryformat"
+	"lesiw.io/tools/analyzers/unnecessaryif"
 	"lesiw.io/tools/analyzers/unreachablecase"
 	"lesiw.io/tools/analyzers/unsignedcmp"
 	"lesiw.io/tools/analyzers/unslice"
@@ -421,6 +422,7 @@ var (
 		unnecessaryblock.Analyzer,
 		unnecessarydefer.Analyzer,
 		unnecessaryformat.Analyzer,
+		unnecessaryif.Analyzer,
 		unreachable.Analyzer,
 		unreachablecase.Analyzer,
 		unsafeptr.Analyzer,

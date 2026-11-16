@@ -1,0 +1,205 @@
+package a
+
+func choose(n int) int {
+	if n == 0 {
+		return 0
+		// want +1 `if can be written as else if`
+	} else {
+		if n == 1 {
+			return 1
+		}
+	}
+	return -1
+}
+
+func nested(n int) int {
+	if n < 0 {
+		return -1
+		// want +1 `if can be written as else if`
+	} else {
+		if n == 0 {
+			return 0
+		} else {
+			return 1
+		}
+	}
+}
+
+func scoped(n int) bool {
+	if n == 0 {
+		return false
+		// want +1 `if can be written as else if`
+	} else {
+		if m := n * 2; m > 3 {
+			return true
+		}
+	}
+	return false
+}
+
+func tail(n int) int {
+	if n == 0 {
+		return 0
+	} else if n == 1 {
+		return 1
+		// want +1 `if can be written as else if`
+	} else {
+		if n == 2 {
+			return 2
+		}
+	}
+	return -1
+}
+
+func tight(n int) int {
+	if n == 0 {
+		return 0
+		// want +1 `if can be written as else if`
+	}else{
+		if n == 1 {
+			return 1
+		}
+	}
+	return -1
+}
+
+func bodyComment(n int) int {
+	if n == 0 {
+		return 0
+		// want +1 `if can be written as else if`
+	} else {
+		if n == 1 {
+			// why
+			return 1
+		}
+	}
+	return -1
+}
+
+func documented(n int) int {
+	if n == 0 {
+		return 0
+		// want +1 `if can be written as else if`
+	} else {
+		// why
+		if n == 1 {
+			return 1
+		}
+	}
+	return -1
+}
+
+func trailing(n int) int {
+	if n == 0 {
+		return 0
+		// want +1 `if can be written as else if`
+	} else {
+		if n == 1 {
+			return 1
+		}
+		// why
+	}
+	return -1
+}
+
+func commented(n int) int {
+	if n == 0 {
+		return 0
+		// why
+		// want +1 `if can be written as else if`
+	} else {
+		if n == 1 {
+			return 1
+		}
+	}
+	return -1
+}
+
+func deep(n int) int {
+	if n == 0 {
+		return 0
+		// want +1 `if can be written as else if`
+	} else {
+		if n == 1 {
+			return 1
+			// want +1 `if can be written as else if`
+		} else {
+			if n == 2 {
+				return 2
+			}
+		}
+	}
+	return -1
+}
+
+func chain(n int) int {
+	if n == 0 {
+		return 0
+	} else if n == 1 {
+		return 1
+	}
+	return -1
+}
+
+func extra(n int) int {
+	if n == 0 {
+		return 0
+	} else {
+		println(n)
+		if n == 1 {
+			return 1
+		}
+	}
+	return -1
+}
+
+func after(n int) int {
+	if n == 0 {
+		return 0
+	} else {
+		if n == 1 {
+			return 1
+		}
+		println(n)
+	}
+	return -1
+}
+
+func twice(n int) int {
+	if n == 0 {
+		return 0
+	} else {
+		if n == 1 {
+			return 1
+		}
+		if n == 2 {
+			return 2
+		}
+	}
+	return -1
+}
+
+func labeled(n int) {
+	if n == 0 {
+		return
+	} else {
+	again:
+		if n == 1 {
+			goto again
+		}
+	}
+}
+
+func plain(n int) int {
+	if n == 0 {
+		return 0
+	}
+	return -1
+}
+
+func empty(n int) {
+	if n == 0 {
+		return
+	} else {
+	}
+}
