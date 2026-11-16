@@ -1,0 +1,73 @@
+package a
+
+import (
+	"bytes"
+	"strings"
+)
+
+func collapse(s string) string {
+	return strings.Replace(s, "alpha", "beta", -1) // want `Replace with a count of -1; use ReplaceAll`
+}
+
+func once(s string) string {
+	return strings.Replace(s, "alpha", "beta", 1)
+}
+
+func none(s string) string {
+	return strings.Replace(s, "alpha", "beta", 0)
+}
+
+func otherNegative(s string) string {
+	return strings.Replace(s, "alpha", "beta", -2)
+}
+
+func counted(s, old, new string, n int) string {
+	return strings.Replace(s, old, new, n)
+}
+
+func namedCount(s string) string {
+	const all = -1
+	return strings.Replace(s, "alpha", "beta", all)
+}
+
+func variableCount(s string) string {
+	all := -1
+	return strings.Replace(s, "alpha", "beta", all)
+}
+
+func replaced(s string) string {
+	return strings.ReplaceAll(s, "alpha", "beta")
+}
+
+func bytesCall(b []byte) []byte {
+	return bytes.Replace(b, []byte("alpha"), []byte("beta"), -1)
+}
+
+type replacer struct{}
+
+func (replacer) Replace(s, old, new string, n int) string { return s }
+
+func method(r replacer, s string) string {
+	return r.Replace(s, "alpha", "beta", -1)
+}
+
+func throughValue(s string) string {
+	replace := strings.Replace
+	return replace(s, "alpha", "beta", -1)
+}
+
+func parenthesized(s string) string {
+	return (strings.Replace)(s, "alpha", "beta", -1) // want `Replace with a count of -1; use ReplaceAll`
+}
+
+func parenthesizedCount(s string) string {
+	return strings.Replace(s, "alpha", "beta", (-1)) // want `Replace with a count of -1; use ReplaceAll`
+}
+
+func commented(s string) string {
+	return strings.Replace(s, "alpha", "beta" /* kept */, -1) // want `Replace with a count of -1; use ReplaceAll`
+}
+
+func trailing(s string) string {
+	return strings.Replace(s, "alpha", "beta", -1 /* kept */) // want `Replace with a count of -1; use ReplaceAll`
+}

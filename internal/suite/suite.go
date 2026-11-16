@@ -196,6 +196,7 @@ import (
 	"lesiw.io/tools/analyzers/strictvar"
 	"lesiw.io/tools/analyzers/stringofint"
 	"lesiw.io/tools/analyzers/stringxbytes"
+	"lesiw.io/tools/analyzers/strreplaceall"
 	"lesiw.io/tools/analyzers/switchtrue"
 	"lesiw.io/tools/analyzers/syncmaploaddelete"
 	"lesiw.io/tools/analyzers/testcmp"
@@ -441,6 +442,7 @@ var (
 		stringintconv.Analyzer,
 		stringofint.Analyzer,
 		stringxbytes.Analyzer,
+		strreplaceall.Analyzer,
 		structtag.Analyzer,
 		switchtrue.Analyzer,
 		syncmaploaddelete.Analyzer,

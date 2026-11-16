@@ -1,0 +1,7 @@
+package a
+
+import . "strings"
+
+func dotted(s string) string {
+	return Replace(s, "alpha", "beta", -1)
+}

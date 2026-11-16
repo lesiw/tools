@@ -2617,6 +2617,17 @@
 //		return copy(dst, []byte(src))
 //	}
 //
+// # strreplaceall
+//
+// Reports a strings.Replace call whose count is -1. ReplaceAll names the same
+// operation without the count.
+//
+// Adapted from staticcheck's QF1004.
+//
+//	func f(s string) string {
+//		return strings.Replace(s, "a", "b", -1)
+//	}
+//
 // # structtag
 //
 // Reports a struct field tag that reflect.StructTag.Get cannot read, as one
