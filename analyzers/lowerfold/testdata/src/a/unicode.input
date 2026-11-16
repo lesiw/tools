@@ -1,0 +1,7 @@
+package a
+
+import "unicode"
+
+func unicodeEqual(left, right rune) bool {
+	return unicode.ToLower(left) == unicode.ToLower(right)
+}

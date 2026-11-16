@@ -127,6 +127,7 @@ import (
 	"lesiw.io/tools/analyzers/linelen"
 	"lesiw.io/tools/analyzers/linewrap"
 	"lesiw.io/tools/analyzers/loopvarcond"
+	"lesiw.io/tools/analyzers/lowerfold"
 	"lesiw.io/tools/analyzers/makezero"
 	"lesiw.io/tools/analyzers/mapfind"
 	"lesiw.io/tools/analyzers/mapkey"
@@ -325,6 +326,7 @@ var (
 		loopclosure.Analyzer,
 		loopvarcond.Analyzer,
 		lostcancel.Analyzer,
+		lowerfold.Analyzer,
 		makezero.Analyzer,
 		mapfind.Analyzer,
 		mapkey.Analyzer,

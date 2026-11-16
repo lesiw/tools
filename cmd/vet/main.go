@@ -1357,6 +1357,18 @@
 //		return next
 //	}
 //
+// # lowerfold
+//
+// Reports a comparison of two strings converted to lower or upper case, as
+// strings.ToLower(a) == strings.ToLower(b). strings.EqualFold compares without
+// building either converted string, and the fix writes it.
+//
+// Adapted from staticcheck's SA6005.
+//
+//	func f(a, b string) bool {
+//		return strings.ToLower(a) == strings.ToLower(b)
+//	}
+//
 // # makezero
 //
 // Reports a slice made with a non-zero constant length by := and then appended

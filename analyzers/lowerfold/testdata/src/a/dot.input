@@ -1,0 +1,7 @@
+package a
+
+import . "strings"
+
+func dotEqual(left, right string) bool {
+	return ToLower(left) == ToLower(right)
+}

@@ -1,0 +1,83 @@
+package a
+
+import "strings"
+
+func lowerEqual(left, right string) bool {
+	return strings.EqualFold(left, right) // want `^strings\.ToLower on both sides; use strings\.EqualFold$`
+}
+
+func upperEqual(left, right string) bool {
+	return strings.EqualFold(left, right) // want `^strings\.ToUpper on both sides; use strings\.EqualFold$`
+}
+
+func lowerDifferent(left, right string) bool {
+	return !strings.EqualFold(left, right) // want `^strings\.ToLower on both sides; use !strings\.EqualFold$`
+}
+
+func upperDifferent(left, right string) bool {
+	return !strings.EqualFold(left, right) // want `^strings\.ToUpper on both sides; use !strings\.EqualFold$`
+}
+
+func lowerTest(left, right string) bool {
+	if strings.EqualFold(left, right) { // want `^strings\.ToLower on both sides; use strings\.EqualFold$`
+		return true
+	}
+	return false
+}
+
+func parenthesizedCall(left, right string) bool {
+	return strings.EqualFold(left, right) // want `^strings\.ToLower on both sides; use strings\.EqualFold$`
+}
+
+func parenthesizedFunction(left, right string) bool {
+	return strings.EqualFold(left, right) // want `^strings\.ToLower on both sides; use strings\.EqualFold$`
+}
+
+func expressionArguments(left, right string) bool {
+	return strings.EqualFold(left+"x", right+"y") // want `^strings\.ToLower on both sides; use strings\.EqualFold$`
+}
+
+func mixedFunctions(left, right string) bool {
+	return strings.ToLower(left) == strings.ToUpper(right)
+}
+
+func oneSide(left, right string) bool {
+	return strings.ToLower(left) == right
+}
+
+func ordering(left, right string) bool {
+	return strings.ToLower(left) < strings.ToLower(right)
+}
+
+type converter struct{}
+
+func (converter) ToLower(s string) string { return s }
+
+func methodValue(c converter, left, right string) bool {
+	return c.ToLower(left) == c.ToLower(right)
+}
+
+func functionValue(left, right string) bool {
+	lower := strings.ToLower
+	return lower(left) == lower(right)
+}
+
+func switchCase(left, right string) {
+	switch strings.ToLower(left) {
+	case strings.ToLower(right):
+	}
+}
+
+func commentedComparison(left, right string) bool {
+	return strings.ToLower(left) == /* compare */ strings.ToLower(right) // want `^strings\.ToLower on both sides; use strings\.EqualFold$`
+}
+
+func commentedArgument(left, right string) bool {
+	return strings.EqualFold(left /* left */ + "x", right /* right */ + "y") // want `^strings\.ToLower on both sides; use strings\.EqualFold$`
+}
+
+func spanning(left, right string) bool {
+	// want +1 `^strings\.ToLower on both sides; use strings\.EqualFold$`
+	return strings.ToLower(left) ==
+		strings.ToLower(right)
+}

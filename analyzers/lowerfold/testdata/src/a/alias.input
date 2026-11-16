@@ -1,0 +1,7 @@
+package a
+
+import text "strings"
+
+func aliasEqual(left, right string) bool {
+	return text.ToLower(left) == text.ToLower(right) // want `^text\.ToLower on both sides; use text\.EqualFold$`
+}
