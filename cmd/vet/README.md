@@ -124,6 +124,19 @@ func f(from, to string) {
 }
 ```
 
+## argoverwritten
+
+Reports a function parameter whose passed value is never used because the body assigns to it.
+
+Adapted from staticcheck's SA4009.
+
+```
+func reset(count int) int {
+    count = 0
+    return count
+}
+```
+
 ## asmdecl
 
 Reports a disagreement between an assembly function and the Go declaration it implements: an argument or result read at the wrong size or offset, a frame size that differs, a missing Go declaration, or a RET that leaves the result unwritten.

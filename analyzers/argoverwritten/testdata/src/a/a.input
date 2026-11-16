@@ -1,0 +1,555 @@
+package a
+
+type point struct{ x, y int }
+
+var packageLiteral = func(x int) int { // want `the value passed as x is never used`
+	x = 1
+	return x
+}
+
+var packageHandlers = []func(int) int{
+	func(x int) int { // want `the value passed as x is never used`
+		x = 1
+		return x
+	},
+}
+
+func overwritten(x int) int { // want `the value passed as x is never used`
+	x = 1
+	return x
+}
+
+func grouped(x, y int) int { // want `the value passed as y is never used`
+	y = 2
+	return x + y
+}
+
+func both(x, y int) (int, int) { // want `the value passed as x is never used` `the value passed as y is never used`
+	x = 1
+	y = 2
+	return x, y
+}
+
+func twice(x int) int { // want `the value passed as x is never used`
+	x = 1
+	x = 2
+	return x
+}
+
+func shortDecl(x int) int { // want `the value passed as x is never used`
+	x, y := 1, 2
+	return x + y
+}
+
+func shadowed(x int) int {
+	{
+		x := 2
+		_ = x
+	}
+	return x
+}
+
+func shadowedNoRead(x int) {
+	{
+		x := 2
+		_ = x
+	}
+}
+
+func everyBranch(flag bool, x int) int { // want `the value passed as x is never used`
+	if flag {
+		x = 1
+	} else {
+		x = 2
+	}
+	return x
+}
+
+func initClause(x int) int { // want `the value passed as x is never used`
+	if x = 1; x > 0 {
+		return x
+	}
+	return 0
+}
+
+func switchInit(x int) int { // want `the value passed as x is never used`
+	switch x = 1; x {
+	case 1:
+		return x
+	}
+	return 0
+}
+
+func forInit(x int) int { // want `the value passed as x is never used`
+	for x = 0; x < 3; x++ {
+	}
+	return x
+}
+
+func forPost(x int, n int) { // want `the value passed as x is never used`
+	for i := 0; i < n; x = 1 {
+		i++
+	}
+}
+
+func received(x int, ch chan int) int { // want `the value passed as x is never used`
+	select {
+	case x = <-ch:
+	}
+	return x
+}
+
+func defaulted(x int, ch chan int) int { // want `the value passed as x is never used`
+	select {
+	case x = <-ch:
+	default:
+		x = 0
+	}
+	return x
+}
+
+func selected(x int, ch chan int) int { // want `the value passed as x is never used`
+	select {
+	case <-ch:
+		x = 1
+	}
+	return x
+}
+
+func literal() func(int) int {
+	return func(x int) int { // want `the value passed as x is never used`
+		x = 1
+		return x
+	}
+}
+
+func generic[T any](v T, n int) T { // want `the value passed as n is never used`
+	n = 1
+	return v
+}
+
+func variadic(xs ...int) int { // want `the value passed as xs is never used`
+	xs = nil
+	return len(xs)
+}
+
+func unnamed(_ int, y int) int { // want `the value passed as y is never used`
+	y = 1
+	return y
+}
+
+func unnamedField(int) int {
+	return 0
+}
+
+func (p point) move(x int) point { // want `the value passed as x is never used`
+	x = 3
+	p.x = x
+	return p
+}
+
+func unreadBranch(flag bool, x int) int { // want `the value passed as x is never used`
+	if flag {
+		x = 1
+	}
+	return 0
+}
+
+func conditionedNoRead(flag bool, x int) { // want `the value passed as x is never used`
+	for flag {
+		x = 1
+	}
+}
+
+func flagCondition(flag bool, x int) int {
+	for flag {
+		x = 1
+		break
+	}
+	return x
+}
+
+func trueCondition(x int, done bool) int {
+	for true {
+		x = 1
+		if done {
+			break
+		}
+	}
+	return x
+}
+
+func rangeParameter(xs []int, x int) int {
+	for x = range xs {
+	}
+	return x
+}
+
+func rangeValue(xs []int, x int) { // want `the value passed as x is never used`
+	for _, x = range xs {
+	}
+}
+
+func fixedRange(x int) int {
+	for x = range [3]int{} {
+	}
+	return x
+}
+
+func rangeNoRead(xs []int, x int) { // want `the value passed as x is never used`
+	for x = range xs {
+	}
+}
+
+func unconditionalLoop(x int, done bool) int { // want `the value passed as x is never used`
+	for {
+		x = 1
+		if done {
+			break
+		}
+	}
+	return x
+}
+
+func earlyBreak(flag bool, x int) int {
+	for {
+		if flag {
+			break
+		}
+		x = 1
+	}
+	return x
+}
+
+func loopCarried(n, x int) int {
+	for i := 0; i < n; i++ {
+		if i > 0 {
+			return x
+		}
+		x = 1
+	}
+	return 0
+}
+
+func jumpBack(n, x int) int {
+	i := 0
+loop:
+	if i >= n {
+		return 0
+	}
+	if i > 0 {
+		return x
+	}
+	x = 1
+	i++
+	goto loop
+}
+
+func readFirst(x int) int {
+	if x < 0 {
+		return 0
+	}
+	x = 1
+	return x
+}
+
+func maybe(flag bool, x int) int {
+	if flag {
+		x = 1
+	}
+	return x
+}
+
+func conditionalMerge(cond bool, x int) int {
+	if cond {
+		x = 1
+	}
+	if cond {
+		return x
+	}
+	return 0
+}
+
+func mixed(flag bool, x int) int {
+	if flag {
+		x = 1
+	} else {
+		return x
+	}
+	return x
+}
+
+func conjunction(ok bool, x int) int {
+	if ok && x > 0 {
+		return x
+	}
+	x = 1
+	return x
+}
+
+func added(x int) int {
+	x += 1
+	return x
+}
+
+func incremented(x int) int {
+	x++
+	return x
+}
+
+func same(x int) int {
+	x = x
+	return x
+}
+
+func swapped(x, y int) (int, int) {
+	x, y = y, x
+	return x, y
+}
+
+func selfAssign(x int) {
+	x = x
+}
+
+func selfAdd(x int) {
+	x = x + 1
+}
+
+func swapOnly(x, y int) {
+	x, y = y, x
+}
+
+func duplicateTarget(x int) { // want `the value passed as x is never used`
+	x, x = 1, 2
+}
+
+func blankTarget(x int) { // want `the value passed as x is never used`
+	x, _ = 1, x
+}
+
+func blankSource(x int) { // want `the value passed as x is never used`
+	_, x = x, 1
+}
+
+func _(x int) int { // want `the value passed as x is never used`
+	x = 1
+	return x
+}
+
+func field(p point) point {
+	p.x = 1
+	return p
+}
+
+func pointed(x int) *int {
+	p := &x
+	x = 1
+	return p
+}
+
+func savedAddress(x int) int {
+	p := &x
+	_ = p
+	x = 1
+	return x
+}
+
+func addressUsed(x int) *int {
+	x = 1
+	return &x
+}
+
+func addressArgument(x int) int {
+	x = 1
+	usePointer(&x)
+	return 0
+}
+
+func usePointer(*int) {}
+
+func arithmeticUse(x int) int {
+	_ = x + 1
+	x = 1
+	return x
+}
+
+func temporaryUse(x int) int { // want `the value passed as x is never used`
+	y := x
+	_ = y
+	x = 1
+	return x
+}
+
+func droppedAddress(x int) int { // want `the value passed as x is never used`
+	_ = &x
+	x = 1
+	return x
+}
+
+func captured(x int) func() int {
+	return func() int {
+		x = 1
+		return x
+	}
+}
+
+func kept(x int) func() int {
+	return func() int { return x }
+}
+
+func deferredCapture(x int) {
+	defer func() { println(x) }()
+	x = 1
+}
+
+func reset() (x int) {
+	x = 1
+	return
+}
+
+type tally int
+
+func (t tally) reset() tally {
+	t = 0
+	return t
+}
+
+func external(x int)
+
+func empty(x int) {
+}
+
+func unread(x int) int {
+	return 0
+}
+
+func blanked(x int) int { // want `the value passed as x is never used`
+	_ = x
+	x = 1
+	return x
+}
+
+func emptySwitch(x int) int { // want `the value passed as x is never used`
+	switch x {
+	}
+	x = 1
+	return x
+}
+
+func defaultSwitch(x int) int { // want `the value passed as x is never used`
+	switch x {
+	default:
+	}
+	x = 1
+	return x
+}
+
+func comparedSwitch(x int) int {
+	switch x {
+	case 0:
+		return x
+	}
+	x = 1
+	return x
+}
+
+func deadAssignment(flag bool, x int) int { // want `the value passed as x is never used`
+	if false {
+		x = 1
+	}
+	return 0
+}
+
+func deadRead(flag bool, x int) int {
+	if false {
+		println(x)
+	}
+	x = 1
+	return x
+}
+
+func afterReturn(x int) int {
+	return 0
+	x = 1
+	return x
+}
+
+func unreachableLiteral() {
+	return
+	_ = func(x int) int { // want `the value passed as x is never used`
+		x = 1
+		return x
+	}
+}
+
+func readAfterReturn(x int) int { // want `the value passed as x is never used`
+	x = 1
+	return 0
+	println(x)
+	return 0
+}
+
+func emptyLoop(x int) int {
+	for {
+	}
+	x = 1
+	return x
+}
+
+func emptySelect(x int) {
+	select {}
+	x = 1
+}
+
+func fatal() {
+	panic("fatal")
+}
+
+func afterFatal(x int) int {
+	fatal()
+	x = 1
+	return x
+}
+
+func fatalInt() int {
+	panic("fatal")
+}
+
+func afterFatalValue(x int) int { // want `the value passed as x is never used`
+	_ = fatalInt()
+	println(x)
+	x = 1
+	return x
+}
+
+func deadReadAfterGoto(x int) int { // want `the value passed as x is never used`
+	goto done
+	println(x)
+done:
+	x = 1
+	return x
+}
+
+func deadReadAfterContinue(x int) int { // want `the value passed as x is never used`
+	for i := 0; i < 1; i++ {
+		continue
+		println(x)
+	}
+	x = 1
+	return x
+}
+
+func deadReadAfterBreak(x int) int { // want `the value passed as x is never used`
+	for {
+		break
+		println(x)
+	}
+	x = 1
+	return x
+}
+
+func readAfterFatal(x int) int { // want `the value passed as x is never used`
+	x = 1
+	fatal()
+	return x
+}

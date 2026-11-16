@@ -122,6 +122,18 @@
 //		send(to, from)
 //	}
 //
+// # argoverwritten
+//
+// Reports a function parameter whose passed value is never used because the
+// body assigns to it.
+//
+// Adapted from staticcheck's SA4009.
+//
+//	func reset(count int) int {
+//		count = 0
+//		return count
+//	}
+//
 // # asmdecl
 //
 // Reports a disagreement between an assembly function and the Go declaration
