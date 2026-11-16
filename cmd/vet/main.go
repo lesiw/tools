@@ -488,16 +488,16 @@
 //
 // # commentfmt
 //
-// Reports a comment with no space after its slashes. The comment reads as code
-// that was commented out, and editors highlight it that way. A doc comment,
-// which gofmt spaces itself, is left alone, as is a directive such as
-// //go:generate and the prefixes //sys, //sysnb and //nolint.
+// Reports a comment with no space after its slashes. A comment is text after
+// two slashes and a space, and a line with no space reads either as a
+// directive or as code that was commented out. A doc comment, which gofmt
+// spaces itself, is left alone, as is a directive such as //go:generate and
+// the prefixes //sys, //sysnb and //nolint.
 //
 // Inspired by go-critic's commentFormatting.
 //
-//	func n() int {
-//		//return 1
-//		return 0
+//	func n() error {
+//		return nil //success
 //	}
 //
 // # composites
@@ -1798,7 +1798,7 @@
 //
 //	const mode = 0755
 //
-// # offby1
+// # offbyone
 //
 // Reports an index at the length of the value it indexes. The last element
 // sits at one less, so the index is out of range on every call.

@@ -1,6 +1,6 @@
-# lesiw.io/tools/analyzers/offby1
+# lesiw.io/tools/analyzers/offbyone
 
-[![Go Reference](https://pkg.go.dev/badge/lesiw.io/tools/analyzers/offby1.svg)](https://pkg.go.dev/lesiw.io/tools/analyzers/offby1)
+[![Go Reference](https://pkg.go.dev/badge/lesiw.io/tools/analyzers/offbyone.svg)](https://pkg.go.dev/lesiw.io/tools/analyzers/offbyone)
 [![CI](https://github.com/lesiw/tools/actions/workflows/main.yml/badge.svg?branch=main)](https://github.com/lesiw/tools/actions/workflows/main.yml)
 [![Release](https://img.shields.io/github/v/tag/lesiw/tools?sort=semver&label=release)](https://github.com/lesiw/tools/tags)
 [![Go Version](https://img.shields.io/github/go-mod/go-version/lesiw/tools)](../../../go.mod)
@@ -25,12 +25,12 @@ Report only: which index was meant is the author's to say.
 ## Usage
 
 ```sh
-go get -tool lesiw.io/tools/analyzers/offby1/cmd/offby1
-go tool offby1 ./...
+go get -tool lesiw.io/tools/analyzers/offbyone/cmd/offbyone
+go tool offbyone ./...
 ```
 
 Or run it as part of the suite:
 
 ```sh
-go tool lesiw.io/tools/cmd/vet -offby1 ./...
+go tool lesiw.io/tools/cmd/vet -offbyone ./...
 ```

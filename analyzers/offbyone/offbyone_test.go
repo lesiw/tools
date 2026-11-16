@@ -1,4 +1,4 @@
-package offby1
+package offbyone
 
 import (
 	"testing"

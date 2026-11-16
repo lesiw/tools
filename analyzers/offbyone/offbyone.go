@@ -1,10 +1,10 @@
-// Package offby1 provides an analysis.Analyzer that reports an index that is
-// always out of range.
+// Package offbyone provides an analysis.Analyzer that reports an index at the
+// length of the value it indexes.
 //
 // len(x) is the number of elements, so the last one is at len(x)-1. Indexing
 // at len(x) panics on every call. The compiler accepts it. Like go-critic's
 // offBy1.
-package offby1
+package offbyone
 
 import (
 	"go/ast"
@@ -14,7 +14,7 @@ import (
 )
 
 var Analyzer = &analysis.Analyzer{
-	Name: "offby1",
+	Name: "offbyone",
 	Doc:  "reports an index that is always out of range",
 	Run:  run,
 }
