@@ -1526,6 +1526,20 @@ func g() bool {
 }
 ```
 
+## nilinterfacecmp
+
+Reports a comparison of an interface value that holds a typed nil with nil. Assigning a nil value of a concrete type to an interface stores that type, so the interface is not nil.
+
+Adapted from staticcheck's SA4023.
+
+```
+func f() bool {
+    var p *int
+    var v any = p
+    return v != nil
+}
+```
+
 ## nilmapassign
 
 Reports an assignment to an element of a nil map, which panics at run time. The map has to be a nil literal or a local variable whose value is nil on every path to the write.

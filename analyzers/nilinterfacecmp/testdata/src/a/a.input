@@ -1,0 +1,523 @@
+package a
+
+import (
+	"os"
+	"unsafe"
+)
+
+var pkgPointer *T
+var pkgComparison = any(pkgPointer) != nil
+var pkgDirect = any((*T)(nil)) == nil
+
+type T struct{}
+
+func (*T) Error() string { return "T" }
+
+type U struct{}
+
+func (*U) Error() string { return "U" }
+
+type grower []int
+
+func (g *grower) grow() { *g = append(*g, 1) }
+
+func unequal() {
+	var p *T
+	var err error = p
+	_ = err != nil // want `comparison is always true`
+}
+
+func equal() {
+	var p *T
+	var err error = p
+	_ = err == nil // want `comparison is always false`
+}
+
+func assigned() {
+	var p *T
+	var err error
+	err = p
+	_ = err != nil // want `comparison is always true`
+}
+
+func explicitNil() {
+	p := (*T)(nil)
+	var err error = p
+	_ = err != nil // want `comparison is always true`
+}
+
+func nilAssignment() {
+	var p *T = nil
+	var err error = p
+	_ = err != nil // want `comparison is always true`
+}
+
+func direct() {
+	_ = error((*T)(nil)) != nil // want `comparison is always true`
+}
+
+func directAny() {
+	_ = any((*int)(nil)) != nil // want `comparison is always true`
+}
+
+func conversion() {
+	var p *T
+	var err error = error(p)
+	_ = err != nil // want `comparison is always true`
+}
+
+func copyOfInterface() {
+	var p *T
+	var err error = p
+	var other error = err
+	_ = other != nil // want `comparison is always true`
+}
+
+func flipped() {
+	var p *T
+	var err error = p
+	_ = nil != err // want `comparison is always true`
+}
+
+func parenthesized() {
+	var p *T
+	var err error = (p)
+	_ = (err) != (nil) // want `comparison is always true`
+}
+
+func slices() {
+	var xs []int
+	var v any = xs
+	_ = v != nil // want `comparison is always true`
+}
+
+func maps() {
+	var m map[string]int
+	var v any = m
+	_ = v != nil // want `comparison is always true`
+}
+
+func channels() {
+	var ch chan int
+	var v any = ch
+	_ = v != nil // want `comparison is always true`
+}
+
+func functions() {
+	var f func()
+	var v any = f
+	_ = v != nil // want `comparison is always true`
+}
+
+func bothBranches(b bool) {
+	var err error
+	if b {
+		var p *T
+		err = p
+	} else {
+		var q *U
+		err = q
+	}
+	_ = err != nil // want `comparison is always true`
+}
+
+func inBranch(b bool) {
+	var err error
+	if b {
+		var p *T
+		err = p
+		_ = err != nil // want `comparison is always true`
+	}
+}
+
+func inLoop() {
+	var p *T
+	var err error = p
+	for i := 0; i < 1; i++ {
+		_ = err != nil // want `comparison is always true`
+	}
+}
+
+func returned() bool {
+	var p *T
+	var err error = p
+	return err != nil // want `comparison is always true`
+}
+
+func inCondition(n int) {
+	var p *T
+	var err error = p
+	switch {
+	case err != nil: // want `comparison is always true`
+		_ = n
+	}
+}
+
+func inLiteral() {
+	f := func() {
+		var p *T
+		var err error = p
+		_ = err != nil // want `comparison is always true`
+	}
+	f()
+}
+
+func nilInterface() {
+	var err error
+	_ = err != nil
+}
+
+func assignedNil() {
+	var err error = nil
+	_ = err == nil
+}
+
+func concretePointer() {
+	var p *T
+	_ = p != nil
+}
+
+func nonNil() {
+	err := error(&T{})
+	_ = err != nil
+}
+
+func simultaneous() {
+	var p *T
+	var err error
+	err, p = p, (*T)(nil)
+	_ = err != nil // want `comparison is always true`
+}
+
+func switchBranches(n int) {
+	var err error
+	switch n {
+	case 0:
+		var p *T
+		err = p
+	case 1:
+		var q *U
+		err = q
+	default:
+		var r *T
+		err = r
+	}
+	_ = err != nil // want `comparison is always true`
+}
+
+func switchNil(n int) {
+	var p *T
+	var err error = p
+	switch err {
+	case nil:
+		_ = n
+	}
+}
+
+func convertedNilInterface() {
+	_ = error(nil) != nil
+	var err error = nil
+	_ = error(err) != nil
+}
+
+func call() error { return nil }
+
+func fromCall() {
+	err := call()
+	_ = err != nil
+}
+
+func fromConcreteCall() error {
+	var p *T
+	return p
+}
+
+func callConcrete() {
+	err := fromConcreteCall()
+	_ = err != nil
+}
+
+func parameter(p *T) {
+	var err error = p
+	_ = err != nil
+}
+
+func reassignedNil() {
+	var p *T
+	var err error = p
+	err = nil
+	_ = err != nil
+}
+
+func reassignedNonNil() {
+	var p *T
+	var err error = p
+	err = error(&T{})
+	_ = err != nil
+}
+
+func oneBranch(b bool) {
+	var err error
+	if b {
+		var p *T
+		err = p
+	}
+	_ = err != nil
+}
+
+func afterLoop() {
+	var err error
+	for i := 0; i < 1; i++ {
+		var p *T
+		err = p
+	}
+	_ = err != nil
+}
+
+func typedOperand() {
+	var p *T
+	var err error = p
+	_ = err != (*T)(nil)
+}
+
+func generic[T any](v T) bool {
+	return any(v) == nil
+}
+
+var global *T
+
+func globalVariable() {
+	var err error = global
+	_ = err != nil
+}
+
+func literalWrites() {
+	var p *T
+	var err error = p
+	f := func() {
+		err = nil
+	}
+	f()
+	_ = err != nil
+}
+
+func literalReads() {
+	var p *T
+	var err error = p
+	f := func() bool {
+		return err != nil
+	}
+	_ = f()
+}
+
+func mutate(err *error) {
+	*err = nil
+}
+
+func addressTaken() {
+	var p *T
+	var err error = p
+	mutate(&err)
+	_ = err != nil
+}
+
+func rangeAssignment(errs []error) {
+	var p *T
+	var err error = p
+	for _, err = range errs {
+		_ = err != nil
+	}
+	_ = err != nil
+}
+
+func selectAssignment(ch chan error) {
+	var p *T
+	var err error = p
+	select {
+	case err = <-ch:
+	}
+	_ = err != nil
+}
+
+func selectTwoValues(ch chan error) {
+	var p *T
+	var err error = p
+	var ok bool
+	select {
+	case err, ok = <-ch:
+		_ = err != nil
+		_ = ok
+	}
+	_ = err != nil
+}
+
+func selectCases(ch chan error, done chan struct{}) {
+	var p *T
+	var err error = p
+	select {
+	case err = <-ch:
+	case <-done:
+		_ = err != nil // want `comparison is always true`
+	}
+}
+
+func selectTarget(ch chan error, values []bool) {
+	var p *T
+	var err error = p
+	m := map[bool]error{}
+	select {
+	case m[err != nil] = <-ch:
+	}
+}
+
+func selectRHS(chans map[bool]chan error) {
+	var p *T
+	var err error = p
+	select {
+	case err = <-chans[err != nil]: // want `comparison is always true`
+	}
+}
+
+func deferredWrite() {
+	var p *T
+	var err error = p
+	defer func() {
+		err = nil
+	}()
+	_ = err != nil
+}
+
+func fieldValue(b struct{ err error }) {
+	_ = b.err != nil
+}
+
+func assignedField(b struct{ err error }) {
+	err := b.err
+	_ = err != nil
+}
+
+func elementValue(errs []error) {
+	_ = errs[0] != nil
+}
+
+func assignedElement(errs []error) {
+	err := errs[0]
+	_ = err != nil
+}
+
+func assertedValue(v any) {
+	if err, ok := v.(error); ok {
+		_ = err != nil
+	}
+}
+
+func assignedAssertion(v any) {
+	err, _ := v.(error)
+	_ = err != nil
+}
+
+func receivedValue(ch chan error) {
+	_ = (<-ch) != nil
+}
+
+func assignedReceive(ch chan error) {
+	err := <-ch
+	_ = err != nil
+}
+
+func concreteValues(
+	s []int, m map[int]int, ch chan int, f func(), p unsafe.Pointer,
+) {
+	_ = s != nil
+	_ = m != nil
+	_ = ch != nil
+	_ = f != nil
+	_ = p != nil
+}
+
+func unsafePointerValue() {
+	var p unsafe.Pointer
+	var v any = p
+	_ = v != nil // want `comparison is always true`
+}
+
+func concreteAssignment() {
+	var p *T
+	var q *T = p
+	var err error = q
+	_ = err != nil // want `comparison is always true`
+}
+
+type slice []int
+
+func concreteConversion() {
+	var s []int
+	t := slice(s)
+	var v any = t
+	_ = v != nil // want `comparison is always true`
+}
+
+func rangeTarget(values []bool) {
+	var p *T
+	var err error = p
+	m := map[bool]int{}
+	for m[err != nil] = range values {
+		err = nil
+	}
+}
+
+func typeSwitchNil() {
+	var p *T
+	var err error = p
+	switch err.(type) {
+	case nil:
+	}
+}
+
+func methodCall() {
+	var g grower
+	g.grow()
+	var v any = g
+	_ = v != nil
+}
+
+func methodValue() {
+	var g grower
+	f := g.grow
+	f()
+	var v any = g
+	_ = v != nil
+}
+
+func namedResult() (p *T) {
+	var v any = p
+	_ = v != nil // want `comparison is always true`
+	return
+}
+
+func namedError() (err error) {
+	_ = err != nil
+	return
+}
+
+func panicBranch(b bool) {
+	var err error
+	if b {
+		var p *T
+		err = p
+	} else {
+		panic("x")
+	}
+	_ = err != nil // want `comparison is always true`
+}
+
+func exitBranch(b bool) {
+	var err error
+	if b {
+		var p *T
+		err = p
+	} else {
+		os.Exit(1)
+	}
+	_ = err != nil // want `comparison is always true`
+}
