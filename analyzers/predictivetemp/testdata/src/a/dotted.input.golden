@@ -1,0 +1,11 @@
+package a
+
+import . "os"
+
+func dotted() error {
+	f, err := CreateTemp("/tmp", "dotted") // want `write CreateTemp\("/tmp", "dotted"\)`
+	if err != nil {
+		return err
+	}
+	return f.Close()
+}

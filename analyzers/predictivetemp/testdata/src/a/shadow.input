@@ -1,0 +1,13 @@
+package a
+
+import . "os"
+
+func shadowed() error {
+	CreateTemp := func(string, string) (*File, error) { return nil, nil }
+	f, err := Create("/tmp/shadowed") // want `file created at a fixed path in a shared directory$`
+	if err != nil {
+		return err
+	}
+	defer CreateTemp("", "")
+	return f.Close()
+}

@@ -155,6 +155,7 @@ import (
 	"lesiw.io/tools/analyzers/osremoveall"
 	"lesiw.io/tools/analyzers/packagename"
 	"lesiw.io/tools/analyzers/poolarg"
+	"lesiw.io/tools/analyzers/predictivetemp"
 	"lesiw.io/tools/analyzers/preferdecoderune"
 	"lesiw.io/tools/analyzers/preferfprint"
 	"lesiw.io/tools/analyzers/preferstringwriter"
@@ -375,6 +376,7 @@ var (
 		osremoveall.Analyzer,
 		packagename.Analyzer,
 		poolarg.Analyzer,
+		predictivetemp.Analyzer,
 		preferdecoderune.Analyzer,
 		preferfprint.Analyzer,
 		preferstringwriter.Analyzer,

@@ -1,0 +1,11 @@
+package a
+
+import xos "os"
+
+func aliased() error {
+	f, err := xos.CreateTemp("/tmp", "alias") // want `write xos\.CreateTemp\("/tmp", "alias"\)`
+	if err != nil {
+		return err
+	}
+	return f.Close()
+}

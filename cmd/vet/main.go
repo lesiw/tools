@@ -1810,6 +1810,18 @@
 //		p.Put(b)
 //	}
 //
+// # predictivetemp
+//
+// Reports a file created at a fixed path in a shared directory. Every user can
+// write there, so another process may already have created the file this call
+// opens.
+//
+// Adapted from gosec's G303.
+//
+//	func f() (*os.File, error) {
+//		return os.Create("/tmp/report")
+//	}
+//
 // # preferdecoderune
 //
 // Reports a string converted to a rune slice to read its first rune. The

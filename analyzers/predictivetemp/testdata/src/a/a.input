@@ -1,0 +1,212 @@
+package a
+
+import (
+	"os"
+	"path/filepath"
+)
+
+const (
+	session = "/var/tmp/session"
+	leaf    = "state"
+)
+
+func created() error {
+	a, err := os.Create("/tmp/state") // want `write os\.CreateTemp\("/tmp", "state"\)`
+	defer a.Close()
+	b, err := os.Create(session + "/" + leaf) // want `write os\.CreateTemp\("/var/tmp/session", "state"\)`
+	defer b.Close()
+	c, err := os.Create("/tmp/app/state") // want `write os\.CreateTemp\("/tmp/app", "state"\)`
+	defer c.Close()
+	d, err := os.Create("/private/tmp/notes") // want `write os\.CreateTemp\("/private/tmp", "notes"\)`
+	defer d.Close()
+	return err
+}
+
+func declared() error {
+	var f, err = os.Create("/tmp/declared") // want `write os\.CreateTemp\("/tmp", "declared"\)`
+	if err != nil {
+		return err
+	}
+	return f.Close()
+}
+
+func opened() error {
+	a, err := os.OpenFile("/tmp/report", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o600) // want `file created at a fixed path in a shared directory$`
+	defer a.Close()
+	b, err := os.OpenFile("/tmp/wide", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o644) // want `file created at a fixed path in a shared directory$`
+	defer b.Close()
+	c, err := os.OpenFile("/tmp/log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o600) // want `file created at a fixed path in a shared directory$`
+	defer c.Close()
+	return err
+}
+
+const ledger = "/tmp/ledger.report"
+
+func constant() error {
+	f, err := os.Create(ledger) // want `file created at a fixed path in a shared directory$`
+	if err != nil {
+		return err
+	}
+	return f.Close()
+}
+
+func assigned() error {
+	var f *os.File
+	var err error
+	f, err = os.Create("/tmp/assigned") // want `write os\.CreateTemp\("/tmp", "assigned"\)`
+	if err != nil {
+		return err
+	}
+	return f.Close()
+}
+
+func blank() {
+	_, _ = os.Create("/tmp/blank") // want `file created at a fixed path in a shared directory$`
+}
+
+func spelled() error {
+	f, err := os.Create("/tmp/spelled") // want `file created at a fixed path in a shared directory$`
+	if err != nil {
+		return err
+	}
+	defer os.Remove("/private/tmp/spelled")
+	return f.Close()
+}
+
+func deferred() {
+	defer os.Create("/tmp/deferred") // want `file created at a fixed path in a shared directory$`
+}
+
+func star() error {
+	f, err := os.Create("/tmp/star*") // want `file created at a fixed path in a shared directory$`
+	if err != nil {
+		return err
+	}
+	return f.Close()
+}
+
+func usrtmp() error {
+	f, err := os.Create("/usr/tmp/usr.state") // want `write os\.CreateTemp\("/usr/tmp", "usr.state"\)`
+	if err != nil {
+		return err
+	}
+	return f.Close()
+}
+
+func privateVar() error {
+	f, err := os.Create("/private/var/tmp/var.state") // want `write os\.CreateTemp\("/private/var/tmp", "var.state"\)`
+	if err != nil {
+		return err
+	}
+	return f.Close()
+}
+
+func blankFile() error {
+	_, err := os.Create("/tmp/blankfile") // want `file created at a fixed path in a shared directory$`
+	return err
+}
+
+func blankVar() error {
+	var _, err = os.Create("/tmp/blankvar") // want `file created at a fixed path in a shared directory$`
+	return err
+}
+
+func gone() {
+	go os.Create("/tmp/gone") // want `file created at a fixed path in a shared directory$`
+}
+
+func returned() (*os.File, error) {
+	return os.Create("/tmp/returned") // want `write os\.CreateTemp\("/tmp", "returned"\)`
+}
+
+func dropped() {
+	os.Create("/tmp/dropped") // want `file created at a fixed path in a shared directory$`
+}
+
+func named() error {
+	f, err := os.Create("/tmp/kept") // want `write os\.CreateTemp\("/tmp", "kept"\)`
+	if err != nil {
+		return err
+	}
+	return os.Remove(f.Name())
+}
+
+func repeated() error {
+	f, err := os.Create("/tmp/repeated") // want `file created at a fixed path in a shared directory$`
+	if err != nil {
+		return err
+	}
+	defer os.Remove("/tmp/repeated")
+	return f.Close()
+}
+
+var early, _ = os.Create("/tmp/early") // want `write os\.CreateTemp\("/tmp", "early"\)`
+
+func marked() error {
+	f, err := os.Create(/* marked */ "/tmp/commented") // want `write os\.CreateTemp\("/tmp", "commented"\)`
+	if err != nil {
+		return err
+	}
+	return f.Close()
+}
+
+func widest() error {
+	// want+1 `write os\.CreateTemp\("/var/tmp/station-with-a-long-name", "state.part.1"\)`
+	f, err := os.Create("/var/tmp/station-with-a-long-name/state.part.1")
+	if err != nil {
+		return err
+	}
+	return f.Close()
+}
+
+func closed(f *os.File, err error) error {
+	if err != nil {
+		return err
+	}
+	return f.Close()
+}
+
+func rooted(r *os.Root) error {
+	return closed(r.Create("/tmp/rooted"))
+}
+
+func exclusive() error {
+	return closed(os.OpenFile("/tmp/lock", os.O_RDWR|os.O_CREATE|os.O_EXCL, 0o600))
+}
+
+func linked() error {
+	return closed(os.OpenFile("/tmp/app/state.part", os.O_RDWR|os.O_CREATE|os.O_EXCL, 0o600)) // want `file created at a fixed path in a shared directory$`
+}
+
+func moded(mode os.FileMode) error {
+	return closed(os.OpenFile("/tmp/moded", os.O_RDWR|os.O_CREATE, mode)) // want `file created at a fixed path in a shared directory$`
+}
+
+func heldCreate() error {
+	create := os.Create
+	return closed(create("/tmp/heldcreate"))
+}
+
+func tempdir() error { return closed(os.Create(os.TempDir() + "/report")) }
+
+func written() error { return os.WriteFile("/tmp/written", nil, 0o600) }
+
+func dotdot() error { return closed(os.Create("/tmp/link/../elsewhere")) }
+
+func elsewhere() error { return closed(os.Create("/var/lib/app/state")) }
+
+func relative() error { return closed(os.Create("state.json")) }
+
+func root() error { return closed(os.Create("/tmp")) }
+
+func held(path string) error { return closed(os.Create(path)) }
+
+func joined() error { return closed(os.Create(filepath.Join("/tmp", "lock"))) }
+
+func temporary() error { return closed(os.CreateTemp("", "lock")) }
+
+func reading() error { return closed(os.OpenFile("/tmp/existing", os.O_RDONLY, 0)) }
+
+func flagged(flag int) error {
+	return closed(os.OpenFile("/tmp/flagged", flag, 0o600))
+}
