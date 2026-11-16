@@ -681,6 +681,23 @@ func f(n int) {
 }
 ```
 
+## deferbeforeerr
+
+Reports a deferred call made before the error result is read. The spec evaluates a defer's arguments where the defer stands, so the value is taken before the error that says whether it exists is checked.
+
+Adapted from staticcheck's SA5001.
+
+```
+func f() error {
+    h, err := open()
+    defer h.Close()
+    if err != nil {
+        return err
+    }
+    return nil
+}
+```
+
 ## defercloseunchecked
 
 Reports a deferred Close on a file or buffered writer, or a deferred Flush, whose error is discarded. A Write can return while its data is still buffered, and the later Close or Flush writes it and can fail. A Close on an os.File is reported when the file came from a write-opening call, is os.Stdout or os.Stderr, or when its origin is unknown and the function writes through it.

@@ -1,0 +1,204 @@
+package a
+
+type handle struct{}
+
+func (h *handle) Close() error { return nil }
+
+func open(name string) (*handle, error) { return nil, nil }
+
+func acquire() *handle { return nil }
+
+func probe() (*handle, bool) { return nil, false }
+
+func pair() (int, *handle, error) { return 0, nil, nil }
+
+func release(h *handle) {}
+
+func use(...any) {}
+
+type keeper struct{}
+
+func (keeper) start() (*handle, error) { return nil, nil }
+
+func checked() error {
+	h, err := open("some-name")
+	defer h.Close() // want `h\.Close\(\) is deferred before err is checked`
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func checkedBefore() error {
+	h, err := open("some-name")
+	if err != nil {
+		return err
+	}
+	defer h.Close()
+	return nil
+}
+
+func discarded() {
+	h, _ := open("some-name")
+	defer h.Close() // want `h\.Close\(\) is deferred and the error from open\("some-name"\) is discarded`
+}
+
+func apart() error {
+	h, err := open("some-name")
+	use(h)
+	defer h.Close() // want `h\.Close\(\) is deferred before err is checked`
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func read() {
+	h, err := open("some-name")
+	use(err)
+	defer h.Close()
+}
+
+func another(h *handle) error {
+	g, err := open("other-name")
+	defer h.Close()
+	if err != nil {
+		return err
+	}
+	_ = g
+	return nil
+}
+
+func plain() {
+	h := acquire()
+	defer h.Close()
+}
+
+func flag() {
+	h, ok := probe()
+	defer h.Close()
+	_ = ok
+}
+
+func argument() error {
+	h, err := open("some-name")
+	defer release(h) // want `release\(h\) is deferred before err is checked`
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func method(k keeper) error {
+	h, err := k.start()
+	defer h.Close() // want `h\.Close\(\) is deferred before err is checked`
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func third() error {
+	n, h, err := pair()
+	use(n)
+	defer h.Close() // want `h\.Close\(\) is deferred before err is checked`
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func assigned() error {
+	var h *handle
+	var err error
+	h, err = open("some-name")
+	defer h.Close() // want `h\.Close\(\) is deferred before err is checked`
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func parenthesized() error {
+	var h *handle
+	var err error
+	(h), err = (open("some-name"))
+	defer h.Close() // want `h\.Close\(\) is deferred before err is checked`
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func reassigned() error {
+	h, err := open("some-name")
+	if err != nil {
+		return err
+	}
+	h, err = open("other-name")
+	defer h.Close() // want `h\.Close\(\) is deferred before err is checked`
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func twice() {
+	h, _ := open("some-name")
+	h, _ = open("other-name")
+	defer h.Close() // want `h\.Close\(\) is deferred and the error from open\("other-name"\) is discarded`
+}
+
+func ended() error {
+	h, err := open("some-name")
+	h = nil
+	defer h.Close()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func literal() error {
+	h, err := open("some-name")
+	defer func() { h.Close() }()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func block() error {
+	h, err := open("some-name")
+	for i := 0; i < 2; i++ {
+		defer h.Close()
+	}
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func switched(n int) error {
+	switch n {
+	case 1:
+		h, err := open("some-name")
+		defer h.Close() // want `h\.Close\(\) is deferred before err is checked`
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func selected(ch chan int) error {
+	select {
+	case <-ch:
+		h, err := open("some-name")
+		defer h.Close() // want `h\.Close\(\) is deferred before err is checked`
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}

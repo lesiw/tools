@@ -695,6 +695,23 @@
 //		}
 //	}
 //
+// # deferbeforeerr
+//
+// Reports a deferred call made before the error result is read. The spec
+// evaluates a defer's arguments where the defer stands, so the value is taken
+// before the error that says whether it exists is checked.
+//
+// Adapted from staticcheck's SA5001.
+//
+//	func f() error {
+//		h, err := open()
+//		defer h.Close()
+//		if err != nil {
+//			return err
+//		}
+//		return nil
+//	}
+//
 // # defercloseunchecked
 //
 // Reports a deferred Close on a file or buffered writer, or a deferred Flush,

@@ -92,6 +92,7 @@ import (
 	"lesiw.io/tools/analyzers/deepequalptr"
 	"lesiw.io/tools/analyzers/deepexit"
 	"lesiw.io/tools/analyzers/defaultcaseorder"
+	"lesiw.io/tools/analyzers/deferbeforeerr"
 	"lesiw.io/tools/analyzers/defercloseunchecked"
 	"lesiw.io/tools/analyzers/deferinfinite"
 	"lesiw.io/tools/analyzers/deferunlambda"
@@ -322,6 +323,7 @@ var (
 		deepequalptr.Analyzer,
 		deepexit.Analyzer,
 		defaultcaseorder.Analyzer,
+		deferbeforeerr.Analyzer,
 		defercloseunchecked.Analyzer,
 		deferinfinite.Analyzer,
 		defers.Analyzer,
