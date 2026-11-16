@@ -1418,20 +1418,11 @@
 // failure goes unseen. A write to a Buffer or a Builder, a hash's Write, fmt
 // output to standard output, a builder, or standard error, a random Read, and
 // io.Pipe's CloseWithError are exempt. An error assigned to the blank
-// identifier is left alone.
+// identifier is left alone, and so is a call whose result is a type parameter,
+// an alias of error, or an unnamed interface.
 //
 //	func save(path string) {
 //		os.WriteFile(path, nil, 0o644)
-//	}
-//
-// # errdiscard
-//
-// Reports a call whose only result is an error, written as a statement.
-//
-// Inspired by gosec's G104. errcheck reports most of these statements too.
-//
-//	func remove(path string) {
-//		os.Remove(path)
 //	}
 //
 // # errflow

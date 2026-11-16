@@ -141,7 +141,6 @@ import (
 	"lesiw.io/tools/analyzers/emptystring"
 	"lesiw.io/tools/analyzers/encodeoverlap"
 	"lesiw.io/tools/analyzers/equalfold"
-	"lesiw.io/tools/analyzers/errdiscard"
 	"lesiw.io/tools/analyzers/errflow"
 	"lesiw.io/tools/analyzers/errfmt"
 	"lesiw.io/tools/analyzers/errisnil"
@@ -456,7 +455,6 @@ var (
 		encodeoverlap.Analyzer,
 		equalfold.Analyzer,
 		errcheck.Analyzer,
-		errdiscard.Analyzer,
 		errflow.Analyzer,
 		errfmt.Analyzer,
 		errisnil.Analyzer,
