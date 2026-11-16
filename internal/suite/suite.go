@@ -105,6 +105,7 @@ import (
 	"lesiw.io/tools/analyzers/errflow"
 	"lesiw.io/tools/analyzers/errfmt"
 	"lesiw.io/tools/analyzers/errorlast"
+	"lesiw.io/tools/analyzers/errshadow"
 	"lesiw.io/tools/analyzers/errstrings"
 	"lesiw.io/tools/analyzers/evalorder"
 	"lesiw.io/tools/analyzers/exposedsyncmutex"
@@ -292,6 +293,7 @@ var (
 		errname.New(),
 		errorlast.Analyzer,
 		errorsas.Analyzer,
+		errshadow.Analyzer,
 		errstrings.Analyzer,
 		evalorder.Analyzer,
 		exposedsyncmutex.Analyzer,

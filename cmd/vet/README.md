@@ -929,6 +929,22 @@ func f(err error) {
 }
 ```
 
+## errshadow
+
+Reports a declaration directly in an if body that shadows an error variable the condition tested. A later use of err denotes the inner variable. The rule leaves alone a declaration in a nested bare block, a plain else block, or a loop header; a declaration that introduces another variable; and a declaration in a body whose condition requires the error to be nil through direct nil comparisons and the boolean operators.
+
+Inspired by staticcheck's SA4006 family of forgotten-error checks; the shadow lookup follows the shadow analyzer in golang.org/x/tools.
+
+```
+func f() error {
+    if err := g(); err != nil {
+        err := h()
+        return err
+    }
+    return nil
+}
+```
+
 ## errstrings
 
 Reports an error string that starts with a capital letter or ends with punctuation. The message usually follows other text, as in reading config: , so a capital inside it reads as a sentence break the caller did not write.

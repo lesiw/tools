@@ -1,0 +1,409 @@
+package a
+
+import (
+	"errors"
+	"fmt"
+)
+
+var sentinel = errors.New("sentinel")
+
+type codedError struct{ code int }
+
+func (e *codedError) Error() string { return "coded" }
+
+func work() error        { return nil }
+func other() error       { return nil }
+func number() int        { return 0 }
+func coded() *codedError { return nil }
+
+func direct() error {
+	if err := work(); err != nil {
+		err := other() // want `declaration shadows the error variable "err"`
+		return err
+	}
+	return nil
+}
+
+func varDeclared() error {
+	if err := work(); err != nil {
+		var err error // want `declaration shadows the error variable "err"`
+		err = other()
+		return err
+	}
+	return nil
+}
+
+func declaredBefore(err error) error {
+	if err != nil {
+		err := other() // want `declaration shadows the error variable "err"`
+		return err
+	}
+	return nil
+}
+
+func selfRedeclare(err error) {
+	if err != nil {
+		err := err // want `declaration shadows the error variable "err"`
+		_ = err
+	}
+}
+
+func nilCondition(err error) {
+	if err == nil {
+		err := other()
+		_ = err
+	}
+}
+
+func nilLeft(err error) {
+	if nil == err {
+		err := other()
+		_ = err
+	}
+}
+
+func nilOrFalse(err error) {
+	if err == nil || false {
+		err := other()
+		_ = err
+	}
+}
+
+func andCondition(err error) {
+	if err == nil && number() > 0 {
+		err := other()
+		_ = err
+	}
+}
+
+func orCondition(err error) {
+	if err == nil || number() > 0 {
+		err := other() // want `declaration shadows the error variable "err"`
+		_ = err
+	}
+}
+
+func negated(err error) {
+	if !(err == nil) {
+		err := other() // want `declaration shadows the error variable "err"`
+		_ = err
+	}
+}
+
+func negatedSuccess(err error) {
+	if !(err != nil) {
+		err := other()
+		_ = err
+	}
+}
+
+func negatedConjunction(err error) {
+	if !(err != nil && errors.Is(err, sentinel)) {
+		err := other() // want `declaration shadows the error variable "err"`
+		_ = err
+	}
+}
+
+func negatedDisjunction(err error, skip bool) {
+	if !(err != nil || skip) {
+		err := other()
+		_ = err
+	}
+}
+
+func negatedMixed(err error) {
+	if !(err == nil && number() > 0) {
+		err := other() // want `declaration shadows the error variable "err"`
+		_ = err
+	}
+}
+
+func parenthesized(err error) {
+	if (err) == nil {
+		err := other()
+		_ = err
+	}
+}
+
+func parenthesizedNil(err error) {
+	if (nil) == err {
+		err := other()
+		_ = err
+	}
+}
+
+func sentinelCondition(err error) {
+	if errors.Is(err, sentinel) {
+		err := other() // want `declaration shadows the error variable "err"`
+		_ = err
+	}
+}
+
+func comparison(err error) {
+	if err == sentinel {
+		err := other() // want `declaration shadows the error variable "err"`
+		_ = err
+	}
+}
+
+func reversed(err error) {
+	if nil != err {
+		err := other() // want `declaration shadows the error variable "err"`
+		_ = err
+	}
+}
+
+func nestedBlock(err error) {
+	if err != nil {
+		{
+			err := other()
+			_ = err
+		}
+	}
+}
+
+func nestedInit(err error) {
+	if err != nil {
+		if err := other(); err != nil {
+			_ = err
+		}
+	}
+}
+
+func nestedBody(err error) {
+	if err != nil {
+		if number() > 0 {
+			err := other()
+			_ = err
+		}
+	}
+}
+
+func nestedIf(err error) {
+	if err != nil {
+		if err != nil {
+			err := other() // want `declaration shadows the error variable "err"`
+			_ = err
+		}
+	}
+}
+
+func elseBranch() error {
+	if err := work(); err != nil {
+		return err
+	} else {
+		err := other()
+		return err
+	}
+}
+
+func elseIf(err error) {
+	if err == nil {
+		_ = err
+	} else if err != nil {
+		err := other() // want `declaration shadows the error variable "err"`
+		_ = err
+	}
+}
+
+func named(cause error) {
+	if cause != nil {
+		cause := other() // want `declaration shadows the error variable "cause"`
+		_ = cause
+	}
+}
+
+func innerNotError(err error) {
+	if err != nil {
+		err := number() // want `declaration shadows the error variable "err"`
+		_ = err
+	}
+}
+
+func concrete() {
+	if err := coded(); err != nil {
+		err := other() // want `declaration shadows the error variable "err"`
+		_ = err
+	}
+}
+
+func typeParam[T error](err T) {
+	if errors.Is(err, sentinel) {
+		err := other()
+		_ = err
+	}
+}
+
+func ranged(err error) {
+	if err != nil {
+		for _, err := range []error{other()} {
+			_ = err
+		}
+	}
+}
+
+func shared(err error) {
+	if err != nil {
+		err, n := other(), number()
+		_, _ = err, n
+	}
+}
+
+func mixedRedecl(err error) {
+	if err != nil {
+		n := number()
+		err, n := other(), number() // want `declaration shadows the error variable "err"`
+		_, _ = err, n
+	}
+}
+
+func blanked(err error) {
+	if err != nil {
+		err, _ := other(), number() // want `declaration shadows the error variable "err"`
+		_ = err
+	}
+}
+
+func blankFirst(err error) {
+	if err != nil {
+		_, err := number(), other() // want `declaration shadows the error variable "err"`
+		_ = err
+	}
+}
+
+func blankedVar(err error) {
+	if err != nil {
+		var err, _ error // want `declaration shadows the error variable "err"`
+		_ = err
+	}
+}
+
+func initialized(err error) {
+	if err != nil {
+		var err = other() // want `declaration shadows the error variable "err"`
+		_ = err
+	}
+}
+
+func multiVar(err error) {
+	if err != nil {
+		var err, n error
+		_, _ = err, n
+	}
+}
+
+func groupedVar(err error) {
+	if err != nil {
+		var (
+			err error
+			n   int
+		)
+		_, _ = err, n
+	}
+}
+
+func singleVarGroup(err error) {
+	if err != nil {
+		var (
+			err error // want `declaration shadows the error variable "err"`
+		)
+		err = other()
+		_ = err
+	}
+}
+
+func loopHeader(err error) {
+	if err != nil {
+		for err := other(); err != nil; err = nil {
+			_ = err
+		}
+	}
+}
+
+func loopBody(err error) {
+	if err != nil {
+		for number() > 0 {
+			err := other()
+			_ = err
+		}
+	}
+}
+
+func switchBody(err error) {
+	if err != nil {
+		switch number() {
+		case 0:
+			err := other()
+			_ = err
+		}
+	}
+}
+
+func assigned(err error) {
+	if err != nil {
+		err = other()
+		_ = err
+	}
+}
+
+func otherName(err error) {
+	if err != nil {
+		cause := other()
+		_ = cause
+	}
+}
+
+func unrelatedCondition(err error) {
+	if n := number(); n > 0 {
+		err := other()
+		_ = err
+	}
+}
+
+func nonError(n int) {
+	if n > 0 {
+		n := number()
+		_ = n
+	}
+}
+
+func noShadow() {
+	if err := work(); err != nil {
+		_ = err
+	}
+}
+
+func localOuter() error {
+	err := work()
+	if err != nil {
+		err := other() // want `declaration shadows the error variable "err"`
+		_ = err
+	}
+	return err
+}
+
+func wrapping() error {
+	if err := work(); err != nil {
+		err := fmt.Errorf("work: %w", err) // want `declaration shadows the error variable "err"`
+		return err
+	}
+	return nil
+}
+
+func labeled(err error) {
+	if err != nil {
+	L:
+		err := other() // want `declaration shadows the error variable "err"`
+		_ = err
+		if number() > 0 {
+			goto L
+		}
+	}
+}
+
+func constantFalse(err error) {
+	if err == nil || 1 == 2 {
+		err := other()
+		_ = err
+	}
+}
