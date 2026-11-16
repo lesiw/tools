@@ -3111,6 +3111,19 @@
 //		f.Seek(io.SeekEnd, 0)
 //	}
 //
+// # selectempty
+//
+// Reports a select statement with no cases. The statement blocks forever, and
+// a reader cannot tell a deliberate wait from a select whose cases were
+// dropped. The rule reports without a fix.
+//
+// Adapted from staticcheck's SA5004, which reports an empty default branch in
+// a for-select loop.
+//
+//	func wait() {
+//		select {}
+//	}
+//
 // # selectone
 //
 // Reports a select statement with a single case clause and no default. The

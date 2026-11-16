@@ -247,6 +247,7 @@ import (
 	"lesiw.io/tools/analyzers/resetvalue"
 	"lesiw.io/tools/analyzers/runerange"
 	"lesiw.io/tools/analyzers/seekwhence"
+	"lesiw.io/tools/analyzers/selectempty"
 	"lesiw.io/tools/analyzers/selectone"
 	"lesiw.io/tools/analyzers/selfassert"
 	"lesiw.io/tools/analyzers/shellcommand"
@@ -567,6 +568,7 @@ var (
 		resetvalue.Analyzer,
 		runerange.Analyzer,
 		seekwhence.Analyzer,
+		selectempty.Analyzer,
 		selectone.Analyzer,
 		selfassert.Analyzer,
 		shellcommand.Analyzer,

@@ -3070,6 +3070,18 @@ func toEnd(f *os.File) {
 }
 ```
 
+## selectempty
+
+Reports a select statement with no cases. The statement blocks forever, and a reader cannot tell a deliberate wait from a select whose cases were dropped. The rule reports without a fix.
+
+Adapted from staticcheck's SA5004, which reports an empty default branch in a for-select loop.
+
+```
+func wait() {
+    select {}
+}
+```
+
 ## selectone
 
 Reports a select statement with a single case clause and no default. The send or receive in the case blocks the same way without the select. A select whose case body holds a break that leaves the select is left alone.

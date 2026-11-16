@@ -1,0 +1,110 @@
+package a
+
+func blocks() {
+	select {} // want `select with no cases blocks forever`
+}
+
+func blocksAcrossLines() {
+	select { // want `select with no cases blocks forever`
+	}
+}
+
+func blocksWithComment() {
+	select { // want `select with no cases blocks forever`
+		// wait here
+	}
+}
+
+func blocksWithInlineComment() {
+	select { /* wait here */ } // want `select with no cases blocks forever`
+}
+
+func twice() {
+	select {} // want `select with no cases blocks forever`
+	select {} // want `select with no cases blocks forever`
+}
+
+func labeled() {
+loop:
+	select {} // want `select with no cases blocks forever`
+	goto loop
+}
+
+type waiter struct{}
+
+func (waiter) wait() {
+	select {} // want `select with no cases blocks forever`
+}
+
+func literal() {
+	f := func() {
+		select {} // want `select with no cases blocks forever`
+	}
+	f()
+}
+
+func goroutine() {
+	go func() {
+		select {} // want `select with no cases blocks forever`
+	}()
+}
+
+func inCase(n int) {
+	switch n {
+	case 1:
+		select {} // want `select with no cases blocks forever`
+	}
+}
+
+func nested(ch <-chan int) {
+	select {
+	case <-ch:
+		select {} // want `select with no cases blocks forever`
+	}
+}
+
+func withReceive(ch <-chan int) {
+	select {
+	case <-ch:
+		return
+	}
+}
+
+func withSend(ch chan<- int) {
+	select {
+	case ch <- 1:
+		return
+	}
+}
+
+func withDefault() {
+	select {
+	default:
+	}
+}
+
+func withDefaultBody() {
+	select {
+	default:
+		println("ready")
+	}
+}
+
+func withEmptyCase(ch <-chan int) {
+	select {
+	case <-ch:
+	}
+}
+
+func withEmptySendCase(ch chan<- int) {
+	select {
+	case ch <- 1:
+	}
+}
+
+func withNilChannel() {
+	var ch chan int
+	select {
+	case <-ch:
+	}
+}
