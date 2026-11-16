@@ -2334,6 +2334,18 @@ type name struct {
 }
 ```
 
+## slenstr
+
+Reports a string converted to a byte slice only to take its length. len(\[]byte(s)) and len(s) count the same bytes, and len(s) does not build the slice.
+
+Inspired by go-critic's stringXbytes, which reports the reverse length check.
+
+```
+func size(s string) int {
+    return len([]byte(s))
+}
+```
+
 ## sliceclear
 
 Reports a loop that writes the zero value to every element of a slice. clear does the same in one call, from Go 1.21.

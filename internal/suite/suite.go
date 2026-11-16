@@ -190,6 +190,7 @@ import (
 	"lesiw.io/tools/analyzers/selfassert"
 	"lesiw.io/tools/analyzers/shellcommand"
 	"lesiw.io/tools/analyzers/singlefield"
+	"lesiw.io/tools/analyzers/slenstr"
 	"lesiw.io/tools/analyzers/sliceclear"
 	"lesiw.io/tools/analyzers/sloppyreassign"
 	"lesiw.io/tools/analyzers/slowloris"
@@ -438,6 +439,7 @@ var (
 		shift.Analyzer,
 		sigchanyzer.Analyzer,
 		singlefield.Analyzer,
+		slenstr.Analyzer,
 		sliceclear.Analyzer,
 		slog.Analyzer,
 		sloppyreassign.Analyzer,

@@ -1,0 +1,92 @@
+package a
+
+type text string
+
+type bytes = []byte
+
+type blob []byte
+
+type octet byte
+
+const label = "abc"
+
+func size(s string) int {
+	return len(s) // want `conversion only to take its length; len counts the bytes directly`
+}
+
+func sizeText(s text) int {
+	return len(s) // want `conversion only to take its length; len counts the bytes directly`
+}
+
+func sizeJoined(prefix, suffix string) int {
+	return len(prefix + suffix) // want `conversion only to take its length; len counts the bytes directly`
+}
+
+func sizeParen(s string) int {
+	return len(s) // want `conversion only to take its length; len counts the bytes directly`
+}
+
+func sizeAlias(s string) int {
+	return len(s) // want `conversion only to take its length; len counts the bytes directly`
+}
+
+func sizeCommented(s string) int {
+	return len([]byte( /* why */ s)) // want `conversion only to take its length; len counts the bytes directly`
+}
+
+func sizeCommentedAfter(s string) int {
+	return len([]byte(s /* why */)) // want `conversion only to take its length; len counts the bytes directly`
+}
+
+func sizeCommentedBefore(s string) int {
+	return len( /* why */ s) // want `conversion only to take its length; len counts the bytes directly`
+}
+
+func sizeCommentedAround(s string) int {
+	return len(s /* why */) // want `conversion only to take its length; len counts the bytes directly`
+}
+
+func sizeMeasured(s string) int {
+	return len(s)
+}
+
+func sizeBytes(b []byte) int {
+	return len([]byte(b))
+}
+
+func sizeBlob(s string) int {
+	return len(s) // want `conversion only to take its length; len counts the bytes directly`
+}
+
+func sizeOctets(s string) int {
+	return len(s) // want `conversion only to take its length; len counts the bytes directly`
+}
+
+func sizeConstant() int {
+	return len([]byte("abc")) // want `conversion only to take its length; len counts the bytes directly`
+}
+
+func sizeNamedConstant() int {
+	return len([]byte(label)) // want `conversion only to take its length; len counts the bytes directly`
+}
+
+func sizeConstantExpression() int {
+	return len([]byte("a" + "bc")) // want `conversion only to take its length; len counts the bytes directly`
+}
+
+func sizeGeneric[T ~string](s T) int {
+	return len([]byte(s))
+}
+
+func sizeGenericTarget[T ~[]byte](s string) int {
+	return len(T(s))
+}
+
+func sizeRunes(s string) int {
+	return len([]rune(s))
+}
+
+func sizeShadowed(s string) int {
+	len := func([]byte) int { return 0 }
+	return len([]byte(s))
+}
