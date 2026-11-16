@@ -3042,6 +3042,16 @@ func f() {
 }
 ```
 
+## unusedtypeparam
+
+Reports a type parameter a function, method, or type alias never uses. A constraint does not use the parameter it constrains.
+
+The rule is original to this suite.
+
+```
+func f[T any](n int) int { return n }
+```
+
 ## unusedwrite
 
 Reports a write to a field or an element of a value that was copied, as the loop variable of a range over a slice of structs. The write reaches the copy and nothing reads it.

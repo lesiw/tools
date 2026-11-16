@@ -1,0 +1,21 @@
+package genericmethod
+
+type Box[T any] struct{ n int }
+
+func (b Box[T]) Keep[U any](u U) U {
+	return u
+}
+
+func (b Box[T]) Drop[U any](n int) int { // want `type parameter U is unused`
+	return n
+}
+
+type Plain struct{}
+
+func (Plain) Keep[U any](u U) U {
+	return u
+}
+
+func (Plain) Drop[U any](n int) int { // want `type parameter U is unused`
+	return n
+}

@@ -220,6 +220,7 @@ import (
 	"lesiw.io/tools/analyzers/unusedctxkey"
 	"lesiw.io/tools/analyzers/unusedparams"
 	"lesiw.io/tools/analyzers/unusedrecv"
+	"lesiw.io/tools/analyzers/unusedtypeparam"
 	"lesiw.io/tools/analyzers/unusefultag"
 	"lesiw.io/tools/analyzers/unwrap"
 	"lesiw.io/tools/analyzers/uselessbreak"
@@ -462,6 +463,7 @@ var (
 		unusedparams.Analyzer,
 		unusedrecv.Analyzer,
 		unusedresult.Analyzer,
+		unusedtypeparam.Analyzer,
 		unusedwrite.Analyzer,
 		unusefultag.Analyzer,
 		unwrap.Analyzer,

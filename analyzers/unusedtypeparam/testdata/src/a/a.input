@@ -1,0 +1,151 @@
+package a
+
+func Pick[T any](xs []T) T {
+	return xs[0]
+}
+
+func Take[T any](x T) {
+	_ = x
+}
+
+func ParamOnly[T any](p *T) {
+	_ = p
+}
+
+func ResultOnly[T any]() *T {
+	return nil
+}
+
+func Empty[T any]() T {
+	var zero T
+	return zero
+}
+
+func Store[T any](out *[]any) {
+	var zero T
+	*out = append(*out, zero)
+}
+
+func Convert[T ~int](x int) {
+	_ = T(x)
+}
+
+func Later[T any](out *[]func() any) {
+	*out = append(*out, func() any {
+		var zero T
+		return zero
+	})
+}
+
+func Copy[T any, S ~[]T](s S) S {
+	return s
+}
+
+func Stub[T any]() {
+}
+
+func PanicStub[T any](n int) int {
+	panic("TODO")
+}
+
+func ParenPanic[T any](n int) int {
+	(panic)("TODO")
+}
+
+func ParenCall[T any](n int) int {
+	(panic("TODO"))
+}
+
+func Count[T any](xs []int) int { // want `type parameter T is unused`
+	return len(xs)
+}
+
+func Append[T any, U any](xs []U, x U) []U { // want `type parameter T is unused`
+	return append(xs, x)
+}
+
+func Grouped[T, U any](x U) U { // want `type parameter T is unused`
+	return x
+}
+
+func Both[T, U any](n int) int { // want `type parameter T is unused` `type parameter U is unused`
+	return n
+}
+
+func Export[T any](name string) error { // want `type parameter T is unused`
+	return nil
+}
+
+func OnlyConstraint[T any, S ~[]T](n *int) { // want `type parameter T is unused` `type parameter S is unused`
+	*n = 0
+}
+
+func Self[T interface{ ~[]T }](n int) int { // want `type parameter T is unused`
+	return n
+}
+
+func Bounded[T ~int](n int) int { // want `type parameter T is unused`
+	return n
+}
+
+func BodyDependency[T any, S ~[]T](out *[]any) {
+	var s S
+	*out = append(*out, s)
+}
+
+func Chain[A any, B ~[]A, C ~[]B](c C) C {
+	return c
+}
+
+func Ignore[_ any](x int) int {
+	return x
+}
+
+func BlankConstraint[T any, _ ~[]T](n int) int {
+	return n
+}
+
+func Shadowed[T any](panic func(any)) { // want `type parameter T is unused`
+	panic(1)
+}
+
+type Tag[T any] struct {
+	n int
+}
+
+func (t Tag[T]) Value() int {
+	return t.n
+}
+
+type Event[K any] struct {
+	name string
+}
+
+type Box[T any] struct {
+	value T
+}
+
+type Alias[P any] = []int // want `type parameter P is unused`
+
+type UsedAlias[P any] = []P
+
+type LiveAlias[T any, S ~[]T] = []S
+
+type BlankAlias[T any, _ ~[]T] = int
+
+type BoundedAlias[T ~int] = []int // want `type parameter T is unused`
+
+type SelfAlias[T interface{ ~[]T }] = []int // want `type parameter T is unused`
+
+func local() {
+	type Row[T any] struct{ n int }
+	_ = Row[int]{}
+}
+
+func localAlias() {
+	type Local[P any] = []int // want `type parameter P is unused`
+}
+
+func Plain(x int) int {
+	return x
+}
