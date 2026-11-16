@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 	"slices"
-	"sort"
 	"strings"
 
 	"golang.org/x/tools/go/analysis"
@@ -487,7 +486,7 @@ func write(pending []fixes) (int, []string, error) {
 	for name := range accepted {
 		names = append(names, name)
 	}
-	sort.Strings(names)
+	slices.Sort(names)
 	// Two analyzers can suggest the same edit, and an import added by
 	// both would land twice.
 	for name, edits := range accepted {
@@ -557,7 +556,7 @@ func pendingKey(pending []fixes) string {
 		for name := range f.files {
 			names = append(names, name)
 		}
-		sort.Strings(names)
+		slices.Sort(names)
 		for _, name := range names {
 			b.WriteString(fixKey(name, f.files[name]))
 		}
