@@ -1338,7 +1338,7 @@ func f(n int) {
 
 ## emptystring
 
-Reports a comparison of a string's length with zero. len(s) == 0 and s == "" are the same test, and the second is the form a reader expects.
+Reports a test of whether a string is empty, written as a comparison of its length with zero. A comparison with the empty string is the same test, and the form a reader expects.
 
 Inspired by go-critic's emptyStringTest.
 

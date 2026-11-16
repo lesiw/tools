@@ -1,4 +1,5 @@
-// Command emptystring reports a string compared with its own length.
+// Command emptystring reports a test of whether a string is empty, written as
+// a comparison of its length with zero.
 package main
 
 import (

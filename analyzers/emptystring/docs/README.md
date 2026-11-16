@@ -7,7 +7,8 @@
 [![Discord](https://img.shields.io/discord/1145827224516300971?logo=discord&logoColor=white&color=5865F2&label=discord)](https://lesiw.dev/discord)
 [![License](https://img.shields.io/github/license/lesiw/tools)](../../../LICENSE)
 
-An `analysis.Analyzer` that reports a string compared with its own length.
+An `analysis.Analyzer` that reports a test of whether a string is empty,
+written as a comparison of its length with zero.
 
 ```go
 func f(s string) bool {
@@ -15,16 +16,23 @@ func f(s string) bool {
 }
 ```
 
-len(s) == 0 and s == "" are the same test. The second is the form a reader
-expects.
+The String types section of the spec says the length of a string is never
+negative, so `len(s) == 0` and `len(s) <= 0` mean the same as `s == ""`, and
+`len(s) != 0` and `len(s) > 0` mean the same as `s != ""`. A comparison with
+`""` is the form a reader expects. The operand's type must be a string, or a
+type whose underlying type is a string, such as `type word string`. A
+comparison whose operand is a type parameter is not reported.
 
-```go
-s == ""
-```
+`len(s) < 0` is always false and `len(s) >= 0` is always true.
+[`lenzero`](../../lenzero/docs) reports such a comparison as the constant it
+is.
 
-The idea comes from go-critic's emptyStringTest.
+The rule is inspired by go-critic's `emptyStringTest`, which matches the same
+four comparisons with the length on the left. This one matches the zero on
+either side.
 
-Fixable.
+Fixable: the comparison becomes a comparison with the empty string. The fix is
+withheld when a comment is inside the comparison.
 
 ## Usage
 

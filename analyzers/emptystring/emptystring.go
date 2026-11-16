@@ -1,8 +1,20 @@
-// Package emptystring provides an analysis.Analyzer that reports a string
-// compared with its own length.
+// Package emptystring provides an analysis.Analyzer that reports a test of
+// whether a string is empty, written as a comparison of its length with zero.
 //
-// len(s) == 0 and s == "" are the same test, and the second is the form a
-// reader expects. Like go-critic's emptyStringTest.
+// The spec's String types section says the length of a string is never
+// negative. So len(s) == 0 and len(s) <= 0 both become s == "", and
+// len(s) != 0 and len(s) > 0 both become s != ""; a comparison with "" is
+// the form a reader expects. len(s) < 0 is always false and len(s) >= 0 is
+// always true, and lenzero reports such a comparison as the constant it is.
+//
+// The operand's type must be a string, or a type whose underlying type is a
+// string. A type parameter is not examined.
+//
+// The fix is withheld when a comment is inside the comparison.
+//
+// The rule is inspired by go-critic's emptyStringTest. That rule matches the
+// same four comparisons with the length on the left; this one matches the zero
+// on either side.
 package emptystring
 
 import (
@@ -15,7 +27,7 @@ import (
 
 var Analyzer = &analysis.Analyzer{
 	Name: "emptystring",
-	Doc:  "reports a string compared with its own length",
+	Doc:  "reports a test of whether a string is empty, written as a comparison of its length with zero",
 	Run:  run,
 }
 
@@ -23,13 +35,11 @@ func run(pass *analysis.Pass) (any, error) {
 	for _, file := range pass.Files {
 		ast.Inspect(file, func(n ast.Node) bool {
 			bin, ok := n.(*ast.BinaryExpr)
-			if !ok || !comparison(bin.Op) {
+			if !ok {
 				return true
 			}
-			if str, ok := stringOperand(pass, bin.X, bin.Y); ok {
-				report(pass, bin, str, bin.Op)
-			} else if str, ok := stringOperand(pass, bin.Y, bin.X); ok {
-				report(pass, bin, str, flip(bin.Op))
+			if str, op, ok := test(pass, bin); ok {
+				report(pass, file, bin, str, op)
 			}
 			return true
 		})
@@ -37,19 +47,33 @@ func run(pass *analysis.Pass) (any, error) {
 	return nil, nil
 }
 
-// comparison reports whether op compares against zero in a way a string
-// comparison can express.
-func comparison(op token.Token) bool {
-	switch op {
-	case token.EQL, token.NEQ, token.LSS, token.GTR, token.LEQ, token.GEQ:
-		return true
+// test returns the string operand and the operator to write between it and ""
+// when bin is a comparison of a string's length with zero.
+func test(pass *analysis.Pass, bin *ast.BinaryExpr) (ast.Expr, token.Token, bool) {
+	var (
+		str, ok = stringOperand(pass, bin.X, bin.Y)
+		op      = bin.Op
+	)
+	if !ok {
+		str, ok = stringOperand(pass, bin.Y, bin.X)
+		op = flip(op)
 	}
-	return false
+	if !ok {
+		return nil, 0, false
+	}
+	switch op {
+	case token.EQL, token.LEQ:
+		return str, token.EQL, true
+	case token.NEQ, token.GTR:
+		return str, token.NEQ, true
+	}
+	return nil, 0, false
 }
 
 // stringOperand returns the string when call is len of a string and other is
 // the literal 0.
 func stringOperand(pass *analysis.Pass, call, other ast.Expr) (ast.Expr, bool) {
+	call, other = ast.Unparen(call), ast.Unparen(other)
 	lit, ok := other.(*ast.BasicLit)
 	if !ok || lit.Kind != token.INT || lit.Value != "0" {
 		return nil, false
@@ -63,7 +87,10 @@ func stringOperand(pass *analysis.Pass, call, other ast.Expr) (ast.Expr, bool) {
 		return nil, false
 	}
 	typ := pass.TypesInfo.TypeOf(expr.Args[0])
-	basic, ok := types.Unalias(typ).(*types.Basic)
+	if typ == nil {
+		return nil, false
+	}
+	basic, ok := typ.Underlying().(*types.Basic)
 	if !ok || basic.Info()&types.IsString == 0 {
 		return nil, false
 	}
@@ -85,20 +112,37 @@ func flip(op token.Token) token.Token {
 	return op
 }
 
-// report suggests the comparison that names the string.
-func report(pass *analysis.Pass, bin *ast.BinaryExpr, str ast.Expr, op token.Token) {
-	text := types.ExprString(str) + " " + op.String() + ` ""`
-	pass.Report(analysis.Diagnostic{
-		Pos:     bin.Pos(),
-		End:     bin.End(),
-		Message: `compare the string with "" instead`,
-		SuggestedFixes: []analysis.SuggestedFix{{
+// report reports bin and, unless a comment inside it would be lost, suggests
+// the comparison with "" in its place.
+func report(pass *analysis.Pass, file *ast.File, bin *ast.BinaryExpr, str ast.Expr, op token.Token) {
+	var (
+		from, to = bin.Pos(), bin.End()
+		diag     = analysis.Diagnostic{
+			Pos:     from,
+			End:     to,
+			Message: `compare the string with "" instead`,
+		}
+	)
+	if !commented(file, from, to) {
+		text := types.ExprString(str) + " " + op.String() + ` ""`
+		diag.SuggestedFixes = []analysis.SuggestedFix{{
 			Message: "Compare the string",
 			TextEdits: []analysis.TextEdit{{
-				Pos:     bin.Pos(),
-				End:     bin.End(),
+				Pos:     from,
+				End:     to,
 				NewText: []byte(text),
 			}},
-		}},
-	})
+		}}
+	}
+	pass.Report(diag)
+}
+
+// commented reports whether a comment overlaps the text between lo and hi.
+func commented(file *ast.File, lo, hi token.Pos) bool {
+	for _, group := range file.Comments {
+		if group.Pos() < hi && group.End() > lo {
+			return true
+		}
+	}
+	return false
 }

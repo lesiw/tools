@@ -1,15 +1,86 @@
 package a
 
-func f(s string) bool {
+func equalZero(s string) bool {
 	return s == "" // want `compare the string with "" instead`
 }
 
-func g(s string) bool {
-	return s > "" // want `compare the string with "" instead`
+func notEqualZero(s string) bool {
+	return s != "" // want `compare the string with "" instead`
 }
 
-func h(s string) bool {
+func greaterThanZero(s string) bool {
 	return s != "" // want `compare the string with "" instead`
+}
+
+func atMostZero(s string) bool {
+	return s == "" // want `compare the string with "" instead`
+}
+
+func zeroEqual(s string) bool {
+	return s == "" // want `compare the string with "" instead`
+}
+
+func zeroNotEqual(s string) bool {
+	return s != "" // want `compare the string with "" instead`
+}
+
+func zeroLess(s string) bool {
+	return s != "" // want `compare the string with "" instead`
+}
+
+func zeroAtLeast(s string) bool {
+	return s == "" // want `compare the string with "" instead`
+}
+
+type word string
+
+func named(w word) bool {
+	return w == "" // want `compare the string with "" instead`
+}
+
+type alias = string
+
+func aliased(s alias) bool {
+	return s == "" // want `compare the string with "" instead`
+}
+
+func parenthesized(s string) bool {
+	return s == "" // want `compare the string with "" instead`
+}
+
+func parenthesizedZero(s string) bool {
+	return s == "" // want `compare the string with "" instead`
+}
+
+func zeroParenthesized(s string) bool {
+	return s == "" // want `compare the string with "" instead`
+}
+
+func parenthesizedOperand(a, b string) bool {
+	return (a + b) == "" // want `compare the string with "" instead`
+}
+
+func commented(s string) bool {
+	return len(s /* bytes */) == 0 // want `compare the string with "" instead`
+}
+
+func parameter[T ~string](s T) bool {
+	return len(s) == 0
+}
+
+func shadowed(s string) bool {
+	len := func(s string) int { return 0 }
+	return len(s) == 0
+}
+
+const zero = 0
+
+func constantZero(s string) bool {
+	return len(s) == zero
+}
+
+func excluded(s string) bool {
+	return len(s) < 0 || len(s) >= 0 || 0 > len(s) || 0 <= len(s)
 }
 
 func ok(s string) bool {
