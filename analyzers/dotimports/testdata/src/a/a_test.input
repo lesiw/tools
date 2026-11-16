@@ -1,0 +1,12 @@
+package a
+
+import (
+	. "strings" // want `dot import of "strings"`
+	"testing"
+)
+
+func TestTrim(t *testing.T) {
+	if TrimSpace(" a ") != "a" {
+		t.Fatal("TrimSpace did not trim")
+	}
+}

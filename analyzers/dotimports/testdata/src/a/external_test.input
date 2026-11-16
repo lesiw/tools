@@ -1,0 +1,12 @@
+package a_test
+
+import (
+	. "a" // want `dot import of "a"`
+	"testing"
+)
+
+func TestFixtureName(t *testing.T) {
+	if FixtureName != "a" {
+		t.Fatal("FixtureName changed")
+	}
+}
