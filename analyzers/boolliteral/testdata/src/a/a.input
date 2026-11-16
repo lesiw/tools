@@ -1,0 +1,220 @@
+package a
+
+type flag bool
+
+type other bool
+
+func agrees(b bool) bool {
+	if b == true { // want `write the operand$`
+		return true
+	}
+	return b != false // want `write the operand$`
+}
+
+func inverts(b bool) bool {
+	if b == false { // want `write the operand negated$`
+		return true
+	}
+	return b != true // want `write the operand negated$`
+}
+
+func literalFirst(b bool) bool {
+	if true == b { // want `write the operand$`
+		return true
+	}
+	if false != b { // want `write the operand$`
+		return true
+	}
+	if false == b { // want `write the operand negated$`
+		return true
+	}
+	return true != b // want `write the operand negated$`
+}
+
+func parenthesized(b bool) bool {
+	if (b) == (true) { // want `write the operand$`
+		return true
+	}
+	return (b) == (false) // want `write the operand negated$`
+}
+
+func namedCondition(f flag) bool {
+	if f == true {
+		return true
+	}
+	return false
+}
+
+func namedValue(f flag) flag {
+	return f == true // want `write the operand$`
+}
+
+func namedInvert(f flag) flag {
+	return f != true // want `write the operand negated$`
+}
+
+func namedToBool(f flag) bool {
+	return f == true
+}
+
+type alias = bool
+
+func aliasCondition(a alias) bool {
+	if a == true { // want `write the operand$`
+		return true
+	}
+	return false
+}
+
+func shadowedFalse(ok bool) bool {
+	false := ok
+	return ok == false
+}
+
+func generic[T ~bool](v T) bool {
+	return v == true
+}
+
+func genericCondition[T ~bool](v T) bool {
+	if v != false {
+		return true
+	}
+	return false
+}
+
+func mixedNamed(a flag, b other) bool {
+	return (a == true) && (b == true)
+}
+
+type boolOnly interface {
+	~bool
+}
+
+type comparableOnly interface {
+	comparable
+}
+
+func embeddedConstraint[T interface{ boolOnly; comparableOnly }](v T) bool {
+	return v == true
+}
+
+func takesBool(bool) bool { return true }
+
+func manyBool(...bool) bool { return true }
+
+func contexts(b bool) {
+	for b == true { // want `write the operand$`
+		break
+	}
+	switch b {
+	case b == true: // want `write the operand$`
+	}
+	var x = b == true // want `write the operand$`
+	y := b != false // want `write the operand$`
+	var z bool
+	z = b != false // want `write the operand$`
+	_ = takesBool(b == true) // want `write the operand$`
+	_ = manyBool(b == true) // want `write the operand$`
+	_ = bool(b == true) // want `write the operand$`
+	ch := make(chan bool, 1)
+	ch <- b != false // want `write the operand$`
+	var anyValue any = b == true // want `write the operand$`
+	_ = []bool{b == true} // want `write the operand$`
+	_ = !(b == true) // want `write the operand$`
+	_ = x
+	_ = y
+	_ = z
+	_ = anyValue
+}
+
+func genericValue[T ~bool](v T) T {
+	return v == false // want `write the operand negated$`
+}
+
+func genericKeep[T ~bool](v T) T {
+	return v == true // want `write the operand$`
+}
+
+func chained(a, b int) bool {
+	return a < b == false // want `write the operand negated$`
+}
+
+func chainedKeep(a, b int) bool {
+	return a < b == true // want `write the operand$`
+}
+
+func typedLogical(f flag, b bool) flag {
+	return f && (b == true)
+}
+
+func interfaced(x any) bool {
+	return x == true
+}
+
+func constants() bool {
+	return true == false
+}
+
+const typedTrue bool = true
+
+const fromTyped = typedTrue == true
+
+const untypedTrue = true
+
+const fromUntyped = untypedTrue == false // want `write the operand negated$`
+
+func untypedConstant() bool {
+	if untypedTrue == true { // want `write the operand$`
+		return true
+	}
+	return false
+}
+
+func shadowedLiteral(ok bool) bool {
+	true := ok
+	return false == true // want `write the operand negated$`
+}
+
+func shadowed(ok bool) bool {
+	true := ok
+	return ok == true
+}
+
+func commented(b bool) bool {
+	return b /* why */ == true
+}
+
+func commentedOperator(b bool) bool {
+	return b == /* why */ false
+}
+
+func commentedLiteral(b bool) bool {
+	return false /* why */ == b
+}
+
+func underLimit(conditionWithAnExcessivelyLongNameThatNearlyFillsTheLineNow bool) bool {
+	// want +1 `write the operand negated$`
+	return conditionWithAnExcessivelyLongNameThatNearlyFillsTheLineNow == false
+}
+
+func joined(conditionWithAnExcessivelyLongNameThatNearlyFillsTheWholeLineAndThenXX bool) bool {
+	return false ==
+		conditionWithAnExcessivelyLongNameThatNearlyFillsTheWholeLineAndThenXX
+}
+
+func joinedAgreeing(conditionWithAnExcessivelyLongNameThatNearlyFillsTheWholeLineAndThenXX bool) bool {
+	return true ==
+		conditionWithAnExcessivelyLongNameThatNearlyFillsTheWholeLineAndThenXX
+}
+
+func joinedOver(conditionWithAnExcessivelyLongNameThatNearlyFillsTheWholeLineAndThenXX bool, conditionWithAnExcessivelyLongName bool) bool {
+	// want +1 `write the operand negated$`
+	return conditionWithAnExcessivelyLongNameThatNearlyFillsTheWholeLineAndThenXX && false ==
+		conditionWithAnExcessivelyLongName
+}
+
+func aliasParameter[T ~bool](v T) bool {
+	type P = T
+	var p P = v
+	return p == true
+}

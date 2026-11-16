@@ -293,6 +293,18 @@ func f(ok bool) bool {
 }
 ```
 
+## boolliteral
+
+Reports a comparison with a boolean literal, as in ok == true or ok != false. The comparison is replaced by its operand, with a ! where the comparison inverts the operand.
+
+Adapted from revive's bool-literal-in-expr.
+
+```
+func f(ok bool) bool {
+    return ok == true
+}
+```
+
 ## boolreturn
 
 Reports an if whose branches return the opposite boolean constants, where the condition is the value to return. The condition goes into a single return, negated when the false branch comes first.

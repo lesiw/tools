@@ -68,6 +68,7 @@ import (
 	"lesiw.io/tools/analyzers/badsorting"
 	"lesiw.io/tools/analyzers/bookends"
 	"lesiw.io/tools/analyzers/boolexprsimplify"
+	"lesiw.io/tools/analyzers/boolliteral"
 	"lesiw.io/tools/analyzers/boolreturn"
 	"lesiw.io/tools/analyzers/boolset"
 	"lesiw.io/tools/analyzers/breakinselect"
@@ -242,6 +243,7 @@ var (
 		badsorting.Analyzer,
 		bookends.Analyzer,
 		boolexprsimplify.Analyzer,
+		boolliteral.Analyzer,
 		boolreturn.Analyzer,
 		bools.Analyzer,
 		boolset.Analyzer,
