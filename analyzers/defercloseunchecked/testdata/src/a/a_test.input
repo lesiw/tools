@@ -1,0 +1,14 @@
+package a
+
+import (
+	"os"
+	"testing"
+)
+
+func TestWrite(t *testing.T) {
+	f, err := os.CreateTemp(t.TempDir(), "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f.Close()
+}

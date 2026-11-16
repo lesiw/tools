@@ -1,0 +1,1100 @@
+package a
+
+import (
+	"bufio"
+	"compress/gzip"
+	"fmt"
+	"io"
+	"log"
+	"net"
+	"os"
+	"runtime"
+	"syscall"
+
+	"b"
+)
+
+var nameFile = "name"
+
+type writer struct{}
+
+func (*writer) Write(p []byte) (int, error) { return len(p), nil }
+
+func (*writer) Close() error { return nil }
+
+type quietWriter struct{}
+
+func (*quietWriter) Write(p []byte) (int, error) { return len(p), nil }
+
+func (*quietWriter) Close() {}
+
+type flusherOnly struct{}
+
+func (*flusherOnly) Flush() error { return nil }
+
+type quietFlusher struct{}
+
+func (*quietFlusher) Flush() {}
+
+type reader struct{}
+
+func (*reader) Close() error { return nil }
+
+type fakeWriter struct{}
+
+func (*fakeWriter) Write(p string) error { return nil }
+
+func (*fakeWriter) Close() error { return nil }
+
+type closeError struct{}
+
+func (*closeError) Error() string { return "" }
+
+type namedWriter struct{}
+
+func (*namedWriter) Write(p []byte) (int, error) { return len(p), nil }
+
+func (*namedWriter) Close() *closeError { return nil }
+
+type twoResults struct{}
+
+func (*twoResults) Write(p []byte) (int, error) { return len(p), nil }
+
+func (*twoResults) Close() (int, error) { return 0, nil }
+
+type embedded struct{ *writer }
+
+type fieldCloser struct{ Close func() error }
+
+func (*fieldCloser) Write(p []byte) (int, error) { return len(p), nil }
+
+type flushingWriter struct{}
+
+func (*flushingWriter) Write(p []byte) (int, error) { return len(p), nil }
+
+func (*flushingWriter) Flush() error { return nil }
+
+func (*flushingWriter) Close() *closeError { return nil }
+
+type valueWriter struct{}
+
+func (valueWriter) Write(p []byte) (int, error) { return len(p), nil }
+
+func (valueWriter) Close() error { return nil }
+
+type pointerWriter struct{}
+
+func (*pointerWriter) Write(p []byte) (int, error) { return len(p), nil }
+
+func (*pointerWriter) Close() error { return nil }
+
+type halfPointer struct{}
+
+func (halfPointer) Close() error { return nil }
+
+func (*halfPointer) Write(p []byte) (int, error) { return len(p), nil }
+
+type lower struct{}
+
+func (*lower) close() error { return nil }
+
+func (*lower) flush() error { return nil }
+
+type other struct{}
+
+func (*other) Shutdown() error { return nil }
+
+type closer interface{ Close() error }
+
+type closerWriter interface{ io.WriteCloser }
+
+func fileClose(f *os.File, p []byte) {
+	f.Write(p)
+	defer f.Close() // want `deferred Close discards its error`
+}
+
+func readOnlyClose(name string) {
+	f, err := os.Open(name)
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+}
+
+func createClose(name string) {
+	f, err := os.Create(name)
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close() // want `deferred Close discards its error`
+}
+
+func tempClose() {
+	f, err := os.CreateTemp("", "")
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close() // want `deferred Close discards its error`
+}
+
+func writeOpenClose(name string) {
+	f, err := os.OpenFile(name, os.O_WRONLY|os.O_CREATE, 0o600)
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close() // want `deferred Close discards its error`
+}
+
+func readOpenClose(name string) {
+	f, err := os.OpenFile(name, os.O_RDONLY, 0)
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+}
+
+func stdClose() {
+	defer os.Stdout.Close() // want `deferred Close discards its error`
+	defer os.Stderr.Close() // want `deferred Close discards its error`
+	defer os.Stdin.Close()
+}
+
+func fmtClose(f *os.File) {
+	fmt.Fprint(f, "x")
+	defer f.Close() // want `deferred Close discards its error`
+}
+
+func writerClose(w *writer) {
+	defer w.Close()
+}
+
+func quietWriterClose(w *quietWriter) {
+	defer w.Close()
+}
+
+func namedClose(w *namedWriter) {
+	defer w.Close()
+}
+
+func twoResultsClose(w *twoResults) {
+	defer w.Close()
+}
+
+func embeddedClose(e *embedded) {
+	defer e.Close()
+}
+
+func flushingClose(w *flushingWriter) {
+	defer w.Close() // want `deferred Close discards its error`
+}
+
+func valueClose(w valueWriter) {
+	defer w.Close()
+}
+
+func pointerOnValue(w pointerWriter) {
+	defer w.Close()
+}
+
+func nonAddressable() {
+	defer makeHalf().Close()
+}
+
+func makeHalf() halfPointer { return halfPointer{} }
+
+func interfaceClose(w io.WriteCloser) {
+	defer w.Close()
+}
+
+func genericClose[T closerWriter](w T) {
+	defer w.Close()
+}
+
+func genericCloser[T closer](c T) {
+	defer c.Close()
+}
+
+func methodExpression(f *os.File, p []byte) {
+	f.Write(p)
+	defer (*os.File).Close(f) // want `deferred Close discards its error`
+}
+
+func parenthesized(f *os.File, p []byte) {
+	f.Write(p)
+	defer (f.Close)() // want `deferred Close discards its error`
+}
+
+func readClose(r *reader) {
+	defer r.Close()
+}
+
+func readBody(body io.ReadCloser) {
+	defer body.Close()
+}
+
+func fakeWriterClose(w *fakeWriter) {
+	defer w.Close()
+}
+
+func fieldClose(f *fieldCloser) {
+	defer f.Close()
+}
+
+func packageFlush() {
+	defer b.Flush()
+}
+
+func bufferFlush(w *bufio.Writer) {
+	defer w.Flush() // want `deferred Flush discards its error`
+}
+
+func flushMethodExpression(w *bufio.Writer) {
+	defer (*bufio.Writer).Flush(w) // want `deferred Flush discards its error`
+}
+
+func gzipClose(w *gzip.Writer) {
+	defer w.Close() // want `deferred Close discards its error`
+}
+
+func flusherFlush(f *flusherOnly) {
+	defer f.Flush() // want `deferred Flush discards its error`
+}
+
+func quietFlush(f *quietFlusher) {
+	defer f.Flush()
+}
+
+func channelClose(ch chan int) {
+	defer close(ch)
+}
+
+func lowerNames(l *lower) {
+	defer l.close()
+	defer l.flush()
+}
+
+func otherName(o *other) {
+	defer o.Shutdown()
+}
+
+func literalReads(f *os.File) {
+	defer func() {
+		if err := f.Close(); err != nil {
+			panic(err)
+		}
+	}()
+}
+
+func literalIgnores(f *os.File) {
+	defer func() { f.Close() }()
+}
+
+func literalNests(f *os.File, p []byte) {
+	defer func() {
+		f.Write(p)
+		defer f.Close() // want `deferred Close discards its error`
+	}()
+}
+
+func literalFlush(w *bufio.Writer) {
+	defer func() {
+		defer w.Flush() // want `deferred Flush discards its error`
+	}()
+}
+
+func methodValue(f *os.File) {
+	closeFile := f.Close
+	defer closeFile()
+}
+
+func flushMethodValue(w *bufio.Writer) {
+	flush := w.Flush
+	defer flush()
+}
+
+func writeOpenReadWrite(name string) {
+	f, err := os.OpenFile(name, os.O_RDWR, 0o600)
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close() // want `deferred Close discards its error`
+}
+
+func appendOpen(name string) {
+	f, err := os.OpenFile(name, os.O_APPEND, 0o600)
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+}
+
+func openThenWrite(name string, p []byte) {
+	f, err := os.Open(name)
+	if err != nil {
+		panic(err)
+	}
+	f.Write(p)
+	defer f.Close()
+}
+
+func varCreate(name string) {
+	var f, err = os.Create(name)
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close() // want `deferred Close discards its error`
+}
+
+func varStd() {
+	var f = os.Stdout
+	defer f.Close() // want `deferred Close discards its error`
+}
+
+func twoStd() {
+	var f, g = os.Stdout, os.Stderr
+	defer f.Close() // want `deferred Close discards its error`
+	defer g.Close() // want `deferred Close discards its error`
+}
+
+func aliasCreate(name string) {
+	f, err := os.Create(name)
+	if err != nil {
+		panic(err)
+	}
+	g := f
+	defer g.Close() // want `deferred Close discards its error`
+}
+
+func aliasOpen(name string) {
+	f, err := os.Open(name)
+	if err != nil {
+		panic(err)
+	}
+	g := f
+	defer g.Close()
+}
+
+func interfaceCreate(name string) {
+	f, err := os.Create(name)
+	if err != nil {
+		panic(err)
+	}
+	var w io.WriteCloser = f
+	defer w.Close() // want `deferred Close discards its error`
+}
+
+func interfaceOpen(name string) {
+	f, err := os.Open(name)
+	if err != nil {
+		panic(err)
+	}
+	var w io.WriteCloser = f
+	defer w.Close()
+}
+
+func convertedCreate(name string) {
+	f, err := os.Create(name)
+	if err != nil {
+		panic(err)
+	}
+	defer io.WriteCloser(f).Close() // want `deferred Close discards its error`
+}
+
+func convertedOpen(name string) {
+	f, err := os.Open(name)
+	if err != nil {
+		panic(err)
+	}
+	defer io.WriteCloser(f).Close()
+}
+
+func assertedOpen(name string) {
+	f, err := os.Open(name)
+	if err != nil {
+		panic(err)
+	}
+	var c any = f
+	defer c.(io.WriteCloser).Close()
+}
+
+type fileEmbed struct{ *os.File }
+
+func embedCreate(name string) {
+	f, err := os.Create(name)
+	if err != nil {
+		panic(err)
+	}
+	e := fileEmbed{f}
+	defer e.Close() // want `deferred Close discards its error`
+}
+
+func embedOpen(name string) {
+	f, err := os.Open(name)
+	if err != nil {
+		panic(err)
+	}
+	e := fileEmbed{f}
+	defer e.Close()
+}
+
+type fileHolder struct{ file *os.File }
+
+func fieldOpen(name string) {
+	f, err := os.Open(name)
+	if err != nil {
+		panic(err)
+	}
+	h := fileHolder{f}
+	defer h.file.Close()
+}
+
+func helperCreate(name string) *os.File {
+	f, err := os.Create(name)
+	if err != nil {
+		panic(err)
+	}
+	return f
+}
+
+func helperClose(name string) {
+	f := helperCreate(name)
+	defer f.Close()
+}
+
+var packageFile *os.File
+
+func packageClose() {
+	defer packageFile.Close()
+}
+
+func ioWriteString(f *os.File) {
+	io.WriteString(f, "x")
+	defer f.Close() // want `deferred Close discards its error`
+}
+
+func ioCopy(f *os.File, r io.Reader) {
+	io.Copy(f, r)
+	defer f.Close() // want `deferred Close discards its error`
+}
+
+func fileWriteString(f *os.File, s string) {
+	f.WriteString(s)
+	defer f.Close() // want `deferred Close discards its error`
+}
+
+func fileWriteAt(f *os.File, p []byte) {
+	f.WriteAt(p, 0)
+	defer f.Close() // want `deferred Close discards its error`
+}
+
+func methodExpressionWrite(f *os.File, p []byte) {
+	(*os.File).Write(f, p)
+	defer f.Close() // want `deferred Close discards its error`
+}
+
+func literalReceiverOpen(name string) {
+	f, _ := os.Open(name)
+	defer fileEmbed{f}.Close()
+	defer (&fileEmbed{f}).Close()
+}
+
+func literalReceiverCreate(name string) {
+	f, _ := os.Create(name)
+	defer fileEmbed{f}.Close() // want `deferred Close discards its error`
+	defer (&fileEmbed{f}).Close() // want `deferred Close discards its error`
+}
+
+func wrapperParam(e fileEmbed) {
+	defer e.Close()
+}
+
+type fileAlias = os.File
+
+func aliasParam(f *fileAlias) {
+	defer f.Close()
+}
+
+const (
+	openWrite  = os.O_WRONLY | os.O_CREATE
+	openAppend = os.O_APPEND
+)
+
+func constFlagsWrite(name string) {
+	f, _ := os.OpenFile(name, openWrite, 0o600)
+	defer f.Close() // want `deferred Close discards its error`
+}
+
+func constFlagsAppend(name string) {
+	f, _ := os.OpenFile(name, openAppend, 0o600)
+	defer f.Close()
+}
+
+func reassignRead(name, other string) {
+	f, _ := os.Open(name)
+	defer f.Close()
+	f, _ = os.Create(other)
+}
+
+func reassignWrite(name, other string) {
+	f, _ := os.Create(name)
+	defer f.Close() // want `deferred Close discards its error`
+	f, _ = os.Open(other)
+}
+
+func reassignAfterWrite(name, other string, p []byte) {
+	f, _ := os.Open(name)
+	f.Write(p)
+	f, _ = os.Open(other)
+	defer f.Close()
+}
+
+func helperOpen(name string) (*os.File, error) {
+	return os.Open(name)
+}
+
+func reassignHelper(name string) {
+	f, err := os.Create(name)
+	if err != nil {
+		panic(err)
+	}
+	f, err = helperOpen(name)
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+}
+
+func writeAfterDefer(f *os.File, p []byte) {
+	defer f.Close() // want `deferred Close discards its error`
+	f.Write(p)
+}
+
+func reassignBeforeLaterWrite(f, g *os.File, p []byte) {
+	defer f.Close()
+	f = g
+	f.Write(p)
+}
+
+func branchReadThenWrite(cond bool, name, other string) {
+	var f *os.File
+	if cond {
+		f, _ = os.Open(name)
+	} else {
+		f, _ = os.Create(other)
+	}
+	defer f.Close()
+}
+
+func branchWriteThenRead(cond bool, name, other string) {
+	var f *os.File
+	if cond {
+		f, _ = os.Create(name)
+	} else {
+		f, _ = os.Open(other)
+	}
+	defer f.Close()
+}
+
+func derefOpen(name string) {
+	f, _ := os.Open(name)
+	defer (*f).Close()
+}
+
+func derefCreate(name string) {
+	f, _ := os.Create(name)
+	defer (*f).Close() // want `deferred Close discards its error`
+}
+
+func aliasAfterWrite(f *os.File, p []byte) {
+	f.Write(p)
+	g := f
+	defer g.Close()
+}
+
+func sequentialReassign(name, other string) {
+	f, _ := os.Open(name)
+	f, _ = os.Create(other)
+	defer f.Close() // want `deferred Close discards its error`
+}
+
+func variableFlagsWrite(name string, flags int, p []byte) {
+	f, _ := os.OpenFile(name, flags, 0o600)
+	f.Write(p)
+	defer f.Close() // want `deferred Close discards its error`
+}
+
+func variableFlagsNoWrite(name string, flags int) {
+	f, _ := os.OpenFile(name, flags, 0o600)
+	defer f.Close()
+}
+
+func branchThenWrite(cond bool, name, other string, p []byte) {
+	var f *os.File
+	if cond {
+		f, _ = os.Open(name)
+	} else {
+		f, _ = os.Create(other)
+	}
+	f.Write(p)
+	defer f.Close() // want `deferred Close discards its error`
+}
+
+func createInBranch(cond bool, name string) {
+	if cond {
+		f, _ := os.Create(name)
+		defer f.Close() // want `deferred Close discards its error`
+	}
+}
+
+func forOrigin(name string) {
+	var f *os.File
+	for i := 0; i < 1; i++ {
+		f, _ = os.Open(name)
+	}
+	defer f.Close()
+}
+
+func rangeOrigin(files []*os.File) {
+	var f *os.File
+	for _, g := range files {
+		f = g
+	}
+	defer f.Close()
+}
+
+func caseOrigin(n int, name string) {
+	var f *os.File
+	switch n {
+	case 1:
+		f, _ = os.Open(name)
+	default:
+		f, _ = os.Create(name)
+	}
+	defer f.Close()
+}
+
+func caseThenWrite(n int, name string, p []byte) {
+	var f *os.File
+	switch n {
+	case 1:
+		f, _ = os.Open(name)
+	default:
+		f, _ = os.Create(name)
+	}
+	f.Write(p)
+	defer f.Close() // want `deferred Close discards its error`
+}
+
+func commOrigin(ch chan *os.File) {
+	var f *os.File
+	select {
+	case f = <-ch:
+	}
+	defer f.Close()
+}
+
+func swapReadWrite(f, g *os.File) {
+	var read, write *os.File
+	read, _ = os.Open(nameFile)
+	write, _ = os.Create(nameFile)
+	f, g = write, read
+	defer f.Close() // want `deferred Close discards its error`
+	defer g.Close()
+}
+
+func swapWriteRead(f, g *os.File) {
+	var read, write *os.File
+	read, _ = os.Open(nameFile)
+	write, _ = os.Create(nameFile)
+	f, g = read, write
+	defer f.Close()
+	defer g.Close() // want `deferred Close discards its error`
+}
+
+func loopPost(name string) {
+	var f *os.File
+	for i := 0; i < 1; f, _ = os.Create(name) {
+		defer f.Close()
+		_ = i
+	}
+}
+
+func loopPostAfter(name string) {
+	var f *os.File
+	for i := 0; i < 1; f, _ = os.Create(name) {
+		_ = i
+	}
+	defer f.Close()
+}
+
+func assertCreate(name string) {
+	f, _ := os.Create(name)
+	var c any = f
+	g := c.(*os.File)
+	defer g.Close() // want `deferred Close discards its error`
+}
+
+func addrCreate(name string) {
+	f, _ := os.Create(name)
+	g := &f
+	defer (*g).Close() // want `deferred Close discards its error`
+}
+
+func aliasWriteOriginal(f *os.File, p []byte) {
+	g := f
+	g.Write(p)
+	defer f.Close()
+}
+
+func rangeHeaderReplace(files []*os.File) {
+	f, _ := os.Create(nameFile)
+	for _, f = range files {
+		_ = f
+	}
+	defer f.Close()
+}
+
+func rangeHeaderThenWrite(files []*os.File, p []byte) {
+	f, _ := os.Create(nameFile)
+	for _, f = range files {
+		_ = f
+	}
+	f.Write(p)
+	defer f.Close() // want `deferred Close discards its error`
+}
+
+func helperWrite(name string, p []byte) {
+	f := helperCreate(name)
+	f.Write(p)
+	defer f.Close() // want `deferred Close discards its error`
+}
+
+func branchWriteOther(cond bool, f *os.File, p []byte) {
+	if cond {
+		f.Write(p)
+	} else {
+		defer f.Close()
+	}
+}
+
+func branchReturnWrite(cond bool, f *os.File, p []byte) {
+	if cond {
+		f.Write(p)
+		return
+	}
+	defer f.Close()
+}
+
+func conditionalWrite(cond bool, f *os.File, p []byte) {
+	if cond {
+		f.Write(p)
+	}
+	defer f.Close() // want `deferred Close discards its error`
+}
+
+func pipeClose(p []byte) {
+	r, w, _ := os.Pipe()
+	w.Write(p)
+	defer w.Close()
+	defer r.Close()
+}
+
+func deferredWrite(f *os.File, p []byte) {
+	defer f.Write(p)
+	defer f.Close()
+}
+
+func aliasOpenThenWrite(name string, p []byte) {
+	f, _ := os.Open(name)
+	f.Write(p)
+	g := f
+	defer g.Close()
+}
+
+func aliasAfterReturningWrite(cond bool, f *os.File, p []byte) {
+	if cond {
+		f.Write(p)
+		return
+	}
+	g := f
+	defer g.Close()
+}
+
+func writeThenConditionalReassign(cond bool, name, other string, p []byte) {
+	f, _ := os.Create(name)
+	f.Write(p)
+	if cond {
+		f, _ = os.Open(other)
+	}
+	defer f.Close() // want `deferred Close discards its error`
+}
+
+func breakCaseWrite(n int, f *os.File, p []byte) {
+	switch n {
+	case 1:
+		f.Write(p)
+		break
+	}
+	defer f.Close()
+}
+
+func continueLoopWrite(f *os.File, p []byte) {
+	for i := 0; i < 1; i++ {
+		f.Write(p)
+		continue
+	}
+	defer f.Close() // want `deferred Close discards its error`
+}
+
+type wrappingClose struct{ *os.File }
+
+func (wrappingClose) Close() error { return nil }
+
+func wrapperOverride(f *os.File) {
+	w := wrappingClose{f}
+	defer w.Close()
+}
+
+func deferredWriteBeforeClose(f *os.File, p []byte) {
+	defer f.Close() // want `deferred Close discards its error`
+	defer f.Write(p)
+}
+
+func deferredArgumentWrite(f *os.File, p []byte) {
+	defer f.Close() // want `deferred Close discards its error`
+	defer fmt.Fprintln(f, p)
+}
+
+func deferInBranchWriteOutside(cond bool, f *os.File, p []byte) {
+	if cond {
+		defer f.Close() // want `deferred Close discards its error`
+	}
+	f.Write(p)
+}
+
+func writeBeforeConditionalDefer(cond bool, f *os.File, p []byte) {
+	f.Write(p)
+	if cond {
+		defer f.Close() // want `deferred Close discards its error`
+	}
+}
+
+func siblingDeferredWrite(cond bool, f *os.File, p []byte) {
+	if cond {
+		defer f.Close()
+	} else {
+		defer f.Write(p)
+	}
+}
+
+func writableReadCloser(name string) {
+	f, _ := os.Create(name)
+	var body io.ReadCloser = f
+	defer body.Close() // want `deferred Close discards its error`
+}
+
+func panicWrite(cond bool, f *os.File, p []byte) {
+	if cond {
+		f.Write(p)
+		panic("stop")
+	}
+	defer f.Close()
+}
+
+type stringFile struct{ *os.File }
+
+func (*stringFile) Write(s string) error { return nil }
+
+func (*stringFile) WriteString(s string) (string, error) { return s, nil }
+
+func stringFileWrite(f *os.File) {
+	w := stringFile{f}
+	w.WriteString("x")
+	defer w.Close()
+}
+
+func switchSiblingWrite(n int, f *os.File, p []byte) {
+	switch n {
+	case 1:
+		f.Write(p)
+	case 2:
+		defer f.Close()
+	}
+}
+
+func selectSiblingDefer(ch chan int, f *os.File, p []byte) {
+	select {
+	case <-ch:
+		defer f.Close()
+	default:
+		defer f.Write(p)
+	}
+}
+
+func exitAfterDefer(cond bool, f *os.File, p []byte) {
+	defer f.Close()
+	if cond {
+		f.Write(p)
+		os.Exit(0)
+	}
+}
+
+func fatalAfterDefer(cond bool, f *os.File, p []byte) {
+	defer f.Close()
+	if cond {
+		f.Write(p)
+		log.Fatal("stop")
+	}
+}
+
+type noErrorCloseWriter struct{}
+
+func (*noErrorCloseWriter) Write(p []byte) (int, error) { return len(p), nil }
+
+func (*noErrorCloseWriter) Flush() error { return nil }
+
+func (*noErrorCloseWriter) Close() {}
+
+func noErrorClose(w *noErrorCloseWriter) {
+	defer w.Close()
+}
+
+func fallthroughWrite(n int, f *os.File, p []byte) {
+	switch n {
+	case 1:
+		f.Write(p)
+		fallthrough
+	case 2:
+		defer f.Close() // want `deferred Close discards its error`
+	}
+}
+
+func typeSwitchSibling(v any, f *os.File, p []byte) {
+	switch v.(type) {
+	case int:
+		f.Write(p)
+	case string:
+		defer f.Close()
+	}
+}
+
+func netConnClose(c net.Conn, p []byte) {
+	c.Write(p)
+	defer c.Close()
+}
+
+func pipeWriterClose(w *io.PipeWriter, p []byte) {
+	w.Write(p)
+	defer w.Close()
+}
+
+func fallthroughSibling(n int, f *os.File, p []byte) {
+	switch n {
+	case 1:
+		f.Write(p)
+		fallthrough
+	case 2:
+		f.Write(p)
+	case 3:
+		defer f.Close()
+	}
+}
+
+func logPanicWrite(cond bool, f *os.File, p []byte) {
+	if cond {
+		f.Write(p)
+		log.Panic("stop")
+	}
+	defer f.Close()
+}
+
+func goexitWrite(cond bool, f *os.File, p []byte) {
+	if cond {
+		f.Write(p)
+		runtime.Goexit()
+	}
+	defer f.Close()
+}
+
+func syscallExitWrite(cond bool, f *os.File, p []byte) {
+	if cond {
+		f.Write(p)
+		syscall.Exit(0)
+	}
+	defer f.Close()
+}
+
+func shadowPanic(cond bool, f *os.File, p []byte) {
+	panic := func(string) {}
+	if cond {
+		f.Write(p)
+		panic("stop")
+	}
+	defer f.Close() // want `deferred Close discards its error`
+}
+
+func immediateLiteralWrite(f *os.File, p []byte) {
+	func() { f.Write(p) }()
+	defer f.Close() // want `deferred Close discards its error`
+}
+
+func goexitAfterDefer(cond bool, f *os.File, p []byte) {
+	defer f.Close() // want `deferred Close discards its error`
+	if cond {
+		f.Write(p)
+		runtime.Goexit()
+	}
+}
+
+func exitAfterWrite(f *os.File, p []byte) {
+	defer f.Close()
+	f.Write(p)
+	os.Exit(0)
+}
+
+func deferReturnThenWrite(cond bool, f *os.File, p []byte) {
+	if cond {
+		defer f.Close()
+		return
+	}
+	f.Write(p)
+}
+
+func goWriteAfterDefer(f *os.File, p []byte) {
+	defer f.Close()
+	go f.Write(p)
+}
+
+func breakBeforeDefer(cond bool, f *os.File, p []byte) {
+	for {
+		if cond {
+			f.Write(p)
+			break
+		}
+		defer f.Close()
+		return
+	}
+}
+
+func deferredLiteralWrite(f *os.File, p []byte) {
+	defer f.Close() // want `deferred Close discards its error`
+	defer func() { f.Write(p) }()
+}
+
+type addressWriter struct{}
+
+func (addressWriter) Close() error { return nil }
+
+func (*addressWriter) Write(p []byte) (int, error) { return len(p), nil }
+
+func (*addressWriter) Flush() error { return nil }
+
+func addressValue(w addressWriter) {
+	defer w.Close() // want `deferred Close discards its error`
+}
+
+func addressNonAddressable() {
+	defer makeAddress().Close()
+}
+
+func makeAddress() addressWriter { return addressWriter{} }

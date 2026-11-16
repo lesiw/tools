@@ -668,6 +668,18 @@ func f(n int) {
 }
 ```
 
+## defercloseunchecked
+
+Reports a deferred Close on a file or buffered writer, or a deferred Flush, whose error is discarded. A Write can return while its data is still buffered, and the later Close or Flush writes it and can fail. A Close on an os.File is reported when the file came from a write-opening call, is os.Stdout or os.Stderr, or when its origin is unknown and the function writes through it.
+
+Adapted from gosec's G307, which reports a deferred method that returns an error.
+
+```
+func save(w *bufio.Writer) {
+    defer w.Flush()
+}
+```
+
 ## deferinfinite
 
 Reports a deferred call inside a for statement that cannot end, whether it has no condition or a condition that is a constant true. A deferred call runs when the function returns, so the number of deferred calls grows by one on each pass.
