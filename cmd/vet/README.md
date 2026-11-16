@@ -868,6 +868,22 @@ func f(ready bool) {
 }
 ```
 
+## dupoption
+
+Reports an option that a later argument of the same call repeats. An option is an argument in a variadic tail whose element type is a function taking one parameter or more and returning nothing or one error. The rule assumes a function applies each option in order: a setting option's earlier assignment is overwritten, and one that appends runs twice.
+
+Adapted from go-critic's dupOption.
+
+```
+func newAlpha() *server {
+    return newServer("alpha",
+        withName("alpha-one"),
+        withTimeout(time.Second),
+        withName("alpha-one"),
+    )
+}
+```
+
 ## dupsubexpr
 
 Reports a binary operator whose operands are the same value, as xs\[k] \< xs\[k]. One of them was meant to name something else. A NaN changes the answer of ==, !=, \<=, >=, - and /, so an operand that can hold one is left alone for those operators, and so is a call whose second read can differ.

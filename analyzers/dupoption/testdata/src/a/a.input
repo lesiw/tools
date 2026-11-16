@@ -1,0 +1,180 @@
+package a
+
+import "time"
+
+type server struct {
+	name    string
+	timeout time.Duration
+	tags    []string
+}
+
+type option func(*server)
+
+func withName(name string) option {
+	return func(s *server) { s.name = name }
+}
+
+func withTimeout(d time.Duration) option {
+	return func(s *server) { s.timeout = d }
+}
+
+func withTags(tags ...string) option {
+	return func(s *server) { s.tags = append(s.tags, tags...) }
+}
+
+var fallback = withName("alpha-two")
+
+func newServer(name string, opts ...option) *server {
+	s := &server{name: name}
+	for _, opt := range opts {
+		opt(s)
+	}
+	return s
+}
+
+func setter() *server {
+	return newServer("alpha",
+		withTimeout(time.Second), // want `argument is repeated later`
+		withName("alpha-one"),
+		withTimeout(time.Second),
+	)
+}
+
+func thrice() *server {
+	return newServer("alpha",
+		withName("alpha-one"), // want `argument is repeated later`
+		withName("alpha-one"), // want `argument is repeated later`
+		withName("alpha-one"),
+	)
+}
+
+func parenthesized() *server {
+	return newServer("alpha",
+		withTimeout(time.Second), // want `argument is repeated later`
+		withTimeout((time.Second)),
+	)
+}
+
+func arithmetic() *server {
+	return newServer("alpha",
+		withTimeout(2*time.Second), // want `argument is repeated later`
+		withTimeout(2*time.Second),
+	)
+}
+
+func wrapped() *server {
+	return newServer("alpha",
+		withTimeout(time.Second+ // want `argument is repeated later`
+			time.Minute),
+		withTimeout(time.Second+time.Minute),
+	)
+}
+
+func appender() *server {
+	return newServer("alpha",
+		withTags("some-kind"), // want `argument is repeated later`
+		withTags("some-kind"),
+	)
+}
+
+func named() *server {
+	return newServer("alpha",
+		fallback, // want `argument is repeated later`
+		withTimeout(time.Second),
+		fallback,
+	)
+}
+
+func withPair[T, U any](T, U) option {
+	return withName("alpha-one")
+}
+
+func typedPair() *server {
+	return newServer("alpha",
+		withPair[int, string](1, "alpha"), // want `argument is repeated later`
+		withPair[int, string](1, "alpha"),
+	)
+}
+
+func (s *server) configure(opts ...option) {}
+
+func method() {
+	s := &server{}
+	s.configure(
+		withName("alpha-one"), // want `argument is repeated later`
+		withName("alpha-one"),
+	)
+}
+
+func chain(opts ...option) *server { return newServer("alpha", opts...) }
+
+func chained() {
+	chain(
+		withName("alpha-one"), // want `argument is repeated later`
+		withName("alpha-one"),
+	)
+}
+
+func step(s *server) { s.name = "alpha-one" }
+
+func eachStep(s *server, fns ...func(*server)) {
+	for _, fn := range fns {
+		fn(s)
+	}
+}
+
+func steps() {
+	eachStep(&server{}, step, step) // want `argument is repeated later`
+}
+
+type noting func(*server, string)
+
+func withNote(name string) noting {
+	return func(s *server, note string) { s.name = name + note }
+}
+
+func applyNotes(s *server, opts ...noting) {
+	for _, opt := range opts {
+		opt(s, "alpha-two")
+	}
+}
+
+func noted() {
+	applyNotes(&server{},
+		withNote("alpha-one"), // want `argument is repeated later`
+		withNote("alpha-one"),
+	)
+}
+
+type checked func(*server) error
+
+func withCheck(name string) checked {
+	return func(s *server) error {
+		s.name = name
+		return nil
+	}
+}
+
+func checkOptions(opts ...checked) {
+	for _, opt := range opts {
+		if err := opt(&server{}); err != nil {
+			return
+		}
+	}
+}
+
+func checker() {
+	checkOptions(
+		withCheck("alpha-one"), // want `argument is repeated later`
+		withCheck("alpha-one"),
+	)
+}
+
+func withArgs(v ...any) option { return withName("alpha-one") }
+
+func spreadBoth(vs []any) *server {
+	return newServer("alpha",
+		withArgs(vs...), // want `argument is repeated later`
+		withArgs(vs...),
+	)
+}

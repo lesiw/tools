@@ -888,6 +888,24 @@
 //		}
 //	}
 //
+// # dupoption
+//
+// Reports an option that a later argument of the same call repeats. An option
+// is an argument in a variadic tail whose element type is a function taking
+// one parameter or more and returning nothing or one error. The rule assumes a
+// function applies each option in order: a setting option's earlier assignment
+// is overwritten, and one that appends runs twice.
+//
+// Adapted from go-critic's dupOption.
+//
+//	func newAlpha() *server {
+//		return newServer("alpha",
+//			withName("alpha-one"),
+//			withTimeout(time.Second),
+//			withName("alpha-one"),
+//		)
+//	}
+//
 // # dupsubexpr
 //
 // Reports a binary operator whose operands are the same value, as

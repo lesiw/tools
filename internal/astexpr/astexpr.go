@@ -424,3 +424,12 @@ func computed(pass *analysis.Pass, e *ast.BinaryExpr) bool {
 	}
 	return Safe(pass, e.X) && Safe(pass, e.Y)
 }
+
+func SamePure(pass *analysis.Pass, a, b ast.Expr) bool {
+	a, b = ast.Unparen(a), ast.Unparen(b)
+	if Text(a) != Text(b) {
+		return false
+	}
+	// Equal text is one expression, so one effect check answers for both.
+	return !Effectful(pass, a)
+}

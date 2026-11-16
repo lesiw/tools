@@ -1,0 +1,158 @@
+package a
+
+import "time"
+
+func withAlias(name string) option {
+	return withName(name)
+}
+
+func reset() func()             { return func() {} }
+func withHooks(hooks ...func()) {}
+func wait() time.Duration       { return time.Second }
+func pair(first, second option) {}
+
+type setting interface{ apply(*server) }
+
+type nameSetting string
+
+func (n nameSetting) apply(s *server) { s.name = string(n) }
+
+func applySettings(name string, settings ...setting) *server {
+	s := &server{name: name}
+	for _, setting := range settings {
+		setting.apply(s)
+	}
+	return s
+}
+
+func noOptions() *server {
+	return newServer("alpha")
+}
+
+func differentArguments() *server {
+	return newServer("alpha",
+		withTags("some-kind"),
+		withTags("other-kind"),
+	)
+}
+
+func otherConstructor() *server {
+	return newServer("alpha",
+		withName("alpha-one"),
+		withAlias("alpha-one"),
+	)
+}
+
+var other = withTags("some-kind")
+
+func differentValues() *server {
+	return newServer("alpha", fallback, other)
+}
+
+func effectful() *server {
+	return newServer("alpha", withTimeout(wait()), withTimeout(wait()))
+}
+
+func callbacks() {
+	withHooks(reset(), reset())
+}
+
+func spreadPair(vs []any) *server {
+	return newServer("alpha",
+		withArgs(vs),
+		withArgs(vs...),
+	)
+}
+
+type handler func(string) string
+
+func plain(s string) string { return s }
+
+func surround(prefix string) func(handler) handler {
+	return func(next handler) handler {
+		return func(s string) string { return prefix + next(s) + prefix }
+	}
+}
+
+func wrap(h handler, middleware ...func(handler) handler) handler {
+	for _, m := range middleware {
+		h = m(h)
+	}
+	return h
+}
+
+func wrapper() handler {
+	return wrap(plain,
+		surround("("),
+		surround("("),
+	)
+}
+
+func received(ch chan time.Duration) *server {
+	return newServer("alpha",
+		withTimeout(<-ch),
+		withTimeout(<-ch),
+	)
+}
+
+func differentArity() *server {
+	return newServer("alpha",
+		withTags("alpha-one", "alpha-two"),
+		withTags("alpha-one"),
+	)
+}
+
+func expanded(opts []option) *server {
+	return newServer("alpha", opts...)
+}
+
+func interfaceOptions() *server {
+	return applySettings("alpha",
+		nameSetting("alpha-one"),
+		nameSetting("alpha-one"),
+	)
+}
+
+func build(name, addr string, opts ...option) *server {
+	return newServer(name, opts...)
+}
+
+func settings() (string, string, option) { return "alpha", "", fallback }
+
+func supplied() *server { return build(settings()) }
+
+func notVariadic() {
+	pair(withName("alpha-one"), withName("alpha-one"))
+}
+
+func appendedBuiltin(opts []option) []option {
+	return append(opts, withName("alpha-one"), withName("alpha-one"))
+}
+
+type chainer struct{}
+
+func (chainer) with(name string) option { return withName(name) }
+
+func newChainer() chainer { return chainer{} }
+
+func chainedPair() *server {
+	return newServer("alpha",
+		newChainer().with("alpha-one"),
+		newChainer().with("alpha-one"),
+	)
+}
+
+func withReceiver(base option, opts ...option) {}
+
+func fixedAndTail() {
+	withReceiver(fallback, fallback)
+}
+
+func useHandlers(fns ...func(*server)) {}
+
+func literalPair() {
+	useHandlers(
+		func(s *server) {},
+		func(s *server) {},
+	)
+}

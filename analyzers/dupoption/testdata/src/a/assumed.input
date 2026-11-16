@@ -1,0 +1,33 @@
+package a
+
+import "time"
+
+var (
+	count int
+	names = []string{"alpha-one", "alpha-two"}
+)
+
+func withNextName() option {
+	count++
+	return withName(names[count%len(names)])
+}
+
+func perCall() *server {
+	return newServer("alpha",
+		withNextName(), // want `argument is repeated later`
+		withNextName(),
+	)
+}
+
+func reassign() option {
+	fallback = withTags("some-kind")
+	return withTimeout(time.Second)
+}
+
+func intervening() *server {
+	return newServer("alpha",
+		fallback, // want `argument is repeated later`
+		reassign(),
+		fallback,
+	)
+}
