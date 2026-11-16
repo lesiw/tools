@@ -1855,7 +1855,7 @@ const mode = 0755
 
 ## offbyone
 
-Reports an index at the length of the value it indexes. The last element sits at one less, so the index is out of range on every call.
+Reports an index at the length of the value it indexes, and a slice whose only bound is a strings.Index or bytes.Index result. The last element sits at one less, and Index returns -1 when the substring is absent, so the index or slice can be out of range.
 
 Inspired by go-critic's offBy1.
 

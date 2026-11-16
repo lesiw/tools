@@ -139,7 +139,10 @@ func (l *lifter) lift(cg *ast.CommentGroup) (lift, bool) {
 	// The comment has to be what makes the line too long. Moving it off a
 	// line the code already fills only puts it somewhere else.
 	line := l.snap.text(slash)
-	code := line[:bytes.Index(line, []byte(first.Text))]
+	code, _, ok := bytes.Cut(line, []byte(first.Text))
+	if !ok {
+		return lift{}, false
+	}
 	// The printer pads a comment to the column of the group's widest code,
 	// so the padding is not the code's length.
 	code = bytes.TrimRight(code, " \t")

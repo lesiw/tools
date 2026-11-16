@@ -1,4 +1,4 @@
-// Command offbyone reports an index that is always out of range.
+// Command offbyone reports an index or slice bound that may be out of range.
 package main
 
 import (
