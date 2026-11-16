@@ -1,0 +1,20 @@
+package width
+
+func pair(anExcessivelyLongMapNameThatPushesPastTheLimit map[string]int, m map[string]int) (n int) {
+	for range anExcessivelyLongMapNameThatPushesPastTheLimit {
+		n = len(anExcessivelyLongMapNameThatPushesPastTheLimit) // want `length`
+	}
+	length := len(m)
+	for range m {
+		n = length // want `length`
+	}
+	return n
+}
+
+func tight(m map[string]int, kounter12 int) (n int) {
+	length := 0
+	for range m {
+		n += len(m) + kounter12 // want `length`
+	}
+	return n + length
+}

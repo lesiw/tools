@@ -1,0 +1,353 @@
+package a
+
+import "b"
+
+var shared = map[string]int{}
+
+var kept map[string]int
+
+func attach(m map[string]int) { kept = m }
+
+func unkeep() { clear(kept) }
+
+func published(m map[string]int) {
+	attach(m)
+	for k := range m {
+		use(k, len(m))
+		unkeep()
+	}
+}
+
+type pair struct {
+	left  map[string]int
+	right map[string]int
+}
+
+type hooks struct {
+	run func()
+}
+
+type counters map[string]int
+
+type box struct {
+	v any
+}
+
+type nest map[string]nest
+
+func other(m, n map[string]int) {
+	for k := range m {
+		use(k, len(n))
+	}
+}
+
+func keyed(m map[string]int, out []int) {
+	for k := range m {
+		use(k, len(k), len(out))
+	}
+}
+
+func slices(m map[string]int, keys []string) {
+	for _, k := range keys {
+		use(k, len(m))
+	}
+}
+
+func written(m map[string]int) {
+	for k := range m {
+		use(len(m))
+		m[k] = 0
+	}
+}
+
+func counted(m map[string]int) {
+	for k := range m {
+		use(len(m))
+		m[k]++
+	}
+}
+
+func removed(m map[string]int) {
+	for k := range m {
+		use(len(m))
+		delete(m, k)
+	}
+}
+
+func emptied(m map[string]int) {
+	for range m {
+		use(len(m))
+		clear(m)
+	}
+}
+
+func replaced(m, n map[string]int) {
+	for k := range m {
+		use(k, len(m))
+		m = n
+	}
+}
+
+func passed(m map[string]int) {
+	for k := range m {
+		use(k, len(m))
+		drain(m)
+	}
+}
+
+func drain(map[string]int) {}
+
+func touched(m, n map[string]int) {
+	for k := range m {
+		use(k, len(m))
+		n[k] = 0
+	}
+}
+
+func escaped(m map[string]int) {
+	for range m {
+		use(len(m))
+		reseat(&m)
+	}
+}
+
+func reseat(*map[string]int) {}
+
+func handed(ch chan map[string]int, m map[string]int) {
+	for k := range m {
+		use(k, len(m))
+		ch <- m
+	}
+}
+
+func through(p *map[string]int) {
+	for k := range *p {
+		use(k, len(*p))
+	}
+}
+
+func pointed(p *map[string]int, m map[string]int) {
+	for k := range m {
+		use(k, len(m))
+		*p = nil
+	}
+}
+
+func twin(m, n map[string]int) {
+	for k := range m {
+		use(k, len(m))
+		count(n)
+	}
+}
+
+func count(map[string]int) {}
+
+func lent(m map[string]int) {
+	alias := m
+	for k := range m {
+		use(k, len(m))
+		count(alias)
+	}
+}
+
+func otherField(h pair) {
+	for k := range h.left {
+		use(k, len(h.left))
+		h.right = nil
+	}
+}
+
+func copied(h pair) {
+	other := h
+	for k := range h.left {
+		use(k, len(h.left))
+		other.touch()
+	}
+}
+
+func (p *pair) touch() { p.left["alpha"] = 0 }
+
+func addressed(h pair) {
+	p := &h
+	for k := range h.left {
+		use(k, len(h.left))
+		p.left = nil
+	}
+}
+
+func borrowed(h pair) {
+	alias := h.left
+	for k := range h.left {
+		use(k, len(h.left))
+		clear(alias)
+	}
+}
+
+func invoked(run func(), m map[string]int) {
+	for k := range m {
+		use(k, len(m))
+		run()
+	}
+}
+
+func fill(m map[string]int, sink any) {
+	for k := range m {
+		use(k, len(m))
+		grow(sink)
+	}
+}
+
+func grow(any) {}
+
+func many(m map[string]int, rest ...map[string]int) {
+	for k := range m {
+		use(k, len(m))
+		clearAll(rest)
+	}
+}
+
+func clearAll([]map[string]int) {}
+
+func hooked(h hooks, m map[string]int) {
+	for k := range m {
+		use(k, len(m))
+		h.run()
+	}
+}
+
+func sharedTotal() (n int) {
+	for range shared {
+		n += len(shared)
+	}
+	return n
+}
+
+func shadowed(m map[string]int) {
+	len := func(map[string]int) int { return 0 }
+	for k := range m {
+		use(k, len(m))
+	}
+}
+
+func stored(m map[string]int) (f func() int) {
+	for range m {
+		f = func() int { return len(m) }
+	}
+	return f
+}
+
+func fresh() {
+	for k := range called() {
+		use(k, len(called()))
+	}
+}
+
+func called() map[string]int { return nil }
+
+func tally(counters) {}
+
+func named(m map[string]int, c counters) {
+	for k := range m {
+		use(k, len(m))
+		tally(c)
+	}
+}
+
+func rewritten(m map[string]int, others []map[string]int) {
+	for k := range m {
+		use(k, len(m))
+		for _, m = range others {
+			use(k, len(m))
+		}
+	}
+}
+
+func imported() (n int) {
+	for k := range b.Entries {
+		n += len(b.Entries) + len(k)
+	}
+	return n
+}
+
+func chanArg(m map[string]int, ch chan map[string]int) {
+	for k := range m {
+		use(k, len(m))
+		use(ch)
+	}
+}
+
+func accept(any) {}
+
+func forwarded(m map[string]int, b box) {
+	for k := range m {
+		use(k, len(m))
+		accept(b.v)
+	}
+}
+
+func composed(m map[string]int) {
+	for k := range m {
+		use(k, len(m))
+		accept(box{v: m})
+	}
+}
+
+func boxed(m map[string]int) {
+	for k := range m {
+		use(k, len(m))
+		accept([]any{m})
+	}
+}
+
+func reseated(n nest) (sum int) {
+	for _, n = range n {
+		sum += len(n)
+	}
+	return sum
+}
+
+func inserted(m map[int]int) (n int) {
+	for m[0], _ = range m {
+		n += len(m)
+	}
+	return n
+}
+
+func forget() {}
+
+func aliasedGlobal() {
+	m := shared
+	for k := range m {
+		use(k, len(m))
+		forget()
+	}
+}
+
+func fetched() map[string]int { return nil }
+
+func fromCall() {
+	m := fetched()
+	for k := range m {
+		use(k, len(m))
+	}
+}
+
+func backwards(m map[string]int, passes int) (n int) {
+revisit:
+	for k := range m {
+		n += len(k) + len(m)
+	}
+	if passes < 2 {
+		delete(m, "alpha")
+		goto revisit
+	}
+	return n
+}
+
+func bound(m map[string]int) {
+	var alias = m
+	for k := range m {
+		use(k, len(m))
+	}
+	use(alias)
+}

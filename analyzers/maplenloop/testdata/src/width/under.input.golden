@@ -1,0 +1,9 @@
+package width
+
+func total(m map[string]int) (n int) {
+	length := len(m)
+	for range m {
+		n = length // want `length`
+	}
+	return n
+}

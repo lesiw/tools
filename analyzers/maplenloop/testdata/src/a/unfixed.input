@@ -1,0 +1,28 @@
+package a
+
+func inlineComment(m map[string]int) {
+	for k := range m {
+		use(k, len( /* size */ m)) // want `map length does not depend on the loop; evaluate it once before the loop`
+	}
+}
+
+func commentAbove(m map[string]int) {
+	// visit every key
+	for k := range m {
+		use(k, len(m)) // want `map length does not depend on the loop; evaluate it once before the loop`
+	}
+}
+
+func overGoto(m map[string]int, finish bool) {
+	if finish {
+		goto end
+	}
+	for k := range m {
+		use(k, len(m)) // want `map length does not depend on the loop; evaluate it once before the loop`
+	}
+end:
+}
+
+func same(m map[string]int, ok bool) {
+	if ok { for k := range m { use(k, len(m)) } } // want `map length does not depend on the loop; evaluate it once before the loop`
+}

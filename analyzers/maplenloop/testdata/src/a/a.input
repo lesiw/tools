@@ -1,0 +1,188 @@
+package a
+
+func use(...any) {}
+
+type holder struct {
+	items map[string]int
+}
+
+func total(m map[string]int) {
+	for k := range m {
+		use(k, len(m)) // want `map length does not depend on the loop; evaluate it once before the loop`
+	}
+}
+
+func whole(m map[string]int) {
+	for range m {
+		use(len(m)) // want `map length does not depend on the loop; evaluate it once before the loop`
+	}
+}
+
+func field(h holder) {
+	for k := range h.items {
+		use(k, len(h.items)) // want `map length does not depend on the loop; evaluate it once before the loop`
+	}
+}
+
+func twice(m map[string]int) {
+	for k := range m {
+		use(k, len(m)) // want `map length does not depend on the loop; evaluate it once before the loop`
+		use(len(m))    // want `map length does not depend on the loop; evaluate it once before the loop`
+	}
+}
+
+func labeled(m map[string]int) {
+outer:
+	for k := range m {
+		use(k, len(m)) // want `map length does not depend on the loop; evaluate it once before the loop`
+		break outer
+	}
+}
+
+func branched(m map[string]int, ok bool) {
+	for k := range m {
+		if ok {
+			use(k, len(m)) // want `map length does not depend on the loop; evaluate it once before the loop`
+		}
+	}
+}
+
+func trailing(m map[string]int) (n int) {
+	n = 0 // running total
+	for k := range m {
+		n += len(k) + len(m) // want `map length does not depend on the loop; evaluate it once before the loop`
+	}
+	return n
+}
+
+func siblings(m, other map[string]int) {
+	for k := range m {
+		use(k, len(m)) // want `map length does not depend on the loop; evaluate it once before the loop`
+	}
+	for k := range other {
+		use(k, len(other)) // want `map length does not depend on the loop; evaluate it once before the loop`
+	}
+}
+
+func literal(m map[string]int) {
+	func() {
+		for k := range m {
+			use(k, len(m)) // want `map length does not depend on the loop; evaluate it once before the loop`
+		}
+	}()
+}
+
+func condition(m map[string]int, out []string) []string {
+	for k := range m {
+		if len(m) > cap(out) { // want `map length does not depend on the loop; evaluate it once before the loop`
+			out = append(out, k)
+		}
+	}
+	return out
+}
+
+func blanked(m map[string]int) {
+	_ = m
+	for k := range m {
+		use(k, len(m)) // want `map length does not depend on the loop; evaluate it once before the loop`
+	}
+}
+
+func consecutive(m map[string]int) {
+	for k := range m {
+		use(k, len(m)) // want `map length does not depend on the loop; evaluate it once before the loop`
+	}
+	for k := range m {
+		use(k, len(m)) // want `map length does not depend on the loop; evaluate it once before the loop`
+	}
+}
+
+func interrupted(m map[string]int) {
+	for k := range m {
+		use(k, len(m)) // want `map length does not depend on the loop; evaluate it once before the loop`
+	}
+	delete(m, "alpha")
+	for k := range m {
+		use(k, len(m)) // want `map length does not depend on the loop; evaluate it once before the loop`
+	}
+}
+
+func hides(m map[string]int, verbose bool) {
+	for k := range m {
+		if verbose {
+			length := 0
+			use(length)
+			use(k, len(m)) // want `map length does not depend on the loop; evaluate it once before the loop`
+		}
+	}
+}
+
+func later(m map[string]int) (n int) {
+	for k := range m {
+		n += len(k) + len(m) // want `map length does not depend on the loop; evaluate it once before the loop`
+	}
+	length := 0
+	return n + length
+}
+
+func built(m map[string]int) (n int) {
+	for k := range m {
+		seen := make(map[string]int)
+		seen[k] = 0
+		n += len(m) // want `map length does not depend on the loop; evaluate it once before the loop`
+	}
+	return n
+}
+
+func cased(m map[string]int, n int) {
+	switch n {
+	case 1:
+		for k := range m {
+			use(k, len(m)) // want `map length does not depend on the loop; evaluate it once before the loop`
+		}
+	}
+}
+
+func generic[K comparable, V any](m map[K]V) {
+	for k := range m {
+		use(k, len(m)) // want `map length does not depend on the loop; evaluate it once before the loop`
+	}
+}
+
+func selected(m map[string]int, ch chan int) {
+	select {
+	case <-ch:
+		for k := range m {
+			use(k, len(m)) // want `map length does not depend on the loop; evaluate it once before the loop`
+		}
+	}
+}
+
+func three(m map[string]int) (n int) {
+	for k := range m {
+		n += len(k) + len(m) // want `map length does not depend on the loop; evaluate it once before the loop`
+	}
+	for k := range m {
+		n += len(k) + len(m) // want `map length does not depend on the loop; evaluate it once before the loop`
+	}
+	for k := range m {
+		n += len(k) + len(m) // want `map length does not depend on the loop; evaluate it once before the loop`
+	}
+	return n
+}
+
+func nested(m, n map[string]int) {
+	for k := range m {
+		for j := range n {
+			use(k, j, len(m), len(n)) // want `map length does not depend on the loop; evaluate it once before the loop` `map length does not depend on the loop; evaluate it once before the loop`
+		}
+	}
+}
+
+func composite() (n int) {
+	seen := map[string]int{}
+	for k := range seen {
+		n += len(k) + len(seen) // want `map length does not depend on the loop; evaluate it once before the loop`
+	}
+	return n
+}

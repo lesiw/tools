@@ -1855,6 +1855,17 @@
 //		m[xs] = 1
 //	}
 //
+// # maplenloop
+//
+// Reports a call to len on the map a range statement iterates, when nothing in
+// the loop changes the map. The length is the same at every pass.
+//
+//	func f(m map[string]int) {
+//		for range m {
+//			use(len(m))
+//		}
+//	}
+//
 // # maplookupinloop
 //
 // Reports a map lookup in a loop that reads the same map with a key that does

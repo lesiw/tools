@@ -1,0 +1,3 @@
+package b
+
+var Entries = map[string]int{}
