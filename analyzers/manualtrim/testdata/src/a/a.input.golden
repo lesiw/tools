@@ -1,0 +1,275 @@
+package a
+
+import (
+	"bytes"
+	"strings"
+)
+
+func variable(s, prefix string) string {
+	// want +1 `manual prefix trim; use strings.TrimPrefix`
+	s = strings.TrimPrefix(s, prefix)
+	return s
+}
+
+func literal(s string) string {
+	// want +1 `manual prefix trim; use strings.TrimPrefix`
+	s = strings.TrimPrefix(s, "ab")
+	return s
+}
+
+type item struct {
+	name string
+	lead string
+}
+
+func (it *item) trimField() {
+	// want +1 `manual prefix trim; use strings.TrimPrefix`
+	it.name = strings.TrimPrefix(it.name, it.lead)
+}
+
+func dereferenced(s *string, prefix string) {
+	// want +1 `manual prefix trim; use strings.TrimPrefix`
+	*s = strings.TrimPrefix(*s, prefix)
+}
+
+type row struct {
+	name string
+}
+
+type matcher struct{}
+
+func (matcher) HasPrefix(s, prefix string) bool {
+	return strings.HasPrefix(s, prefix)
+}
+
+func methodPrefix(m matcher, s, prefix string) string {
+	if m.HasPrefix(s, prefix) {
+		s = s[len(prefix):]
+	}
+	return s
+}
+
+func fieldIndex(rows []row, i int, prefix string) {
+	// want +1 `manual prefix trim; use strings.TrimPrefix`
+	rows[i].name = strings.TrimPrefix(rows[i].name, prefix)
+}
+
+func sliceIndex(xs []string, i int, prefix string) {
+	// want +1 `manual prefix trim; use strings.TrimPrefix`
+	xs[i] = strings.TrimPrefix(xs[i], prefix)
+}
+
+func parenthesized(s, prefix string) string {
+	// want +1 `manual prefix trim; use strings.TrimPrefix`
+	s = strings.TrimPrefix(s, prefix)
+	return s
+}
+
+func parenthesizedSlice(s, prefix string) string {
+	// want +1 `manual prefix trim; use strings.TrimPrefix`
+	s = strings.TrimPrefix(s, prefix)
+	return s
+}
+
+func labeled(s, prefix string) string {
+L:
+	// want +1 `manual prefix trim; use strings.TrimPrefix`
+	s = strings.TrimPrefix(s, prefix)
+	if s == "" {
+		goto L
+	}
+	return s
+}
+
+func calledPrefix(s string, prefix func() string) string {
+	if strings.HasPrefix(s, prefix()) {
+		s = s[len(prefix()):]
+	}
+	return s
+}
+
+func trailing(s, prefix string) string {
+	// want +1 `manual prefix trim; use strings.TrimPrefix`
+	s = strings.TrimPrefix(s, prefix) // note
+	return s
+}
+
+func noted(s, prefix string) string {
+	// want +1 `manual prefix trim; use strings.TrimPrefix`
+	if strings.HasPrefix(s, prefix) {
+		// for display
+		s = s[len(prefix):]
+	}
+	return s
+}
+
+func condition(s, prefix string) string {
+	// want +1 `manual prefix trim; use strings.TrimPrefix`
+	if strings.HasPrefix(s, /* lead */ prefix) {
+		s = s[len(prefix):]
+	}
+	return s
+}
+
+func twoStatements(s, prefix string) string {
+	if strings.HasPrefix(s, prefix) {
+		s = s[len(prefix):]
+		println(s)
+	}
+	return s
+}
+
+func withElse(s, prefix string) string {
+	if strings.HasPrefix(s, prefix) {
+		s = s[len(prefix):]
+	} else {
+		s = prefix + s
+	}
+	return s
+}
+
+func elseIf(s, prefix string, flag bool) string {
+	if flag {
+		s = prefix
+		// want +1 `manual prefix trim; use strings.TrimPrefix`
+	} else {
+		s = strings.TrimPrefix(s, prefix)
+	}
+	return s
+}
+
+func elseBlock(s, prefix string, flag bool) string {
+	if flag {
+		s = prefix
+	} else {
+		// want +1 `manual prefix trim; use strings.TrimPrefix`
+		s = strings.TrimPrefix(s, prefix)
+	}
+	return s
+}
+
+func withInit(s, prefix string) string {
+	if t := s; strings.HasPrefix(t, prefix) {
+		t = t[len(prefix):]
+	}
+	return s
+}
+
+func wrongLength(s, prefix string) string {
+	if strings.HasPrefix(s, prefix) {
+		s = s[1:]
+	}
+	return s
+}
+
+func wrongTarget(s, t, prefix string) string {
+	if strings.HasPrefix(s, prefix) {
+		t = s[len(prefix):]
+	}
+	return t
+}
+
+func wrongPrefix(s, prefix, other string) string {
+	if strings.HasPrefix(s, prefix) {
+		s = s[len(other):]
+	}
+	return s
+}
+
+func negated(s, prefix string) string {
+	if !strings.HasPrefix(s, prefix) {
+		s = s[len(prefix):]
+	}
+	return s
+}
+
+func suffix(s, suffix string) string {
+	if strings.HasSuffix(s, suffix) {
+		s = s[:len(s)-len(suffix)]
+	}
+	return s
+}
+
+func variableFunction(s, prefix string) string {
+	has := strings.HasPrefix
+	if has(s, prefix) {
+		s = s[len(prefix):]
+	}
+	return s
+}
+
+func shadowedLen(s, prefix string) string {
+	len := func(string) int { return 0 }
+	if strings.HasPrefix(s, prefix) {
+		s = s[len(prefix):]
+	}
+	return s
+}
+
+func otherPackage(b, prefix []byte) []byte {
+	if bytes.HasPrefix(b, prefix) {
+		b = b[len(prefix):]
+	}
+	return b
+}
+
+func multiAssign(s, t, prefix string) (string, string) {
+	if strings.HasPrefix(s, prefix) {
+		s, t = s[len(prefix):], t
+	}
+	return s, t
+}
+
+func highBound(s, prefix string) string {
+	if strings.HasPrefix(s, prefix) {
+		s = s[len(prefix):len(s)]
+	}
+	return s
+}
+
+func compounded(s, prefix string) string {
+	if strings.HasPrefix(s, prefix) {
+		s += s[len(prefix):]
+	}
+	return s
+}
+
+func mapIndex(m map[string]string, key, prefix string) {
+	if strings.HasPrefix(m[key], prefix) {
+		m[key] = m[key][len(prefix):]
+	}
+}
+
+func mapParam[M ~map[string]string](m M, key, prefix string) {
+	if strings.HasPrefix(m[key], prefix) {
+		m[key] = m[key][len(prefix):]
+	}
+}
+
+type leadMap interface {
+	~map[string]string
+}
+
+type nestedMap interface {
+	leadMap
+}
+
+func mapConstraint[M nestedMap](m M, key, prefix string) {
+	if strings.HasPrefix(m[key], prefix) {
+		m[key] = m[key][len(prefix):]
+	}
+}
+
+type entry struct {
+	name string
+}
+
+func mapField(m map[string]*entry, key, prefix string) {
+	// want +1 `manual prefix trim; use strings.TrimPrefix`
+	m[key].name = strings.TrimPrefix(m[key].name, prefix)
+}
+
+func mapDeref(m map[string]*string, key, prefix string) {
+	// want +1 `manual prefix trim; use strings.TrimPrefix`
+	*m[key] = strings.TrimPrefix(*m[key], prefix)
+}

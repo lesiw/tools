@@ -1,0 +1,9 @@
+package a
+
+import . "strings"
+
+func dotImported(s, prefix string) string {
+	// want +1 `manual prefix trim; use TrimPrefix`
+	s = TrimPrefix(s, prefix)
+	return s
+}

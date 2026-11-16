@@ -2069,6 +2069,21 @@
 //		return append(xs, 1)
 //	}
 //
+// # manualtrim
+//
+// Reports an if statement that trims a string prefix by reslicing it.
+// strings.TrimPrefix returns the string unchanged when the prefix is absent,
+// so the if statement becomes a single assignment.
+//
+// Inspired by staticcheck's S1017.
+//
+//	func f(s, prefix string) string {
+//		if strings.HasPrefix(s, prefix) {
+//			s = s[len(prefix):]
+//		}
+//		return s
+//	}
+//
 // # mapfind
 //
 // Reports a range over a map whose body searches for one key. An index

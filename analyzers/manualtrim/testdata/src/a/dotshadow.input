@@ -1,0 +1,21 @@
+package a
+
+import . "strings"
+
+func dotShadowedHelper(s, prefix string) string {
+	TrimPrefix := func(a, _ string) string { return a }
+	// want +1 `manual prefix trim; a TrimPrefix name shadows the import`
+	if HasPrefix(s, prefix) {
+		s = s[len(prefix):]
+	}
+	return TrimPrefix(s, prefix)
+}
+
+func dotShadowedTarget(s, prefix string) string {
+	TrimPrefix := s
+	// want +1 `manual prefix trim; a TrimPrefix name shadows the import`
+	if HasPrefix(TrimPrefix, prefix) {
+		TrimPrefix = TrimPrefix[len(prefix):]
+	}
+	return TrimPrefix
+}

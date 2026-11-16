@@ -1,0 +1,11 @@
+package a
+
+import . "strings"
+
+func dotImported(s, prefix string) string {
+	// want +1 `manual prefix trim; use TrimPrefix`
+	if HasPrefix(s, prefix) {
+		s = s[len(prefix):]
+	}
+	return s
+}

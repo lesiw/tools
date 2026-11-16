@@ -177,6 +177,7 @@ import (
 	"lesiw.io/tools/analyzers/loopvarcond"
 	"lesiw.io/tools/analyzers/lowerfold"
 	"lesiw.io/tools/analyzers/makezero"
+	"lesiw.io/tools/analyzers/manualtrim"
 	"lesiw.io/tools/analyzers/mapfind"
 	"lesiw.io/tools/analyzers/mapkey"
 	"lesiw.io/tools/analyzers/maplenloop"
@@ -475,6 +476,7 @@ var (
 		lostcancel.Analyzer,
 		lowerfold.Analyzer,
 		makezero.Analyzer,
+		manualtrim.Analyzer,
 		mapfind.Analyzer,
 		mapkey.Analyzer,
 		maplenloop.Analyzer,

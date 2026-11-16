@@ -1,0 +1,11 @@
+package a
+
+import str "strings"
+
+func aliased(s, prefix string) string {
+	// want +1 `manual prefix trim; use str.TrimPrefix`
+	if str.HasPrefix(s, prefix) {
+		s = s[len(prefix):]
+	}
+	return s
+}
