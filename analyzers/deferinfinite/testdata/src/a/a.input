@@ -1,0 +1,602 @@
+package a
+
+import (
+	"os"
+	"runtime"
+)
+
+func release() {}
+
+func consume(any) {}
+
+func endless() {
+	for {
+		defer release() // want `deferred call never runs because an enclosing loop cannot end`
+	}
+}
+
+func twice() {
+	for {
+		defer release() // want `deferred call never runs because an enclosing loop cannot end`
+		defer release() // want `deferred call never runs because an enclosing loop cannot end`
+	}
+}
+
+func withReturn() {
+	for {
+		defer release()
+		return
+	}
+}
+
+func withBreak() {
+	for {
+		defer release()
+		break
+	}
+}
+
+func conditionalReturn(ok bool) {
+	for {
+		defer release()
+		if ok {
+			return
+		}
+	}
+}
+
+func conditionalBreak(ok bool) {
+	for {
+		defer release()
+		if ok {
+			break
+		}
+	}
+}
+
+func withContinue() {
+	for {
+		defer release() // want `deferred call never runs because an enclosing loop cannot end`
+		continue
+	}
+}
+
+func conditional(ok bool) {
+	for ok {
+		defer release()
+	}
+}
+
+func falseCondition() {
+	for false {
+		defer release()
+	}
+}
+
+func trueCondition() {
+	for true {
+		defer release() // want `deferred call never runs because an enclosing loop cannot end`
+	}
+}
+
+const always = true
+
+func constantCondition() {
+	for always {
+		defer release() // want `deferred call never runs because an enclosing loop cannot end`
+	}
+}
+
+func ranged(xs []int) {
+	for range xs {
+		defer release()
+	}
+}
+
+func rangeInEndless(xs []int) {
+	for {
+		for range xs {
+			defer release() // want `deferred call never runs because an enclosing loop cannot end`
+		}
+	}
+}
+
+func panicInLoop() {
+	for {
+		defer release()
+		panic("stop")
+	}
+}
+
+func goexitInLoop() {
+	for {
+		defer release()
+		runtime.Goexit()
+	}
+}
+
+func stop() { panic("stop") }
+
+func deferredPanicArg() {
+	for {
+		defer release()
+		defer consume(func() any { panic("stop") }())
+	}
+}
+
+func startedPanicArg() {
+	for {
+		defer release()
+		go consume(func() any { panic("stop") }())
+	}
+}
+
+func deferredFunValue() {
+	for {
+		defer release()
+		defer (func() func() { panic("stop") })()()
+	}
+}
+
+func startedFunValue() {
+	for {
+		defer release()
+		go (func() func() { panic("stop") })()()
+	}
+}
+
+func spin() {
+	for {
+	}
+}
+
+func spinInLoop() {
+	for {
+		defer release() // want `deferred call never runs because an enclosing loop cannot end`
+		spin()
+	}
+}
+
+func exitInLoop() {
+	for {
+		defer release() // want `deferred call never runs because an enclosing loop cannot end`
+		os.Exit(1)
+	}
+}
+
+func deferredNoReturn() {
+	for {
+		defer stop() // want `deferred call never runs because an enclosing loop cannot end`
+	}
+}
+
+func startedNoReturn() {
+	for {
+		defer release() // want `deferred call never runs because an enclosing loop cannot end`
+		go stop()
+	}
+}
+
+func panicInInvokedLiteral() {
+	for {
+		defer release()
+		func() {
+			panic("stop")
+		}()
+	}
+}
+
+func goexitInInvokedLiteral() {
+	for {
+		defer release()
+		func() {
+			runtime.Goexit()
+		}()
+	}
+}
+
+func deferredPanicLiteral() {
+	for {
+		defer func() { panic("stop") }() // want `deferred call never runs because an enclosing loop cannot end`
+	}
+}
+
+func startedPanicLiteral() {
+	for {
+		defer release() // want `deferred call never runs because an enclosing loop cannot end`
+		go func() { panic("stop") }()
+	}
+}
+
+func panicBeforeDefer() {
+	for {
+		panic("stop")
+		defer release()
+	}
+}
+
+func panicInPost() {
+	for ; true; panic("stop") {
+		defer release()
+	}
+}
+
+func deferredInLiteral() {
+	for {
+		func() {
+			defer release()
+		}()
+	}
+}
+
+func returnInLiteral() {
+	for {
+		defer release() // want `deferred call never runs because an enclosing loop cannot end`
+		func() {
+			return
+		}()
+	}
+}
+
+func breakInLiteral() {
+	for {
+		defer release() // want `deferred call never runs because an enclosing loop cannot end`
+		func() {
+			for {
+				break
+			}
+		}()
+	}
+}
+
+func loopInLiteral() {
+	func() {
+		for {
+			defer release() // want `deferred call never runs because an enclosing loop cannot end`
+		}
+	}()
+}
+
+func nestedBreak() {
+	for {
+		defer release() // want `deferred call never runs because an enclosing loop cannot end`
+		for {
+			break
+		}
+	}
+}
+
+func nestedSwitchBreak() {
+	for {
+		defer release() // want `deferred call never runs because an enclosing loop cannot end`
+		switch {
+		case true:
+			break
+		}
+	}
+}
+
+func nestedSelectBreak() {
+	for {
+		defer release() // want `deferred call never runs because an enclosing loop cannot end`
+		select {
+		default:
+			break
+		}
+	}
+}
+
+func nestedDefer() {
+	for {
+		for {
+			defer release() // want `deferred call never runs because an enclosing loop cannot end`
+			break
+		}
+	}
+}
+
+func twoEndless() {
+	for {
+		for {
+			defer release() // want `deferred call never runs because an enclosing loop cannot end`
+		}
+	}
+}
+
+func innerInfiniteOuterBreak() {
+	for {
+		for {
+			defer release() // want `deferred call never runs because an enclosing loop cannot end`
+		}
+		break
+	}
+}
+
+func breakLabel() {
+Loop:
+	for {
+		defer release()
+		break Loop
+	}
+}
+
+func continueLabel() {
+Loop:
+	for {
+		defer release() // want `deferred call never runs because an enclosing loop cannot end`
+		continue Loop
+	}
+}
+
+func innerBreakLabel() {
+	for {
+		defer release() // want `deferred call never runs because an enclosing loop cannot end`
+	Inner:
+		for {
+			break Inner
+		}
+	}
+}
+
+func innerContinueLabel() {
+	for {
+		defer release() // want `deferred call never runs because an enclosing loop cannot end`
+	Inner:
+		for {
+			continue Inner
+		}
+	}
+}
+
+func switchBreakLabel() {
+	for {
+		defer release() // want `deferred call never runs because an enclosing loop cannot end`
+	Inner:
+		switch {
+		case true:
+			break Inner
+		}
+	}
+}
+
+func continueOuter(n int) {
+Outer:
+	for i := 0; i < n; i++ {
+		for {
+			defer release()
+			continue Outer
+		}
+	}
+}
+
+func continueOuterEndless() {
+Outer:
+	for {
+		for {
+			defer release() // want `deferred call never runs because an enclosing loop cannot end`
+			continue Outer
+		}
+	}
+}
+
+func breakOuterFromNested() {
+Outer:
+	for {
+		for {
+			defer release()
+			break Outer
+		}
+	}
+}
+
+func gotoOut() {
+	for {
+		defer release()
+		goto done
+	}
+done:
+	return
+}
+
+func gotoInside() {
+	for {
+		defer release() // want `deferred call never runs because an enclosing loop cannot end`
+		goto inside
+	inside:
+		release()
+	}
+}
+
+func gotoLoop() {
+Loop:
+	for {
+		defer release() // want `deferred call never runs because an enclosing loop cannot end`
+		goto Loop
+	}
+}
+
+func gotoBeforeLoop() {
+Loop:
+	release()
+	for {
+		defer release() // want `deferred call never runs because an enclosing loop cannot end`
+		goto Loop
+	}
+}
+
+func gotoPastReturn() {
+	done := false
+Loop:
+	if done {
+		return
+	}
+	for {
+		defer release()
+		done = true
+		goto Loop
+	}
+}
+
+func gotoPastBreak() {
+	ok := false
+Outer:
+	for {
+	Loop:
+		if ok {
+			break Outer
+		}
+		for {
+			defer release()
+			ok = true
+			goto Loop
+		}
+	}
+}
+
+func gotoPastBareBreak() {
+	ok := false
+	for {
+	Loop:
+		if ok {
+			break
+		}
+		for {
+			defer release()
+			ok = true
+			goto Loop
+		}
+	}
+}
+
+func gotoPastInnerBreak() {
+Loop:
+	for {
+		break
+	}
+	for {
+		defer release() // want `deferred call never runs because an enclosing loop cannot end`
+		goto Loop
+	}
+}
+
+func gotoPastPanic() {
+	ok := false
+Loop:
+	if ok {
+		panic("stop")
+	}
+	for {
+		defer release()
+		ok = true
+		goto Loop
+	}
+}
+
+func untakenPanic() {
+	for {
+		defer release()
+		if false {
+			panic("stop")
+		}
+	}
+}
+
+func gotoPastContinue() {
+Loop:
+	for i := 0; i < 3; i++ {
+		if i == 1 {
+			continue
+		}
+	}
+	for {
+		defer release() // want `deferred call never runs because an enclosing loop cannot end`
+		goto Loop
+	}
+}
+
+func gotoPastLiteral() {
+Loop:
+	_ = func() { return }
+	for {
+		defer release() // want `deferred call never runs because an enclosing loop cannot end`
+		goto Loop
+	}
+}
+
+func gotoOutAndBack() {
+Loop:
+	for {
+		defer release()
+		goto done
+	}
+done:
+	goto Loop
+}
+
+func returnAfterInnerEndless() {
+	for {
+		defer release()
+		for {
+		}
+		return
+	}
+}
+
+func nestedGotoOut() {
+	for {
+		for {
+			defer release()
+			goto done
+		}
+	}
+done:
+	return
+}
+
+func nestedGotoInside() {
+	for {
+		for {
+			defer release() // want `deferred call never runs because an enclosing loop cannot end`
+			goto inside
+		}
+	inside:
+		release()
+	}
+}
+
+func typeSwitchBreak(v any) {
+	for {
+		defer release() // want `deferred call never runs because an enclosing loop cannot end`
+		switch v.(type) {
+		case int:
+			break
+		}
+	}
+}
+
+func deferInSwitch(ok bool) {
+	for {
+		switch {
+		case ok:
+			defer release() // want `deferred call never runs because an enclosing loop cannot end`
+		}
+	}
+}
+
+func deferInTypeSwitch(v any) {
+	for {
+		switch v.(type) {
+		case int:
+			defer release() // want `deferred call never runs because an enclosing loop cannot end`
+		}
+	}
+}
+
+func deferInSelect(ch <-chan int) {
+	for {
+		select {
+		case <-ch:
+			defer release() // want `deferred call never runs because an enclosing loop cannot end`
+		}
+	}
+}

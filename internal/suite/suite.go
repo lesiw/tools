@@ -86,6 +86,7 @@ import (
 	"lesiw.io/tools/analyzers/cyclo"
 	"lesiw.io/tools/analyzers/deepexit"
 	"lesiw.io/tools/analyzers/defaultcaseorder"
+	"lesiw.io/tools/analyzers/deferinfinite"
 	"lesiw.io/tools/analyzers/deferunlambda"
 	"lesiw.io/tools/analyzers/deprecated"
 	"lesiw.io/tools/analyzers/discardedpure"
@@ -284,6 +285,7 @@ var (
 		deepequalerrors.Analyzer,
 		deepexit.Analyzer,
 		defaultcaseorder.Analyzer,
+		deferinfinite.Analyzer,
 		defers.Analyzer,
 		deferunlambda.Analyzer,
 		deprecated.Analyzer,

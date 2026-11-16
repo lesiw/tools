@@ -609,6 +609,21 @@
 //		}
 //	}
 //
+// # deferinfinite
+//
+// Reports a deferred call inside a for statement that cannot end, whether it
+// has no condition or a condition that is a constant true. A deferred call
+// runs when the function returns, so the number of deferred calls grows by one
+// on each pass.
+//
+// Adapted from staticcheck's SA5003.
+//
+//	func f() {
+//		for {
+//			defer release()
+//		}
+//	}
+//
 // # defers
 //
 // Reports a defer statement whose argument calls time.Since. The argument is
