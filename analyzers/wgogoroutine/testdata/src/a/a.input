@@ -1,0 +1,511 @@
+package a
+
+import "sync"
+
+func raisedInside(wg *sync.WaitGroup) {
+	go func() {
+		wg.Add(1) // want `Add raised from inside a goroutine instead of before it starts`
+		defer wg.Done()
+		work()
+	}()
+	wg.Wait()
+}
+
+func raisedLate(wg *sync.WaitGroup) {
+	go func() {
+		start()
+		wg.Add(1) // want `Add raised from inside a goroutine instead of before it starts`
+		defer wg.Done()
+		work()
+	}()
+	wg.Wait()
+}
+
+func raisedEach(wg *sync.WaitGroup, items []string) {
+	go func() {
+		for range items {
+			wg.Add(1) // want `Add raised from inside a goroutine instead of before it starts`
+			go work()
+		}
+	}()
+	wg.Wait()
+}
+
+func raisedUnderBranch(wg *sync.WaitGroup) {
+	go func() {
+		if busy() {
+			wg.Add(1) // want `Add raised from inside a goroutine instead of before it starts`
+			defer wg.Done()
+		}
+	}()
+	wg.Wait()
+}
+
+func raisedTwice(wg *sync.WaitGroup) {
+	wg.Add(1)
+	go func() {
+		wg.Add(1) // want `Add raised from inside a goroutine instead of before it starts`
+		defer wg.Done()
+		work()
+	}()
+	wg.Wait()
+}
+
+func raisedByValue() {
+	var wg sync.WaitGroup
+	go func() {
+		wg.Add(1) // want `Add raised from inside a goroutine instead of before it starts`
+		defer wg.Done()
+		work()
+	}()
+	wg.Wait()
+}
+
+func raisedThroughField(p *pair) {
+	go func() {
+		p.wg.Add(1) // want `Add raised from inside a goroutine instead of before it starts`
+		defer p.wg.Done()
+		work()
+	}()
+	p.wg.Wait()
+}
+
+func raisedPromoted(g *group) {
+	go func() {
+		g.Add(1) // want `Add raised from inside a goroutine instead of before it starts`
+		defer g.Done()
+		work()
+	}()
+	g.Wait()
+}
+
+func raisedByParameter(g *sync.WaitGroup) {
+	go func(wg *sync.WaitGroup) {
+		wg.Add(1) // want `Add raised from inside a goroutine instead of before it starts`
+		defer wg.Done()
+		work()
+	}(g)
+	g.Wait()
+}
+
+func raisedByDelta(wg *sync.WaitGroup, n int) {
+	go func() {
+		wg.Add(n) // want `Add raised from inside a goroutine instead of before it starts`
+		defer wg.Done()
+		work()
+	}()
+	wg.Wait()
+}
+
+func raisedDeeper(wg *sync.WaitGroup) {
+	go func() {
+		go func() {
+			wg.Add(1) // want `Add raised from inside a goroutine instead of before it starts`
+			defer wg.Done()
+			work()
+		}()
+	}()
+	wg.Wait()
+}
+
+func raisedAfterPlainLower(wg *sync.WaitGroup) {
+	go func() {
+		wg.Done()
+		wg.Add(1) // want `Add raised from inside a goroutine instead of before it starts`
+		defer wg.Done()
+	}()
+	wg.Wait()
+}
+
+func raisedAfterOtherGroup(wg *sync.WaitGroup) {
+	go func() {
+		var hg sync.WaitGroup
+		defer hg.Done()
+		wg.Add(1) // want `Add raised from inside a goroutine instead of before it starts`
+	}()
+	wg.Wait()
+}
+
+func raisedBeforePlainLower(wg *sync.WaitGroup, items []string) {
+	wg.Add(1)
+	go func() {
+		wg.Add(len(items)) // want `Add raised from inside a goroutine instead of before it starts`
+		for range items {
+			go func() {
+				defer wg.Done()
+				work()
+			}()
+		}
+		wg.Done()
+	}()
+	wg.Wait()
+}
+
+func loweredOnly(wg *sync.WaitGroup) {
+	go func() {
+		wg.Add(-1)
+		wg.Add(-2)
+		work()
+	}()
+	wg.Wait()
+}
+
+func zeroThenOne(wg *sync.WaitGroup) {
+	go func() {
+		wg.Add(0)
+		wg.Add(1) // want `Add raised from inside a goroutine instead of before it starts`
+		defer wg.Done()
+	}()
+	wg.Wait()
+}
+
+func notAWaitGroup(wg *sync.WaitGroup, c counter) {
+	go func() {
+		c.Add(1)
+		wg.Add(1) // want `Add raised from inside a goroutine instead of before it starts`
+		defer wg.Done()
+	}()
+	wg.Wait()
+}
+
+func heldByDefer(wg *sync.WaitGroup, items []string) {
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for range items {
+			wg.Add(1)
+			go work()
+		}
+	}()
+	wg.Wait()
+}
+
+func raisedAfterDeferredAndPlain(wg *sync.WaitGroup) {
+	go func() {
+		defer wg.Done()
+		wg.Done()
+		wg.Add(1) // want `Add raised from inside a goroutine instead of before it starts`
+	}()
+	wg.Wait()
+}
+
+func heldUnderBranch(wg *sync.WaitGroup, ready bool) {
+	wg.Add(1)
+	go func() {
+		if ready {
+			defer wg.Done()
+		}
+		wg.Add(1)
+		work()
+	}()
+	wg.Wait()
+}
+
+func heldTwiceCleared(wg *sync.WaitGroup) {
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		defer wg.Done()
+		wg.Done()
+		wg.Add(1) // want `Add raised from inside a goroutine instead of before it starts`
+	}()
+	wg.Wait()
+}
+
+func heldByDelta(wg *sync.WaitGroup) {
+	wg.Add(1)
+	go func() {
+		defer wg.Add(-1)
+		wg.Add(1)
+		work()
+	}()
+	wg.Wait()
+}
+
+func declaredInside(outer *sync.WaitGroup) {
+	go func() {
+		var inner sync.WaitGroup
+		inner.Add(1)
+		go func() {
+			defer inner.Done()
+			work()
+		}()
+		inner.Wait()
+	}()
+	outer.Wait()
+}
+
+func declaredInPlace(outer *sync.WaitGroup) {
+	go func() {
+		(&sync.WaitGroup{}).Add(1)
+		work()
+	}()
+	outer.Wait()
+}
+
+func raisedThroughAlias(wg *sync.WaitGroup) {
+	go func() {
+		alias := wg
+		alias.Add(1) // want `Add raised from inside a goroutine instead of before it starts`
+		defer alias.Done()
+	}()
+	wg.Wait()
+}
+
+func startedByGroup(wg *sync.WaitGroup) {
+	wg.Go(func() {
+		wg.Add(1)
+		defer wg.Done()
+		work()
+	})
+	wg.Wait()
+}
+
+func handedGroup(wg *sync.WaitGroup) {
+	go use(wg)
+	wg.Wait()
+}
+
+func use(wg *sync.WaitGroup) {
+	wg.Add(1)
+	defer wg.Done()
+	work()
+}
+
+func namedLiteral(wg *sync.WaitGroup) {
+	f := func() {
+		wg.Add(1)
+		defer wg.Done()
+		work()
+	}
+	go f()
+	wg.Wait()
+}
+
+func methodValue(wg *sync.WaitGroup) {
+	add := wg.Add
+	go func() {
+		add(1)
+		defer wg.Done()
+		work()
+	}()
+	wg.Wait()
+}
+
+func startedByGroupInside(wg *sync.WaitGroup) {
+	go func() {
+		wg.Go(work) // want `Go raised from inside a goroutine instead of before it starts`
+	}()
+	wg.Wait()
+}
+
+func handedToGroup(wg *sync.WaitGroup) {
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		wg.Go(work)
+	}()
+	wg.Wait()
+}
+
+func raisedByMethodExpression(wg *sync.WaitGroup) {
+	go func() {
+		(*sync.WaitGroup).Add(wg, 1) // want `Add raised from inside a goroutine instead of before it starts`
+		defer wg.Done()
+		work()
+	}()
+	wg.Wait()
+}
+
+func declaredFieldInside() {
+	go func() {
+		var p pair
+		p.wg.Add(1)
+		defer p.wg.Done()
+		work()
+	}()
+}
+
+func declaredUnderParens() {
+	go func() {
+		var inner sync.WaitGroup
+		(inner).Add(1)
+		defer inner.Done()
+		work()
+	}()
+}
+
+func declaredByNew() {
+	go func() {
+		new(sync.WaitGroup).Add(1)
+		work()
+	}()
+}
+
+func declaredByAddress() {
+	go func() {
+		inner := &sync.WaitGroup{}
+		inner.Add(1)
+		inner.Done()
+	}()
+}
+
+func declaredByAllocation() {
+	go func() {
+		inner := new(sync.WaitGroup)
+		inner.Add(1)
+		inner.Done()
+	}()
+}
+
+func declaredByResults(f func() (int, *sync.WaitGroup)) {
+	go func() {
+		_, inner := f()
+		inner.Add(1) // want `Add raised from inside a goroutine instead of before it starts`
+		defer inner.Done()
+	}()
+}
+
+func raisedThroughStar(wg *sync.WaitGroup) {
+	go func() {
+		(*wg).Add(1) // want `Add raised from inside a goroutine instead of before it starts`
+		defer wg.Done()
+	}()
+	wg.Wait()
+}
+
+func raisedThroughIndex(groups []*sync.WaitGroup) {
+	go func() {
+		groups[0].Add(1) // want `Add raised from inside a goroutine instead of before it starts`
+		defer groups[0].Done()
+	}()
+	groups[0].Wait()
+}
+
+func raisedAfterOtherDefer(wg, hg *sync.WaitGroup) {
+	go func() {
+		defer hg.Wait()
+		wg.Add(1) // want `Add raised from inside a goroutine instead of before it starts`
+		defer wg.Done()
+	}()
+	wg.Wait()
+}
+
+func calledInPlace(wg *sync.WaitGroup) {
+	go func() {
+		f := func() {
+			wg.Add(1)
+		}
+		f()
+		defer wg.Done()
+	}()
+	wg.Wait()
+}
+
+func startedOnTheCall(wg *sync.WaitGroup) {
+	go wg.Add(1)
+	wg.Wait()
+}
+
+func waitedOnlyHere(inner *sync.WaitGroup) {
+	go func() {
+		inner.Add(1)
+		go func() {
+			defer inner.Done()
+			work()
+		}()
+		inner.Wait()
+	}()
+}
+
+func waitedUnderBranch(inner *sync.WaitGroup, ready bool) {
+	go func() {
+		inner.Add(1)
+		if ready {
+			inner.Wait()
+		}
+	}()
+}
+
+func waitedThroughAddress(wg *sync.WaitGroup) {
+	go func() {
+		wg.Add(1)
+		(*wg).Wait()
+	}()
+}
+
+func loweredThroughAddress(wg *sync.WaitGroup) {
+	go func() {
+		defer (&*wg).Done()
+		wg.Add(1)
+		work()
+	}()
+	wg.Wait()
+}
+
+func waitedByDefer(inner *sync.WaitGroup) {
+	go func() {
+		inner.Add(1)
+		defer inner.Wait()
+		work()
+	}()
+}
+
+func heldInContainer(wg *sync.WaitGroup) {
+	go func() {
+		gs := []*sync.WaitGroup{wg}
+		gs[0].Add(1) // want `Add raised from inside a goroutine instead of before it starts`
+		defer gs[0].Done()
+	}()
+	wg.Wait()
+}
+
+func handedToCall(wg *sync.WaitGroup) {
+	go func() {
+		apply(func() {
+			wg.Add(1)
+		})
+		defer wg.Done()
+	}()
+	wg.Wait()
+}
+
+func deferredInPlace(wg *sync.WaitGroup) {
+	go func() {
+		defer func() {
+			wg.Add(1)
+		}()
+		defer wg.Done()
+	}()
+	wg.Wait()
+}
+
+func madeByCall(makeGroup func() *sync.WaitGroup) {
+	go func() {
+		inner := makeGroup()
+		inner.Add(1) // want `Add raised from inside a goroutine instead of before it starts`
+		defer inner.Done()
+	}()
+}
+
+type pair struct {
+	wg sync.WaitGroup
+}
+
+type group struct {
+	sync.WaitGroup
+}
+
+type counter struct{}
+
+func (counter) Add(int) {}
+func (counter) Done()    {}
+func (counter) Wait()    {}
+
+func apply(f func()) { f() }
+
+func start() {}
+
+func busy() bool { return false }
+
+func work() {}

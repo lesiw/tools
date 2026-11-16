@@ -3246,6 +3246,22 @@ func newToken() int {
 }
 ```
 
+## wgogoroutine
+
+Reports an Add or a Go call that raises a sync.WaitGroup's count from inside a goroutine instead of before it starts. A Wait can return before the count is raised.
+
+Adapted from the x/tools vet pass waitgroup and staticcheck's SA2000.
+
+```
+func f(wg *sync.WaitGroup) {
+    go func() {
+        wg.Add(1)
+        work()
+    }()
+    wg.Wait()
+}
+```
+
 ## whitespace
 
 Reports a blank line in the wrong place around declarations: one is needed between a multi-line top-level declaration and its neighbors, and before a doc comment inside a block or a struct field list.
