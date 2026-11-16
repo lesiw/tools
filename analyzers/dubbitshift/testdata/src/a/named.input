@@ -1,0 +1,14 @@
+package a
+
+import t "time"
+
+const eight = 8
+
+var delayed = t.Second >> 64 // want `shift count 64 is at least the 64-bit width of the operand`
+var namedCount = uint8(1) >> eight // want `shift count 8 is at least the 8-bit width of the operand`
+
+const signedZero = int8(1) >> eight // want `shift count 8 is at least the 8-bit width of the operand`
+
+const targetOne uint8 = uint8(^uint(0) >> 63)
+
+var target = targetOne >> 8 // want `shift count 8 is at least the 8-bit width of the operand`

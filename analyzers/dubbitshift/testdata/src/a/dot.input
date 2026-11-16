@@ -1,0 +1,5 @@
+package a
+
+import . "time"
+
+var wait = Duration(1) >> 64 // want `shift count 64 is at least the 64-bit width of the operand`

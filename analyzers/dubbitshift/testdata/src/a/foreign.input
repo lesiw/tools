@@ -1,0 +1,5 @@
+package a
+
+import "foreign"
+
+var foreignFlag = foreign.Flag >> 8 // want `shift count 8 is at least the 8-bit width of the operand`

@@ -88,6 +88,7 @@ import (
 	"lesiw.io/tools/analyzers/deprecated"
 	"lesiw.io/tools/analyzers/docstub"
 	"lesiw.io/tools/analyzers/docsyntax"
+	"lesiw.io/tools/analyzers/dubbitshift"
 	"lesiw.io/tools/analyzers/dupbranch"
 	"lesiw.io/tools/analyzers/dupcase"
 	"lesiw.io/tools/analyzers/dupimport"
@@ -269,6 +270,7 @@ var (
 		directive.Analyzer,
 		docstub.Analyzer,
 		docsyntax.Analyzer,
+		dubbitshift.Analyzer,
 		dupbranch.Analyzer,
 		dupcase.Analyzer,
 		dupimport.Analyzer,

@@ -1,0 +1,7 @@
+package a
+
+func shadowIota() {
+	const iota = 8
+	const shifted = uint8(1) >> iota // want `shift count 8 is at least the 8-bit width of the operand`
+	_ = shifted
+}

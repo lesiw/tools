@@ -1,0 +1,3 @@
+package a
+
+var noImport = sharedTime >> 64 // want `shift count 64 is at least the 64-bit width of the operand`

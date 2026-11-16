@@ -637,6 +637,16 @@ Reports Markdown that Go doc comments do not implement: a code span, a fenced bl
 func F() {}
 ```
 
+## dubbitshift
+
+Reports a shift of a fixed-size typed constant by a count at least as large as the type's width, or a shift of an unsigned typed constant whose result is zero below that width. A shift of a non-constant operand is left alone, and so is a shift with a platform-dependent type anywhere in its expression.
+
+Adapted from staticcheck's SA9006.
+
+```
+const n = uint8(1) >> 8
+```
+
 ## dupbranch
 
 Reports an if whose two branches hold the same statements. The condition has no effect there, so either the branches were left half edited or one of them was meant to do something else.

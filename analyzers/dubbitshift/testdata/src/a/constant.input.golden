@@ -1,0 +1,38 @@
+package a
+
+import t "time"
+
+var zero8 = uint8(0)                            // want `shift count 8 is at least the 8-bit width of the operand`
+var low = uint8(0)                              // want `constant shift by 1 moves every set bit out of the operand`
+var far = uint8(0)                              // want `shift count 64 is at least the 8-bit width of the operand`
+var namedZero = flags(0)                        // want `constant shift by 1 moves every set bit out of the operand`
+var sign = int8(-1)                             // want `shift count 8 is at least the 8-bit width of the operand`
+var empty = uint8(0)                            // want `shift count 8 is at least the 8-bit width of the operand`
+var named = flags(0)                            // want `shift count 8 is at least the 8-bit width of the operand`
+var delay = t.Duration(0)                       // want `shift count 64 is at least the 64-bit width of the operand`
+var nested = uint8(0)                           // want `shift count 8 is at least the 8-bit width of the operand` `shift count 8 is at least the 8-bit width of the operand`
+var commentedOuter = (uint8(0)) /* note */ << 8 // want `shift count 8 is at least the 8-bit width of the operand` `shift count 8 is at least the 8-bit width of the operand`
+var blocked = (uint8(1) /* mask */ >> 8)        // want `shift count 8 is at least the 8-bit width of the operand`
+var sum = 1 + (uint8(0))                        // want `shift count 8 is at least the 8-bit width of the operand`
+
+const clear = uint16(0)   // want `shift count 16 is at least the 16-bit width of the operand`
+const zeroLeft = uint8(0) // want `shift count 8 is at least the 8-bit width of the operand`
+const signed = int16(-1)  // want `shift count 16 is at least the 16-bit width of the operand`
+
+type local uint8
+
+const localValue local = 1
+
+func shadow() {
+	local := 0
+	_ = localValue >> 8 // want `shift count 8 is at least the 8-bit width of the operand`
+	_ = local
+}
+
+const one uint8 = 1
+
+func shadowBuiltin() {
+	uint8 := 0
+	_ = one >> 8 // want `shift count 8 is at least the 8-bit width of the operand`
+	_ = uint8
+}

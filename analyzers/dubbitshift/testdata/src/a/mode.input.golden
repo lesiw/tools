@@ -1,0 +1,5 @@
+package a
+
+import "os"
+
+var mode = os.FileMode(0) // want `shift count 64 is at least the 32-bit width of the operand`

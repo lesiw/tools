@@ -1,0 +1,15 @@
+package a
+
+const (
+	first  = uint8(0x80) >> (9 - iota)
+	second
+	third
+)
+
+const single = uint8(0) // want `shift count 8 is at least the 8-bit width of the operand`
+
+const (
+	resetFirst  = uint8(0) // want `shift count 9 is at least the 8-bit width of the operand`
+	resetSecond = uint8(1) >> (9 - iota)
+	resetThird
+)

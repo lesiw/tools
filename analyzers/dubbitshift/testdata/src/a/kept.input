@@ -1,0 +1,40 @@
+package a
+
+func below(u8 uint8, i8 int8, u16 uint16, n uint) {
+	_ = uint8(1) >> n
+	_ = u8 << 7
+	_ = u8 >> 7
+	_ = i8 << 7
+	_ = i8 >> 7
+	_ = u16 << 15
+	_ = u8 << n
+	_ = u8 >> n
+}
+
+func constants() {
+	_ = uint8(0x80) >> 7
+	_ = uint8(1) << 7
+	_ = int8(-1) >> 1
+	_ = int8(-128) >> 7
+	_ = int8(1) >> 1
+	_ = int8(127) >> 7
+	const minMask = int64(1) >> 63
+	_ = uint8(0) >> 1
+	_ = 0 >> 64
+	const wide = 1 << 64
+	const bigger = 1 << 100
+	const gone = 1 >> 64
+	const high = (1<<128 | 1<<64) >> 64
+}
+
+const tricky = uint8(1) >> int64(^uint(0)>>63)
+
+const fixedEight int = 8
+
+var fixedCount = uint8(1) >> fixedEight
+
+const trickyOperand = uint8(int64(^uint(0)>>63)) >> 8
+
+const intSize = 32 << (^uint(0) >> 63)
+
+const maxUint = ^uint(0) >> 63

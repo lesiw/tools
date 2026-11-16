@@ -1,0 +1,5 @@
+package a
+
+import "time"
+
+const sharedTime = time.Duration(1)

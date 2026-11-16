@@ -1,0 +1,9 @@
+package foreign
+
+import "time"
+
+type flags uint8
+
+type Span = time.Duration
+
+const Flag flags = 1

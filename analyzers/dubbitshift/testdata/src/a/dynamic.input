@@ -1,0 +1,23 @@
+package a
+
+func shifts(u8 uint8, i8 int8, u16 uint16, u32 uint32, u64 uint64, f flags, n uint) {
+	_ = u8 << 8
+	_ = u8 >> 8
+	_ = i8 << 8
+	_ = i8 >> 8
+	_ = u16 << 16
+	_ = u32 >> 32
+	_ = u64 << 64
+	_ = f >> 8
+	u8 <<= 8
+	u8 >>= 8
+	u64 <<= 64
+	_ = u8 << n
+	_ = u8 >> n
+}
+
+func platform(i int, u uint, p uintptr) {
+	_ = i << 128
+	_ = u >> 128
+	_ = p << 128
+}
