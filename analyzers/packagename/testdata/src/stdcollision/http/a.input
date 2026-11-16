@@ -1,1 +1,0 @@
-package http // want `package name "http" collides with standard library package path "net/http"`
