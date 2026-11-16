@@ -1,0 +1,459 @@
+package a
+
+import (
+	"strconv"
+	"strings"
+	"sync"
+
+	"elsewhere"
+)
+
+func use(string) {}
+
+func reset(*sync.Once) {}
+
+func snapshot(sync.Once) {}
+
+func newOnce() *sync.Once { return new(sync.Once) }
+
+func maker(name string) func() { return func() { use(name) } }
+
+var load sync.Once
+
+var ready = "ready"
+
+type client struct{ once sync.Once }
+
+type embedded struct {
+	Sibling sync.Once
+	sync.Once
+}
+
+type queue struct{}
+
+func (queue) Do(func()) {}
+
+func value(names []string) {
+	for _, name := range names {
+		load.Do(func() { use(name) }) // want `sync.Once.Do runs the function once, so one iteration's name is used`
+	}
+}
+
+func field(c *client, names []string) {
+	for _, name := range names {
+		c.once.Do(func() { use(name) }) // want `sync.Once.Do runs the function once, so one iteration's name is used`
+	}
+}
+
+func counter(n int) {
+	for i := 0; i < n; i++ {
+		load.Do(func() { use(strconv.Itoa(i)) }) // want `sync.Once.Do runs the function once, so one iteration's i is used`
+	}
+}
+
+func before(names []string) {
+	var once sync.Once
+	for _, name := range names {
+		once.Do(func() { use(name) }) // want `sync.Once.Do runs the function once, so one iteration's name is used`
+	}
+}
+
+func deferred(names []string) {
+	for _, name := range names {
+		defer load.Do(func() { use(name) }) // want `sync.Once.Do runs the function once, so one iteration's name is used`
+	}
+}
+
+func spawned(names []string) {
+	for _, name := range names {
+		go load.Do(func() { use(name) }) // want `sync.Once.Do runs the function once, so one iteration's name is used`
+	}
+}
+
+func captured(names []string) {
+	for _, name := range names {
+		go func() {
+			load.Do(func() { use(name) }) // want `sync.Once.Do runs the function once, so one iteration's name is used`
+		}()
+	}
+}
+
+func body(names []string) {
+	for _, name := range names {
+		label := strings.ToUpper(name)
+		load.Do(func() { use(label) }) // want `sync.Once.Do runs the function once, so one iteration's label is used`
+	}
+}
+
+func nested(names, tags []string) {
+	for _, name := range names {
+		for range tags {
+			load.Do(func() { use(name) }) // want `sync.Once.Do runs the function once, so one iteration's name is used`
+		}
+	}
+}
+
+func methodExpression(names []string) {
+	for _, name := range names {
+		(*sync.Once).Do(&load, func() { use(name) }) // want `sync.Once.Do runs the function once, so one iteration's name is used`
+	}
+}
+
+func deref(once *sync.Once, names []string) {
+	for _, name := range names {
+		(*once).Do(func() { use(name) }) // want `sync.Once.Do runs the function once, so one iteration's name is used`
+	}
+}
+
+func imported(names []string) {
+	for _, name := range names {
+		elsewhere.Once.Do(func() { use(name) }) // want `sync.Once.Do runs the function once, so one iteration's name is used`
+	}
+}
+
+func promoted(e *embedded, names []string) {
+	for _, name := range names {
+		e.Do(func() { use(name) }) // want `sync.Once.Do runs the function once, so one iteration's name is used`
+	}
+}
+
+func promotedReset(e *embedded, names []string) {
+	for _, name := range names {
+		e.Once = sync.Once{}
+		e.Do(func() { use(name) })
+	}
+}
+
+func promotedSibling(e *embedded, names []string) {
+	for _, name := range names {
+		e.Sibling = sync.Once{}
+		e.Do(func() { use(name) }) // want `sync.Once.Do runs the function once, so one iteration's name is used`
+	}
+}
+
+func loopOnce(onces []*sync.Once, names []string) {
+	for _, once := range onces {
+		for _, name := range names {
+			once.Do(func() { use(name) }) // want `sync.Once.Do runs the function once, so one iteration's name is used`
+		}
+	}
+}
+
+func local(names []string) {
+	for _, name := range names {
+		var once sync.Once
+		once.Do(func() { use(name) })
+	}
+}
+
+func sharedOnce(onces []*sync.Once, names []string) {
+	for _, name := range names {
+		for _, once := range onces {
+			once.Do(func() { use(name) }) // want `sync.Once.Do runs the function once, so one iteration's name is used`
+		}
+	}
+}
+
+func innerOnce(names, tags []string) {
+	for _, name := range names {
+		for range tags {
+			var once sync.Once
+			once.Do(func() { use(name) })
+		}
+	}
+}
+
+func outerValue(names, tags []string) {
+	for _, name := range names {
+		var once sync.Once
+		for range tags {
+			once.Do(func() { use(name) })
+		}
+	}
+}
+
+func fieldValue(names []string) {
+	for range names {
+		type pair struct{ n int }
+		load.Do(func() {
+			p := pair{n: 1}
+			use(strconv.Itoa(p.n))
+		})
+	}
+}
+
+func mapWrite(names []string, seen map[string]bool) {
+	for _, name := range names {
+		load.Do(func() { seen[name] = true }) // want `sync.Once.Do runs the function once, so one iteration's name is used`
+	}
+}
+
+func rows(rows [][]string) {
+	for _, row := range rows {
+		load.Do(func() { row[0] = "done" })
+	}
+}
+
+func written(names []string) {
+	for _, name := range names {
+		name = strings.ToUpper(name)
+		load.Do(func() { name = "done" })
+	}
+}
+
+func rewritten(names []string) {
+	for _, name := range names {
+		load.Do(func() { name = strings.ToUpper(name) }) // want `sync.Once.Do runs the function once, so one iteration's name is used`
+	}
+}
+
+func constant(names []string) {
+	for range names {
+		const label = "ready"
+		load.Do(func() { use(label) })
+	}
+}
+
+func global(names []string) {
+	for range names {
+		load.Do(func() { use(ready) })
+	}
+}
+
+func assigned(names []string) {
+	var current string
+	for _, name := range names {
+		current = name
+		load.Do(func() { use(current) })
+	}
+}
+
+func rebuilt(names []string) {
+	for _, name := range names {
+		load = sync.Once{}
+		load.Do(func() { use(name) })
+	}
+}
+
+func rebuiltAddress(names []string) {
+	for _, name := range names {
+		load = sync.Once{}
+		(*sync.Once).Do(&load, func() { use(name) })
+	}
+}
+
+func rebuiltField(c *client, names []string) {
+	for _, name := range names {
+		c.once = sync.Once{}
+		c.once.Do(func() { use(name) })
+	}
+}
+
+func rebuiltPointer(once *sync.Once, names []string) {
+	for _, name := range names {
+		*once = sync.Once{}
+		once.Do(func() { use(name) })
+	}
+}
+
+func rebuiltAfter(names []string) {
+	for _, name := range names {
+		load.Do(func() { use(name) })
+		load = sync.Once{}
+	}
+}
+
+func rebuiltThroughCall(once *sync.Once, names []string) {
+	for _, name := range names {
+		reset(once)
+		once.Do(func() { use(name) })
+	}
+}
+
+func rebuiltHeader(onces []*sync.Once, names []string) {
+	var once *sync.Once
+	for _, name := range names {
+		for _, once = range onces {
+			once.Do(func() { use(name) })
+		}
+	}
+}
+
+func spawnedCall(names []string) {
+	for _, name := range names {
+		go reset(&load)
+		load.Do(func() { use(name) }) // want `sync.Once.Do runs the function once, so one iteration's name is used`
+	}
+}
+
+func rebuiltSpawned(names []string) {
+	for _, name := range names {
+		go func() { load = sync.Once{} }()
+		load.Do(func() { use(name) }) // want `sync.Once.Do runs the function once, so one iteration's name is used`
+	}
+}
+
+func rebuiltByCall(names []string) {
+	for _, name := range names {
+		reset(&load)
+		load.Do(func() { use(name) })
+	}
+}
+
+func rebuiltThroughPointer(names []string) {
+	once := new(sync.Once)
+	for _, name := range names {
+		once = &sync.Once{}
+		(*once).Do(func() { use(name) })
+	}
+}
+
+func rebuiltInside(names []string) {
+	for _, name := range names {
+		load.Do(func() {
+			load = sync.Once{}
+			use(name)
+		})
+	}
+}
+
+func rebuiltDeferred(names []string) {
+	for _, name := range names {
+		defer func() { load = sync.Once{} }()
+		load.Do(func() { use(name) }) // want `sync.Once.Do runs the function once, so one iteration's name is used`
+	}
+}
+
+type state struct{ sync.Once }
+
+type box struct{ state }
+
+func (b *box) Reset() { b.state.Once = sync.Once{} }
+
+func methodReset(b *box, names []string) {
+	for _, name := range names {
+		b.Reset()
+		b.Do(func() { use(name) }) // want `sync.Once.Do runs the function once, so one iteration's name is used`
+	}
+}
+
+func snapshotCall(names []string) {
+	for _, name := range names {
+		snapshot(load)
+		load.Do(func() { use(name) }) // want `sync.Once.Do runs the function once, so one iteration's name is used`
+	}
+}
+
+func promotedInner(b *box, names []string) {
+	for _, name := range names {
+		b.state = state{}
+		b.Do(func() { use(name) })
+	}
+}
+
+func promotedInnerCall(b *box, names []string) {
+	for _, name := range names {
+		reset(&b.state.Once)
+		b.Do(func() { use(name) })
+	}
+}
+
+type entry struct {
+	once sync.Once
+	name string
+}
+
+func entries(entries []entry) {
+	for _, e := range entries {
+		e.once.Do(func() { use(e.name) })
+	}
+}
+
+type worker struct {
+	once sync.Once
+	name string
+}
+
+func pointerEntries(workers []*worker) {
+	for _, w := range workers {
+		w.once.Do(func() { use(w.name) })
+	}
+}
+
+func nestedEntries(entries []entry, names []string) {
+	for _, name := range names {
+		for _, e := range entries {
+			e.once.Do(func() { use(name + e.name) })
+		}
+	}
+}
+
+type holder struct{ once sync.Once }
+
+func rebuiltBase(names []string) {
+	shared := &holder{}
+	for _, name := range names {
+		shared = &holder{}
+		shared.once.Do(func() { use(name) })
+	}
+}
+
+func rebuiltDeref(p **holder, names []string) {
+	for _, name := range names {
+		*p = &holder{}
+		(*p).once.Do(func() { use(name) })
+	}
+}
+
+func methodValue(names []string) {
+	do := load.Do
+	for _, name := range names {
+		do(func() { use(name) })
+	}
+}
+
+func created(names []string) {
+	for _, name := range names {
+		newOnce().Do(func() { use(name) })
+	}
+}
+
+func plain(name string) {
+	load.Do(func() { use(name) })
+}
+
+func argument(names []string) {
+	for _, name := range names {
+		load.Do(maker(name))
+	}
+}
+
+func element(onces []sync.Once, names []string) {
+	for i, name := range names {
+		onces[i].Do(func() { use(name) })
+	}
+}
+
+func custom(q queue, items []string) {
+	for _, item := range items {
+		q.Do(func() { use(item) })
+	}
+}
+
+func workers(n int, once *sync.Once) {
+	for i := 0; i < n; i++ {
+		go func() {
+			value := strconv.Itoa(i)
+			once.Do(func() { use(value) })
+		}()
+	}
+}
+
+func literal(names []string) {
+	for range names {
+		load.Do(func() {
+			value := "ready"
+			use(value)
+		})
+	}
+}

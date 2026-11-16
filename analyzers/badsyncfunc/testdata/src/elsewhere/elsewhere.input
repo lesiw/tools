@@ -1,0 +1,5 @@
+package elsewhere
+
+import "sync"
+
+var Once sync.Once

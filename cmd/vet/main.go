@@ -287,6 +287,21 @@
 //		sort.Slice(xs, func(i, j int) bool { return xs[0] < xs[1] })
 //	}
 //
+// # badsyncfunc
+//
+// Reports a sync.Once.Do call whose function reads a variable that a loop
+// enclosing the call declares, where the loop reuses the Once for every
+// iteration, so only one iteration's function runs.
+//
+// Inspired by go-critic's badSyncOnceFunc, which reports a sync.OnceFunc value
+// that is discarded or called where it is built.
+//
+//	func f(ready *sync.Once, names []string) {
+//		for _, name := range names {
+//			ready.Do(func() { use(name) })
+//		}
+//	}
+//
 // # bookends
 //
 // Reports bracket layout that the printer would place differently, where a fix

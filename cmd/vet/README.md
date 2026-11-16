@@ -285,6 +285,20 @@ func f(xs []int) {
 }
 ```
 
+## badsyncfunc
+
+Reports a sync.Once.Do call whose function reads a variable that a loop enclosing the call declares, where the loop reuses the Once for every iteration, so only one iteration's function runs.
+
+Inspired by go-critic's badSyncOnceFunc, which reports a sync.OnceFunc value that is discarded or called where it is built.
+
+```
+func f(ready *sync.Once, names []string) {
+    for _, name := range names {
+        ready.Do(func() { use(name) })
+    }
+}
+```
+
 ## bookends
 
 Reports bracket layout that the printer would place differently, where a fix moves a bracket or a line break and no element changes. The shapes are a closer that does not sit at its opener's column, an elided literal whose elements start at different columns, a table whose rows do not read down or whose row runs past the width, a list with one indented line or a line past the width, and a keyed literal on one line past the width.
