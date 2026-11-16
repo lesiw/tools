@@ -1,0 +1,213 @@
+package a
+
+func repeated(err error) bool {
+	return err != nil // want `error compared with nil twice in the same expression`
+}
+
+func repeatedNil(err error) bool {
+	return err == nil // want `error compared with nil twice in the same expression`
+}
+
+func either(err error) bool {
+	return err != nil // want `error compared with nil twice in the same expression`
+}
+
+func both(err error) bool {
+	return err == nil // want `error compared with nil twice in the same expression`
+}
+
+func three(err error) bool {
+	return err != nil // want `error compared with nil twice in the same expression` `error compared with nil twice in the same expression`
+}
+
+func reversedNil(err error) bool {
+	return err != nil // want `error compared with nil twice in the same expression`
+}
+
+func reversedEqual(err error) bool {
+	return nil == err // want `error compared with nil twice in the same expression`
+}
+
+func parenthesizedNil(err error) bool {
+	return err != (nil) // want `error compared with nil twice in the same expression`
+}
+
+func separated(err error, ok bool) bool {
+	return err != nil && ok // want `error compared with nil twice in the same expression`
+}
+
+func parenthesized(err error) bool {
+	return err != nil // want `error compared with nil twice in the same expression`
+}
+
+func grouped(err error, ok bool) bool {
+	return err != nil && (err != nil && ok) // want `error compared with nil twice in the same expression`
+}
+
+func groupedRight(err error, ok bool) bool {
+	return err != nil && (ok) // want `error compared with nil twice in the same expression`
+}
+
+func acrossOperators(err error, ok bool) bool {
+	return err != nil && (ok || err != nil)
+}
+
+func nested(err error) bool {
+	return (err != nil) || err == nil // want `error compared with nil twice in the same expression`
+}
+
+type item struct{ err error }
+
+func field(it item) bool {
+	return it.err != nil // want `error compared with nil twice in the same expression`
+}
+
+type fault struct{}
+
+func (*fault) Error() string { return "fault" }
+
+type failurePtr interface {
+	error
+	~*fault
+}
+
+type failureMethod interface {
+	~*fault
+	Error() string
+}
+
+func methodConstraint[T failureMethod](err T) bool {
+	return err != nil // want `error compared with nil twice in the same expression`
+}
+
+type pointerOnly interface {
+	~*int
+}
+
+func pointerConstraint[T pointerOnly](err T) bool {
+	return err != nil && err != nil
+}
+
+type mixedPtr interface {
+	~*fault | ~*int
+}
+
+func mixedConstraint[T mixedPtr](err T) bool {
+	return err != nil && err != nil
+}
+
+type faultOnly interface {
+	~*fault
+}
+
+func faultConstraint[T faultOnly](err T) bool {
+	return err != nil && err != nil
+}
+
+func parametric[T failurePtr](err T) bool {
+	return err != nil // want `error compared with nil twice in the same expression`
+}
+
+func concrete(f *fault) bool {
+	return f != nil // want `error compared with nil twice in the same expression`
+}
+
+func converted(f *fault) bool {
+	return error(f) != nil // want `error compared with nil twice in the same expression`
+}
+
+func measured(err error, xs []int) bool {
+	return err != nil && len(xs) > 0 // want `error compared with nil twice in the same expression`
+}
+
+func different(err, other error) bool {
+	return err != nil && other != nil
+}
+
+func opposite(err error) bool {
+	return err != nil && err == nil
+}
+
+func otherValue(err, sentinel error) bool {
+	return err != sentinel && err != sentinel
+}
+
+func asserted(v any) bool {
+	return v.(error) != nil // want `error compared with nil twice in the same expression`
+}
+
+func number(n int) bool {
+	return n != 0 && n != 0
+}
+
+func pointer(p *int) bool {
+	return p != nil && p != nil
+}
+
+func channelLength(ch chan int, errs []error) bool {
+	return errs[len(ch)] != nil && errs[len(ch)] != nil
+}
+
+func parametricLength[T ~chan int](ch T, errs []error) bool {
+	return errs[len(ch)] != nil && errs[len(ch)] != nil
+}
+
+func aliasLength[T ~chan int](ch T, errs []error) bool {
+	type C = T
+	return errs[len(C(ch))] != nil && errs[len(C(ch))] != nil
+}
+
+func sliceLength(xs []int, errs []error) bool {
+	return errs[len(xs)] != nil // want `error compared with nil twice in the same expression`
+}
+
+func channelCapacity(ch chan int, errs []error) bool {
+	return errs[cap(ch)] != nil // want `error compared with nil twice in the same expression`
+}
+
+func shadowedNil(err error) bool {
+	nil := error(nil)
+	return err != nil && err != nil
+}
+
+func received(ch chan error) bool {
+	return (<-ch) != nil || (<-ch) != nil
+}
+
+func addressed() bool {
+	return (&fault{}) != nil || (&fault{}) != nil
+}
+
+func addressedBetween(err error) bool {
+	return err != nil && (&fault{} != nil) && err != nil
+}
+
+func receivedBetween(err error, ch chan bool) bool {
+	return err != nil && <-ch && err != nil
+}
+
+func current() error { return nil }
+
+func convertedCalled() bool {
+	return error(current()) != nil && error(current()) != nil
+}
+
+func numbers() []int { return nil }
+
+func builtinCall(err error) bool {
+	return err != nil && len(numbers()) > 0 && err != nil
+}
+
+func called() bool {
+	return current() != nil && current() != nil
+}
+
+func reset() bool { return true }
+
+func changed(err error) bool {
+	return err != nil && reset() && err != nil
+}
+
+func documented(err error) bool {
+	return err != nil && /* why */ err != nil // want `error compared with nil twice in the same expression`
+}

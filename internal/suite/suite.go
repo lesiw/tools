@@ -121,6 +121,7 @@ import (
 	"lesiw.io/tools/analyzers/equalfold"
 	"lesiw.io/tools/analyzers/errflow"
 	"lesiw.io/tools/analyzers/errfmt"
+	"lesiw.io/tools/analyzers/errisnil"
 	"lesiw.io/tools/analyzers/errorlast"
 	"lesiw.io/tools/analyzers/errshadow"
 	"lesiw.io/tools/analyzers/errstrings"
@@ -362,6 +363,7 @@ var (
 		errcheck.Analyzer,
 		errflow.Analyzer,
 		errfmt.Analyzer,
+		errisnil.Analyzer,
 		errname.New(),
 		errorlast.Analyzer,
 		errorsas.Analyzer,

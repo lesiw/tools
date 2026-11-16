@@ -1150,6 +1150,18 @@
 //		return fmt.Errorf("open failed: %v", err)
 //	}
 //
+// # errisnil
+//
+// Reports an error compared with nil twice in one boolean expression, as
+// err != nil && err != nil. Both comparisons read the same value, so the
+// second changes nothing.
+//
+// Adapted from staticcheck's SA4000 family.
+//
+//	func f(err error) bool {
+//		return err != nil && err != nil
+//	}
+//
 // # errname
 //
 // Reports a sentinel error whose name does not begin with Err, and an error
