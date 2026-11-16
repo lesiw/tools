@@ -1,0 +1,245 @@
+// var debug = true
+// var quiet = true
+package a
+
+import (
+	// var debug = true
+	// var quiet = true
+	_ "os"
+)
+
+// item holds a count.
+type item struct {
+	// var debug = true
+	// var quiet = true
+	count int
+}
+
+// store keeps items.
+type store interface {
+	// var debug = true
+	// var quiet = true
+	Save()
+}
+
+const (
+	// var debug = true
+	// var quiet = true
+	limit = 1
+)
+
+var (
+	alpha = limit
+	_     = recorded
+
+	hook = func() {
+		// import (
+		// 	"os"
+		// )
+	}
+)
+
+// var debug = true
+// var quiet = true
+func Documented() {}
+
+type (
+	// var debug = true
+	// var quiet = true
+	documented struct{}
+)
+
+// var debug = true
+// var quiet = true
+var recorded = 1
+
+// var debug = true
+
+// var debug = true // want `commented-out code`
+// var quiet = true
+
+// var debug = true
+// ]
+
+// item.save()
+
+// import ( // want `commented-out code`
+// 	"os"
+// )
+
+// func served() { // want `commented-out code`
+// 	item.save()
+// }
+
+// func missing(
+// 	count int,
+// ) error
+
+// type small int
+
+// type (
+// 	small int
+// )
+
+// Save stores the item.
+func Save() {}
+
+func beta(v *item) {
+	// item.save() // want `commented-out code`
+	// item.reset()
+
+	// (item.save()) // want `commented-out code`
+	// (item.reset())
+
+	// if v.count == 0 { // want `commented-out code`
+	// 	return
+	// }
+
+	// for v.count > 0 { // want `commented-out code`
+	// 	item.save()
+	// }
+
+	// for range v.count { // want `commented-out code`
+	// 	item.save()
+	// }
+
+	// switch v.count { // want `commented-out code`
+	// case 0:
+	// 	item.save()
+	// }
+
+	// switch v := v.count.(type) { // want `commented-out code`
+	// case int:
+	// 	item.save()
+	// }
+
+	// select { // want `commented-out code`
+	// case <-names:
+	// 	item.save()
+	// }
+
+	// { // want `commented-out code`
+	// 	item.save()
+	// }
+
+	// var saved = *v // want `commented-out code`
+	// _ = saved
+
+	/*
+		item.save()
+		item.reset()
+		// want `commented-out code`
+	*/
+
+	//go:generate echo hi
+	// item.save()
+	// item.reset()
+
+	//nolint
+	// item.save()
+	// item.reset()
+
+	//export Exported
+	// item.save()
+	// item.reset()
+
+	//sys ioctl(fd int) (err error)
+	// item.save()
+	// item.reset()
+
+	//line other.go:1
+	// item.save()
+	// item.reset()
+
+	// item.save()
+	//go:generate echo hi
+	// item.reset()
+
+	// Steps:
+	// item.save()
+	// item.reset()
+
+	// Output:
+	// item.save()
+	// item.reset()
+
+	// item.save()
+
+	// item.save()
+	// ]
+
+	// var saved = *v
+
+	// item.save() // want `commented-out code`
+	// item.reset()
+	var gone = *v
+
+	// import (
+	// 	"os"
+	// )
+
+	_ = alpha /* item.save()
+	item.reset() */
+
+	_ = gone
+
+	// v.count == 0
+	// v.total == 0
+
+	// v.count = 0
+	// v.total = 0
+
+	// return nil // want `commented-out code`
+	// go v.save()
+	// defer v.reset()
+
+	// return nil
+	// return v.count
+
+	// for {
+	// }
+
+	// type (
+	// 	small int
+	// )
+
+	/*
+	 */
+
+	/*
+		// item.save()
+		// item.reset()
+	*/
+
+	// item.save()
+	// }
+	// var saved = *v
+	// func odd() {
+
+	// name: "x",
+	// value: 1
+
+	// case 0:
+	// 	item.save()
+
+	/*
+	 * item.save()
+	 * item.reset()
+	 */
+
+	// not code at all
+
+	v.save()
+}
+
+func ExampleSave() {
+	// Output:
+	// item.save()
+	// item.reset()
+
+	Save()
+}
+
+func (v *item) save() {}
+
+func (v *item) reset() {}

@@ -454,6 +454,19 @@ func fill(xs []byte) {
 }
 ```
 
+## commentedoutcode
+
+Reports a block of commented-out code. The compiler treats a comment as whitespace, so code in one is not type-checked or formatted. A comment on one line is treated as a note.
+
+Inspired by go-critic's commentedOutCode.
+
+```
+func load(names []string) {
+    // println(names)
+    // loadAll(names)
+}
+```
+
 ## commentfmt
 
 Reports a comment with no space after its slashes. The comment reads as code that was commented out, and editors highlight it that way. A doc comment, which gofmt spaces itself, is left alone, as is a directive such as //go:generate and the prefixes //sys, //sysnb and //nolint.

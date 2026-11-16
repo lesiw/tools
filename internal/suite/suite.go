@@ -77,6 +77,7 @@ import (
 	"lesiw.io/tools/analyzers/builtinprint"
 	"lesiw.io/tools/analyzers/builtinshadow"
 	"lesiw.io/tools/analyzers/caseorder"
+	"lesiw.io/tools/analyzers/commentedoutcode"
 	"lesiw.io/tools/analyzers/commentfmt"
 	"lesiw.io/tools/analyzers/containscut"
 	"lesiw.io/tools/analyzers/ctxfield"
@@ -280,6 +281,7 @@ var (
 		builtinshadow.Analyzer,
 		caseorder.Analyzer,
 		cgocall.Analyzer,
+		commentedoutcode.Analyzer,
 		commentfmt.Analyzer,
 		composite.Analyzer,
 		containscut.Analyzer,
