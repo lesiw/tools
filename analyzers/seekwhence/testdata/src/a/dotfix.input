@@ -1,0 +1,11 @@
+package a
+
+import (
+	. "io"
+	iio "io"
+)
+
+func dotFix(s iio.Seeker) error {
+	_, err := s.Seek(SeekStart, iio.SeekEnd) // want `the first argument of Seek is the offset; both arguments contain an io.Seek constant`
+	return err
+}

@@ -1,0 +1,217 @@
+package a
+
+import (
+	"bytes"
+	"io"
+	altio "io"
+	"os"
+)
+
+type localSeeker interface {
+	Seek(offset int64, whence int) (int64, error)
+}
+
+type cursor struct{}
+
+func (cursor) Seek(offset int64, whence int) (int64, error) { return 0, nil }
+
+type reversed struct{}
+
+func (reversed) Seek(whence int, offset int64) (int64, error) { return 0, nil }
+
+const step int = 4
+
+func rewind(s io.Seeker) error {
+	_, err := s.Seek(io.SeekStart, 0) // want `the first argument of Seek is the offset; SeekStart belongs in the second`
+	return err
+}
+
+func fromCurrent(s io.Seeker) error {
+	_, err := s.Seek(io.SeekCurrent, 5) // want `the first argument of Seek is the offset; SeekCurrent belongs in the second`
+	return err
+}
+
+func tail(file *os.File) error {
+	_, err := file.Seek(io.SeekEnd, -3) // want `the first argument of Seek is the offset; SeekEnd belongs in the second`
+	return err
+}
+
+func aliased(s io.Seeker) error {
+	_, err := s.Seek(altio.SeekStart, 0) // want `the first argument of Seek is the offset; SeekStart belongs in the second`
+	return err
+}
+
+func custom(s localSeeker) error {
+	_, err := s.Seek(io.SeekStart, 0) // want `the first argument of Seek is the offset; SeekStart belongs in the second`
+	return err
+}
+
+func concrete(c cursor) error {
+	_, err := c.Seek(io.SeekStart, 0) // want `the first argument of Seek is the offset; SeekStart belongs in the second`
+	return err
+}
+
+func buffered(r *bytes.Reader) error {
+	_, err := r.Seek(io.SeekEnd, -2) // want `the first argument of Seek is the offset; SeekEnd belongs in the second`
+	return err
+}
+
+func parenthesized(s io.Seeker) error {
+	_, err := s.Seek(0, io.SeekEnd) // want `the first argument of Seek is the offset; both arguments contain an io.Seek constant`
+	return err
+}
+
+func typedOffset(s io.Seeker, n int) error {
+	_, err := s.Seek(io.SeekStart, n) // want `the first argument of Seek is the offset; SeekStart belongs in the second`
+	return err
+}
+
+func typedConstant(s io.Seeker) error {
+	_, err := s.Seek(io.SeekEnd, step) // want `the first argument of Seek is the offset; SeekEnd belongs in the second`
+	return err
+}
+
+func untypedConstant(s io.Seeker) error {
+	const offset = 4
+	_, err := s.Seek(io.SeekStart, offset) // want `the first argument of Seek is the offset; SeekStart belongs in the second`
+	return err
+}
+
+func both(s io.Seeker) error {
+	_, err := s.Seek(0, io.SeekEnd) // want `the first argument of Seek is the offset; both arguments contain an io.Seek constant`
+	return err
+}
+
+func bothEnd(s io.Seeker) error {
+	_, err := s.Seek(2, io.SeekStart) // want `the first argument of Seek is the offset; both arguments contain an io.Seek constant`
+	return err
+}
+
+func bothCurrent(s io.Seeker) error {
+	_, err := s.Seek(1, io.SeekStart) // want `the first argument of Seek is the offset; both arguments contain an io.Seek constant`
+	return err
+}
+
+func bothAdded(s io.Seeker) error {
+	_, err := s.Seek(0, io.SeekEnd+0) // want `the first argument of Seek is the offset; both arguments contain an io.Seek constant`
+	return err
+}
+
+func convertedWhence(s io.Seeker) error {
+	_, err := s.Seek(0, int(io.SeekEnd)) // want `the first argument of Seek is the offset; both arguments contain an io.Seek constant`
+	return err
+}
+
+func namedEnd(s io.Seeker) error {
+	const end = io.SeekEnd
+	_, err := s.Seek(io.SeekStart, end) // want `the first argument of Seek is the offset; the second argument has the constant value 2`
+	return err
+}
+
+func namedStart(s io.Seeker) error {
+	const start = io.SeekStart
+	_, err := s.Seek(io.SeekStart, start) // want `the first argument of Seek is the offset; the second argument has the constant value 0`
+	return err
+}
+
+func summedWhence(s io.Seeker) error {
+	_, err := s.Seek(io.SeekStart, 1+0) // want `the first argument of Seek is the offset; the second argument has the constant value 1`
+	return err
+}
+
+func commentedBoth(s io.Seeker) error {
+	_, err := s.Seek((io.SeekStart /* offset */), io.SeekEnd) // want `the first argument of Seek is the offset; both arguments contain an io.Seek constant`
+	return err
+}
+
+func commentedSecond(s io.Seeker) error {
+	_, err := s.Seek(0, io.SeekEnd /* whence */) // want `the first argument of Seek is the offset; both arguments contain an io.Seek constant`
+	return err
+}
+
+func commented(s io.Seeker) error {
+	_, err := s.Seek(io.SeekStart /* offset */, 0) // want `the first argument of Seek is the offset; SeekStart belongs in the second`
+	return err
+}
+
+func commentedAfter(s io.Seeker) error {
+	_, err := s.Seek(io.SeekStart, 0 /* offset */) // want `the first argument of Seek is the offset; SeekStart belongs in the second`
+	return err
+}
+
+func commentedBetween(s io.Seeker) error {
+	_, err := s.Seek(io.SeekStart, /* offset */ 0) // want `the first argument of Seek is the offset; SeekStart belongs in the second`
+	return err
+}
+
+func localConst(s io.Seeker) error {
+	const SeekStart = 0
+	_, err := s.Seek(SeekStart, 0)
+	return err
+}
+
+func localAlias(s io.Seeker) error {
+	const start = io.SeekStart
+	_, err := s.Seek(start, 0)
+	return err
+}
+
+func correct(s io.Seeker, offset int64) error {
+	_, err := s.Seek(offset, io.SeekStart)
+	return err
+}
+
+func zeros(s io.Seeker) error {
+	_, err := s.Seek(0, 0)
+	return err
+}
+
+func literalOffsets(s io.Seeker) error {
+	_, err := s.Seek(1, io.SeekStart)
+	if err != nil {
+		return err
+	}
+	_, err = s.Seek(2, io.SeekStart)
+	return err
+}
+
+func wrongShape(r reversed) error {
+	_, err := r.Seek(io.SeekStart, 0)
+	return err
+}
+
+func methodExpression(file *os.File) error {
+	_, err := (*os.File).Seek(file, io.SeekStart, 0)
+	return err
+}
+
+func storedMethodValue(file *os.File) error {
+	seek := file.Seek
+	_, err := seek(io.SeekStart, 0)
+	return err
+}
+
+type fieldHolder struct {
+	Seek func(offset int64, whence int) (int64, error)
+}
+
+func field(h fieldHolder) error {
+	_, err := h.Seek(io.SeekStart, 0)
+	return err
+}
+
+func Seek(offset int64, whence int) (int64, error) { return 0, nil }
+
+func notMethod() error {
+	_, err := Seek(io.SeekStart, 0)
+	return err
+}
+
+func notWhence(s io.Seeker) error {
+	_, err := s.Seek(int64(io.SeekStart), 0)
+	if err != nil {
+		return err
+	}
+	_, err = s.Seek(io.SeekStart+0, 0)
+	return err
+}

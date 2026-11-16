@@ -2552,6 +2552,17 @@
 //		}
 //	}
 //
+// # seekwhence
+//
+// Reports a Seek call with an io.Seek* constant in the offset argument. Seek
+// takes the offset first and the whence second.
+//
+// Adapted from staticcheck's SA1013.
+//
+//	func toEnd(f *os.File) {
+//		f.Seek(io.SeekEnd, 0)
+//	}
+//
 // # selectone
 //
 // Reports a select statement with a single case clause and no default. The

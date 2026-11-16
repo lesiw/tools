@@ -1,0 +1,8 @@
+package a
+
+import . "io"
+
+func dotSeeker(s Seeker) error {
+	_, err := s.Seek(SeekStart, 0) // want `the first argument of Seek is the offset; SeekStart belongs in the second`
+	return err
+}
