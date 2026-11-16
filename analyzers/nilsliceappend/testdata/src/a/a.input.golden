@@ -1,0 +1,182 @@
+package a
+
+func pair() []int {
+	return []int{1, 2} // want `append to a nil slice; write the slice literal`
+}
+
+func one(s string) []string {
+	return []string{s} // want `append to a nil slice; write the slice literal`
+}
+
+func copyOf(xs []int) []int {
+	return append([]int(nil), xs...)
+}
+
+func empty() []int {
+	return append([]int(nil))
+}
+
+type bytes []byte
+
+func named() bytes {
+	return bytes{'a'} // want `append to a nil slice; write the slice literal`
+}
+
+type slice interface{ ~[]int }
+
+func parameter[T slice](x int) T {
+	return T{x} // want `append to a nil slice; write the slice literal`
+}
+
+func parameterHeader[T slice](x int) bool {
+	if (T{x})[0] == 1 { // want `append to a nil slice; write the slice literal`
+		return true
+	}
+	return false
+}
+
+type first []int
+type second []int
+type either interface{ first | second }
+
+func union[T either](x int) T {
+	return T{x} // want `append to a nil slice; write the slice literal`
+}
+
+type exact interface{ first }
+
+func exactType[T exact](x int) T {
+	return T{x} // want `append to a nil slice; write the slice literal`
+}
+
+type based interface{ ~[]int }
+type embedded interface{ based }
+
+func nested[T embedded](x int) T {
+	return T{x} // want `append to a nil slice; write the slice literal`
+}
+
+type method interface{ String() string }
+
+func intersection[T interface {
+	based
+	method
+}](x int) T {
+	return T{x} // want `append to a nil slice; write the slice literal`
+}
+
+type alias = []int
+
+func aliased() alias {
+	return alias{1} // want `append to a nil slice; write the slice literal`
+}
+
+func parenthesized() []int {
+	return []int{1} // want `append to a nil slice; write the slice literal`
+}
+
+func namedCondition(b byte) bool {
+	if (bytes{b})[0] == 'a' { // want `append to a nil slice; write the slice literal`
+		return true
+	}
+	return false
+}
+
+func forHeader(b byte) {
+	for (bytes{b})[0] == 'a' { // want `append to a nil slice; write the slice literal`
+		return
+	}
+}
+
+func rangeHeader(b byte) {
+	for range (bytes{b}) { // want `append to a nil slice; write the slice literal`
+		return
+	}
+}
+
+func switchHeader(b byte) {
+	switch (bytes{b})[0] { // want `append to a nil slice; write the slice literal`
+	case 'a':
+		return
+	}
+}
+
+func useBytes(bytes)
+
+func callArg() {
+	useBytes(bytes{'a'}) // want `append to a nil slice; write the slice literal`
+}
+
+func parenExpr(b byte) bool {
+	if (bytes{b})[0] == 'a' { // want `append to a nil slice; write the slice literal`
+		return true
+	}
+	return false
+}
+
+func composite() []int {
+	return []int{[]int{1}[0]} // want `append to a nil slice; write the slice literal`
+}
+
+func fromCall() []int {
+	return append(emptySlice(), 1)
+}
+
+func emptySlice() []int {
+	return nil
+}
+
+func sliced() []int {
+	return append([]int(nil)[:0], 1)
+}
+
+func spreadLiteral() []int {
+	return append([]int(nil), []int{1}...)
+}
+
+type wrapped interface{ method }
+
+func wrappedMethod[T interface {
+	based
+	wrapped
+}](x int) T {
+	return T{x} // want `append to a nil slice; write the slice literal`
+}
+
+type narrowed interface {
+	~[]int
+	~[]byte | ~[]int
+}
+
+func narrowedUnion[T narrowed](x int) T {
+	return T{x} // want `append to a nil slice; write the slice literal`
+}
+
+func mapValue(m map[string]int) []map[string]int {
+	return []map[string]int{m} // want `append to a nil slice; write the slice literal`
+}
+
+func commented() []int {
+	return append([]int(nil), 1 /* keep */, 2) // want `append to a nil slice; write the slice literal`
+}
+
+func commentedConversion() []int {
+	return append([]int(nil /* keep */), 1) // want `append to a nil slice; write the slice literal`
+}
+
+func nonNil() []int {
+	return append([]int{}, 1)
+}
+
+func made() []int {
+	return append(make([]int, 0), 1)
+}
+
+func variable(xs []int) []int {
+	return append(xs, 1)
+}
+
+func nilVariable() []int {
+	var xs []int
+	return append(xs, 1)
+}

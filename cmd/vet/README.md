@@ -1849,6 +1849,18 @@ func f(err error) error {
 }
 ```
 
+## nilsliceappend
+
+Reports an append to a nil slice where a slice literal gives the result. The appended values become the elements, and the result is a fresh slice either way.
+
+Adapted from staticcheck's S1019.
+
+```
+func f() []int {
+    return append([]int(nil), 1, 2)
+}
+```
+
 ## niltimer
 
 Reports a call to a method of time.Timer or time.Ticker on a nil pointer. A nil receiver panics.
