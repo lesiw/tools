@@ -1,0 +1,11 @@
+package a
+
+import . "encoding/json"
+
+func marshalDot(c chan int) {
+	Marshal(c) // want `marshaling a value whose type contains a channel`
+}
+
+func marshalDotIndent(c chan int) {
+	MarshalIndent(c, "", "  ") // want `marshaling a value whose type contains a channel`
+}

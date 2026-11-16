@@ -1,0 +1,679 @@
+package a
+
+import (
+	"encoding/json"
+	"encoding/xml"
+	"strings"
+)
+
+type item struct {
+	C chan int
+}
+
+type task struct {
+	F func() error
+}
+
+func marshalChannel(c chan int) {
+	json.Marshal(c) // want `marshaling a value whose type contains a channel`
+}
+
+func marshalFunc(fn func() error) {
+	json.Marshal(fn) // want `marshaling a value whose type contains a func`
+}
+
+func marshalTask(t task) {
+	json.Marshal(t) // want `marshaling a value whose type contains a func via x\.F`
+}
+
+func marshalItem(item item) {
+	json.Marshal(item) // want `marshaling a value whose type contains a channel via x\.C`
+}
+
+func marshalItemPtr(item *item) {
+	json.Marshal(item) // want `marshaling a value whose type contains a channel via x\.C`
+}
+
+type envelope struct {
+	Item item
+}
+
+func marshalEnvelope(e *envelope) {
+	json.Marshal(e) // want `marshaling a value whose type contains a channel via x\.Item\.C`
+}
+
+func marshalItems(items []item) {
+	json.Marshal(items) // want `marshaling a value whose type contains a channel via x\[0\]\.C`
+}
+
+func marshalByID(items map[string]item) {
+	json.Marshal(items) // want `marshaling a value whose type contains a channel via x\[value\]\.C`
+}
+
+func marshalKey(items map[chan int]string) {
+	json.Marshal(items) // want `marshaling a value whose type contains a channel via x\[key\]`
+}
+
+type key struct {
+	C chan int
+}
+
+func marshalStructKey(items map[key]string) {
+	json.Marshal(items) // want `marshaling a value whose type contains a channel via x\[key\]`
+}
+
+type keyInt struct {
+	N int
+}
+
+func marshalStructKeyValue(items map[keyInt]item) {
+	json.Marshal(items)
+}
+
+type keyText chan int
+
+func (keyText) MarshalText() ([]byte, error) {
+	return []byte("key"), nil
+}
+
+func marshalTextKey(items map[keyText]string) {
+	json.Marshal(items)
+}
+
+type keyJSON chan int
+
+func (keyJSON) MarshalJSON() ([]byte, error) {
+	return []byte(`"key"`), nil
+}
+
+func marshalJSONKey(items map[keyJSON]string) {
+	json.Marshal(items) // want `marshaling a value whose type contains a channel via x\[key\]`
+}
+
+func marshalFuncs(fns [2]func()) {
+	json.Marshal(fns) // want `marshaling a value whose type contains a func via x\[0\]`
+}
+
+func marshalZeroArray(a [0]chan int) {
+	json.Marshal(a)
+}
+
+func marshalZeroArrayKey(m map[[0]chan int]string) {
+	json.Marshal(m)
+}
+
+func marshalIndent(item item) {
+	json.MarshalIndent(item, "", "  ") // want `marshaling a value whose type contains a channel via x\.C`
+}
+
+func encode(b *strings.Builder, item item) {
+	json.NewEncoder(b).Encode(item) // want `marshaling a value whose type contains a channel via x\.C`
+}
+
+func encodeExpr(enc *json.Encoder, item item) {
+	(*json.Encoder).Encode(enc, item) // want `marshaling a value whose type contains a channel via x\.C`
+}
+
+type calls chan int
+
+func marshalCalls(c calls) {
+	json.Marshal(c) // want `marshaling a value whose type contains a channel`
+}
+
+func marshalTypeParam[T chan int](v T) {
+	json.Marshal(v) // want `marshaling a value whose type contains a channel`
+}
+
+func marshalFuncParam[T func()](v T) {
+	json.Marshal(v) // want `marshaling a value whose type contains a func`
+}
+
+func marshalTildeParam[T ~chan int](v T) {
+	json.Marshal(v)
+}
+
+func marshalAnyParam[T any](v T) {
+	json.Marshal(v)
+}
+
+type keyStructParam struct {
+	C chan int
+}
+
+func marshalParamKey[K keyStructParam](m map[K]string) {
+	json.Marshal(m) // want `marshaling a value whose type contains a channel via x\[key\]`
+}
+
+func marshalParamKeyValue[K keyStructParam](m map[K]item) {
+	json.Marshal(m) // want `marshaling a value whose type contains a channel via x\[key\]`
+}
+
+func marshalParamKeyNoChan[K keyInt](m map[K]item) {
+	json.Marshal(m)
+}
+
+type mixedKey interface {
+	string | chan int
+}
+
+func marshalMixedKey[K mixedKey](m map[K]string) {
+	json.Marshal(m) // want `marshaling a value whose type contains a channel via x\[key\]`
+}
+
+type tildeFirst interface {
+	~string | chan int
+}
+
+type exactFirst interface {
+	chan int | ~string
+}
+
+func marshalTildeFirst[K tildeFirst](m map[K]string) {
+	json.Marshal(m) // want `marshaling a value whose type contains a channel via x\[key\]`
+}
+
+func marshalExactFirst[K exactFirst](m map[K]string) {
+	json.Marshal(m) // want `marshaling a value whose type contains a channel via x\[key\]`
+}
+
+type unsupportedKeys interface {
+	chan int | [2]int
+}
+
+func marshalUnsupportedKeys[K unsupportedKeys](m map[K]string) {
+	json.Marshal(m) // want `marshaling a value whose type contains a channel via x\[key\]`
+}
+
+type supportedKeys interface {
+	string | int
+}
+
+func marshalSupportedKeys[K supportedKeys](m map[K]string) {
+	json.Marshal(m)
+}
+
+type intersectKey interface {
+	~string | chan int
+	~chan int
+}
+
+func marshalIntersectKey[K intersectKey](m map[K]string) {
+	json.Marshal(m) // want `marshaling a value whose type contains a channel via x\[key\]`
+}
+
+func marshalStructParam[T keyStructParam](v T) {
+	json.Marshal(v) // want `marshaling a value whose type contains a channel via x\.C`
+}
+
+func marshalComparable[T interface {
+	comparable
+	chan int
+}](v T) {
+	json.Marshal(v) // want `marshaling a value whose type contains a channel`
+}
+
+type safeChan chan int
+
+func (safeChan) MarshalJSON() ([]byte, error) {
+	return []byte("null"), nil
+}
+
+type mixed interface {
+	safeChan | chan int
+}
+
+func marshalMixed[T mixed](v T) {
+	json.Marshal(v) // want `marshaling a value whose type contains a channel`
+}
+
+type mixedValueChan interface {
+	chan int | string
+}
+
+func marshalMixedValueChan[T mixedValueChan](v T) {
+	json.Marshal(v) // want `marshaling a value whose type contains a channel`
+}
+
+type mixedValueStruct interface {
+	keyStructParam | string
+}
+
+func marshalMixedValueStruct[T mixedValueStruct](v T) {
+	json.Marshal(v) // want `marshaling a value whose type contains a channel via x\.C`
+}
+
+type stringChan chan int
+
+func (stringChan) String() string {
+	return "safe"
+}
+
+func (stringChan) MarshalJSON() ([]byte, error) {
+	return []byte("null"), nil
+}
+
+type onlySafe interface {
+	stringChan | chan int
+	String() string
+}
+
+func marshalOnlySafe[T onlySafe](v T) {
+	json.Marshal(v)
+}
+
+type safeKey struct {
+	N int
+}
+
+func (safeKey) String() string {
+	return "safe"
+}
+
+type unsafeKey struct {
+	C chan int
+}
+
+type keyMethod interface {
+	safeKey | unsafeKey
+	String() string
+}
+
+func marshalKeyMethod[K keyMethod](m map[K]string) {
+	json.Marshal(m)
+}
+
+type unsafeChan chan int
+
+type methodConstraint interface {
+	unsafeChan | safeChan
+	MarshalJSON() ([]byte, error)
+}
+
+func marshalMethodConstraint[T methodConstraint](v T) {
+	json.Marshal(v)
+}
+
+func marshalUnknownKey[K comparable](m map[K]chan int) {
+	json.Marshal(m) // want `marshaling a value whose type contains a channel via x\[value\]`
+}
+
+type either interface {
+	chan int | func()
+}
+
+func marshalEither[T either](v T) {
+	json.Marshal(v) // want `marshaling a value whose type contains a channel or func`
+}
+
+type paramMarshal chan int
+
+func (*paramMarshal) MarshalJSON() ([]byte, error) {
+	return []byte("null"), nil
+}
+
+func marshalParamValue[T paramMarshal](v T) {
+	json.Marshal(v) // want `marshaling a value whose type contains a channel`
+}
+
+func marshalParamPtr[T paramMarshal](v T) {
+	json.Marshal(&v)
+}
+
+type hidden struct {
+	seen chan int
+	skip chan int `json:"-"`
+	call func()   `json:"-"`
+}
+
+type hiddenTag struct {
+	C chan int `json:"-"`
+}
+
+func marshalHiddenTag(h hiddenTag) {
+	json.Marshal(h)
+}
+
+func marshalHidden(h hidden) {
+	json.Marshal(h)
+}
+
+type holder struct {
+	Value any
+}
+
+func marshalHolder(h holder) {
+	json.Marshal(h)
+}
+
+type wrapped struct {
+	C chan int
+}
+
+func (wrapped) MarshalJSON() ([]byte, error) {
+	return []byte("null"), nil
+}
+
+func marshalWrapped(w wrapped) {
+	json.Marshal(w)
+}
+
+type text struct {
+	C chan int
+}
+
+func (text) MarshalText() ([]byte, error) {
+	return []byte("text"), nil
+}
+
+func marshalText(t text) {
+	json.Marshal(t)
+}
+
+type textPtr struct {
+	C chan int
+}
+
+func (*textPtr) MarshalText() ([]byte, error) {
+	return []byte("text"), nil
+}
+
+func marshalTextPtr(t textPtr) {
+	json.Marshal(t) // want `marshaling a value whose type contains a channel via x\.C`
+}
+
+func marshalTextPtrValue(t *textPtr) {
+	json.Marshal(t)
+}
+
+type keyTextPtr chan int
+
+func (*keyTextPtr) MarshalText() ([]byte, error) {
+	return []byte("key"), nil
+}
+
+func marshalTextPtrKey(m map[keyTextPtr]string) {
+	json.Marshal(m) // want `marshaling a value whose type contains a channel via x\[key\]`
+}
+
+func marshalParamTextPtrKey[K keyTextPtr](m map[K]string) {
+	json.Marshal(m) // want `marshaling a value whose type contains a channel via x\[key\]`
+}
+
+type guarded struct {
+	C chan int
+}
+
+func (*guarded) MarshalJSON() ([]byte, error) {
+	return []byte("null"), nil
+}
+
+func marshalGuarded(g guarded) {
+	json.Marshal(g) // want `marshaling a value whose type contains a channel via x\.C`
+}
+
+func marshalGuardedPtr(g *guarded) {
+	json.Marshal(g)
+}
+
+func marshalGuardedSlice(gs []guarded) {
+	json.Marshal(gs)
+}
+
+func marshalGuardedMap(gs map[string]guarded) {
+	json.Marshal(gs) // want `marshaling a value whose type contains a channel via x\[value\]\.C`
+}
+
+func marshalGuardedArray(gs [1]guarded) {
+	json.Marshal(gs) // want `marshaling a value whose type contains a channel via x\[0\]\.C`
+}
+
+func marshalGuardedArrayPtr(gs *[1]guarded) {
+	json.Marshal(gs)
+}
+
+type promoted struct {
+	*guarded
+}
+
+func marshalPromoted(p promoted) {
+	json.Marshal(p)
+}
+
+type promotedValue struct {
+	guarded
+}
+
+func marshalPromotedValue(p promotedValue) {
+	json.Marshal(p) // want `marshaling a value whose type contains a channel via x\.guarded\.C`
+}
+
+func marshalPromotedValuePtr(p *promotedValue) {
+	json.Marshal(p)
+}
+
+type guardedBox struct {
+	G guarded
+}
+
+func marshalGuardedBox(box guardedBox) {
+	json.Marshal(box) // want `marshaling a value whose type contains a channel via x\.G\.C`
+}
+
+func marshalGuardedBoxPtr(box *guardedBox) {
+	json.Marshal(box)
+}
+
+type inner struct {
+	C chan int
+}
+
+type outer struct {
+	inner
+}
+
+func marshalOuter(o outer) {
+	json.Marshal(o) // want `marshaling a value whose type contains a channel via x\.inner\.C`
+}
+
+type embeddedChan chan int
+
+type hiddenEmbed struct {
+	embeddedChan
+}
+
+func marshalHiddenEmbed(h hiddenEmbed) {
+	json.Marshal(h)
+}
+
+type Calls chan int
+
+type embeddedExported struct {
+	Calls
+}
+
+func marshalEmbeddedExported(e embeddedExported) {
+	json.Marshal(e) // want `marshaling a value whose type contains a channel via x\.Calls`
+}
+
+type embeddedPointer struct {
+	*inner
+}
+
+func marshalEmbeddedPointer(e embeddedPointer) {
+	json.Marshal(e) // want `marshaling a value whose type contains a channel via x\.inner\.C`
+}
+
+type shadow struct {
+	inner
+	C int
+}
+
+func marshalShadow(s shadow) {
+	json.Marshal(s)
+}
+
+type left struct {
+	C chan int
+}
+
+type right struct {
+	C chan int
+}
+
+type ambiguous struct {
+	left
+	right
+}
+
+func marshalAmbiguous(a ambiguous) {
+	json.Marshal(a)
+}
+
+type tagged struct {
+	inner `json:"renamed"`
+}
+
+func marshalTagged(t tagged) {
+	json.Marshal(t) // want `marshaling a value whose type contains a channel via x\.inner\.C`
+}
+
+type payload struct {
+	C chan int
+}
+
+type optional struct {
+	P *payload `json:"p,omitempty"`
+}
+
+func marshalOptional(o optional) {
+	json.Marshal(o) // want `marshaling a value whose type contains a channel via x\.P\.C`
+}
+
+type optionalZero struct {
+	C chan int `json:"c,omitzero"`
+}
+
+func marshalOptionalZero(o optionalZero) {
+	json.Marshal(o) // want `marshaling a value whose type contains a channel via x\.C`
+}
+
+func marshalXML(item item) {
+	xml.Marshal(item)
+}
+
+type number struct {
+	Z complex128
+}
+
+func marshalComplex(n number) {
+	json.Marshal(n)
+}
+
+type taggedLeft struct {
+	C chan int
+}
+
+type taggedRight struct {
+	C int `json:"C"`
+}
+
+type taggedDominant struct {
+	taggedLeft
+	taggedRight
+}
+
+func marshalTaggedDominant(t taggedDominant) {
+	json.Marshal(t)
+}
+
+type taggedChannelLeft struct {
+	C chan int `json:"C"`
+}
+
+type taggedChannelRight struct {
+	C int
+}
+
+type taggedChannel struct {
+	taggedChannelLeft
+	taggedChannelRight
+}
+
+func marshalTaggedChannel(t taggedChannel) {
+	json.Marshal(t) // want `marshaling a value whose type contains a channel via x\.taggedChannelLeft\.C`
+}
+
+func marshalAny(v any) {
+	json.Marshal(v)
+}
+
+func marshalAnySlice(v []any) {
+	json.Marshal(v)
+}
+
+func marshalAnyMap(v map[string]any) {
+	json.Marshal(v)
+}
+
+type taggedBothLeft struct {
+	C chan int `json:"C"`
+}
+
+type taggedBothRight struct {
+	C int `json:"C"`
+}
+
+type taggedBoth struct {
+	taggedBothLeft
+	taggedBothRight
+}
+
+func marshalTaggedBoth(t taggedBoth) {
+	json.Marshal(t)
+}
+
+type dupLeaf struct {
+	C chan int
+}
+
+type dupMid struct {
+	dupLeaf
+}
+
+type dupLeft struct {
+	dupMid
+}
+
+type dupRight struct {
+	*dupMid
+}
+
+type duplicate struct {
+	dupLeft
+	dupRight
+}
+
+func marshalDuplicate(d duplicate) {
+	json.Marshal(d) // want `marshaling a value whose type contains a channel via x\.dupLeft\.dupMid\.dupLeaf\.C`
+}
+
+type directMid struct {
+	C chan int
+}
+
+type directLeft struct {
+	directMid
+}
+
+type directRight struct {
+	*directMid
+}
+
+type directDup struct {
+	directLeft
+	directRight
+}
+
+func marshalDirectDup(d directDup) {
+	json.Marshal(d)
+}

@@ -2236,6 +2236,18 @@ func f(dst, src map[string]int) {
 }
 ```
 
+## marshalfunc
+
+Reports a call to encoding/json that marshals a value whose type contains a channel or a func. The call compiles; Marshal returns an UnsupportedTypeError at run time when it encodes a channel or func.
+
+Inspired by staticcheck's SA1026.
+
+```
+func f(c chan int) {
+    json.Marshal(c)
+}
+```
+
 ## marshalrecv
 
 Reports a write to the receiver of MarshalJSON, MarshalText, MarshalBinary, or GobEncode declared with a value receiver. The method works on a copy, so the write never reaches the caller.
