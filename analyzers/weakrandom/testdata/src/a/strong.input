@@ -1,0 +1,20 @@
+package a
+
+import (
+	crand "crypto/rand"
+	"math/big"
+)
+
+func strongToken() {
+	n, err := crand.Int(crand.Reader, big.NewInt(1000))
+	if err != nil {
+		return
+	}
+	token := int(n.Int64())
+	_ = token
+}
+
+func strongKey() {
+	key := make([]byte, 32)
+	_, _ = crand.Read(key)
+}

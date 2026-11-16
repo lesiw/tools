@@ -1,0 +1,8 @@
+package a
+
+import . "math/rand"
+
+func dotImported() {
+	token := Intn(100) // want `math/rand is not suitable for security-sensitive work; use crypto/rand for a token`
+	use(token)
+}

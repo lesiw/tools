@@ -214,6 +214,7 @@ import (
 	"lesiw.io/tools/analyzers/valswap"
 	"lesiw.io/tools/analyzers/valuereceiver"
 	"lesiw.io/tools/analyzers/vargrouptype"
+	"lesiw.io/tools/analyzers/weakrandom"
 	"lesiw.io/tools/analyzers/whitespace"
 	"lesiw.io/tools/analyzers/wrapperfunc"
 	"lesiw.io/tools/analyzers/yoda"
@@ -443,6 +444,7 @@ var (
 		valuereceiver.Analyzer,
 		vargrouptype.Analyzer,
 		waitgroup.Analyzer,
+		weakrandom.Analyzer,
 		whitespace.Analyzer,
 		wrapperfunc.Analyzer,
 		yoda.Analyzer,
