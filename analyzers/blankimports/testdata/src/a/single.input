@@ -1,0 +1,4 @@
+package a
+
+// net/http/cgi registers handlers.
+import _ "net/http/cgi"

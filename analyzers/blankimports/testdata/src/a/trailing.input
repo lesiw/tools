@@ -1,0 +1,9 @@
+package a
+
+import (
+	"bytes"
+	_ "net/http/pprof"
+	// net/http/pprof registers handlers.
+)
+
+var _ = bytes.MinRead

@@ -1,0 +1,5 @@
+package a
+
+// want +2 `has no comment naming its path`
+
+import _ "embed"

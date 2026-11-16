@@ -1,0 +1,8 @@
+package a
+
+import (
+	_ "image/color" // See image/color...
+	// want +2 `has no comment naming its path`
+
+	_ "net/http" // net/http/pprof registers handlers.
+)

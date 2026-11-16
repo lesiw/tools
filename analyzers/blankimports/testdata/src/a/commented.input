@@ -1,0 +1,23 @@
+package a
+
+// net/http/pprof and image/gif register handlers and a decoder.
+import (
+	_ "net/http/pprof"
+	_ "image/gif"
+)
+
+import (
+	_ "image/png" // image/png registers a decoder.
+
+	// want +2 `has no comment naming its path`
+
+	_ "image/jpeg"
+)
+
+import (
+	"os"
+	_ "net/http/cgi"  // want `has no comment naming its path`
+	_ "net/http/fcgi" // net/http/fcgi registers handlers.
+)
+
+var _ = os.Args

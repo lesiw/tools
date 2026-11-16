@@ -1,0 +1,15 @@
+package a
+
+import (
+	"bytes"
+	"fmt"
+	"io"
+	"os"
+	_ "crypto/rand"         // crypto/rand.SetTestingReader configures the reader.
+	_ "example.com/foo-bar" // example.com/foo-bar registers a value.
+	_ "image/color"         // See image/color.
+	_ "net/http/cgi"        //net/http/cgi registers handlers.
+	_ "net/http/fcgi"       // See https://pkg.go.dev/net/http/fcgi.
+)
+
+var _, _, _, _ = bytes.MinRead, fmt.Sprint, io.EOF, os.Args

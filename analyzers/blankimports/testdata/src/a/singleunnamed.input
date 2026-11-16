@@ -1,0 +1,4 @@
+package a
+
+// registers handlers.
+import _ "net/http/cgi" // want `has no comment naming its path`

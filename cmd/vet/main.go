@@ -302,6 +302,19 @@
 //		}
 //	}
 //
+// # blankimports
+//
+// Reports a blank import in a non-main, non-test file with no comment naming
+// its path. A blank import triggers the imported package's initialization
+// without making a declaration from that package available in the file. Test
+// files, unsafe, and embed with //go:embed are left alone.
+//
+// Adapted from revive's blank-imports.
+//
+//	package a
+//
+//	import _ "net/http/pprof"
+//
 // # bookends
 //
 // Reports bracket layout that the printer would place differently, where a fix

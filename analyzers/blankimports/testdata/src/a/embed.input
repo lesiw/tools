@@ -1,0 +1,12 @@
+package a
+
+import (
+	_ "embed"
+)
+
+// want +2 `has no comment naming its path`
+
+import _ "image/gif"
+
+//go:embed a.go
+var content string

@@ -1,0 +1,30 @@
+package a
+
+import (
+	// net/http/pprof registers handlers on the default mux.
+	_ "net/http/pprof"
+
+	// want +2 `has no comment naming its path`
+
+	_ "image/jpeg"
+
+	// image/png registers a decoder.
+	_ "image/png"
+)
+
+// image/gif registers a decoder.
+import _ "image/gif"
+
+// See image/color.
+import _ "image/color"
+
+// See net/http/cgi.
+import _ "net/http/cgi"
+
+// want +2 `has no comment naming its path`
+
+import _ "net/http"
+
+// want +2 `has no comment naming its path`
+
+import _ "math/rand"

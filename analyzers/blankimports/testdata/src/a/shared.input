@@ -1,0 +1,12 @@
+package a
+
+// These register decoders.
+import (
+	// want +2 `has no comment naming its path`
+
+	_ "image/gif"
+
+	// want +2 `has no comment naming its path`
+
+	_ "image/jpeg"
+)
