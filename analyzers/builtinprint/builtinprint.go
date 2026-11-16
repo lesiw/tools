@@ -195,12 +195,12 @@ func arguments(pass *analysis.Pass, call *ast.CallExpr) (string, bool) {
 	if err != nil {
 		return "", false
 	}
-	open := pass.Fset.Position(call.Lparen).Offset + 1
-	close := pass.Fset.Position(call.Rparen).Offset
-	if open >= close {
+	openAt := pass.Fset.Position(call.Lparen).Offset + 1
+	closeAt := pass.Fset.Position(call.Rparen).Offset
+	if openAt >= closeAt {
 		return "", true
 	}
-	return ", " + string(src[open:close]), true
+	return ", " + string(src[openAt:closeAt]), true
 }
 
 // absent returns the paths that the file has no import for.

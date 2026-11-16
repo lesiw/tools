@@ -27,13 +27,13 @@ import (
 	"golang.org/x/tools/go/analysis"
 )
 
-// max is the count above which a function is reported. A command sets the
+// limit is the count above which a function is reported. A command sets the
 // limit it runs with; the library default is the same one.
-var max = 15
+var limit = 15
 
 // Flags registers the limit.
 func Flags(fs *flag.FlagSet) {
-	fs.IntVar(&max, "max", max, "maximum cyclomatic complexity")
+	fs.IntVar(&limit, "max", limit, "maximum cyclomatic complexity")
 }
 
 var Analyzer = &analysis.Analyzer{
@@ -76,8 +76,8 @@ func check(pass *analysis.Pass, pos token.Pos, body *ast.BlockStmt) {
 		}
 		return true
 	})
-	if count <= max {
+	if count <= limit {
 		return
 	}
-	pass.Reportf(pos, "cyclomatic complexity %d exceeds %d", count, max)
+	pass.Reportf(pos, "cyclomatic complexity %d exceeds %d", count, limit)
 }

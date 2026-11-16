@@ -536,7 +536,7 @@ func (l *loop) operand(e ast.Expr) ast.Expr {
 // the value is a copy. Every other target lives at least as long as the loop.
 // The body is one span, so a declaration inside it has a position inside it.
 func (l *loop) outlives(target ast.Expr) bool {
-	obj, copy, ok := l.origin(target)
+	obj, copyOf, ok := l.origin(target)
 	if !ok {
 		// The store goes through a value the body did not declare.
 		return true
@@ -547,7 +547,7 @@ func (l *loop) outlives(target ast.Expr) bool {
 	if obj.Pos() >= l.stmt.Body.Pos() && obj.Pos() < l.stmt.Body.End() {
 		return false
 	}
-	return !copy || obj.Parent() == l.pass.Pkg.Scope()
+	return !copyOf || obj.Parent() == l.pass.Pkg.Scope()
 }
 
 // origin returns the object the target's memory starts with, and whether the

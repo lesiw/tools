@@ -180,14 +180,14 @@ func (c checker) edits(block *ast.BlockStmt) []analysis.TextEdit {
 // a comment, or shares its line with anything else, does not qualify.
 func (c checker) emptyBlock(block *ast.BlockStmt) (analysis.TextEdit, bool) {
 	var (
-		file   = c.pass.Fset.File(block.Pos())
-		open   = file.Offset(block.Lbrace)
-		close  = file.Offset(block.Rbrace)
-		first  = source.Start(c.src, open)
-		last   = source.End(c.src, close)
-		before = source.Blank(c.src[first:open])
-		after  = source.Blank(c.src[close+1 : last])
-		inside = source.Blank(c.src[open+1 : close])
+		file    = c.pass.Fset.File(block.Pos())
+		openAt  = file.Offset(block.Lbrace)
+		closeAt = file.Offset(block.Rbrace)
+		first   = source.Start(c.src, openAt)
+		last    = source.End(c.src, closeAt)
+		before  = source.Blank(c.src[first:openAt])
+		after   = source.Blank(c.src[closeAt+1 : last])
+		inside  = source.Blank(c.src[openAt+1 : closeAt])
 	)
 	if !(before && after && inside) {
 		return analysis.TextEdit{}, false
