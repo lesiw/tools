@@ -1,0 +1,7 @@
+package a
+
+import "reflect"
+
+func testFile(a, b item) bool {
+	return reflect.DeepEqual(a, b)
+}

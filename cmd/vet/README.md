@@ -620,6 +620,26 @@ func same(a, b error) bool {
 }
 ```
 
+## deepequalptr
+
+Reports a reflect.DeepEqual call on a type with an Equal method and a pointer field. DeepEqual compares the fields and the values the pointers point to, so it can disagree with Equal.
+
+Inspired by staticcheck's SA1021, which reports a net.IP comparison by its bytes.
+
+```
+type item struct {
+    meta *int
+}
+
+func (i item) Equal(other item) bool {
+    return i.meta == other.meta
+}
+
+func same(a, b item) bool {
+    return reflect.DeepEqual(a, b)
+}
+```
+
 ## deepexit
 
 Reports a call to os.Exit, syscall.Exit, or a Fatal function of the log package outside main or init. The call ends the program at that point, so the caller gets no error to handle.

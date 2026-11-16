@@ -1,0 +1,439 @@
+package a
+
+import (
+	"reflect"
+	"time"
+)
+
+type header struct {
+	name string
+}
+
+type item struct {
+	meta  *header
+	count int
+}
+
+func (i item) Equal(other item) bool {
+	return i.meta == other.meta && i.count == other.count
+}
+
+type inner struct {
+	meta *header
+}
+
+func (i inner) Equal(other inner) bool {
+	return i.meta == other.meta
+}
+
+type outer struct {
+	body inner
+}
+
+func (o outer) Equal(other outer) bool {
+	return o.body.Equal(other.body)
+}
+
+type wrapper struct {
+	body inner
+}
+
+type pair struct {
+	left  *header
+	right *header
+}
+
+func (p pair) Equal(other pair) bool {
+	return p.left == other.left && p.right == other.right
+}
+
+type pointer *pair
+
+type indirect struct {
+	value pointer
+}
+
+func (i indirect) Equal(other indirect) bool {
+	return i.value == other.value
+}
+
+type leaf struct {
+	count int
+}
+
+func (l leaf) Equal(other leaf) bool {
+	return l.count == other.count
+}
+
+type plain struct {
+	meta *header
+}
+
+type blank struct {
+	_ *header
+}
+
+func (b blank) Equal(other blank) bool { return true }
+
+type number struct {
+	value *int
+}
+
+func (n number) Equal(other number) bool {
+	return n.value == other.value
+}
+
+type data struct {
+	values []*header
+}
+
+func (d data) Equal(other data) bool { return true }
+
+type table struct {
+	rows map[string]*header
+}
+
+func (t table) Equal(other table) bool { return true }
+
+type array struct {
+	values [2]*header
+}
+
+func (a array) Equal(other array) bool { return true }
+
+type face struct {
+	value any
+}
+
+func (f face) Equal(other face) bool { return true }
+
+type channel struct {
+	done chan *header
+}
+
+func (c channel) Equal(other channel) bool { return true }
+
+type embedded struct {
+	*header
+}
+
+func (e embedded) Equal(other embedded) bool {
+	return e.header == other.header
+}
+
+type boxed[T any] struct {
+	value *T
+}
+
+func (b boxed[T]) Equal(other boxed[T]) bool {
+	return b.value == other.value
+}
+
+type holder[T ~*header] struct {
+	value T
+}
+
+func (h holder[T]) Equal(other holder[T]) bool {
+	return h.value == other.value
+}
+
+type left struct {
+	value *header
+}
+
+func (l left) Equal(other left) bool { return true }
+
+type right struct {
+	value *header
+}
+
+func (r right) Equal(other right) bool { return true }
+
+type base struct {
+	meta *header
+}
+
+func (b base) Equal(other base) bool {
+	return b.meta == other.meta
+}
+
+type promoted struct {
+	base
+}
+
+type wrongParam struct {
+	meta *header
+}
+
+func (w wrongParam) Equal(other int) bool { return false }
+
+type wrongResult struct {
+	meta *header
+}
+
+func (w wrongResult) Equal(other wrongResult) error { return nil }
+
+type pairResult struct {
+	meta *header
+}
+
+func (p pairResult) Equal(other pairResult) (bool, error) {
+	return false, nil
+}
+
+type hidden struct {
+	secret *header
+}
+
+func (h hidden) Equal(other hidden) bool {
+	return h.secret == other.secret
+}
+
+type pointerEqual struct {
+	meta *header
+}
+
+func (p *pointerEqual) Equal(other *pointerEqual) bool {
+	return p.meta == other.meta
+}
+
+type agreeing struct {
+	meta *header
+}
+
+func (a agreeing) Equal(other agreeing) bool {
+	if a.meta == nil || other.meta == nil {
+		return a.meta == other.meta
+	}
+	return *a.meta == *other.meta
+}
+
+type outerBase struct {
+	meta *header
+}
+
+func (b outerBase) Equal(other promotedOuter) bool { return false }
+
+type promotedOuter struct {
+	outerBase
+}
+
+type zeroArray struct {
+	values [0]*header
+}
+
+func (z zeroArray) Equal(other zeroArray) bool { return true }
+
+type sliceType []*header
+
+func (s sliceType) Equal(other sliceType) bool { return true }
+
+type mapType map[string]*header
+
+func (m mapType) Equal(other mapType) bool { return true }
+
+type arrayType [2]*header
+
+func (a arrayType) Equal(other arrayType) bool { return true }
+
+type chanType chan *header
+
+func (c chanType) Equal(other chanType) bool { return true }
+
+type interfaceType interface {
+	Equal(interfaceType) bool
+}
+
+type tree struct {
+	children []tree
+	meta     *header
+}
+
+func (t tree) Equal(other tree) bool {
+	return t.meta == other.meta
+}
+
+type recursive *recursive
+
+func same(a, b item) bool {
+	return reflect.DeepEqual(a, b) // want `reflect\.DeepEqual does not call item\.Equal; pointer field meta is followed to its pointee`
+}
+
+func pointed(a, b *item) bool {
+	return reflect.DeepEqual(a, b) // want `reflect\.DeepEqual does not call item\.Equal; pointer field meta is followed to its pointee`
+}
+
+func doublyPointed(a, b **item) bool {
+	return reflect.DeepEqual(a, b) // want `reflect\.DeepEqual does not call item\.Equal; pointer field meta is followed to its pointee`
+}
+
+func definedPointer(a, b pointer) bool {
+	return reflect.DeepEqual(a, b) // want `reflect\.DeepEqual does not call pair\.Equal; pointer field left is followed to its pointee`
+}
+
+func directInner(a, b inner) bool {
+	return reflect.DeepEqual(a, b) // want `reflect\.DeepEqual does not call inner\.Equal; pointer field meta is followed to its pointee`
+}
+
+func nested(a, b outer) bool {
+	return reflect.DeepEqual(a, b) // want `reflect\.DeepEqual does not call outer\.Equal; pointer field body\.meta is followed to its pointee`
+}
+
+func first(a, b pair) bool {
+	return reflect.DeepEqual(a, b) // want `reflect\.DeepEqual does not call pair\.Equal; pointer field left is followed to its pointee`
+}
+
+func definedPointerField(a, b indirect) bool {
+	return reflect.DeepEqual(a, b) // want `reflect\.DeepEqual does not call indirect\.Equal; pointer field value is followed to its pointee`
+}
+
+func numeric(a, b number) bool {
+	return reflect.DeepEqual(a, b) // want `reflect\.DeepEqual does not call number\.Equal; pointer field value is followed to its pointee`
+}
+
+func embeddedPointer(a, b embedded) bool {
+	return reflect.DeepEqual(a, b) // want `reflect\.DeepEqual does not call embedded\.Equal; pointer field header is followed to its pointee`
+}
+
+func generic[T any](a, b boxed[T]) bool {
+	return reflect.DeepEqual(a, b) // want `reflect\.DeepEqual does not call boxed\[T\]\.Equal; pointer field value is followed to its pointee`
+}
+
+func times(a, b time.Time) bool {
+	return reflect.DeepEqual(a, b) // want `reflect\.DeepEqual does not call time\.Time\.Equal; a pointer field is followed to its pointee`
+}
+
+func promotedValues(a, b promoted) bool {
+	return reflect.DeepEqual(a, b)
+}
+
+func wrongParams(a, b wrongParam) bool {
+	return reflect.DeepEqual(a, b)
+}
+
+func wrongResults(a, b wrongResult) bool {
+	return reflect.DeepEqual(a, b)
+}
+
+func pairResults(a, b pairResult) bool {
+	return reflect.DeepEqual(a, b)
+}
+
+func pointerEqualValues(a, b *pointerEqual) bool {
+	return reflect.DeepEqual(a, b) // want `reflect\.DeepEqual does not call \(\*pointerEqual\)\.Equal; pointer field meta is followed to its pointee`
+}
+
+func valueEqualValues(a, b pointerEqual) bool {
+	return reflect.DeepEqual(a, b) // want `reflect\.DeepEqual does not call \(\*pointerEqual\)\.Equal; pointer field meta is followed to its pointee`
+}
+
+func zeroArrays(a, b zeroArray) bool {
+	return reflect.DeepEqual(a, b)
+}
+
+func topSlice(a, b sliceType) bool {
+	return reflect.DeepEqual(a, b)
+}
+
+func topMap(a, b mapType) bool {
+	return reflect.DeepEqual(a, b)
+}
+
+func topArray(a, b arrayType) bool {
+	return reflect.DeepEqual(a, b)
+}
+
+func topChan(a, b chanType) bool {
+	return reflect.DeepEqual(a, b)
+}
+
+func topInterface(a, b interfaceType) bool {
+	return reflect.DeepEqual(a, b)
+}
+
+func wrappers(a, b wrapper) bool {
+	return reflect.DeepEqual(a, b)
+}
+
+func leaves(a, b leaf) bool {
+	return reflect.DeepEqual(a, b)
+}
+
+func plainValues(a, b plain) bool {
+	return reflect.DeepEqual(a, b)
+}
+
+func integers(a, b *int) bool {
+	return reflect.DeepEqual(a, b)
+}
+
+func recursiveValues(a, b recursive) bool {
+	return reflect.DeepEqual(a, b)
+}
+
+func slices(a, b data) bool {
+	return reflect.DeepEqual(a, b) // want `reflect\.DeepEqual does not call data\.Equal; pointer field values\[\] is followed to its pointee`
+}
+
+func arrays(a, b array) bool {
+	return reflect.DeepEqual(a, b) // want `reflect\.DeepEqual does not call array\.Equal; pointer field values\[\] is followed to its pointee`
+}
+
+func maps(a, b table) bool {
+	return reflect.DeepEqual(a, b) // want `reflect\.DeepEqual does not call table\.Equal; pointer field rows\[\] is followed to its pointee`
+}
+
+func agreeingValues(a, b agreeing) bool {
+	return reflect.DeepEqual(a, b)
+}
+
+func hiddenValues(a, b hidden) bool {
+	return reflect.DeepEqual(a, b) // want `reflect\.DeepEqual does not call hidden\.Equal; pointer field secret is followed to its pointee`
+}
+
+func trees(a, b tree) bool {
+	return reflect.DeepEqual(a, b) // want `reflect\.DeepEqual does not call tree\.Equal; pointer field meta is followed to its pointee`
+}
+
+func promotedOuterValues(a, b promotedOuter) bool {
+	return reflect.DeepEqual(a, b)
+}
+
+func faces(a, b face) bool {
+	return reflect.DeepEqual(a, b)
+}
+
+func channels(a, b channel) bool {
+	return reflect.DeepEqual(a, b)
+}
+
+func blanks(a, b blank) bool {
+	return reflect.DeepEqual(a, b)
+}
+
+func constrained[T ~*header](a, b holder[T]) bool {
+	return reflect.DeepEqual(a, b)
+}
+
+func parameter[T ~*header](a, b T) bool {
+	return reflect.DeepEqual(a, b)
+}
+
+func mixed(a left, b right) bool {
+	return reflect.DeepEqual(a, b)
+}
+
+func anyValues(a, b any) bool {
+	return reflect.DeepEqual(a, b)
+}
+
+func DeepEqual(a, b item) bool { return a == b }
+
+func local(a, b item) bool {
+	return DeepEqual(a, b)
+}
+
+func functionValue(a, b item) bool {
+	equal := reflect.DeepEqual
+	return equal(a, b)
+}

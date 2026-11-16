@@ -88,6 +88,7 @@ import (
 	"lesiw.io/tools/analyzers/ctxname"
 	"lesiw.io/tools/analyzers/ctxvaluetype"
 	"lesiw.io/tools/analyzers/cyclo"
+	"lesiw.io/tools/analyzers/deepequalptr"
 	"lesiw.io/tools/analyzers/deepexit"
 	"lesiw.io/tools/analyzers/defaultcaseorder"
 	"lesiw.io/tools/analyzers/deferinfinite"
@@ -296,6 +297,7 @@ var (
 		ctxvaluetype.Analyzer,
 		cyclo.Analyzer,
 		deepequalerrors.Analyzer,
+		deepequalptr.Analyzer,
 		deepexit.Analyzer,
 		defaultcaseorder.Analyzer,
 		deferinfinite.Analyzer,
