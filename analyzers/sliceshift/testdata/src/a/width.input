@@ -1,0 +1,8 @@
+package a
+
+func shiftWide(destinationSliceWithALongNameForTheTest []int) {
+	// want+1 `loop shifts elements within one slice`
+	for i := 0; i < len(destinationSliceWithALongNameForTheTest)-1; i++ {
+		destinationSliceWithALongNameForTheTest[i] = destinationSliceWithALongNameForTheTest[i+1]
+	}
+}

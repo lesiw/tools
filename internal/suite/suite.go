@@ -237,6 +237,7 @@ import (
 	"lesiw.io/tools/analyzers/singlefield"
 	"lesiw.io/tools/analyzers/slenstr"
 	"lesiw.io/tools/analyzers/sliceclear"
+	"lesiw.io/tools/analyzers/sliceshift"
 	"lesiw.io/tools/analyzers/sloppyreassign"
 	"lesiw.io/tools/analyzers/slowloris"
 	"lesiw.io/tools/analyzers/sortmismatch"
@@ -540,6 +541,7 @@ var (
 		singlefield.Analyzer,
 		slenstr.Analyzer,
 		sliceclear.Analyzer,
+		sliceshift.Analyzer,
 		slog.Analyzer,
 		sloppyreassign.Analyzer,
 		slowloris.Analyzer,

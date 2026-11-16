@@ -3008,6 +3008,20 @@ func f(xs []int, want int) bool {
 }
 ```
 
+## sliceshift
+
+Reports a loop that shifts elements within one slice by an offset. copy allows the source and destination to overlap.
+
+Adapted from staticcheck's S1018.
+
+```
+func f(xs []int) {
+    for i := 0; i < len(xs)-1; i++ {
+        xs[i] = xs[i+1]
+    }
+}
+```
+
 ## slicessort
 
 Reports a sort.Slice over an ordered basic type that compares the elements by index. slices.Sort orders the same slice, from Go 1.21.

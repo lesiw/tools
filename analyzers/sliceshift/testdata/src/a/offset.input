@@ -1,0 +1,16 @@
+package a
+
+func shiftByOffset(xs []int, n, offset int) {
+	// want+1 `loop shifts elements within one slice`
+	for i := 0; i < n; i++ {
+		xs[i] = xs[offset+i]
+	}
+}
+
+func shiftByNamed(xs []int, n int) {
+	const step = 2
+	// want+1 `loop shifts elements within one slice`
+	for i := 0; i < n; i++ {
+		xs[i] = xs[i+step]
+	}
+}

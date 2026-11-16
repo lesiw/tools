@@ -1,0 +1,8 @@
+package a
+
+func shiftFits(tenletters []int) {
+	// want+1 `loop shifts elements within one slice; use copy`
+	for i := 1; i < len(tenletters)-1; i++ {
+		tenletters[i] = tenletters[i+1]
+	}
+}

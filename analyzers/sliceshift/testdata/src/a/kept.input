@@ -1,0 +1,113 @@
+package a
+
+func shiftForwardFromOne(xs []int, n, offset int) {
+	for i := 1; i < n; i++ {
+		xs[i] = xs[i+offset]
+	}
+}
+
+func shiftForwardDown(xs []int, n int) {
+	for i := 0; i < n; i++ {
+		xs[i] = xs[i-1]
+	}
+}
+
+func shiftBackwardUp(xs []int, n int) {
+	for i := n; i > 0; i-- {
+		xs[i] = xs[i+1]
+	}
+}
+
+func shiftBackwardByOffset(xs []int, n, offset int) {
+	for i := n; i > 0; i-- {
+		xs[i] = xs[i-offset]
+	}
+}
+
+func shiftDestinationOffset(xs []int, n int) {
+	for i := 0; i < n; i++ {
+		xs[i+1] = xs[i]
+	}
+}
+
+func shiftOtherSlice(dst, src []int, n int) {
+	for i := 0; i < n; i++ {
+		dst[i] = src[i+1]
+	}
+}
+
+func shiftArray(xs [4]int, n int) {
+	for i := 0; i < n; i++ {
+		xs[i] = xs[i+1]
+	}
+}
+
+func shiftMap(xs map[int]int, n int) {
+	for i := 0; i < n; i++ {
+		xs[i] = xs[i+1]
+	}
+}
+
+func shiftExtra(xs []int, n int) {
+	for i := 0; i < n; i++ {
+		xs[i] = xs[i+1]
+		xs[n] = i
+	}
+}
+
+func shiftInclusive(xs []int, n int) {
+	for i := 0; i <= n; i++ {
+		xs[i] = xs[i+1]
+	}
+}
+
+func shiftStep(xs []int, n int) {
+	for i := 0; i < n; i += 1 {
+		xs[i] = xs[i+1]
+	}
+}
+
+func shiftAssigned(xs []int, n int) {
+	var i int
+	for i = 0; i < n; i++ {
+		xs[i] = xs[i+1]
+	}
+}
+
+func shiftField(rows [][]int, k, n int) {
+	for i := 0; i < n; i++ {
+		rows[k][i] = rows[k][i+1]
+	}
+}
+
+func shiftStartReadsSlice(xs []int, n int) {
+	for i := xs[0]; i < n; i++ {
+		xs[i] = xs[i+1]
+	}
+}
+
+func shiftBoundReadsSlice(xs []int) {
+	for i := 0; i < xs[0]; i++ {
+		xs[i] = xs[i+1]
+	}
+}
+
+func shiftOffsetReadsSlice(xs []int, n int) {
+	for i := 0; i < n; i++ {
+		xs[i] = xs[i+xs[0]]
+	}
+}
+
+func shiftTwoIndexes(xs []int, n int) {
+	for i := 0; i < n; i++ {
+		xs[i] = xs[i+i]
+	}
+}
+
+func shiftCopyShadowed(xs []int, n int) {
+	copy := func(int, int) {}
+	for i := 0; i < n; i++ {
+		xs[i] = xs[i+1]
+	}
+	copy(0, 0)
+}

@@ -1,0 +1,27 @@
+package a
+
+func shiftConstant(xs []int) {
+	// want+1 `loop shifts elements within one slice`
+	for i := 0; i < 4; i++ {
+		xs[i] = xs[i+1]
+	}
+}
+
+func shiftConstantBackward(xs []int) {
+	// want+1 `loop shifts elements within one slice`
+	for i := 4; i > 0; i-- {
+		xs[i] = xs[i-1]
+	}
+}
+
+func shiftNever(xs []int) {
+	for i := 0; i < 0; i++ {
+		xs[i] = xs[i+1]
+	}
+}
+
+func shiftNeverBackward(xs []int) {
+	for i := 0; i > 0; i-- {
+		xs[i] = xs[i-1]
+	}
+}

@@ -1,0 +1,7 @@
+package a
+
+func shiftGeneric[T ~[]int](xs T, n int) {
+	for i := 0; i < n; i++ {
+		xs[i] = xs[i+1]
+	}
+}

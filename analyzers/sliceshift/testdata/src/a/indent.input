@@ -1,0 +1,6 @@
+package a
+
+func shiftInline(xs []int) {
+	// want+1 `loop shifts elements within one slice`
+	if len(xs) > 1 { for i := 0; i < len(xs)-1; i++ { xs[i] = xs[i+1] } }
+}

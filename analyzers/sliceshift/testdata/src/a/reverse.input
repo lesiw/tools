@@ -1,0 +1,78 @@
+package a
+
+func shiftBackward(xs []int, n int) {
+	// want+1 `loop shifts elements within one slice`
+	for i := n; i > 0; i-- {
+		xs[i] = xs[i-1]
+	}
+}
+
+func shiftBackwardCondition(xs []int, n int) {
+	// want+1 `loop shifts elements within one slice`
+	for i := n; 0 < i; i-- {
+		xs[i] = xs[i-1]
+	}
+}
+
+func shiftBackwardByTwo(xs []int, n int) {
+	// want+1 `loop shifts elements within one slice`
+	for i := n; i > 2; i-- {
+		xs[i] = xs[i-2]
+	}
+}
+
+func shiftBackwardToLimit(xs []int) {
+	// want+1 `loop shifts elements within one slice`
+	for i := len(xs) - 1; i > 0; i-- {
+		xs[i] = xs[i-1]
+	}
+}
+
+func shiftBackwardToLimitByTwo(xs []int) {
+	// want+1 `loop shifts elements within one slice`
+	for i := len(xs) - 1; i > 2; i-- {
+		xs[i] = xs[i-2]
+	}
+}
+
+func shiftBackwardFromBelow(xs []int) {
+	// want+1 `loop shifts elements within one slice`
+	for i := len(xs) - 2; i > 0; i-- {
+		xs[i] = xs[i-1]
+	}
+}
+
+func shiftBackwardFromLen(xs []int) {
+	// want+1 `loop shifts elements within one slice`
+	for i := len(xs); i > 0; i-- {
+		xs[i] = xs[i-1]
+	}
+}
+
+func shiftBackwardAtOffsetBoundary(xs []int) {
+	// want+1 `loop shifts elements within one slice; use copy`
+	for i := len(xs) - 1; i > 1; i-- {
+		xs[i] = xs[i-2]
+	}
+}
+
+func shiftBackwardToLimitReversed(xs []int) {
+	// want+1 `loop shifts elements within one slice; use copy`
+	for i := len(xs) - 1; 0 < i; i-- {
+		xs[i] = xs[i-1]
+	}
+}
+
+func shiftBackwardNestedStart(xs []int) {
+	// want+1 `loop shifts elements within one slice; use copy`
+	for i := len(xs) - 1 - 1; i > 0; i-- {
+		xs[i] = xs[i-1]
+	}
+}
+
+func shiftBackwardByTwoBelow(xs []int) {
+	// want+1 `loop shifts elements within one slice`
+	for i := len(xs) - 1; i > 0; i-- {
+		xs[i] = xs[i-2]
+	}
+}
