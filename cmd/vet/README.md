@@ -3809,6 +3809,18 @@ func f(a, b time.Time) bool {
 }
 ```
 
+## timeequal2
+
+Reports a comparison of a time.Time with the zero-value literal using == or !=. IsZero tests the instant alone, so a zero instant in a named location counts as unset.
+
+Inspired by revive's time-equal.
+
+```
+func unset(t time.Time) bool {
+    return t == time.Time{}
+}
+```
+
 ## timeformat
 
 Reports a format that writes the year, the day, then the month. No common date standard runs year-day-month, so 2006-01-02 is usually what was meant.

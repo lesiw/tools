@@ -285,6 +285,7 @@ import (
 	"lesiw.io/tools/analyzers/timeafter"
 	"lesiw.io/tools/analyzers/timedate"
 	"lesiw.io/tools/analyzers/timeequal"
+	"lesiw.io/tools/analyzers/timeequal2"
 	"lesiw.io/tools/analyzers/timelayout"
 	"lesiw.io/tools/analyzers/timenowloop"
 	"lesiw.io/tools/analyzers/timeuntil"
@@ -624,6 +625,7 @@ var (
 		timeafter.Analyzer,
 		timedate.Analyzer,
 		timeequal.Analyzer,
+		timeequal2.Analyzer,
 		timeformat.Analyzer,
 		timelayout.Analyzer,
 		timenowloop.Analyzer,
