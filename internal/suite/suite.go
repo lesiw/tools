@@ -111,6 +111,7 @@ import (
 	"lesiw.io/tools/analyzers/dupbranch"
 	"lesiw.io/tools/analyzers/dupbuildtag"
 	"lesiw.io/tools/analyzers/dupcase"
+	"lesiw.io/tools/analyzers/dupcutset"
 	"lesiw.io/tools/analyzers/dupimport"
 	"lesiw.io/tools/analyzers/duplarg"
 	"lesiw.io/tools/analyzers/duplicatedcond"
@@ -378,6 +379,7 @@ var (
 		dupbranch.Analyzer,
 		dupbuildtag.Analyzer,
 		dupcase.Analyzer,
+		dupcutset.Analyzer,
 		dupimport.Analyzer,
 		duplarg.Analyzer,
 		duplicatedcond.Analyzer,

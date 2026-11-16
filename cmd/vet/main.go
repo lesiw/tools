@@ -982,6 +982,19 @@
 //		return 0
 //	}
 //
+// # dupcutset
+//
+// Reports a strings or bytes Trim, TrimLeft, or TrimRight call whose literal
+// cutset repeats a character. A cutset is the set of code points to remove, so
+// a repeat changes nothing; it is often a prefix or suffix the author meant to
+// name.
+//
+// Adapted from staticcheck's SA1024.
+//
+//	func trim(s string) string {
+//		return strings.Trim(s, "..")
+//	}
+//
 // # dupimport
 //
 // Reports one package imported twice under different names. Both names reach

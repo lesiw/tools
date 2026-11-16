@@ -1,0 +1,88 @@
+package a
+
+import (
+	"bytes"
+	"strings"
+)
+
+func trim(s string) string {
+	return strings.Trim(s, "..") // want `duplicate '\.' in cutset; a cutset is a set of characters`
+}
+
+func trimLeft(s string) string {
+	return strings.TrimLeft(s, "aab") // want `duplicate 'a' in cutset; a cutset is a set of characters`
+}
+
+func trimRight(s string) string {
+	return strings.TrimRight(s, `..`) // want `duplicate '\.' in cutset; a cutset is a set of characters`
+}
+
+func spaced(s string) string {
+	return strings.Trim(s, " \t ") // want `duplicate ' ' in cutset; a cutset is a set of characters`
+}
+
+func escaped(s string) string {
+	return strings.Trim(s, "\n\n") // want `duplicate '\\n' in cutset; a cutset is a set of characters`
+}
+
+func hexEscaped(s string) string {
+	return strings.Trim(s, "\x2e\x2e") // want `duplicate '\.' in cutset; a cutset is a set of characters`
+}
+
+func invalidUTF8(s string) string {
+	return strings.Trim(s, "\xff\xfe")
+}
+
+func multibyte(s string) string {
+	return strings.Trim(s, "éé") // want `duplicate 'é' in cutset; a cutset is a set of characters`
+}
+
+func twoRepeats(s string) string {
+	return strings.Trim(s, "aabb") // want `duplicate 'a' in cutset; a cutset is a set of characters`
+}
+
+func nonAdjacent(s string) string {
+	return strings.Trim(s, "a.a") // want `duplicate 'a' in cutset; a cutset is a set of characters`
+}
+
+func parenthesized(s string) string {
+	return strings.Trim(s, ("..")) // want `duplicate '\.' in cutset; a cutset is a set of characters`
+}
+
+func distinct(s string) string {
+	return strings.Trim(s, "éà")
+}
+
+func unique(s string) string {
+	return strings.Trim(s, ".ab")
+}
+
+func variableCutset(s, cutset string) string {
+	return strings.Trim(s, cutset)
+}
+
+func constantCutset(s string) string {
+	const dots = ".."
+	return strings.Trim(s, dots)
+}
+
+func expressionCutset(s string) string {
+	return strings.Trim(s, "."+".")
+}
+
+func bytesTrim(s []byte) []byte {
+	return bytes.Trim(s, "..") // want `duplicate '\.' in cutset; a cutset is a set of characters`
+}
+
+func bytesTrimLeft(s []byte) []byte {
+	return bytes.TrimLeft(s, "..") // want `duplicate '\.' in cutset; a cutset is a set of characters`
+}
+
+func bytesTrimRight(s []byte) []byte {
+	return bytes.TrimRight(s, "..") // want `duplicate '\.' in cutset; a cutset is a set of characters`
+}
+
+func throughValue(s string) string {
+	trim := strings.Trim
+	return trim(s, "..")
+}
