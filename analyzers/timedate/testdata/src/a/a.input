@@ -1,0 +1,102 @@
+package a
+
+import "time"
+
+const release = "3/1/2024" // want `the layout 2006-01-02 does$`
+
+func unsorted() []string {
+	return []string{
+		"3/1/2024",   // want `the layout 2006-01-02 does$`
+		"31/12/2024", // want `the layout 2006-01-02 does$`
+		"1/01/2024",  // want `the layout 2006-01-02 does$`
+		"03/01/2024", // want `the layout 2006-01-02 does$`
+		"3-1-2024",   // want `the layout 2006-01-02 does$`
+		"31-12-2024", // want `the layout 2006-01-02 does$`
+		"2024-3-1",   // want `the layout 2006-01-02 does$`
+		"2024-01-2",  // want `the layout 2006-01-02 does$`
+		"2024/3/1",   // want `the layout 2006-01-02 does$`
+	}
+}
+
+func clocks() []string {
+	return []string{
+		"3/1/2024 15:04",            // want `the layout 2006-01-02 15:04 does$`
+		"3/1/2024 15:04:05",         // want `the layout 2006-01-02 15:04:05 does$`
+		"3/1/2024 15:04:05.3186369", // want `the layout 2006-01-02 15:04:05.0000000 does$`
+		"3/1/2024 15:04:05,318",     // want `the layout 2006-01-02 15:04:05,000 does$`
+		"3/1/2024 15:04:05.0",       // want `the layout 2006-01-02 15:04:05.0 does$`
+		"3/1/2024T15:04",            // want `the layout 2006-01-02T15:04 does$`
+		"3/1/2024T15:04:05",         // want `the layout 2006-01-02T15:04:05 does$`
+		"2024-01-02 3:04",           // want `the layout 2006-01-02 15:04 does$`
+		"3/1/2024 3:04",             // want `the layout 2006-01-02 15:04 does$`
+	}
+}
+
+func sorted() []string {
+	return []string{
+		"2024-03-01",
+		"2024-12-31",
+		"2024/03/01",
+		"2024/12/31",
+		"2024-03-01 15:04",
+		"2024-03-01 15:04:05",
+		"2024-03-01 15:04:05.3186369",
+		"2019-11-23 08:15:42.5",
+		"2024-03-01T15:04:05",
+	}
+}
+
+func unreported() []string {
+	return []string{
+		"3/1/06",
+		"03012024",
+		"4.8.10",
+		"31.12.2024",
+		"2 Jan 2024",
+		"posted 3/1/2024",
+		"3:04",
+		"3/1/2024 3:04 PM",
+		"3/1/2006",
+		"20240301",
+		"2024-03-01  15:04",
+		"2024-03-01 3:04 PM",
+		"3/1/2024 15:04Z",
+		"3/1/2024 15:4",
+		"3/1/2024 15:04:5",
+		"3/1/2024 15:04:05.1234567890",
+		"3/1/2024 15:04:05.abc",
+		"3/1/2024_15:04",
+	}
+}
+
+type formatter interface{ Format(string) string }
+
+func viaInterface(f formatter) string {
+	return f.Format("1/2/2024") // want `the layout 2006-01-02 does$`
+}
+
+func methodValue(t time.Time) {
+	f := t.Format
+	_ = f("1/2/2024") // want `the layout 2006-01-02 does$`
+}
+
+func arguments(t time.Time) {
+	layout := "1/2/2006"
+	wrong := "1/2/2024" // want `the layout 2006-01-02 does$`
+	_ = t.Format("1/2/2006")
+	_ = t.Format("1/2/2024")
+	_ = t.Format(layout)
+	_ = t.Format(wrong)
+	_ = t.AppendFormat(nil, "01/02/2024")
+	_ = time.Time.Format(t, "1/2/2006")
+	_ = time.Time.Format(t, "1/2/2024")
+	_ = time.Time.AppendFormat(t, nil, "1/2/2024")
+}
+
+func parsed() (time.Time, error) {
+	return time.Parse("1/2/2024", "3/1/2024")
+}
+
+func located() (time.Time, error) {
+	return time.ParseInLocation("1/2/2024", "3/1/2024", time.UTC)
+}

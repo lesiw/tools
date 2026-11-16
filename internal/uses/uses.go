@@ -1,7 +1,7 @@
-// Package uses holds the facts analyzers share about a package's functions:
-// which function a call names, which functions are held as values, which
-// methods its interfaces declare, and whether two signatures have the same
-// parameters and results.
+// Package uses holds the facts analyzers share about a package's functions
+// and calls: which function a call names, which argument is a time layout,
+// which functions are held as values, which methods its interfaces declare,
+// and whether two signatures have the same parameters and results.
 package uses
 
 import (
@@ -34,6 +34,39 @@ func CalleeOf(pass *analysis.Pass, expr ast.Expr) (*ast.Ident, *types.Func, bool
 			return nil, nil, false
 		}
 	}
+}
+
+// LayoutArgs returns the layout and value arguments of a call to
+// time.Time.Format, time.Time.AppendFormat, time.Parse, or
+// time.ParseInLocation. The layout comes back nil for any other call, and the
+// value comes back nil for a call that prints, which takes it from the
+// receiver.
+func LayoutArgs(pass *analysis.Pass, call *ast.CallExpr) (layout, value ast.Expr) {
+	_, fn, ok := CalleeOf(pass, call.Fun)
+	if !ok || fn.Pkg() == nil || fn.Pkg().Path() != "time" {
+		return nil, nil
+	}
+	layoutAt, valueAt := 0, -1
+	switch fn.Name() {
+	case "Format":
+	case "AppendFormat":
+		layoutAt = 1 // the byte slice comes first
+	case "Parse", "ParseInLocation":
+		valueAt = 1
+	default:
+		return nil, nil
+	}
+	if sel, ok := ast.Unparen(call.Fun).(*ast.SelectorExpr); ok {
+		s := pass.TypesInfo.Selections[sel]
+		if s != nil && s.Kind() == types.MethodExpr {
+			layoutAt++ // a method expression passes the receiver first
+		}
+	}
+	layout = call.Args[layoutAt]
+	if valueAt >= 0 {
+		value = call.Args[valueAt]
+	}
+	return layout, value
 }
 
 // Held returns the functions the package uses as a value rather than calls.

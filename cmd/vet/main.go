@@ -2779,6 +2779,13 @@
 //		return nil
 //	}
 //
+// # timedate
+//
+// Reports a numeric date written in a format that does not sort: the year
+// last, or a year-first date with a field that is not padded.
+//
+//	const date = "3/1/2024"
+//
 // # timeequal
 //
 // Reports a comparison of two time.Time values with == or !=, including a

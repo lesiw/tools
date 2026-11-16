@@ -2765,6 +2765,14 @@ func f(ch chan int) error {
 }
 ```
 
+## timedate
+
+Reports a numeric date written in a format that does not sort: the year last, or a year-first date with a field that is not padded.
+
+```
+const date = "3/1/2024"
+```
+
 ## timeequal
 
 Reports a comparison of two time.Time values with == or !=, including a comparison with the zero value. The operator compares the location and the monotonic reading too, and Equal and IsZero compare the instant.

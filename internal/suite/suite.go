@@ -205,6 +205,7 @@ import (
 	"lesiw.io/tools/analyzers/testlabel"
 	"lesiw.io/tools/analyzers/tidytypes"
 	"lesiw.io/tools/analyzers/timeafter"
+	"lesiw.io/tools/analyzers/timedate"
 	"lesiw.io/tools/analyzers/timeequal"
 	"lesiw.io/tools/analyzers/timelayout"
 	"lesiw.io/tools/analyzers/todocomment"
@@ -455,6 +456,7 @@ var (
 		tests.Analyzer,
 		tidytypes.Analyzer,
 		timeafter.Analyzer,
+		timedate.Analyzer,
 		timeequal.Analyzer,
 		timeformat.Analyzer,
 		timelayout.Analyzer,
