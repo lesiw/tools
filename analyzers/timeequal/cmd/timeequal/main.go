@@ -1,4 +1,5 @@
-// Command timeequal reports a time.Time compared with == or !=.
+// Command timeequal reports a time.Time compared with == or !=, except the
+// zero literal.
 package main
 
 import (

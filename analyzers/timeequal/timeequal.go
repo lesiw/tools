@@ -8,19 +8,17 @@
 // handles the case when only one of its arguments has a monotonic clock
 // reading."
 //
-// A comparison against the zero value is a check for an unset time: "the
-// Time.IsZero method gives a simple way of detecting a time that has not been
-// initialized explicitly". IsZero reads the instant alone, so a zero instant
-// in a named zone counts as unset where == calls it set.
+// A comparison against the zero-value literal is left to timeequal2, whose
+// fix writes IsZero. Only a comparison of two time.Time values that are not
+// the zero literal is reported.
 //
-// The fix writes Equal, or IsZero for a comparison against the zero value,
-// and is withheld where the edit would lose a comment, join lines, or take the
-// line past the width. Only two time.Time values are examined: a case in a
-// switch on one, a map keyed by one, and a comparison of a struct or a defined
-// type over one are not.
+// The fix writes Equal, and is withheld where the comparison has a defined
+// boolean type, or the edit would lose a comment, join lines, or take the line
+// past the width. A case in a switch on one, a map keyed by one, and a
+// comparison of a struct or a defined type over one are not reported.
 //
 // The rule is like revive's time-equal, which reports the comparison without a
-// fix and without a zero-value case.
+// fix.
 package timeequal
 
 import (
@@ -34,11 +32,12 @@ import (
 	"golang.org/x/tools/go/analysis"
 
 	"lesiw.io/tools/analyzers/linelen"
+	"lesiw.io/tools/internal/astexpr"
 )
 
 var Analyzer = &analysis.Analyzer{
 	Name: "timeequal",
-	Doc:  "reports a time.Time compared with == or !=",
+	Doc:  "reports a time.Time compared with == or !=, except the zero literal",
 	Run:  run,
 }
 
@@ -62,6 +61,9 @@ func checkFile(pass *analysis.Pass, f *ast.File) {
 			return true
 		}
 		if !isTime(pass, bin.X) || !isTime(pass, bin.Y) {
+			return true
+		}
+		if zeroLiteral(bin.X) || zeroLiteral(bin.Y) {
 			return true
 		}
 		span, negate := target(stack, bin)
@@ -96,34 +98,22 @@ func target(stack []ast.Node, bin *ast.BinaryExpr) (ast.Expr, bool) {
 
 func report(pass *analysis.Pass, file *ast.File, bin *ast.BinaryExpr, span ast.Expr, negate bool) {
 	var (
-		from, to     = span.Pos(), span.End()
-		xZero, yZero = zeroLiteral(bin.X), zeroLiteral(bin.Y)
+		from, to = span.Pos(), span.End()
+		diag     = analysis.Diagnostic{
+			Pos:     from,
+			End:     to,
+			Message: bin.Op.String() + " on a time.Time compares more than the instant",
+		}
+		not = bin.Op == token.NEQ
 	)
-	if xZero && yZero {
-		// Both operands are the literal, so neither is the time under test.
-		return
-	}
-	recv, arg := bin.X, bin.Y
-	if xZero {
-		recv, arg = arg, recv
-	}
-	zero := xZero || yZero
-	message := bin.Op.String() + " on a time.Time compares more than the instant"
-	fix := "Compare with Equal"
-	if zero {
-		message = "time.Time compared with the zero value"
-		fix = "Compare with IsZero"
-	}
-	diag := analysis.Diagnostic{
-		Pos:     from,
-		End:     to,
-		Message: message,
-	}
-	not := bin.Op == token.NEQ
 	if negate {
 		not = !not
 	}
-	text, err := rewrite(pass.Fset, recv, arg, zero, not)
+	if !astexpr.IsBool(pass.TypesInfo.TypeOf(bin)) {
+		pass.Report(diag)
+		return
+	}
+	text, err := rewrite(pass.Fset, bin.X, bin.Y, not)
 	if err != nil || strings.Contains(text, "\n") {
 		// Nothing is quoted that a reader cannot write on one line.
 		pass.Report(diag)
@@ -132,7 +122,7 @@ func report(pass *analysis.Pass, file *ast.File, bin *ast.BinaryExpr, span ast.E
 	diag.Message += "; write " + text
 	if fits(pass, from, to, text) && !commented(file, from, to) {
 		diag.SuggestedFixes = []analysis.SuggestedFix{{
-			Message: fix,
+			Message: "Compare with Equal",
 			TextEdits: []analysis.TextEdit{{
 				Pos:     from,
 				End:     to,
@@ -144,8 +134,8 @@ func report(pass *analysis.Pass, file *ast.File, bin *ast.BinaryExpr, span ast.E
 }
 
 // rewrite returns the text that compares recv with arg, negated when not is
-// set. A comparison against the zero value names IsZero.
-func rewrite(fset *token.FileSet, recv, arg ast.Expr, zero, not bool) (string, error) {
+// set.
+func rewrite(fset *token.FileSet, recv, arg ast.Expr, not bool) (string, error) {
 	var bang string
 	if not {
 		bang = "!"
@@ -153,9 +143,6 @@ func rewrite(fset *token.FileSet, recv, arg ast.Expr, zero, not bool) (string, e
 	text, err := receiverText(fset, recv)
 	if err != nil {
 		return "", err
-	}
-	if zero {
-		return bang + text + ".IsZero()", nil
 	}
 	call, err := render(fset, ast.Unparen(arg))
 	if err != nil {
@@ -175,6 +162,10 @@ func receiverText(fset *token.FileSet, e ast.Expr) (string, error) {
 	case *ast.StarExpr, *ast.UnaryExpr:
 		// A selector after either binds to its operand: *p.Equal(q) is
 		// *(p.Equal(q)).
+		return "(" + text + ")", nil
+	}
+	if astexpr.Composite(e) {
+		// A statement header cannot begin with a composite literal.
 		return "(" + text + ")", nil
 	}
 	return text, nil

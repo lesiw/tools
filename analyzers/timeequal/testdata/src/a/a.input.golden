@@ -17,15 +17,22 @@ func different(a, b time.Time) bool {
 }
 
 func unset(t time.Time) bool {
-	return t.IsZero() // want `compared with the zero value`
+	return t == time.Time{}
 }
 
 func set(t time.Time) bool {
-	return !t.IsZero() // want `compared with the zero value`
+	return time.Time{} != t
 }
 
 func zeroLeft(t time.Time) bool {
-	return t.IsZero() // want `compared with the zero value`
+	return time.Time{} == t
+}
+
+func composite(d time.Duration, u time.Time) bool {
+	if (time.Time{}.Add(d)).Equal(u) { // want `compares more than the instant`
+		return true
+	}
+	return false
 }
 
 func deref(p, q *time.Time) bool {
@@ -41,7 +48,7 @@ func field(t struct{ At time.Time }, u time.Time) bool {
 }
 
 func zeroParen(t time.Time) bool {
-	if t.IsZero() { // want `compared with the zero value`
+	if t == (time.Time{}) {
 		return false
 	}
 	return true
@@ -60,7 +67,7 @@ func parens(a, b time.Time) bool {
 }
 
 func notUnset(t time.Time) bool {
-	return !t.IsZero() // want `compared with the zero value`
+	return !(t == time.Time{})
 }
 
 func notDifferent(a, b time.Time) bool {
@@ -91,6 +98,18 @@ func multiline(a time.Time, zone *time.Location) bool {
 
 func commented(a, b time.Time) bool {
 	return a == /* note */ b // want `compares more than the instant`
+}
+
+type flag bool
+
+func named(a, b time.Time) flag {
+	return a == b // want `compares more than the instant`
+}
+
+type alias = bool
+
+func aliasedFlag(a, b time.Time) alias {
+	return a.Equal(b) // want `compares more than the instant`
 }
 
 type Defined time.Time

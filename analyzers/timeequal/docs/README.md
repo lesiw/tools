@@ -13,10 +13,6 @@ An `analysis.Analyzer` that reports a `time.Time` compared with `==` or `!=`.
 func f(a, b time.Time) bool {
     return a == b // == on a time.Time compares more than the instant; write a.Equal(b)
 }
-
-func g(t time.Time) bool {
-    return t == time.Time{} // time.Time compared with the zero value; write t.IsZero()
-}
 ```
 
 The time package says what the operator does: "Note that the Go == operator
@@ -26,24 +22,24 @@ since t.Equal uses the most accurate comparison available and correctly
 handles the case when only one of its arguments has a monotonic clock
 reading."
 
-A comparison against the zero value is a check for an unset time, and `IsZero`
-expresses it. `IsZero` reads the instant alone, so a zero instant in a named
-zone counts as unset where `==` calls it set.
+A comparison against the zero-value literal is left to `timeequal2`, whose
+fix writes `IsZero`.
 
-The rule examines only a comparison written with the operator, between two
-`time.Time` values. A `case` in a switch on one, a map keyed by one, and a
-comparison of a struct or of a defined type that holds one are not reported.
+The analyzer reports only a comparison written with the operator, between two
+`time.Time` values that are not the zero literal. A `case` in a switch on one,
+a map keyed by one, and a comparison of a struct or of a defined type that
+contains one are not reported.
 
 A comparison can be deliberate: a test that checks a time's representation is
 written the same way as a mistake.
 
 The idea comes from revive's time-equal, which reports the comparison without a
-fix and without a zero-value case.
+fix.
 
-Fixable: the comparison becomes `Equal`, or `IsZero` when exactly one operand
-is the `time.Time{}` literal. The fix is withheld when it would take the line
-past the width, when the comparison spans lines, and when a comment sits
-inside it. A line already past the width still takes the fix.
+Fixable: the comparison becomes `Equal`. The fix is withheld when the
+comparison has a defined boolean type, when it would take the line past the
+width, when the comparison spans lines, and when a comment sits inside it. A
+line already past the width still takes the fix.
 
 ## Usage
 
