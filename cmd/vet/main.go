@@ -1420,6 +1420,22 @@
 //		return errors.Is(errors.ErrUnsupported, err)
 //	}
 //
+// # errreturn
+//
+// Reports an if that returns the value it tests against nil using !=,
+// followed by a return of nil. The branch returns the value when the test
+// holds and the trailing return yields nil otherwise, so one return covers
+// both. The value must have the function's result type.
+//
+// Adapted from revive's if-return.
+//
+//	func f(err error) error {
+//		if err != nil {
+//			return err
+//		}
+//		return nil
+//	}
+//
 // # errshadow
 //
 // Reports a declaration directly in an if body that shadows an error variable

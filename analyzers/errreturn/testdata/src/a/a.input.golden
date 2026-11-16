@@ -1,0 +1,264 @@
+package a
+
+type failure struct{}
+
+func (failure) Error() string { return "failed" }
+
+func load() error { return failure{} }
+
+func loadFailure() *failure { return nil }
+
+type item struct{ id int }
+
+func find(first, second, third, fourth, fifth, sixth int) *item { return nil }
+
+func findName(name string) *item { return nil }
+
+func existing(err error) error {
+	// want +1 `redundant if; write return err`
+	return err
+}
+
+func reversed(err error) error {
+	// want +1 `redundant if; write return err`
+	return err
+}
+
+func parenthesized(err error) error {
+	// want +1 `redundant if; write return err`
+	return err
+}
+
+func declared() error {
+	// want +1 `redundant if; write return load\(\)`
+	return load()
+}
+
+func declaredReversed() error {
+	// want +1 `redundant if; write return load\(\)`
+	return load()
+}
+
+func literalInit() error {
+	// want +1 `redundant if; write return func\(\)`
+	return func() error { return nil }()
+}
+
+func collapsedInit() error {
+	// want +1 `redundant if; write return load\(\)`
+	return load()
+}
+
+func multilineLiteral() error {
+	// want +1 `redundant if; write return func\(\)`
+	return func() error { load(); return load() }()
+}
+
+func named() (err error) {
+	// want +1 `redundant if; write return err`
+	return err
+}
+
+func pointer(p *int) *int {
+	// want +1 `redundant if; write return p`
+	return p
+}
+
+func typedNil(p *failure) error {
+	if p != nil {
+		return p
+	}
+	return nil
+}
+
+func typedInit() error {
+	if err := loadFailure(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func equalsNil(err error) error {
+	if err == nil {
+		return err
+	}
+	return nil
+}
+
+func inSwitch(n int, err error) error {
+	switch n {
+	case 1:
+		// want +1 `redundant if; write return err`
+		return err
+	}
+	return nil
+}
+
+func inSelect(ch chan error) error {
+	select {
+	case err := <-ch:
+		// want +1 `redundant if; write return err`
+		return err
+	}
+	return nil
+}
+
+func inBlock(err error) error {
+	{
+		// want +1 `redundant if; write return err`
+		return err
+	}
+}
+
+func inLiteral(err error) error {
+	inner := func(inner error) error {
+		// want +1 `redundant if; write return inner`
+		return inner
+	}
+	return inner(err)
+}
+
+func commentBefore(err error) error {
+	// the load may fail
+	// want +1 `redundant if; write return err`
+	return err
+}
+
+func trailingComment(err error) error {
+	// want +1 `redundant if; write return err`
+	return err // keep
+}
+
+func trailingWide(err error) error {
+	// want +1 `redundant if`
+	if err != nil {
+		return err
+	}
+	return nil // this comment is long enough to push the replacement over the line
+}
+
+func commentInside(err error) error {
+	// want +1 `redundant if; write return err`
+	if err != nil {
+		// the load failed
+		return err
+	}
+	return nil
+}
+
+func commentBetween(err error) error {
+	// want +1 `redundant if; write return err`
+	if err != nil {
+		return err
+	}
+	// the load succeeded
+	return nil
+}
+
+func headerComment(err error) error {
+	// want +1 `redundant if; write return err`
+	if err != nil /* the load failed */ {
+		return err
+	}
+	return nil
+}
+
+func tailComment(err error) error {
+	// want +1 `redundant if; write return err`
+	if err != nil {
+		return err
+	} // the load succeeded
+	return nil
+}
+
+func wide() *item {
+	// want +1 `redundant if; write return find\(`
+	if p := find(
+		111111111,
+		222222222,
+		333333333,
+		444444444,
+		555555555,
+		666666666,
+	); p != nil {
+		return p
+	}
+	return nil
+}
+
+func raw() *item {
+	// want +1 `redundant if$`
+	if p := findName(`alpha
+beta`); p != nil {
+		return p
+	}
+	return nil
+}
+
+func notAdjacent(err error) error {
+	if err != nil {
+		return err
+	}
+	println("done")
+	return nil
+}
+
+func bodyWork(err error) error {
+	if err != nil {
+		println("failed")
+		return err
+	}
+	return nil
+}
+
+func elseBranch(err error) error {
+	if err != nil {
+		return err
+	} else {
+		return nil
+	}
+}
+
+func otherReturn(err, other error) error {
+	if err != nil {
+		return other
+	}
+	return nil
+}
+
+func otherTail(err, other error) error {
+	if err != nil {
+		return err
+	}
+	return other
+}
+
+func assignment(err error) error {
+	if err = load(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func paired() (int, error) {
+	if n, err := pair(); err != nil {
+		return n, err
+	}
+	return 0, nil
+}
+
+func twoNames() error {
+	if _, err := pair(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func pair() (int, error) { return 0, nil }
+
+func twoResults(err error) (int, error) {
+	if err != nil {
+		return 0, err
+	}
+	return 0, nil
+}
