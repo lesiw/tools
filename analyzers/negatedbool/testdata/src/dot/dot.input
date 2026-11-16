@@ -1,0 +1,7 @@
+package dot
+
+import . "b"
+
+func f() bool {
+	return !On && On // want `the conjunction of an expression and its negation is always false`
+}

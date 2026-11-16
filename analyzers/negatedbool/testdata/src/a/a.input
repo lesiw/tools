@@ -1,0 +1,203 @@
+package a
+
+type flag bool
+
+const (
+	on  = true
+	off = false
+)
+
+const declared flag = true
+
+var packageVar = true
+
+type alias = bool
+
+const aliasOn alias = true
+
+func use(...any) {}
+
+func conjunction(x bool) bool {
+	return !x && x // want `the conjunction of an expression and its negation is always false`
+}
+
+func conjunctionReversed(x bool) bool {
+	return x && !x // want `the conjunction of an expression and its negation is always false`
+}
+
+func disjunction(x bool) bool {
+	return !x || x // want `the disjunction of an expression and its negation is always true`
+}
+
+func disjunctionReversed(x bool) bool {
+	return x || !x // want `the disjunction of an expression and its negation is always true`
+}
+
+func parenthesized(x bool) bool {
+	return !(x) && (x) // want `the conjunction of an expression and its negation is always false`
+}
+
+func grouped(x bool) bool {
+	return (!x) && x // want `the conjunction of an expression and its negation is always false`
+}
+
+func named(x flag) flag {
+	return !x && x // want `the conjunction of an expression and its negation is always false`
+}
+
+func generic[T ~bool](x T) T {
+	return !x && x // want `the conjunction of an expression and its negation is always false`
+}
+
+func local() bool {
+	x := true
+	return !x && x // want `the conjunction of an expression and its negation is always false`
+}
+
+func shadowedFalse() bool {
+	false := true
+	use(false)
+	return !on && on // want `the conjunction of an expression and its negation is always false`
+}
+
+func shadowedTrue() bool {
+	true := false
+	use(true)
+	return !off || off // want `the disjunction of an expression and its negation is always true`
+}
+
+func typedConstant() {
+	x := !declared && declared // want `the conjunction of an expression and its negation is always false`
+	var y flag = x
+	use(y)
+}
+
+func localArray() bool {
+	arr := [1]bool{true}
+	return !(len(arr) > 0) && len(arr) > 0 // want `the conjunction of an expression and its negation is always false`
+}
+
+func packageUse() bool {
+	return !packageVar && packageVar // want `the conjunction of an expression and its negation is always false`
+}
+
+func resultVar() (ok, other bool) {
+	ok = true
+	return !ok && ok, false // want `the conjunction of an expression and its negation is always false`
+}
+
+func aliasedConstant() alias {
+	return !aliasOn && aliasOn // want `the conjunction of an expression and its negation is always false`
+}
+
+func untypedConstant() flag {
+	return !on && on // want `the conjunction of an expression and its negation is always false`
+}
+
+func constantConjunction() bool {
+	return !on && on // want `the conjunction of an expression and its negation is always false`
+}
+
+func constantDisjunction() bool {
+	return !off || off // want `the disjunction of an expression and its negation is always true`
+}
+
+func literalConjunction() bool {
+	return !true && true // want `the conjunction of an expression and its negation is always false`
+}
+
+func literalDisjunction() bool {
+	return !false || false // want `the disjunction of an expression and its negation is always true`
+}
+
+func double(x bool) bool {
+	return !!x // want `negating a boolean twice has no effect`
+}
+
+func parenthesizedDouble(x bool) bool {
+	return !(!x) // want `negating a boolean twice has no effect`
+}
+
+func tight(x bool) bool { return!!x } // want `negating a boolean twice has no effect`
+
+func tightConjunction(x bool) bool { return!x && x } // want `the conjunction of an expression and its negation is always false`
+
+func doubledConjunction(x bool) bool {
+	return !!(!x && x) // want `negating a boolean twice has no effect`
+}
+
+func groupedDouble(a, b bool) bool {
+	return !(!(a || b)) // want `negating a boolean twice has no effect`
+}
+
+func doubleFlag(x flag) flag {
+	return !!x // want `negating a boolean twice has no effect`
+}
+
+func doubleGeneric[T ~bool](x T) T {
+	return !!x // want `negating a boolean twice has no effect`
+}
+
+func triple(x bool) bool {
+	return !!!x // want `negating a boolean twice has no effect`
+}
+
+func constantDouble() bool {
+	return !!true // want `negating a boolean twice has no effect`
+}
+
+func trailing(x bool) bool {
+	return !(!x) /* keep */ // want `negating a boolean twice has no effect`
+}
+
+func effectful(x bool) bool {
+	use(!flip() && flip())
+	use(flip() && !flip())
+	use(!!flip()) // want `negating a boolean twice has no effect`
+	return flip()
+}
+
+func flip() bool { return true }
+
+func received(ch chan bool) {
+	use(!!<-ch) // want `negating a boolean twice has no effect`
+}
+
+func channel(ch chan bool) {
+	use(!(len(ch) > 0) && len(ch) > 0)
+}
+
+func nestedNegation(x bool) {
+	use(!x && !!x) // want `the conjunction of an expression and its negation is always false` `negating a boolean twice has no effect`
+}
+
+func commentedConstant() bool {
+	return ! /* keep */ on && on // want `the conjunction of an expression and its negation is always false`
+}
+
+func commentedDouble(x bool) bool {
+	return !(!x /* keep */) // want `negating a boolean twice has no effect`
+}
+
+func commentedOuter(x bool) bool {
+	return ! /* keep */ !(!x && x) // want `negating a boolean twice has no effect` `the conjunction of an expression and its negation is always false`
+}
+
+type pair struct {
+	on  bool
+	ptr *bool
+}
+
+func compositeDouble() bool {
+	return !(!pair{}.on) // want `negating a boolean twice has no effect`
+}
+
+func compositeStar() bool {
+	return !(!*pair{}.ptr) // want `negating a boolean twice has no effect`
+}
+
+func compositeHeader() {
+	if !(!pair{}.on) { // want `negating a boolean twice has no effect`
+		use(true)
+	}
+}

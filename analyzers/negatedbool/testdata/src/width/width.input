@@ -1,0 +1,9 @@
+package width
+
+func use(bool) {}
+
+func wide(x bool) {
+	// want +1 `negating a boolean twice has no effect`
+	use(!(!(x || x || x || x || x || x || x || x || x || x || x ||
+		x || x || x || x || x || x || x || x || x || x)))
+}

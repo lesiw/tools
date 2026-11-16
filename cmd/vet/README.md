@@ -1675,6 +1675,18 @@ func stopped(v float64) bool {
 }
 ```
 
+## negatedbool
+
+Reports a boolean expression that a negation makes constant or redundant: a conjunction of an expression with its negation, the matching disjunction, or a double negation that cancels. The conjunction is always false and the disjunction is always true.
+
+Adapted from staticcheck's SA4013, which reports a double negation.
+
+```
+func f(ok bool) bool {
+    return !ok && ok
+}
+```
+
 ## newderef
 
 Reports a dereference of a fresh allocation. new(T) zeroes a T and the dereference reads the zero back, which T{} writes directly.

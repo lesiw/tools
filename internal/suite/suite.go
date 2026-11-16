@@ -150,6 +150,7 @@ import (
 	"lesiw.io/tools/analyzers/methodexprcall"
 	"lesiw.io/tools/analyzers/modifiesparam"
 	"lesiw.io/tools/analyzers/nancompare"
+	"lesiw.io/tools/analyzers/negatedbool"
 	"lesiw.io/tools/analyzers/newderef"
 	"lesiw.io/tools/analyzers/nilchecklen"
 	"lesiw.io/tools/analyzers/nilerrwrap"
@@ -382,6 +383,7 @@ var (
 		methodexprcall.Analyzer,
 		modifiesparam.Analyzer,
 		nancompare.Analyzer,
+		negatedbool.Analyzer,
 		newderef.Analyzer,
 		nilchecklen.Analyzer,
 		nilerrwrap.Analyzer,
