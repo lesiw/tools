@@ -1,0 +1,10 @@
+package a
+
+import (
+	"net/http"
+	"testing"
+)
+
+func TestServer(t *testing.T) {
+	_ = &http.Server{Addr: ":8080"}
+}

@@ -182,6 +182,7 @@ import (
 	"lesiw.io/tools/analyzers/singlefield"
 	"lesiw.io/tools/analyzers/sliceclear"
 	"lesiw.io/tools/analyzers/sloppyreassign"
+	"lesiw.io/tools/analyzers/slowloris"
 	"lesiw.io/tools/analyzers/sortmismatch"
 	"lesiw.io/tools/analyzers/sprintfquotedstring"
 	"lesiw.io/tools/analyzers/strcompare"
@@ -415,6 +416,7 @@ var (
 		sliceclear.Analyzer,
 		slog.Analyzer,
 		sloppyreassign.Analyzer,
+		slowloris.Analyzer,
 		sortmismatch.Analyzer,
 		sortslice.Analyzer,
 		sprintfquotedstring.Analyzer,

@@ -2319,6 +2319,18 @@
 //		return nil
 //	}
 //
+// # slowloris
+//
+// Reports an http.Server literal with no timeout for reading headers. A client
+// that sends its headers slowly holds the connection open.
+//
+// Adapted from gosec's G112.
+//
+//	func serve() error {
+//		srv := &http.Server{Addr: ":8080"}
+//		return srv.ListenAndServe()
+//	}
+//
 // # sortmismatch
 //
 // Reports a sort.Slice, sort.SliceStable, or sort.SliceIsSorted call whose

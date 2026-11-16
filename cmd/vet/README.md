@@ -2304,6 +2304,19 @@ func f(name string) error {
 }
 ```
 
+## slowloris
+
+Reports an http.Server literal with no timeout for reading headers. A client that sends its headers slowly holds the connection open.
+
+Adapted from gosec's G112.
+
+```
+func serve() error {
+    srv := &http.Server{Addr: ":8080"}
+    return srv.ListenAndServe()
+}
+```
+
 ## sortmismatch
 
 Reports a sort.Slice, sort.SliceStable, or sort.SliceIsSorted call whose less function does not name the slice the call reads. The call orders, or tests, the elements by values it reads from somewhere else.

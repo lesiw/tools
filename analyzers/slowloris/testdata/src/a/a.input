@@ -1,0 +1,352 @@
+package a
+
+import (
+	"net/http"
+	"net/http/httptest"
+	"time"
+)
+
+const (
+	headerTimeout = 5 * time.Second
+	noTimeout     = 0
+)
+
+var (
+	pkgConfigured = &http.Server{Addr: ":8080"}
+	pkgSibling    = &http.Server{Addr: ":8080"}
+	pkgOpen       = &http.Server{Addr: ":8080"} // want `no header read timeout; a client can hold the connection open`
+	pkgCleared    = &http.Server{Addr: ":8080"} // want `no header read timeout; a client can hold the connection open`
+	pkgRead       = &http.Server{Addr: ":8080", ReadTimeout: time.Minute}
+)
+
+func init() {
+	pkgConfigured.ReadHeaderTimeout = time.Minute
+}
+
+func clear() {
+	pkgCleared.ReadHeaderTimeout = time.Minute
+	pkgCleared.ReadHeaderTimeout = noTimeout
+}
+
+type app struct {
+	server *http.Server
+}
+
+type config struct {
+	ReadHeaderTimeout time.Duration
+}
+
+func unset() *http.Server {
+	return &http.Server{Addr: ":8080"} // want `no header read timeout; a client can hold the connection open`
+}
+
+func valueLiteral() http.Server {
+	return http.Server{Addr: ":8080"} // want `no header read timeout; a client can hold the connection open`
+}
+
+func zeroHeader() *http.Server {
+	return &http.Server{ReadHeaderTimeout: noTimeout} // want `no header read timeout; a client can hold the connection open`
+}
+
+func negativeHeader() *http.Server {
+	return &http.Server{ReadHeaderTimeout: -1} // want `no header read timeout; a client can hold the connection open`
+}
+
+func negativeHeaderWithRead() *http.Server {
+	return &http.Server{ReadHeaderTimeout: -1, ReadTimeout: time.Minute} // want `no header read timeout; a client can hold the connection open`
+}
+
+func negativeRead() *http.Server {
+	return &http.Server{ReadTimeout: -1} // want `no header read timeout; a client can hold the connection open`
+}
+
+func cleared() *http.Server {
+	srv := &http.Server{Addr: ":8080"} // want `no header read timeout; a client can hold the connection open`
+	srv.ReadHeaderTimeout = noTimeout
+	return srv
+}
+
+func recleared() *http.Server {
+	srv := &http.Server{Addr: ":8080"} // want `no header read timeout; a client can hold the connection open`
+	srv.ReadHeaderTimeout = time.Minute
+	srv.ReadHeaderTimeout = noTimeout
+	return srv
+}
+
+func laterNegative() *http.Server {
+	srv := &http.Server{Addr: ":8080"} // want `no header read timeout; a client can hold the connection open`
+	srv.ReadHeaderTimeout = time.Minute
+	srv.ReadHeaderTimeout = -1
+	return srv
+}
+
+func subtract() *http.Server {
+	srv := &http.Server{Addr: ":8080"}
+	srv.ReadHeaderTimeout -= time.Minute
+	return srv
+}
+
+func decrement() *http.Server {
+	srv := &http.Server{Addr: ":8080"}
+	srv.ReadHeaderTimeout--
+	return srv
+}
+
+func compound() *http.Server {
+	srv := &http.Server{Addr: ":8080"}
+	srv.ReadHeaderTimeout += time.Minute
+	return srv
+}
+
+func increment() *http.Server {
+	srv := &http.Server{Addr: ":8080"}
+	srv.ReadHeaderTimeout++
+	return srv
+}
+
+func otherField() *http.Server {
+	srv := &http.Server{Addr: ":8080"} // want `no header read timeout; a client can hold the connection open`
+	srv.Addr = ":8081"
+	return srv
+}
+
+func rebound() *http.Server {
+	srv := &http.Server{Addr: ":8080"} // want `no header read timeout; a client can hold the connection open`
+	srv = &http.Server{Addr: ":8081"}
+	srv.ReadHeaderTimeout = time.Minute
+	return srv
+}
+
+func writtenAbove() *http.Server {
+	srv := &http.Server{Addr: ":8080"}
+	srv.ReadHeaderTimeout = time.Minute
+	srv = &http.Server{Addr: ":8081"} // want `no header read timeout; a client can hold the connection open`
+	return srv
+}
+
+func aliased() *http.Server {
+	srv := &http.Server{Addr: ":8080"} // want `no header read timeout; a client can hold the connection open`
+	other := srv
+	other.ReadHeaderTimeout = time.Minute
+	return srv
+}
+
+func fieldOther(a, b *app) *http.Server {
+	a.server = &http.Server{Addr: ":8080"} // want `no header read timeout; a client can hold the connection open`
+	b.server.ReadHeaderTimeout = time.Minute
+	return a.server
+}
+
+func argument() {
+	serve(&http.Server{Addr: ":8080"}) // want `no header read timeout; a client can hold the connection open`
+}
+
+func serve(*http.Server) {}
+
+func parens() *http.Server {
+	return (&http.Server{Addr: ":8080"}) // want `no header read timeout; a client can hold the connection open`
+}
+
+func inClosure() func() *http.Server {
+	return func() *http.Server {
+		return &http.Server{Addr: ":8080"} // want `no header read timeout; a client can hold the connection open`
+	}
+}
+
+func unsetThenOther() *http.Server {
+	first := &http.Server{Addr: ":8080"} // want `no header read timeout; a client can hold the connection open`
+	second := &http.Server{Addr: ":8081"}
+	second.ReadHeaderTimeout = time.Minute
+	return first
+}
+
+func zeroHeaderWithRead() *http.Server {
+	return &http.Server{ReadHeaderTimeout: noTimeout, ReadTimeout: time.Minute}
+}
+
+func zeroHeaderWithUnknown(read time.Duration) *http.Server {
+	return &http.Server{ReadHeaderTimeout: noTimeout, ReadTimeout: read}
+}
+
+func header() *http.Server {
+	return &http.Server{ReadHeaderTimeout: headerTimeout}
+}
+
+func read() *http.Server {
+	return &http.Server{ReadTimeout: time.Minute}
+}
+
+func unknown(d time.Duration) *http.Server {
+	return &http.Server{ReadHeaderTimeout: d}
+}
+
+func lookalike() config {
+	return config{ReadHeaderTimeout: noTimeout}
+}
+
+func laterHeader() *http.Server {
+	srv := &http.Server{Addr: ":8080"}
+	srv.ReadHeaderTimeout = time.Minute
+	return srv
+}
+
+func laterRead() *http.Server {
+	srv := &http.Server{Addr: ":8080"}
+	srv.ReadTimeout = time.Minute
+	return srv
+}
+
+func laterVar() *http.Server {
+	var srv = &http.Server{Addr: ":8080"}
+	srv.ReadHeaderTimeout = time.Minute
+	return srv
+}
+
+func laterUnknown() *http.Server {
+	var srv = &http.Server{Addr: ":8080"}
+	var read = time.Minute
+	srv.ReadTimeout = read
+	return srv
+}
+
+func conditional(on bool) *http.Server {
+	srv := &http.Server{Addr: ":8080"}
+	if on {
+		srv.ReadHeaderTimeout = time.Minute
+	}
+	return srv
+}
+
+func closureWrite() *http.Server {
+	srv := &http.Server{Addr: ":8080"}
+	func() {
+		srv.ReadHeaderTimeout = time.Minute
+	}()
+	return srv
+}
+
+func fieldWrite(a *app) *http.Server {
+	a.server = &http.Server{Addr: ":8080"}
+	a.server.ReadHeaderTimeout = time.Minute
+	return a.server
+}
+
+func constructor() *app {
+	return &app{server: &http.Server{Addr: ":8080"}} // want `no header read timeout; a client can hold the connection open`
+}
+
+func (a *app) configure() *http.Server {
+	a.server.ReadHeaderTimeout = time.Minute
+	return a.server
+}
+
+func keyedWrite(a *app) *http.Server {
+	a = &app{server: &http.Server{Addr: ":8080"}}
+	a.server.ReadHeaderTimeout = time.Minute
+	return a.server
+}
+
+func allocated() *http.Server {
+	srv := new(http.Server)
+	srv.Addr = ":8080"
+	return srv
+}
+
+func declared() http.Server {
+	var srv http.Server
+	return srv
+}
+
+func nested(a *app) *app {
+	a.server = &http.Server{Addr: ":8080"} // want `no header read timeout; a client can hold the connection open`
+	a = &app{server: &http.Server{Addr: ":8081"}}
+	a.server.ReadHeaderTimeout = time.Minute
+	return a
+}
+
+func mapping() *http.Server {
+	servers := map[string]*http.Server{"a": {Addr: ":8080"}} // want `no header read timeout; a client can hold the connection open`
+	servers["a"].ReadHeaderTimeout = time.Minute
+	return servers["a"]
+}
+
+func newTestServer() *http.Server {
+	return &http.Server{Addr: ":8080"} // want `no header read timeout; a client can hold the connection open`
+}
+
+func element() *http.Server {
+	servers := []*http.Server{{Addr: ":8080"}} // want `no header read timeout; a client can hold the connection open`
+	servers[0].ReadHeaderTimeout = time.Minute
+	return servers[0]
+}
+
+func assignedBoth() *http.Server {
+	srv := &http.Server{Addr: ":8080"}
+	srv.ReadHeaderTimeout, srv.ReadTimeout = noTimeout, time.Minute
+	return srv
+}
+
+func assignedPair() *http.Server {
+	srv := &http.Server{Addr: ":8080"}
+	srv.ReadHeaderTimeout, _ = pairValues()
+	return srv
+}
+
+func pairValues() (time.Duration, error) {
+	return time.Minute, nil
+}
+
+func shortcut() error {
+	return http.ListenAndServe(":8080", nil)
+}
+
+func testServer() *httptest.Server {
+	return httptest.NewServer(http.NotFoundHandler())
+}
+
+func deref() *http.Server {
+	srv := &http.Server{Addr: ":8080"}
+	(*srv).ReadHeaderTimeout = time.Minute
+	return srv
+}
+
+func addressed() http.Server {
+	srv := http.Server{Addr: ":8080"}
+	(&srv).ReadHeaderTimeout = time.Minute
+	return srv
+}
+
+func built() *http.Server {
+	return &http.Server{Addr: ":8080"} // want `no header read timeout; a client can hold the connection open`
+}
+
+func passed() *http.Server {
+	srv := &http.Server{Addr: ":8080"} // want `no header read timeout; a client can hold the connection open`
+	configureServer(srv)
+	return srv
+}
+
+func configureServer(srv *http.Server) {
+	srv.ReadHeaderTimeout = time.Minute
+}
+
+func reboundByCall(a *app) *app {
+	a.server = &http.Server{Addr: ":8080"} // want `no header read timeout; a client can hold the connection open`
+	var err error
+	a.server, err = rebuild()
+	if err != nil {
+		return a
+	}
+	a.server.ReadHeaderTimeout = time.Minute
+	return a
+}
+
+func rebuild() (*http.Server, error) {
+	return &http.Server{ReadHeaderTimeout: time.Minute}, nil
+}
+
+func configuredByCaller() *http.Server {
+	srv := built()
+	srv.ReadHeaderTimeout = time.Minute
+	return srv
+}
