@@ -1,0 +1,8 @@
+package a
+
+import stdos "os"
+
+func aliased(dir string) {
+	// want +1 `os.RemoveAll path built from a variable may be the filesystem root`
+	stdos.RemoveAll(dir + "/")
+}

@@ -1,0 +1,8 @@
+package a
+
+import . "os"
+
+func dotted(dir string) {
+	// want +1 `RemoveAll path built from a variable may be the filesystem root`
+	RemoveAll(dir + "/")
+}

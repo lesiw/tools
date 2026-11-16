@@ -1,0 +1,588 @@
+package a
+
+import (
+	"fmt"
+	"os"
+	"path"
+	"path/filepath"
+)
+
+func remove(dir string) {
+	// want +1 `os.Remove path built from a variable may be the filesystem root`
+	os.Remove(dir + "/")
+}
+
+func removeAll(dir string) {
+	// want +1 `os.RemoveAll path built from a variable may be the filesystem root`
+	os.RemoveAll(dir + "/")
+}
+
+func nested(dir, name string) {
+	// want +1 `os.RemoveAll path built from a variable may be the filesystem root`
+	os.RemoveAll(dir + name + "/")
+}
+
+func cache(dir string) {
+	os.RemoveAll(dir + "/cache")
+}
+
+func separated(dir string) {
+	// want +1 `os.RemoveAll path built from a variable may be the filesystem root`
+	os.RemoveAll(dir + string(os.PathSeparator))
+}
+
+func joined(dir string) {
+	// want +1 `os.RemoveAll path built from a variable may be the filesystem root`
+	os.RemoveAll(filepath.Join(dir, "/"))
+}
+
+func joinedPath(dir string) {
+	// want +1 `os.RemoveAll path built from a variable may be the filesystem root`
+	os.RemoveAll(path.Join(dir, "/"))
+}
+
+func joinedTogether(dir, name string) {
+	// want +1 `os.RemoveAll path built from a variable may be the filesystem root`
+	os.RemoveAll(filepath.Join(dir, name, "/"))
+}
+
+func joinedCache(dir string) {
+	os.RemoveAll(filepath.Join(dir, "/cache"))
+}
+
+func joinedOther(dir string) {
+	// want +1 `os.RemoveAll path built from a variable may be the filesystem root`
+	os.RemoveAll(filepath.Join(dir, "/tmp", ".."))
+}
+
+func joinedConcat(dir string) {
+	// want +1 `os.RemoveAll path built from a variable may be the filesystem root`
+	os.RemoveAll(filepath.Join(dir + "/"))
+}
+
+func joinedSeparator(dir string) {
+	// want +1 `os.RemoveAll path built from a variable may be the filesystem root`
+	os.RemoveAll(filepath.Join(dir, string(os.PathSeparator)))
+}
+
+func joinedSlashes(dir string) {
+	// want +1 `os.RemoveAll path built from a variable may be the filesystem root`
+	os.RemoveAll(filepath.Join(dir, "//"))
+}
+
+func literalFirst(dir string) {
+	// want +1 `os.RemoveAll path built from a variable may be the filesystem root`
+	os.RemoveAll("/" + dir)
+}
+
+func joinedAbsolute(dir string) {
+	// want +1 `os.RemoveAll path built from a variable may be the filesystem root`
+	os.RemoveAll(filepath.Join("/", dir))
+}
+
+func emptyFirst(dir string) {
+	// want +1 `os.RemoveAll path built from a variable may be the filesystem root`
+	os.RemoveAll("" + dir + "/")
+}
+
+func literalPrefix(dir string) {
+	os.RemoveAll("cache/" + dir)
+}
+
+func plain(dir string) {
+	os.RemoveAll(dir)
+}
+
+func relative(dir string) {
+	os.RemoveAll(dir + "cache")
+}
+
+func joinedRelative(dir string) {
+	os.RemoveAll(filepath.Join(dir, "cache"))
+}
+
+func formatted(dir string) {
+	os.RemoveAll(fmt.Sprintf("%s/", dir))
+}
+
+func converted(dir string) {
+	os.RemoveAll(string(dir))
+}
+
+func guarded(dir string) {
+	if dir == "" || filepath.Clean(dir) == "/" {
+		return
+	}
+	os.RemoveAll(dir + "/")
+}
+
+func guardedBody(dir string) {
+	if dir != "" && filepath.Clean(dir) != "/" {
+		os.RemoveAll(dir + "/")
+	}
+}
+
+func guardedElse(dir string) {
+	if dir == "" || filepath.Clean(dir) == "/" {
+		// want +1 `os.RemoveAll path built from a variable may be the filesystem root`
+		os.RemoveAll(dir + "/")
+	} else {
+		os.RemoveAll(dir + "/")
+	}
+}
+
+func guardedLength(dir string) {
+	if len(dir) == 0 || filepath.Clean(dir) == "/" {
+		return
+	}
+	os.RemoveAll(dir + "/")
+}
+
+func guardedClean(dir string) {
+	if filepath.Clean(dir) == "/" || dir == "" {
+		return
+	}
+	os.RemoveAll(dir + "/")
+}
+
+func guardedPositiveLength(dir string) {
+	if len(dir) > 0 && filepath.Clean(dir) != "/" {
+		os.RemoveAll(dir + "/")
+	}
+}
+
+func guardedPathClean(dir string) {
+	if path.Clean(dir) == "/" || dir == "" {
+		return
+	}
+	os.RemoveAll(dir + "/")
+}
+
+func normalized(dir string) {
+	if dir == "" {
+		dir = "cache"
+	} else if filepath.Clean(dir) == "/" {
+		dir = "cache"
+	}
+	os.RemoveAll(dir + "/")
+}
+
+func guardedPath(dir string) {
+	if filepath.Clean(dir+"/") == "/" {
+		return
+	}
+	os.RemoveAll(dir + "/")
+}
+
+func switchCases(dir string) {
+	switch {
+	case dir == "":
+		return
+	case filepath.Clean(dir) == "/":
+		return
+	}
+	os.RemoveAll(dir + "/")
+}
+
+func switchBreak(dir string) {
+	switch {
+	case dir == "":
+		break
+	case filepath.Clean(dir) == "/":
+		break
+	}
+	// want +1 `os.RemoveAll path built from a variable may be the filesystem root`
+	os.RemoveAll(dir + "/")
+}
+
+func switchTrue(dir string) {
+	switch {
+	case dir != "" && filepath.Clean(dir) != "/":
+		os.RemoveAll(dir + "/")
+	}
+}
+
+func guardedNested(dir string) {
+	if filepath.Clean(dir) != "/" {
+		if dir != "" {
+			os.RemoveAll(dir + "/")
+		}
+	}
+}
+
+func guardedPanic(dir string) {
+	if dir == "" || filepath.Clean(dir) == "/" {
+		panic("empty directory")
+	}
+	os.RemoveAll(dir + "/")
+}
+
+func nonEmptyOnly(dir string) {
+	if dir == "" {
+		return
+	}
+	// want +1 `os.RemoveAll path built from a variable may be the filesystem root`
+	os.RemoveAll(dir + "/")
+}
+
+func rootOnly(dir string) {
+	if filepath.Clean(dir) == "/" {
+		return
+	}
+	// want +1 `os.RemoveAll path built from a variable may be the filesystem root`
+	os.RemoveAll(dir + "/")
+}
+
+func reassigned(dir string) {
+	if dir == "" || filepath.Clean(dir) == "/" {
+		return
+	}
+	dir = "/"
+	// want +1 `os.RemoveAll path built from a variable may be the filesystem root`
+	os.RemoveAll(dir + "/")
+}
+
+func assignedLiteral(dir string) {
+	dir = "cache"
+	os.RemoveAll(dir + "/")
+}
+
+func assignedAfterLiteral(dir string) {
+	name := "cache"
+	os.RemoveAll(dir + "/" + name)
+}
+
+func assignedRoot(dir string) {
+	dir = "/tmp/.."
+	// want +1 `os.RemoveAll path built from a variable may be the filesystem root`
+	os.RemoveAll(dir + "/")
+}
+
+func compound(dir string) {
+	dir = "/"
+	dir += ".."
+	// want +1 `os.RemoveAll path built from a variable may be the filesystem root`
+	os.RemoveAll(dir + "/")
+}
+
+func reset(dir *string) { *dir = "/" }
+
+func pointer(dir string) {
+	dir = "cache"
+	reset(&dir)
+	// want +1 `os.RemoveAll path built from a variable may be the filesystem root`
+	os.RemoveAll(dir + "/")
+}
+
+func value() string { return "" }
+
+func getGuard() {
+	if value() != "" && filepath.Clean(value()) != "/" {
+		os.RemoveAll(value() + "/")
+	}
+}
+
+func cleanConstant() {
+	os.RemoveAll(filepath.Clean("/tmp") + "/")
+}
+
+func guardedJoin(dir string) {
+	if filepath.Clean(filepath.Join(dir, "/")) == "/" {
+		return
+	}
+	os.RemoveAll(filepath.Join(dir, "/"))
+}
+
+func guardedField(c *config) {
+	if c.dir != "" && filepath.Clean(c.dir) != "/" {
+		os.RemoveAll(c.dir + "/")
+	}
+}
+
+func guardedIndex(a [1]string) {
+	if a[0] != "" && filepath.Clean(a[0]) != "/" {
+		os.RemoveAll(a[0] + "/")
+	}
+}
+
+func joinedNames(dir, name string) {
+	os.RemoveAll(filepath.Join(dir, name))
+}
+
+func aggregate() {
+	a := [1]string{"cache"}
+	if a[0] != "" && filepath.Clean(a[0]) != "/" {
+		a[0] = "/"
+		// want +1 `os.RemoveAll path built from a variable may be the filesystem root`
+		os.RemoveAll(a[0] + "/")
+	}
+}
+
+func immediate(dir string) {
+	dir = "cache"
+	func() { dir = "/" }()
+	// want +1 `os.RemoveAll path built from a variable may be the filesystem root`
+	os.RemoveAll(dir + "/")
+}
+
+func star(dir string) {
+	dir = "cache"
+	p := &dir
+	*p = "/"
+	// want +1 `os.RemoveAll path built from a variable may be the filesystem root`
+	os.RemoveAll(dir + "/")
+}
+
+var global string
+
+func mutate() { global = "/" }
+
+func indirectGlobal() {
+	global = "cache"
+	if global != "" && filepath.Clean(global) != "/" {
+		mutate()
+		// want +1 `os.RemoveAll path built from a variable may be the filesystem root`
+		os.RemoveAll(global + "/")
+	}
+}
+
+type config struct{ dir string }
+
+func mutateField(c *config) { c.dir = "/" }
+
+func indirectField(c *config) {
+	c.dir = "cache"
+	if c.dir != "" && filepath.Clean(c.dir) != "/" {
+		mutateField(c)
+		// want +1 `os.RemoveAll path built from a variable may be the filesystem root`
+		os.RemoveAll(c.dir + "/")
+	}
+}
+
+func mutateValue() string {
+	global = "/"
+	return ""
+}
+
+func declEffect() {
+	global = "cache"
+	if global != "" && filepath.Clean(global) != "/" {
+		value := mutateValue()
+		_ = value
+		// want +1 `os.RemoveAll path built from a variable may be the filesystem root`
+		os.RemoveAll(global + "/")
+	}
+}
+
+func loopEffect() {
+	global = "cache"
+	if global != "" && filepath.Clean(global) != "/" {
+		for i := 0; i < 1; i++ {
+			mutate()
+		}
+		// want +1 `os.RemoveAll path built from a variable may be the filesystem root`
+		os.RemoveAll(global + "/")
+	}
+}
+
+func closureCall(dir string) {
+	dir = "cache"
+	if dir != "" && filepath.Clean(dir) != "/" {
+		write := func() { dir = "/" }
+		write()
+		// want +1 `os.RemoveAll path built from a variable may be the filesystem root`
+		os.RemoveAll(dir + "/")
+	}
+}
+
+func switchDefault(dir string) {
+	switch {
+	case dir == "":
+		return
+	default:
+		dir = "/"
+	}
+	// want +1 `os.RemoveAll path built from a variable may be the filesystem root`
+	os.RemoveAll(dir + "/")
+}
+
+func switchBranches(dir string, kind int) {
+	switch kind {
+	case 0:
+		dir = "cache"
+	case 1:
+		dir = "cache"
+	default:
+		dir = "cache"
+	}
+	os.RemoveAll(dir + "/")
+}
+
+func mutateDir(p *string) bool { *p = "/"; return true }
+
+func andEffect(dir string) {
+	dir = "cache"
+	if dir != "" && filepath.Clean(dir) != "/" && mutateDir(&dir) {
+		// want +1 `os.RemoveAll path built from a variable may be the filesystem root`
+		os.RemoveAll(dir + "/")
+	}
+}
+
+func resetPtr(p *string) { *p = "/" }
+
+func pointerCall(dir string) {
+	dir = "cache"
+	p := &dir
+	if dir != "" && filepath.Clean(dir) != "/" {
+		resetPtr(p)
+		// want +1 `os.RemoveAll path built from a variable may be the filesystem root`
+		os.RemoveAll(dir + "/")
+	}
+}
+
+func use(f func()) { f() }
+
+func closureIndirect(dir string) {
+	dir = "cache"
+	f := func() { dir = "/" }
+	if dir != "" && filepath.Clean(dir) != "/" {
+		use(f)
+		// want +1 `os.RemoveAll path built from a variable may be the filesystem root`
+		os.RemoveAll(dir + "/")
+	}
+}
+
+func dotdot(dir string) {
+	// want +1 `os.RemoveAll path built from a variable may be the filesystem root`
+	os.RemoveAll(dir + "/..")
+}
+
+func dotdotAssigned(dir string) {
+	dir = "/cache"
+	// want +1 `os.RemoveAll path built from a variable may be the filesystem root`
+	os.RemoveAll(dir + "/..")
+}
+
+func dotdotRelative() {
+	dir := "cache"
+	os.RemoveAll(dir + "/..")
+}
+
+func dotdotAbsolute() {
+	dir := "/cache"
+	// want +1 `os.RemoveAll path built from a variable may be the filesystem root`
+	os.RemoveAll(dir + "/..")
+}
+
+func leadingKnown() {
+	name := "cache"
+	// want +1 `os.RemoveAll path built from a variable may be the filesystem root`
+	os.RemoveAll("/" + name + "/..")
+}
+
+func starCompound(dir string) {
+	dir = "/x"
+	if dir != "" && filepath.Clean(dir) != "/" {
+		p := &dir
+		*p += "/.."
+		// want +1 `os.RemoveAll path built from a variable may be the filesystem root`
+		os.RemoveAll(dir + "/")
+	}
+}
+
+func joinedParent(dir string) {
+	os.RemoveAll(filepath.Join(dir, ".."))
+}
+
+func dotslash(dir string) {
+	// want +1 `os.RemoveAll path built from a variable may be the filesystem root`
+	os.RemoveAll(dir + "/./")
+}
+
+func assignedDot(dir string) {
+	name := ".."
+	// want +1 `os.RemoveAll path built from a variable may be the filesystem root`
+	os.RemoveAll(dir + "/" + name)
+}
+
+func guardedSuffix(dir, name string) {
+	if name == "" || filepath.Clean(name) == "/" {
+		return
+	}
+	// want +1 `os.RemoveAll path built from a variable may be the filesystem root`
+	os.RemoveAll(dir + "/" + name)
+}
+
+func directRootGuard(dir string) {
+	if dir != "/" {
+		// want +1 `os.RemoveAll path built from a variable may be the filesystem root`
+		os.RemoveAll(dir + "/")
+	}
+}
+
+func declaredLiteral() {
+	dir := "cache"
+	os.RemoveAll(dir + "/")
+}
+
+func declaredEmpty() {
+	var dir string
+	// want +1 `os.RemoveAll path built from a variable may be the filesystem root`
+	os.RemoveAll(dir + "/")
+}
+
+func otherGuarded(dir, name string) {
+	if name == "" || filepath.Clean(name) == "/" {
+		return
+	}
+	// want +1 `os.RemoveAll path built from a variable may be the filesystem root`
+	os.RemoveAll(dir + "/")
+}
+
+func prefixGuarded(dir, name string) {
+	if dir == "" || filepath.Clean(dir) == "/" {
+		return
+	}
+	// want +1 `os.RemoveAll path built from a variable may be the filesystem root`
+	os.RemoveAll(dir + name + "/")
+}
+
+func loopReset(dir string) {
+	if dir == "" || filepath.Clean(dir) == "/" {
+		return
+	}
+	for i := 0; i < 1; i++ {
+		dir = "/"
+	}
+	// want +1 `os.RemoveAll path built from a variable may be the filesystem root`
+	os.RemoveAll(dir + "/")
+}
+
+func switchGuard(dir string, kind int) {
+	switch kind {
+	case 0:
+		if dir == "" || filepath.Clean(dir) == "/" {
+			return
+		}
+	}
+	// want +1 `os.RemoveAll path built from a variable may be the filesystem root`
+	os.RemoveAll(dir + "/")
+}
+
+func laterGuard(dir string) {
+	// want +1 `os.RemoveAll path built from a variable may be the filesystem root`
+	os.RemoveAll(dir + "/")
+	if dir == "" || filepath.Clean(dir) == "/" {
+		return
+	}
+}
+
+func captured(dir string) {
+	if dir == "" || filepath.Clean(dir) == "/" {
+		return
+	}
+	func() {
+		// want +1 `os.RemoveAll path built from a variable may be the filesystem root`
+		os.RemoveAll(dir + "/")
+	}()
+}

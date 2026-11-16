@@ -145,6 +145,7 @@ import (
 	"lesiw.io/tools/analyzers/nowsub"
 	"lesiw.io/tools/analyzers/octal"
 	"lesiw.io/tools/analyzers/offby1"
+	"lesiw.io/tools/analyzers/osremoveall"
 	"lesiw.io/tools/analyzers/packagename"
 	"lesiw.io/tools/analyzers/poolarg"
 	"lesiw.io/tools/analyzers/preferdecoderune"
@@ -349,6 +350,7 @@ var (
 		nowsub.Analyzer,
 		octal.Analyzer,
 		offby1.Analyzer,
+		osremoveall.Analyzer,
 		packagename.Analyzer,
 		poolarg.Analyzer,
 		preferdecoderune.Analyzer,

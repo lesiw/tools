@@ -1667,6 +1667,19 @@
 //		label label `json:"label,omitempty"`
 //	}
 //
+// # osremoveall
+//
+// Reports os.Remove or os.RemoveAll on a path that a variable leaves at the
+// filesystem root, as dir + "/" does when dir is empty or the root. For that
+// path, a guard that proves dir is not empty and filepath.Clean(dir) is not
+// the root exempts the call.
+//
+// Adapted from staticcheck's SA9007.
+//
+//	func removeDir(dir string) {
+//		os.RemoveAll(dir + "/")
+//	}
+//
 // # packagename
 //
 // Reports a meaningless package name, a name with an underscore, or a name
