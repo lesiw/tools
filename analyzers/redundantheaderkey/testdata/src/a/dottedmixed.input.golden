@@ -1,0 +1,9 @@
+package a
+
+import . "net/http"
+
+func dottedMixed(h headerAlias) string {
+	first := h.Get(CanonicalHeaderKey(/* key */ "some-key")) // want `http\.Header\.Get canonicalizes the key; http\.CanonicalHeaderKey is redundant`
+	_ = first
+	return h.Get("other-key") // want `http\.Header\.Get canonicalizes the key; http\.CanonicalHeaderKey is redundant`
+}

@@ -2786,6 +2786,18 @@
 //
 //	package a
 //
+// # redundantheaderkey
+//
+// Reports a call to http.CanonicalHeaderKey on the key argument of an
+// http.Header method. Add, Set, Get, Del, and Values canonicalize the key
+// themselves, so the call is redundant.
+//
+// Adapted from staticcheck's S1035.
+//
+//	func f(h http.Header) {
+//		h.Get(http.CanonicalHeaderKey("some-key"))
+//	}
+//
 // # redundantreturn
 //
 // Reports a return that ends the body of a function declaring no results. The

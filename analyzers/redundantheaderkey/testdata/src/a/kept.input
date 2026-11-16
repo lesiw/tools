@@ -1,0 +1,60 @@
+package a
+
+import (
+	"net/http"
+	"net/textproto"
+)
+
+type own struct{}
+
+func (own) Get(string) string { return "" }
+
+func value(h http.Header) {
+	h.Set("some-key", http.CanonicalHeaderKey("some-value"))
+}
+
+func directMap(h http.Header) {
+	h[http.CanonicalHeaderKey("some-key")] = nil
+	_ = h[http.CanonicalHeaderKey("some-key")]
+}
+
+func ownGet(o own) string {
+	return o.Get(http.CanonicalHeaderKey("some-key"))
+}
+
+func mime(m textproto.MIMEHeader) string {
+	return m.Get(http.CanonicalHeaderKey("some-key"))
+}
+
+func methodValue(h http.Header) string {
+	get := h.Get
+	return get(http.CanonicalHeaderKey("some-key"))
+}
+
+func other(fn func(string)) {
+	fn(http.CanonicalHeaderKey("some-key"))
+}
+
+func local(h http.Header) string {
+	CanonicalHeaderKey := func(string) string { return "" }
+	return h.Get(CanonicalHeaderKey("some-key"))
+}
+
+func subset(h http.Header) error {
+	return h.WriteSubset(nil, map[string]bool{
+		http.CanonicalHeaderKey("some-key"): true,
+	})
+}
+
+func packageFunction(url string) (*http.Response, error) {
+	return http.Get(http.CanonicalHeaderKey(url))
+}
+
+func deleteKey(h http.Header, key string) {
+	delete(h, http.CanonicalHeaderKey(key))
+}
+
+func functionValue(h http.Header, key string) string {
+	chk := http.CanonicalHeaderKey
+	return h.Get(chk(key))
+}

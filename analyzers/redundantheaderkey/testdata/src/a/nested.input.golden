@@ -1,0 +1,7 @@
+package a
+
+import "net/http"
+
+func nested(h, inner http.Header) {
+	h.Set(inner.Get(http.CanonicalHeaderKey("some-key")), "some-value") // want `http\.Header\.Set canonicalizes the key; http\.CanonicalHeaderKey is redundant` `http\.Header\.Get canonicalizes the key; http\.CanonicalHeaderKey is redundant`
+}

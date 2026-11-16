@@ -1,0 +1,11 @@
+package a
+
+import "net/http"
+
+func methodExpression(h http.Header) string {
+	return http.Header.Get(h, "some-key") // want `http\.Header\.Get canonicalizes the key; http\.CanonicalHeaderKey is redundant`
+}
+
+func pointerMethodExpression(h *http.Header) string {
+	return (*http.Header).Get(h, "some-key") // want `http\.Header\.Get canonicalizes the key; http\.CanonicalHeaderKey is redundant`
+}

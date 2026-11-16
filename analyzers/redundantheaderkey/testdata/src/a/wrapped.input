@@ -1,0 +1,10 @@
+package a
+
+import "net/http"
+
+func wrappedKey(h http.Header, key string) string {
+	// want +1 `http\.Header\.Get canonicalizes the key; http\.CanonicalHeaderKey is redundant`
+	return h.Get(http.CanonicalHeaderKey(
+		key,
+	))
+}

@@ -1,0 +1,11 @@
+package a
+
+import (
+	. "net/http"
+	web "net/http"
+)
+
+func dottedField(h web.Header) string {
+	_ = web.Server{Addr: "some-address"}
+	return h.Get(CanonicalHeaderKey("some-key")) // want `http\.Header\.Get canonicalizes the key; http\.CanonicalHeaderKey is redundant`
+}

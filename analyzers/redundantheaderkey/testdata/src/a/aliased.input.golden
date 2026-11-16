@@ -1,0 +1,7 @@
+package a
+
+import web "net/http"
+
+func aliased(h web.Header, key string) string {
+	return h.Get(key) // want `http\.Header\.Get canonicalizes the key; http\.CanonicalHeaderKey is redundant`
+}

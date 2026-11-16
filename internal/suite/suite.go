@@ -224,6 +224,7 @@ import (
 	"lesiw.io/tools/analyzers/recvtype"
 	"lesiw.io/tools/analyzers/redundantalias"
 	"lesiw.io/tools/analyzers/redundantbuildtag"
+	"lesiw.io/tools/analyzers/redundantheaderkey"
 	"lesiw.io/tools/analyzers/redundantreturn"
 	"lesiw.io/tools/analyzers/redundantsprint"
 	"lesiw.io/tools/analyzers/regexpconst"
@@ -528,6 +529,7 @@ var (
 		recvtype.Analyzer,
 		redundantalias.Analyzer,
 		redundantbuildtag.Analyzer,
+		redundantheaderkey.Analyzer,
 		redundantreturn.Analyzer,
 		redundantsprint.Analyzer,
 		reflectvaluecompare.Analyzer,

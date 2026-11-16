@@ -1,0 +1,29 @@
+package a
+
+import "net/http"
+
+func get(h http.Header) string {
+	return h.Get("some-key") // want `http\.Header\.Get canonicalizes the key; http\.CanonicalHeaderKey is redundant`
+}
+
+func set(h http.Header) {
+	h.Set("some-key", "some-value") // want `http\.Header\.Set canonicalizes the key; http\.CanonicalHeaderKey is redundant`
+}
+
+func add(h http.Header) {
+	h.Add("some-key", "some-value") // want `http\.Header\.Add canonicalizes the key; http\.CanonicalHeaderKey is redundant`
+}
+
+func del(h http.Header) {
+	h.Del("some-key") // want `http\.Header\.Del canonicalizes the key; http\.CanonicalHeaderKey is redundant`
+}
+
+func values(h http.Header) []string {
+	return h.Values("some-key") // want `http\.Header\.Values canonicalizes the key; http\.CanonicalHeaderKey is redundant`
+}
+
+type headerAlias = http.Header
+
+func aliasedType(h headerAlias) string {
+	return h.Get("some-key") // want `http\.Header\.Get canonicalizes the key; http\.CanonicalHeaderKey is redundant`
+}

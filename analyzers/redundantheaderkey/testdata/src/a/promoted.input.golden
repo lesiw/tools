@@ -1,0 +1,9 @@
+package a
+
+import "net/http"
+
+type carrier struct{ http.Header }
+
+func promoted(c carrier) string {
+	return c.Get("some-key") // want `http\.Header\.Get canonicalizes the key; http\.CanonicalHeaderKey is redundant`
+}

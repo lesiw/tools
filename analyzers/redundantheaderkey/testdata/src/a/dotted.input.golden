@@ -1,0 +1,7 @@
+package a
+
+import . "net/http"
+
+func dotted(h Header) string {
+	return h.Get("some-key") // want `http\.Header\.Get canonicalizes the key; http\.CanonicalHeaderKey is redundant`
+}

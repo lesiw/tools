@@ -1,0 +1,7 @@
+package a
+
+import . "net/http"
+
+func dottedArgument(h headerAlias) string {
+	return h.Get(CanonicalHeaderKey(MethodGet)) // want `http\.Header\.Get canonicalizes the key; http\.CanonicalHeaderKey is redundant`
+}

@@ -1,0 +1,11 @@
+package a
+
+import "net/http"
+
+func parenthesized(h http.Header) string {
+	return h.Get((http.CanonicalHeaderKey)("some-key")) // want `http\.Header\.Get canonicalizes the key; http\.CanonicalHeaderKey is redundant`
+}
+
+func wrapped(h http.Header) string {
+	return h.Get((http.CanonicalHeaderKey("some-key"))) // want `http\.Header\.Get canonicalizes the key; http\.CanonicalHeaderKey is redundant`
+}

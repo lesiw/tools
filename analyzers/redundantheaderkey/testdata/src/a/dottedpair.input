@@ -1,0 +1,9 @@
+package a
+
+import . "net/http"
+
+func dottedPair(h headerAlias) string {
+	first := h.Get(CanonicalHeaderKey("some-key")) // want `http\.Header\.Get canonicalizes the key; http\.CanonicalHeaderKey is redundant`
+	_ = first
+	return h.Get(CanonicalHeaderKey("other-key")) // want `http\.Header\.Get canonicalizes the key; http\.CanonicalHeaderKey is redundant`
+}

@@ -1,0 +1,7 @@
+package a
+
+import "net/http"
+
+func commented(h http.Header) string {
+	return h.Get(http.CanonicalHeaderKey(/* key */ "some-key")) // want `http\.Header\.Get canonicalizes the key; http\.CanonicalHeaderKey is redundant`
+}
