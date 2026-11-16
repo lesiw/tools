@@ -1,0 +1,11 @@
+package a
+
+import (
+	"crypto/tls"
+	"testing"
+)
+
+func TestClient(t *testing.T) {
+	_ = &tls.Config{InsecureSkipVerify: true}
+	_ = &tls.Config{MinVersion: tls.VersionTLS10}
+}

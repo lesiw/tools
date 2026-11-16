@@ -4030,6 +4030,18 @@ func newToken() int {
 }
 ```
 
+## weaktls
+
+Reports a tls.Config literal with InsecureSkipVerify set to the constant true, or with a nonzero MinVersion constant below TLS 1.2. When InsecureSkipVerify is true, crypto/tls accepts any certificate presented by the server and any host name in that certificate. The zero MinVersion selects the TLS 1.2 default.
+
+Adapted from gosec's G402.
+
+```
+func skip() *tls.Config {
+    return &tls.Config{InsecureSkipVerify: true}
+}
+```
+
 ## wgbody
 
 Reports a Done call on the group a sync.WaitGroup.Go call starts, unless an earlier Add that is neither deferred nor started with go can raise the count. Reports an unrecovered panic in the function passed to Go. The Done call removes the task Go added, and the sync documentation says that function must not panic.

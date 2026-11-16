@@ -1,0 +1,246 @@
+package a
+
+import (
+	"crypto/tls"
+	"crypto/x509"
+	"net/http"
+)
+
+const skipVerification = true
+
+var clients = []*tls.Config{{
+	InsecureSkipVerify: true, // want `InsecureSkipVerify accepts any certificate and host name`
+}}
+
+var byName = map[string]*tls.Config{
+	"alpha-one": {MinVersion: tls.VersionTLS10}, // want `MinVersion below the TLS 1.2 default`
+}
+
+type configPointer *tls.Config
+
+var definedPointers = []configPointer{{
+	InsecureSkipVerify: true, // want `InsecureSkipVerify accepts any certificate and host name`
+}}
+
+var pointerMap = map[string]configPointer{
+	"alpha-one": {InsecureSkipVerify: true}, // want `InsecureSkipVerify accepts any certificate and host name`
+}
+
+func client() *http.Client {
+	return &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true, // want `InsecureSkipVerify accepts any certificate and host name`
+			},
+		},
+	}
+}
+
+func namedTrue() *tls.Config {
+	return &tls.Config{
+		InsecureSkipVerify: skipVerification, // want `InsecureSkipVerify accepts any certificate and host name`
+	}
+}
+
+func parenthesized() *tls.Config {
+	return &tls.Config{
+		InsecureSkipVerify: (true), // want `InsecureSkipVerify accepts any certificate and host name`
+	}
+}
+
+func checked() *tls.Config {
+	return &tls.Config{
+		InsecureSkipVerify: false,
+	}
+}
+
+func unknown(verify bool) *tls.Config {
+	return &tls.Config{
+		InsecureSkipVerify: verify,
+	}
+}
+
+func custom() *tls.Config {
+	return &tls.Config{
+		InsecureSkipVerify: true,
+		VerifyConnection:   func(tls.ConnectionState) error { return nil },
+	}
+}
+
+func customPeer() *tls.Config {
+	return &tls.Config{
+		InsecureSkipVerify: true, // want `InsecureSkipVerify accepts any certificate and host name`
+		VerifyPeerCertificate: func([][]byte, [][]*x509.Certificate) error {
+			return nil
+		},
+	}
+}
+
+func customPeerNoResume() *tls.Config {
+	return &tls.Config{
+		InsecureSkipVerify: true,
+		VerifyPeerCertificate: func([][]byte, [][]*x509.Certificate) error {
+			return nil
+		},
+		SessionTicketsDisabled: true,
+	}
+}
+
+func peerVariable(verify func([][]byte, [][]*x509.Certificate) error) *tls.Config {
+	return &tls.Config{
+		InsecureSkipVerify:     true,
+		VerifyPeerCertificate:  verify,
+		SessionTicketsDisabled: true,
+	}
+}
+
+func peerConvertedNil() *tls.Config {
+	return &tls.Config{
+		InsecureSkipVerify:     true, // want `InsecureSkipVerify accepts any certificate and host name`
+		VerifyPeerCertificate:  (func([][]byte, [][]*x509.Certificate) error)(nil),
+		SessionTicketsDisabled: true,
+	}
+}
+
+func callbackVariable(verify func(tls.ConnectionState) error) *tls.Config {
+	return &tls.Config{
+		InsecureSkipVerify: true,
+		VerifyConnection:   verify,
+	}
+}
+
+func customLegacy() *tls.Config {
+	return &tls.Config{
+		InsecureSkipVerify: true,
+		MinVersion:         tls.VersionTLS10, // want `MinVersion below the TLS 1.2 default`
+		VerifyConnection:   func(tls.ConnectionState) error { return nil },
+	}
+}
+
+func convertedNil() *tls.Config {
+	return &tls.Config{
+		InsecureSkipVerify: true, // want `InsecureSkipVerify accepts any certificate and host name`
+		VerifyConnection:   (func(tls.ConnectionState) error)(nil),
+	}
+}
+
+func nilConnection() *tls.Config {
+	return &tls.Config{
+		InsecureSkipVerify: true, // want `InsecureSkipVerify accepts any certificate and host name`
+		VerifyConnection:   nil,
+	}
+}
+
+func nilCallback() *tls.Config {
+	return &tls.Config{
+		InsecureSkipVerify:    true, // want `InsecureSkipVerify accepts any certificate and host name`
+		VerifyPeerCertificate: nil,
+	}
+}
+
+func legacy() *tls.Config {
+	return &tls.Config{
+		MinVersion: tls.VersionTLS10, // want `MinVersion below the TLS 1.2 default`
+	}
+}
+
+func legacyConstant() *tls.Config {
+	const version = tls.VersionTLS11
+	return &tls.Config{
+		MinVersion: version, // want `MinVersion below the TLS 1.2 default`
+	}
+}
+
+func legacyNumber() *tls.Config {
+	return &tls.Config{
+		MinVersion: 0x0302, // want `MinVersion below the TLS 1.2 default`
+	}
+}
+
+func ssl3() *tls.Config {
+	return &tls.Config{
+		MinVersion: tls.VersionSSL30, // want `MinVersion below the TLS 1.2 default`
+	}
+}
+
+func integralFloat() *tls.Config {
+	return &tls.Config{
+		MinVersion: 1.0, // want `MinVersion below the TLS 1.2 default`
+	}
+}
+
+func notAVersion() *tls.Config {
+	return &tls.Config{
+		MinVersion: 1, // want `MinVersion below the TLS 1.2 default`
+	}
+}
+
+func current() *tls.Config {
+	return &tls.Config{
+		MinVersion: tls.VersionTLS12,
+	}
+}
+
+func modern() *tls.Config {
+	return &tls.Config{
+		MinVersion: tls.VersionTLS13,
+	}
+}
+
+func defaultVersion() *tls.Config {
+	return &tls.Config{
+		MinVersion: 0,
+	}
+}
+
+func unknownVersion(version uint16) *tls.Config {
+	return &tls.Config{
+		MinVersion: version,
+	}
+}
+
+func capped() *tls.Config {
+	return &tls.Config{
+		MaxVersion: tls.VersionTLS11,
+	}
+}
+
+func both() *tls.Config {
+	return &tls.Config{
+		InsecureSkipVerify: true,             // want `InsecureSkipVerify accepts any certificate and host name`
+		MinVersion:         tls.VersionTLS11, // want `MinVersion below the TLS 1.2 default`
+	}
+}
+
+type config struct {
+	InsecureSkipVerify bool
+	MinVersion         uint16
+}
+
+func other() config {
+	return config{
+		InsecureSkipVerify: true,
+		MinVersion:         0x0301,
+	}
+}
+
+func assigned(cfg *tls.Config) {
+	cfg.InsecureSkipVerify = true
+	cfg.MinVersion = tls.VersionTLS10
+}
+
+func assignedAfterLiteral(verify func(tls.ConnectionState) error) *tls.Config {
+	cfg := &tls.Config{
+		InsecureSkipVerify: true, // want `InsecureSkipVerify accepts any certificate and host name`
+	}
+	cfg.VerifyConnection = verify
+	return cfg
+}
+
+func nonConstantResume(disabled bool, verify func([][]byte, [][]*x509.Certificate) error) *tls.Config {
+	return &tls.Config{
+		InsecureSkipVerify:     true, // want `InsecureSkipVerify accepts any certificate and host name`
+		VerifyPeerCertificate:  verify,
+		SessionTicketsDisabled: disabled,
+	}
+}

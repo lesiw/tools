@@ -4039,6 +4039,20 @@
 //		return rand.Intn(1000000)
 //	}
 //
+// # weaktls
+//
+// Reports a tls.Config literal with InsecureSkipVerify set to the constant
+// true, or with a nonzero MinVersion constant below TLS 1.2. When
+// InsecureSkipVerify is true, crypto/tls accepts any certificate presented by
+// the server and any host name in that certificate. The zero MinVersion
+// selects the TLS 1.2 default.
+//
+// Adapted from gosec's G402.
+//
+//	func skip() *tls.Config {
+//		return &tls.Config{InsecureSkipVerify: true}
+//	}
+//
 // # wgbody
 //
 // Reports a Done call on the group a sync.WaitGroup.Go call starts, unless an

@@ -1,0 +1,9 @@
+package a
+
+import . "crypto/tls"
+
+func dotImported() *Config {
+	return &Config{
+		InsecureSkipVerify: true, // want `InsecureSkipVerify accepts any certificate and host name`
+	}
+}

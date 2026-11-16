@@ -1,0 +1,15 @@
+package a
+
+import tlsalias "crypto/tls"
+
+type configAlias = tlsalias.Config
+
+var aliased = []*configAlias{{
+	InsecureSkipVerify: true, // want `InsecureSkipVerify accepts any certificate and host name`
+}}
+
+func alias() *tlsalias.Config {
+	return &tlsalias.Config{
+		MinVersion: tlsalias.VersionTLS11, // want `MinVersion below the TLS 1.2 default`
+	}
+}
