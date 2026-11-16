@@ -1,0 +1,19 @@
+package b
+
+import (
+	"errors"
+	"fmt"
+)
+
+type matcher struct{}
+
+func (matcher) Error() string { return "matcher" }
+
+func (matcher) Is(target error) bool { return target == ErrLimit }
+
+var (
+	ErrLimit = errors.New("limit reached")
+	ErrWrap  = fmt.Errorf("wrap: %w", ErrLimit)
+	ErrMatch = matcher{}
+	LastErr  error
+)

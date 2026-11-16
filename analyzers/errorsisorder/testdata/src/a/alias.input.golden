@@ -1,0 +1,11 @@
+package a
+
+import (
+	errpkg "errors"
+
+	"b"
+)
+
+func aliased(err error) bool {
+	return errpkg.Is(err, b.ErrLimit) // want `first argument is a package-level error; swapping changes behavior`
+}

@@ -1218,6 +1218,18 @@ func f(err error) {
 }
 ```
 
+## errorsisorder
+
+Reports a call to errors.Is whose first argument is a package-level error variable from another package. A leaf sentinel with no Is method in the first position makes the call match only the sentinel itself. The suggested fix swaps the arguments, which changes behavior.
+
+Adapted from staticcheck's SA1032.
+
+```
+func f(err error) bool {
+    return errors.Is(errors.ErrUnsupported, err)
+}
+```
+
 ## errshadow
 
 Reports a declaration directly in an if body that shadows an error variable the condition tested. A later use of err denotes the inner variable. The rule leaves alone a declaration in a nested bare block, a plain else block, or a loop header; a declaration that introduces another variable; and a declaration in a body whose condition requires the error to be nil through direct nil comparisons and the boolean operators.

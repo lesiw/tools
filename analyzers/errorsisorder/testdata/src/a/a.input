@@ -1,0 +1,149 @@
+package a
+
+import (
+	"errors"
+
+	"b"
+	"c"
+)
+
+var (
+	errLocal = errors.New("some message")
+	errAlias = b.ErrLimit
+)
+
+type holder struct{ err error }
+
+func (holder) Is(first, second error) bool { return false }
+
+type problem struct{ msg string }
+
+func (p problem) Error() string { return p.msg }
+
+type reason string
+
+func (r reason) Error() string { return string(r) }
+
+const reasonLimit reason = "some reason"
+
+func sentinel() error { return errors.New("some message") }
+
+func swapped(err error) bool {
+	return errors.Is(b.ErrLimit, err) // want `first argument is a package-level error; swapping changes behavior`
+}
+
+func parenthesized(err error) bool {
+	return errors.Is((b.ErrLimit), (err)) // want `first argument is a package-level error; swapping changes behavior`
+}
+
+func compositeTarget(err error) bool {
+	return errors.Is(b.ErrLimit, problem{msg: "some message"}) // want `first argument is a package-level error; swapping changes behavior`
+}
+
+func wrappedFirst(err error) bool {
+	return errors.Is(b.ErrWrap, err) // want `first argument is a package-level error; swapping changes behavior`
+}
+
+func lastErrFirst(err error) bool {
+	return errors.Is(b.LastErr, err) // want `first argument is a package-level error; swapping changes behavior`
+}
+
+func callSecond() bool {
+	return errors.Is(b.ErrLimit, sentinel()) // want `first argument is a package-level error; swapping changes behavior`
+}
+
+func isMethodFirst(err error) bool {
+	return errors.Is(b.ErrMatch, err) // want `first argument is a package-level error; swapping changes behavior`
+}
+
+func commented(err error) bool {
+	return errors.Is(b.ErrLimit, /* sentinel */ err) // want `first argument is a package-level error; swapping changes behavior`
+}
+
+func commentedBefore(err error) bool {
+	return errors.Is(/* sentinel */ b.ErrLimit, err) // want `first argument is a package-level error; swapping changes behavior`
+}
+
+func commentedAfter(err error) bool {
+	return errors.Is(b.ErrLimit, err /* checked */) // want `first argument is a package-level error; swapping changes behavior`
+}
+
+func commentedOutside(err error) bool {
+	return errors.Is(b.ErrLimit, err) /* checked */ // want `first argument is a package-level error; swapping changes behavior`
+}
+
+func inOrder(err error) bool {
+	return errors.Is(err, b.ErrLimit)
+}
+
+func secondSentinel(err error) bool {
+	return errors.Is(err, c.ErrOther)
+}
+
+func localFirst(first, second error) bool {
+	return errors.Is(first, second)
+}
+
+func localAlias(err error) bool {
+	local := b.ErrLimit
+	return errors.Is(local, err)
+}
+
+func functionValue(err error) bool {
+	is := errors.Is
+	return is(b.ErrLimit, err)
+}
+
+func localFunctionValue(err error) bool {
+	Is := func(first, second error) bool { return false }
+	return Is(b.ErrLimit, err)
+}
+
+func methodIs(h holder, err error) bool {
+	return h.Is(b.ErrLimit, err)
+}
+
+func packageFirst(err error) bool {
+	return errors.Is(errLocal, err)
+}
+
+func packageFirstExternal(err error) bool {
+	return errors.Is(errLocal, b.ErrLimit)
+}
+
+func constantFirst(err error) bool {
+	return errors.Is(reasonLimit, err)
+}
+
+func aliasFirst(err error) bool {
+	return errors.Is(errAlias, err)
+}
+
+func localPackageSecond(err error) bool {
+	return errors.Is(b.ErrLimit, errLocal) // want `first argument is a package-level error; swapping changes behavior`
+}
+
+func bothSentinels() bool {
+	return errors.Is(b.ErrLimit, c.ErrOther)
+}
+
+func bothWrapped() bool {
+	return errors.Is(b.ErrWrap, b.ErrLimit)
+}
+
+func fieldFirst(h holder, err error) bool {
+	return errors.Is(h.err, err)
+}
+
+func compositeFirst(err error) bool {
+	return errors.Is(problem{msg: "some message"}, err)
+}
+
+func callFirst(err error) bool {
+	return errors.Is(sentinel(), err)
+}
+
+func lastErrAfterSet(err error) bool {
+	b.LastErr = err
+	return errors.Is(b.LastErr, err) // want `first argument is a package-level error; swapping changes behavior`
+}

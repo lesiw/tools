@@ -1,0 +1,11 @@
+package a
+
+import (
+	. "errors"
+
+	"b"
+)
+
+func dotImported(err error) bool {
+	return Is(b.ErrLimit, err) // want `first argument is a package-level error; swapping changes behavior`
+}
