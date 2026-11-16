@@ -145,6 +145,7 @@ import (
 	"lesiw.io/tools/analyzers/errflow"
 	"lesiw.io/tools/analyzers/errfmt"
 	"lesiw.io/tools/analyzers/errisnil"
+	"lesiw.io/tools/analyzers/errnotlast"
 	"lesiw.io/tools/analyzers/errorlast"
 	"lesiw.io/tools/analyzers/errorsisorder"
 	"lesiw.io/tools/analyzers/errreturn"
@@ -460,6 +461,7 @@ var (
 		errfmt.Analyzer,
 		errisnil.Analyzer,
 		errname.New(),
+		errnotlast.Analyzer,
 		errorlast.Analyzer,
 		errorsas.Analyzer,
 		errorsisorder.Analyzer,

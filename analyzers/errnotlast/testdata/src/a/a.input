@@ -1,0 +1,211 @@
+package a
+
+import "os"
+
+type aliasFault = error
+
+type sameLoad = loadError
+
+type failureError interface{ error }
+
+type pairError interface{ loadError | *saveError }
+
+type pairErrorSet interface{ pairError }
+
+type loadError struct{}
+
+func (loadError) Error() string { return "" }
+
+type saveError struct{}
+
+func (*saveError) Error() string { return "" }
+
+type fault struct{}
+
+func (fault) Error() string { return "" }
+
+type server struct{}
+
+type loader interface {
+	load() (error, int)
+}
+
+type call func() (error, int)
+
+type config struct {
+	load func() (error, int)
+}
+
+func returnsErrorFirst() (error, int) { // want `error is not the last result`
+	return nil, 0
+}
+
+func returnsErrorInMiddle() (int, error, int) { // want `error is not the last result`
+	return 0, nil, 0
+}
+
+func returnsAliasFirst() (aliasFault, int) { // want `aliasFault is not the last result`
+	return nil, 0
+}
+
+func returnsAliasValue() (sameLoad, int) { // want `sameLoad is not the last result`
+	return sameLoad{}, 0
+}
+
+func returnsInterfaceFirst() (failureError, int) { // want `failureError is not the last result`
+	return nil, 0
+}
+
+func returnsNamedFirst() (loadError, int) { // want `loadError is not the last result`
+	return loadError{}, 0
+}
+
+func returnsImportedFirst() (*os.PathError, int) { // want `\*os.PathError is not the last result`
+	return nil, 0
+}
+
+func returnsPointerFirst() (*loadError, int) { // want `\*loadError is not the last result`
+	return nil, 0
+}
+
+func returnsPointerReceiverFirst() (*saveError, int) { // want `\*saveError is not the last result`
+	return nil, 0
+}
+
+func returnsGroupedNamed() (err error, a, b string) { // want `error is not the last result`
+	return nil, "", ""
+}
+
+func returnsGenericErrorFirst[T any]() (error, T) { // want `error is not the last result`
+	var zero T
+	return nil, zero
+}
+
+func returnsErrorBeforeConstraint[E error]() (error, E) {
+	var zero E
+	return nil, zero
+}
+
+func returnsErrorBeforeConcrete[E loadError]() (error, E) {
+	var zero E
+	return nil, zero
+}
+
+func returnsErrorBeforePointer[E *loadError]() (error, E) {
+	var zero E
+	return nil, zero
+}
+
+func returnsErrorBeforeNamedSet[E pairError]() (error, E) {
+	var zero E
+	return nil, zero
+}
+
+func returnsErrorBeforeNestedSet[E pairErrorSet]() (error, E) {
+	var zero E
+	return nil, zero
+}
+
+func returnsErrorBeforeUnnamed() (error, interface{ Error() string }) {
+	return nil, nil
+}
+
+func returnsErrorBeforeForeign() (error, fault) {
+	return nil, fault{}
+}
+
+var fnVar func() (error, int)
+
+func returnsFunc() func() (error, int) {
+	return nil
+}
+
+func returnsMulti() (error, int, error) {
+	return nil, 0, nil
+}
+
+func (s *server) load() (error, int) { // want `error is not the last result`
+	return nil, 0
+}
+
+var literal = func() (error, int) { // want `error is not the last result`
+	return nil, 0
+}
+
+var typedLiteral func() (error, int) = func() (error, int) { // want `error is not the last result`
+	return nil, 0
+}
+
+var typedParen func() (error, int) = (func() (error, int) { // want `error is not the last result`
+	return nil, 0
+})
+
+var typedParenType (func() (error, int)) = func() (error, int) { // want `error is not the last result`
+	return nil, 0
+}
+
+var finalLiteral = func() (error, int, error) {
+	return nil, 0, nil
+}
+
+func takesCallback(f func() (error, int)) {
+	f()
+}
+
+func returnsFlagAfterError() (err error, handled bool) { // want `error is not the last result`
+	return nil, false
+}
+
+func returnsErrorLast() (int, error) { return 0, nil }
+
+func returnsNamedLast() (int, loadError) { return 0, loadError{} }
+
+func valueOfPointerReceiver() (saveError, int) { return saveError{}, 0 }
+
+func foreignName() (fault, int) { return fault{}, 0 }
+
+func constraintOnly[E error]() (E, int) {
+	var zero E
+	return zero, 0
+}
+
+type reasonError struct{}
+
+func (reasonError) String() string { return "" }
+
+func nameOnly() (reasonError, int) { return reasonError{}, 0 }
+
+func returnsErrorBeforeNameOnly() (error, reasonError) { // want `error is not the last result`
+	return nil, reasonError{}
+}
+
+func returnsErrorBeforePointerValue() (error, saveError) { // want `error is not the last result`
+	return nil, saveError{}
+}
+
+func groupedTrailing() (n int, first, second error) { return 0, nil, nil }
+
+func returnsFirstOfTwoErrors() (error, int, error, string) { // want `error is not the last result`
+	return nil, 0, nil, ""
+}
+
+func pointerAlias() (*sameLoad, int) { // want `\*sameLoad is not the last result`
+	return nil, 0
+}
+
+func unnamedInterface() (interface{ Error() string }, int) { return nil, 0 }
+
+func constrained[E loadError]() (E, int) {
+	var zero E
+	return zero, 0
+}
+
+func single() error { return nil }
+
+func noResults() {}
+
+func twoErrors() (error, error) { return nil, nil }
+
+func composed() (parse, run error, n int) { // want `error is not the last result`
+	return nil, nil, 0
+}

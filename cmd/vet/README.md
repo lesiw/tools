@@ -1442,6 +1442,18 @@ Imported from Antonboom's errname.
 var NotFound = errors.New("not found")
 ```
 
+## errnotlast
+
+Reports a function whose last error result is followed by another result; the error goes last, so a caller writes value, err := fetch(). An error result is the predeclared error, or a type that implements error and whose name, or whose pointee's name, ends in Error after aliases are resolved; a type parameter is left alone, and a final result that implements error is accepted. The signature of a function declaration, a method declaration or a function literal is checked; every other function type is left to errorlast.
+
+Adapted from revive's error-return.
+
+```
+func lookup() (error, string) {
+    return nil, ""
+}
+```
+
 ## errorlast
 
 Reports a signature whose error result is not the last one. A caller writes the error last, as in n, err := lookup(). A result is an error when its type is the predeclared error or implements error under a name ending in Error.
