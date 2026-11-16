@@ -1834,6 +1834,23 @@
 //		return err
 //	}
 //
+// # identicalconds
+//
+// Reports an else-if that repeats an earlier condition in the same chain, when
+// no init statement or value-changing condition lies between them. The earlier
+// condition is false at the later test, so the branch can never run.
+//
+// Adapted from revive's identical-ifelseif-conditions.
+//
+//	func f(n int) int {
+//		if n > 0 {
+//			return 1
+//		} else if n > 0 {
+//			return 2
+//		}
+//		return 0
+//	}
+//
 // # ifaceassert
 //
 // Reports a type assertion to an interface that the source interface cannot

@@ -1,0 +1,664 @@
+package a
+
+func f(n int) int {
+	if n > 0 {
+		return 1
+	} else if n > 0 { // want `else-if repeats an earlier condition; this branch can never run`
+		return 2
+	}
+	return 0
+}
+
+func three(n int) int {
+	if n > 0 {
+		return 1
+	} else if n > 0 { // want `else-if repeats an earlier condition`
+		return 2
+	} else if n > 0 { // want `else-if repeats an earlier condition`
+		return 3
+	}
+	return 0
+}
+
+func containsEarlier(a, b bool) int {
+	if a {
+		return 1
+	} else if a && b {
+		return 2
+	} else if a && b { // want `else-if repeats an earlier condition`
+		return 3
+	}
+	return 0
+}
+
+func shorterAfterLonger(a, b bool) int {
+	if a && b {
+		return 1
+	} else if a {
+		return 2
+	}
+	return 0
+}
+
+func different(n int) int {
+	if n > 1 {
+		return 1
+	} else if n > 0 {
+		return 2
+	}
+	return 0
+}
+
+func noElseIf(n int) int {
+	if n > 0 {
+		return 1
+	} else {
+		if n > 0 {
+			return 2
+		}
+	}
+	return 0
+}
+
+func nested(n int) int {
+	if n > 0 {
+		if n > 1 {
+			return 1
+		} else if n > 1 { // want `else-if repeats an earlier condition`
+			return 2
+		}
+	} else if n < 0 {
+		if n < -1 {
+			return 3
+		} else if n < -1 { // want `else-if repeats an earlier condition`
+			return 4
+		}
+	}
+	return 0
+}
+
+func parens(n int) int {
+	if n > 0 {
+		return 1
+	} else if (n > 0) { // want `else-if repeats an earlier condition`
+		return 2
+	}
+	return 0
+}
+
+func innerParens(n int) int {
+	if n > 0 {
+		return 1
+	} else if (n) > 0 {
+		return 2
+	}
+	return 0
+}
+
+func sameParens(n int) int {
+	if (n) > 0 {
+		return 1
+	} else if (n) > 0 { // want `else-if repeats an earlier condition`
+		return 2
+	}
+	return 0
+}
+
+func wrapped(a, b bool) int {
+	if a &&
+		b {
+		return 1
+	} else if a && b { // want `else-if repeats an earlier condition`
+		return 2
+	}
+	return 0
+}
+
+func call(f func() bool) int {
+	if f() {
+		return 1
+	} else if f() {
+		return 2
+	}
+	return 0
+}
+
+func receive(ch chan bool) int {
+	if <-ch {
+		return 1
+	} else if <-ch {
+		return 2
+	}
+	return 0
+}
+
+func afterReceive(ch chan bool, n int) int {
+	if n > 0 {
+		return 1
+	} else if <-ch {
+		return 2
+	} else if n > 0 {
+		return 3
+	}
+	return 0
+}
+
+func containsCall(f func() bool, n int) int {
+	if n > 0 {
+		return 1
+	} else if n > 0 && f() {
+		return 2
+	} else if n > 0 {
+		return 3
+	}
+	return 0
+}
+
+func containsReceive(ch chan bool, n int) int {
+	if n > 0 {
+		return 1
+	} else if n > 0 && <-ch {
+		return 2
+	} else if n > 0 {
+		return 3
+	}
+	return 0
+}
+
+func initBranch(n int) int {
+	if n > 0 {
+		return 1
+	} else if n := 0; n > 0 {
+		return 2
+	} else if n > 0 { // want `else-if repeats an earlier condition`
+		return 3
+	}
+	return 0
+}
+
+func afterEffectfulInit(f func() int, n int) int {
+	if n > 0 {
+		return 1
+	} else if m := f(); m > 0 {
+		return 2
+	} else if m > 0 { // want `else-if repeats an earlier condition`
+		return 3
+	}
+	return 0
+}
+
+func afterInit(f func() int, n int) int {
+	if n > 0 {
+		return 1
+	} else if m := f(); m > 0 {
+		return 2
+	} else if n > 0 {
+		return 3
+	}
+	return 0
+}
+
+func shadowedInit(n int) int {
+	if n > 0 {
+		return 1
+	} else if n := -1; n < 0 {
+		return 2
+	} else if n > 0 {
+		return 3
+	}
+	return 0
+}
+
+func afterInitPair(n int) int {
+	if n > 0 {
+		return 1
+	} else if m := n; m < 0 {
+		return 2
+	} else if n > 1 {
+		return 3
+	} else if n > 1 { // want `else-if repeats an earlier condition`
+		return 4
+	}
+	return 0
+}
+
+func unrelatedInit(n int) int {
+	if n > 0 {
+		return 1
+	} else if x := 0; n > 0 {
+		_ = x
+		return 2
+	}
+	return 0
+}
+
+func afterAssign(n int) int {
+	if n > 0 {
+		return 1
+	} else if n = 5; n < 0 {
+		return 2
+	} else if n > 0 {
+		return 3
+	}
+	return 0
+}
+
+func conversion(n int64) int {
+	if int(n) > 0 {
+		return 1
+	} else if int(n) > 0 { // want `else-if repeats an earlier condition`
+		return 2
+	}
+	return 0
+}
+
+func conversionOfCall(f func() int) int {
+	if int(f()) > 0 {
+		return 1
+	} else if int(f()) > 0 {
+		return 2
+	}
+	return 0
+}
+
+type counter struct{ n int }
+
+func (c *counter) step() bool {
+	c.n++
+	return false
+}
+
+func afterCall(c *counter) int {
+	if c.n > 0 {
+		return 1
+	} else if c.step() {
+		return 2
+	} else if c.n > 0 {
+		return 3
+	}
+	return 0
+}
+
+func elseBlockChain(n int) int {
+	if n > 0 {
+		return 1
+	} else {
+		if n > 0 {
+			return 2
+		} else if n > 0 { // want `else-if repeats an earlier condition`
+			return 3
+		}
+	}
+	return 0
+}
+
+func elseBlockOuter(n int) int {
+	if n > 0 {
+		return 1
+	} else {
+		if n < 0 {
+			return 2
+		} else if n > 0 {
+			return 3
+		}
+	}
+	return 0
+}
+
+func rootInit(n int) int {
+	if m := n; m > 0 {
+		return 1
+	} else if m > 0 { // want `else-if repeats an earlier condition`
+		return 2
+	}
+	return 0
+}
+
+func initMid(n int) int {
+	if n > 0 {
+		return 1
+	} else if n < 0 {
+		return 2
+	} else if m := n; m > 0 {
+		return 3
+	} else if m > 0 { // want `else-if repeats an earlier condition`
+		return 4
+	}
+	return 0
+}
+
+func repeatAcrossOther(n int) int {
+	if n > 0 {
+		return 1
+	} else if n < 0 {
+		return 2
+	} else if n > 0 { // want `else-if repeats an earlier condition`
+		return 3
+	}
+	return 0
+}
+
+func repeatAfterCall(f func() bool, n int) int {
+	if f() {
+		return 1
+	} else if n > 0 {
+		return 2
+	} else if n > 0 { // want `else-if repeats an earlier condition`
+		return 3
+	}
+	return 0
+}
+
+func length(xs []int) int {
+	if len(xs) > 0 {
+		return 1
+	} else if len(xs) > 0 { // want `else-if repeats an earlier condition`
+		return 2
+	}
+	return 0
+}
+
+func lengthKinds(s string, a [2]int, m map[int]int) int {
+	if len(s) > 0 {
+		return 1
+	} else if len(s) > 0 { // want `else-if repeats an earlier condition`
+		return 2
+	}
+	if len(a) > 0 {
+		return 3
+	} else if len(a) > 0 { // want `else-if repeats an earlier condition`
+		return 4
+	}
+	if len(m) > 0 {
+		return 5
+	} else if len(m) > 0 { // want `else-if repeats an earlier condition`
+		return 6
+	}
+	return 0
+}
+
+func channelCap(ch chan int) int {
+	if cap(ch) > 0 {
+		return 1
+	} else if cap(ch) > 0 { // want `else-if repeats an earlier condition`
+		return 2
+	}
+	return 0
+}
+
+func channelLength(ch chan int) int {
+	if len(ch) > 0 {
+		return 1
+	} else if len(ch) > 0 {
+		return 2
+	}
+	return 0
+}
+
+func containsChannelLength(ch chan int, n int) int {
+	if n > 0 {
+		return 1
+	} else if n > 0 && len(ch) > 0 {
+		return 2
+	} else if n > 0 {
+		return 3
+	}
+	return 0
+}
+
+func afterChannelLength(ch chan int, n int) int {
+	if n > 0 {
+		return 1
+	} else if len(ch) > 0 {
+		return 2
+	} else if n > 0 {
+		return 3
+	}
+	return 0
+}
+
+type queue chan int
+
+func queueLength(ch queue) int {
+	if len(ch) > 0 {
+		return 1
+	} else if len(ch) > 0 {
+		return 2
+	}
+	return 0
+}
+
+func channelParam[T ~chan int](ch T) int {
+	if len(ch) > 0 {
+		return 1
+	} else if len(ch) > 0 {
+		return 2
+	}
+	return 0
+}
+
+func unionParam[T ~[]int | ~chan int](x T) int {
+	if len(x) > 0 {
+		return 1
+	} else if len(x) > 0 {
+		return 2
+	}
+	return 0
+}
+
+func sliceParam[T ~[]int](xs T) int {
+	if len(xs) > 0 {
+		return 1
+	} else if len(xs) > 0 { // want `else-if repeats an earlier condition`
+		return 2
+	}
+	return 0
+}
+
+func pureBuiltins(a, b float64, xs []int) int {
+	if max(a, b) > 0 {
+		return 1
+	} else if max(a, b) > 0 { // want `else-if repeats an earlier condition`
+		return 2
+	} else if cap(xs) > 0 {
+		return 3
+	} else if cap(xs) > 0 { // want `else-if repeats an earlier condition`
+		return 4
+	}
+	return 0
+}
+
+func lenOfCall(f func() []int) int {
+	if len(f()) > 0 {
+		return 1
+	} else if len(f()) > 0 {
+		return 2
+	}
+	return 0
+}
+
+func maxOfCall(f func() float64) int {
+	if max(f(), 0) > 0 {
+		return 1
+	} else if max(f(), 0) > 0 {
+		return 2
+	}
+	return 0
+}
+
+func shadowedLen(len func([]int) int, xs []int) int {
+	if len(xs) > 0 {
+		return 1
+	} else if len(xs) > 0 {
+		return 2
+	}
+	return 0
+}
+
+type chanOnly interface{ ~chan int }
+
+func namedChannelParam[T chanOnly](ch T) int {
+	if len(ch) > 0 {
+		return 1
+	} else if len(ch) > 0 {
+		return 2
+	}
+	return 0
+}
+
+func conjunction(n int) int {
+	if n > 0 && n < 10 {
+		return 1
+	} else if n > 0 && n < 10 { // want `else-if repeats an earlier condition`
+		return 2
+	}
+	return 0
+}
+
+func pureArithmetic(a, b float64, z complex128) int {
+	if min(a, b) > 0 {
+		return 1
+	} else if min(a, b) > 0 { // want `else-if repeats an earlier condition`
+		return 2
+	} else if real(z) > 0 {
+		return 3
+	} else if real(z) > 0 { // want `else-if repeats an earlier condition`
+		return 4
+	} else if imag(z) > 0 {
+		return 5
+	} else if imag(z) > 0 { // want `else-if repeats an earlier condition`
+		return 6
+	} else if complex(a, b) != 0 {
+		return 7
+	} else if complex(a, b) != 0 { // want `else-if repeats an earlier condition`
+		return 8
+	}
+	return 0
+}
+
+type named interface{ name() string }
+
+func assertionCond(x any) int {
+	if x.(named) != nil {
+		return 1
+	} else if x.(named) != nil { // want `else-if repeats an earlier condition`
+		return 2
+	}
+	return 0
+}
+
+func assertionOfCall(f func() any) int {
+	if f().(named) != nil {
+		return 1
+	} else if f().(named) != nil {
+		return 2
+	}
+	return 0
+}
+
+type pair struct{ n int }
+
+func addressLiteral() int {
+	if (&pair{}) == (&pair{}) {
+		return 1
+	} else if (&pair{}) == (&pair{}) {
+		return 2
+	}
+	return 0
+}
+
+func containsAddress(n int) int {
+	if n > 0 {
+		return 1
+	} else if n > 0 && (&pair{}) == (&pair{}) {
+		return 2
+	} else if n > 0 {
+		return 3
+	}
+	return 0
+}
+
+func afterAddress(n int) int {
+	if n > 0 {
+		return 1
+	} else if (&pair{}) == (&pair{}) {
+		return 2
+	} else if n > 0 {
+		return 3
+	}
+	return 0
+}
+
+func literalCondition() int {
+	if (func(v int) bool { return v > 0 }) == nil {
+		return 1
+	} else if (func(v int) bool { return v > 0 }) == nil { // want `else-if repeats an earlier condition`
+		return 2
+	}
+	return 0
+}
+
+func literalConditionCall(f func() bool) int {
+	if (func() bool { return f() }) == nil {
+		return 1
+	} else if (func() bool { return f() }) == nil { // want `else-if repeats an earlier condition`
+		return 2
+	}
+	return 0
+}
+
+func literalConditionNot(f func() bool) int {
+	if (func() bool { return f() }) != nil {
+		return 1
+	} else if (func() bool { return f() }) != nil { // want `else-if repeats an earlier condition`
+		return 2
+	}
+	return 0
+}
+
+func literalConditionNilLeft(f func() bool) int {
+	if nil == (func() bool { return f() }) {
+		return 1
+	} else if nil == (func() bool { return f() }) { // want `else-if repeats an earlier condition`
+		return 2
+	}
+	return 0
+}
+
+func literalConditionCompound(f func() bool, n int) int {
+	if (func() bool { return f() }) == nil || n > 0 {
+		return 1
+	} else if (func() bool { return f() }) == nil || n > 0 { // want `else-if repeats an earlier condition`
+		return 2
+	}
+	return 0
+}
+
+func calledLiteral(n int, f func() bool) int {
+	if n > 0 {
+		return 1
+	} else if (func() bool { return f() })() {
+		return 2
+	} else if n > 0 {
+		return 3
+	}
+	return 0
+}
+
+func literalConditionAddress() int {
+	if (func() *pair { return &pair{} }) == nil {
+		return 1
+	} else if (func() *pair { return &pair{} }) == nil { // want `else-if repeats an earlier condition`
+		return 2
+	}
+	return 0
+}
+
+func literalConditionReceive(ch chan bool) int {
+	if (func() bool { return <-ch }) == nil {
+		return 1
+	} else if (func() bool { return <-ch }) == nil { // want `else-if repeats an earlier condition`
+		return 2
+	}
+	return 0
+}

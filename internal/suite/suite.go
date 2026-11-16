@@ -164,6 +164,7 @@ import (
 	"lesiw.io/tools/analyzers/gospell"
 	"lesiw.io/tools/analyzers/headercanon"
 	"lesiw.io/tools/analyzers/hostportconst"
+	"lesiw.io/tools/analyzers/identicalconds"
 	"lesiw.io/tools/analyzers/ifelsechain"
 	"lesiw.io/tools/analyzers/ifreturn"
 	"lesiw.io/tools/analyzers/importgroup"
@@ -476,6 +477,7 @@ var (
 		hostportconst.Analyzer,
 		httpmux.Analyzer,
 		httpresponse.Analyzer,
+		identicalconds.Analyzer,
 		ifaceassert.Analyzer,
 		ifelsechain.Analyzer,
 		ifreturn.Analyzer,
