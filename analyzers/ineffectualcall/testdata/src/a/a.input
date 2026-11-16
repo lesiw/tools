@@ -1,0 +1,365 @@
+package a
+
+import "b"
+
+type point struct {
+	x, y  int
+	name  string
+	flag  bool
+	opt   *int
+	arr   [2]int
+	data  []byte
+	ch    chan int
+	value any
+	fn    func() int
+}
+
+func use(...any) {}
+
+func next() int { return 1 }
+
+func makePoint() point { return point{} }
+
+func (p point) X() int { return p.x }
+
+func (p point) Sum() int { return p.x + p.y }
+
+func (p point) Label() string { return p.name }
+
+func (p point) Named() (n int) { return }
+
+func (p point) Pair() (int, int) { return p.x, p.y }
+
+func (p point) Zero() int { return 0 }
+
+func (p point) Converted() int64 { return int64(p.x) }
+
+func (p point) Slice() []int { return []int{p.x, p.y} }
+
+func (p point) Addressed() *point { return &p }
+
+func (p point) Flag() bool { return !p.flag }
+
+func (p point) Masked() int { return p.x & 3 }
+
+func (p point) Titled() string { return p.name + "!" }
+
+func (p point) Cap() int { return cap(p.arr) }
+
+func (p point) And(a, b bool) bool { return a && b }
+
+func (p point) Difference() int { return p.x - p.y }
+
+func (p point) Product() int { return p.x * p.y }
+
+func (p point) Or() int { return p.x | p.y }
+
+func (p point) Xor() int { return p.x ^ p.y }
+
+func (p point) AndNot() int { return p.x &^ p.y }
+
+func (p point) OrBool(a, b bool) bool { return a || b }
+
+func (p point) Less(n int) bool { return p.x < n }
+
+func (p point) GreaterEqual(n int) bool { return p.x >= n }
+
+func (p point) NotEqual(n int) bool { return p.x != n }
+
+func (p point) LessEqual(n int) bool { return p.x <= n }
+
+func (p point) Greater(n int) bool { return p.x > n }
+
+func (p point) Neg() int { return -p.x }
+
+func (p point) Complement() int { return ^p.x }
+
+func (p point) UnaryPlus() int { return +p.x }
+
+func (p point) ConstantDivision() int { return 4 / 2 }
+
+func (p point) FunctionLiteral() func() int {
+	return func() int { return p.x }
+}
+
+func (p point) Take(f func() int) int { return 0 }
+
+func (p point) MethodExpression() func(point) int { return point.X }
+
+func (p point) MapAlias() mapAlias { return mapAlias{"x": p.x} }
+
+func (p point) ArrayAlias() arrayAlias { return arrayAlias(p.data) }
+
+func (p point) StructLiteral() point { return point{x: p.x} }
+
+func (p point) ArrayValue() [2]int { return [2]int{p.x, p.y} }
+
+func (p point) PackageVar() int { return b.V }
+
+func (p point) PackageConst() int { return b.C }
+
+func (p point) PackageFunc() func() int { return b.F }
+
+func (p point) PairEffect() (int, int) { return p.x, next() }
+
+func (p point) SliceEffect() []int { return []int{p.x, next()} }
+
+func (p point) ConvertEffect() int64 { return int64(next()) }
+
+func (p point) AddEffect() int { return p.x + next() }
+
+func (p point) Same(n int) bool { return p.x == n }
+
+func (p point) Self() point { return p }
+
+func (p point) Paren() int { return (p.x) }
+
+func (p point) Plus(n int) int { return p.x + n }
+
+func (p point) Indexed() int { return p.arr[0] }
+
+func (p point) At(i int) int { return p.arr[i] }
+
+func (p point) Dereferenced() int { return *p.opt }
+
+func (p point) Divided() int { return p.x / p.y }
+
+func (p point) Remainder() int { return p.x % 2 }
+
+func (p point) Shifted(n uint) int { return p.x << n }
+
+func (p point) Compared(v any) bool { return p.name == v }
+
+func (p point) Called() int { return next() }
+
+func (p point) Length() int { return len(p.data) }
+
+func (p point) ArrayLength() int { return len(p.arr) }
+
+func (p point) Mapped() map[string]int { return map[string]int{"x": p.x} }
+
+func (p point) Sliced() []byte { return p.data[1:] }
+
+func (p point) Asserted() int { return p.value.(int) }
+
+func (p point) ArrayPointer() *[2]byte { return (*[2]byte)(p.data) }
+
+func (p point) Array() [2]byte { return [2]byte(p.data) }
+
+func (p point) Received() int { return <-p.ch }
+
+func (p point) MethodValue() func() int { return p.X }
+
+func (p point) Effect() int {
+	use(p.x)
+	return p.y
+}
+
+func (p point) Branch() int {
+	if p.x > 0 {
+		return p.x
+	}
+	return 0
+}
+
+func (p point) NoResult() { return }
+
+func (p point) TwoReturns() int {
+	return p.x
+	return p.y
+}
+
+func (p point) Bodyless() int
+
+func (p *point) PointerReceiver() int { return p.x }
+
+func (p *point) PointerZero() int { return 0 }
+
+type pair[T any] struct{ v T }
+
+func (p pair[T]) Get() T { return p.v }
+
+func (p *pair[T]) PtrGet() T { return p.v }
+
+func (p *pair[T]) PtrZero() int { return 0 }
+
+type mapBox[T ~map[any]int] struct{}
+
+func (mapBox[T]) MapLiteral(k any) T { return T{k: 1} }
+
+type arrayBox[T ~[2]int] struct{}
+
+func (arrayBox[T]) ArrayConversion(s []int) T { return T(s) }
+
+type pointAlias = point
+
+type pointPointer = *point
+
+type mapAlias = map[string]int
+
+type arrayAlias = [2]byte
+
+type number interface{ ~int | ~float64 }
+
+type numeric[T number] struct{}
+
+func (numeric[T]) Neg(v T) T { return -v }
+
+type wrapper struct {
+	point
+}
+
+func (w wrapper) W() int { return w.x }
+
+type holder struct {
+	inner *point
+}
+
+func (h holder) InnerX() int { return h.inner.x }
+
+type embedded struct {
+	*point
+}
+
+type getter interface {
+	Get() int
+}
+
+func accessors(p point) {
+	p.X()                           // want `call to X has no effect`
+	p.Sum()                         // want `call to Sum has no effect`
+	p.Label()                       // want `call to Label has no effect`
+	p.Named()                       // want `call to Named has no effect`
+	p.Pair()                        // want `call to Pair has no effect`
+	p.Zero()                        // want `call to Zero has no effect`
+	p.Converted()                   // want `call to Converted has no effect`
+	p.Slice()                       // want `call to Slice has no effect`
+	p.Addressed()                   // want `call to Addressed has no effect`
+	p.Flag()                        // want `call to Flag has no effect`
+	p.Masked()                      // want `call to Masked has no effect`
+	p.Titled()                      // want `call to Titled has no effect`
+	p.Cap()                         // want `call to Cap has no effect`
+	p.And(true, false)              // want `call to And has no effect`
+	p.Difference()                  // want `call to Difference has no effect`
+	p.Product()                     // want `call to Product has no effect`
+	p.Or()                          // want `call to Or has no effect`
+	p.Xor()                         // want `call to Xor has no effect`
+	p.AndNot()                      // want `call to AndNot has no effect`
+	p.OrBool(true, false)           // want `call to OrBool has no effect`
+	p.Less(1)                       // want `call to Less has no effect`
+	p.GreaterEqual(1)               // want `call to GreaterEqual has no effect`
+	p.NotEqual(1)                   // want `call to NotEqual has no effect`
+	p.LessEqual(1)                  // want `call to LessEqual has no effect`
+	p.Greater(1)                    // want `call to Greater has no effect`
+	p.Neg()                         // want `call to Neg has no effect`
+	p.Complement()                  // want `call to Complement has no effect`
+	p.UnaryPlus()                   // want `call to UnaryPlus has no effect`
+	p.ConstantDivision()            // want `call to ConstantDivision has no effect`
+	p.FunctionLiteral()             // want `call to FunctionLiteral has no effect`
+	p.Take(func() int { return 0 }) // want `call to Take has no effect`
+	p.MethodExpression()
+	pointAlias(p).X()     // want `call to X has no effect`
+	numeric[int]{}.Neg(1) // want `call to Neg has no effect`
+	p.StructLiteral()     // want `call to StructLiteral has no effect`
+	p.ArrayValue()        // want `call to ArrayValue has no effect`
+	p.PackageVar()        // want `call to PackageVar has no effect`
+	p.PackageConst()      // want `call to PackageConst has no effect`
+	p.PackageFunc()       // want `call to PackageFunc has no effect`
+	p.Same(1)             // want `call to Same has no effect`
+	p.Self()              // want `call to Self has no effect`
+	p.Paren()             // want `call to Paren has no effect`
+	p.Plus(1)             // want `call to Plus has no effect`
+	p.ArrayLength()       // want `call to ArrayLength has no effect`
+	(p.X())               // want `call to X has no effect`
+	(p.X)()               // want `call to X has no effect`
+	if p.X(); true {      // want `call to X has no effect`
+	}
+	switch p.X(); p.x { // want `call to X has no effect`
+	}
+	switch p.X(); v := p.value.(type) { // want `call to X has no effect`
+	case int:
+		use(v)
+	}
+	for p.X(); false; p.X() { // want `call to X has no effect` `call to X has no effect`
+	}
+}
+
+func used(p point) {
+	use(p.X())
+	x := p.X()
+	use(x)
+	var y int
+	y = p.X()
+	use(y)
+	_ = p.X()
+	defer p.X()
+	go p.X()
+	f := p.X
+	f()
+}
+
+func excluded(p point, q *point, g getter, points []point, h holder, e embedded, got pair[int]) {
+	p.Indexed()
+	p.At(0)
+	p.Dereferenced()
+	p.Divided()
+	p.Remainder()
+	p.Shifted(1)
+	p.Compared(0)
+	p.Called()
+	p.Length()
+	p.Mapped()
+	p.MapAlias()
+	p.Sliced()
+	p.Asserted()
+	p.ArrayPointer()
+	p.Array()
+	p.ArrayAlias()
+	p.Received()
+	p.MethodValue()
+	p.Effect()
+	p.Branch()
+	p.NoResult()
+	p.TwoReturns()
+	p.Bodyless()
+	p.PointerReceiver()
+	p.PointerZero()
+	p.Plus(next())
+	p.Plus(p.arr[0])
+	p.Plus(*p.opt)
+	p.Plus(p.value.(int))
+	p.Plus(p.x + next())
+	p.PairEffect()
+	p.SliceEffect()
+	p.ConvertEffect()
+	p.AddEffect()
+	makePoint().X()
+	points[0].X()
+	p.value.(point).X()
+	h.InnerX()
+	e.X()
+	q.X()
+	g.Get()
+	point.X(p)
+	got.PtrGet()
+	got.PtrZero()
+	mapBox[map[any]int]{}.MapLiteral([]int{1})
+	arrayBox[[2]int]{}.ArrayConversion([]int{1})
+	b.T{}.M()
+	b.F()
+	p.fn()
+}
+
+func promoted(w wrapper, e embedded) {
+	w.W() // want `call to W has no effect`
+	w.X() // want `call to X has no effect`
+	e.X()
+}
+
+func aliases(p point, q pointPointer) {
+	q.X()
+}
+
+func generic(p pair[int]) {
+	p.Get() // want `call to Get has no effect`
+}

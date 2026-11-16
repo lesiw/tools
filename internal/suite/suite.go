@@ -119,6 +119,7 @@ import (
 	"lesiw.io/tools/analyzers/importshadow"
 	"lesiw.io/tools/analyzers/increment"
 	"lesiw.io/tools/analyzers/indexalloc"
+	"lesiw.io/tools/analyzers/ineffectualcall"
 	"lesiw.io/tools/analyzers/initclause"
 	"lesiw.io/tools/analyzers/initialisms"
 	"lesiw.io/tools/analyzers/ipliteral"
@@ -313,6 +314,7 @@ var (
 		importshadow.Analyzer,
 		increment.Analyzer,
 		indexalloc.Analyzer,
+		ineffectualcall.Analyzer,
 		initclause.Analyzer,
 		initialisms.Analyzer,
 		ipliteral.Analyzer,

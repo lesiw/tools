@@ -1210,6 +1210,22 @@ func f(b []byte) int {
 }
 ```
 
+## ineffectualcall
+
+Reports a call written as a statement to a method that has a value receiver and whose body is one return of an effect-free value. The receiver is a copy, and the result is not used, so the call has no effect.
+
+Adapted from staticcheck's SA4017.
+
+```
+type point struct{ x int }
+
+func (p point) X() int { return p.x }
+
+func f(p point) {
+    p.X()
+}
+```
+
 ## initclause
 
 Reports an if or switch init clause whose statement declares nothing. Effective Go describes the clause as the place to set up a local variable, so a call there reads as something else.

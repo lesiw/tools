@@ -1,0 +1,11 @@
+package b
+
+type T struct{}
+
+var V int
+
+const C = 1
+
+func F() int { return 2 }
+
+func (T) M() int { return 0 }
