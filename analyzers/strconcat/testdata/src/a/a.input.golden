@@ -14,6 +14,18 @@ func ok(a, b, c, d string) string {
 	return strings.Join([]string{a, b, c, d}, "-")
 }
 
+func newline() string {
+	return strings.Join([]string{"alpha", "beta"}, "\n")
+}
+
+func dynamicNewline(a, b string) string {
+	return a + "\n" + b // want `Join of 2 parts`
+}
+
+func newlineBackquote() string {
+	return "alpha`" + "\n" + "beta" // want `Join of 2 parts`
+}
+
 func sep(a, b, s string) string {
 	return strings.Join([]string{a, b}, s)
 }

@@ -1,5 +1,5 @@
 // Command strconcat reports a two- or three-element Join with a literal
-// separator.
+// separator, except a newline text block.
 package main
 
 import (

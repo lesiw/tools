@@ -7,7 +7,8 @@
 [![Discord](https://img.shields.io/discord/1145827224516300971?logo=discord&logoColor=white&color=5865F2&label=discord)](https://lesiw.dev/discord)
 [![License](https://img.shields.io/github/license/lesiw/tools)](../../../LICENSE)
 
-An `analysis.Analyzer` that reports a two- or three-element Join with a literal separator.
+An `analysis.Analyzer` that reports a two- or three-element Join with a literal
+separator, except a newline text block.
 
 ```go
 func f(a, b string) string {
@@ -16,7 +17,9 @@ func f(a, b string) string {
 ```
 
 strings.Join allocates a slice for its arguments and then walks it. For two or
-three parts, concatenation allocates once and needs no slice literal.
+three parts, concatenation allocates once and needs no slice literal. When the
+separator is a newline and every part is a string literal that a raw literal
+can hold, textblock reports the call, so this rule leaves it alone.
 
 ```go
 a + "-" + b

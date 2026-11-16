@@ -1,9 +1,11 @@
 // Package strconcat provides an analysis.Analyzer that reports a two- or
-// three-element Join with a literal separator.
+// three-element Join with a literal separator, except a newline text block.
 //
 // strings.Join allocates a slice for its arguments and then walks it. For two
 // or three parts, concatenation allocates once and needs no slice literal in
-// the middle of the expression. Like go-critic's stringConcatSimplify.
+// the middle of the expression. When the separator is a newline and every
+// part is a string literal that a raw literal can hold, textblock reports the
+// call, so this rule leaves it alone. Like go-critic's stringConcatSimplify.
 package strconcat
 
 import (
@@ -14,11 +16,13 @@ import (
 	"strings"
 
 	"golang.org/x/tools/go/analysis"
+
+	"lesiw.io/tools/internal/rawstring"
 )
 
 var Analyzer = &analysis.Analyzer{
 	Name: "strconcat",
-	Doc:  "reports a two- or three-element Join with a literal separator",
+	Doc:  "reports a Join of two or three parts, except a newline block",
 	Run:  run,
 }
 
@@ -76,6 +80,13 @@ func simple(call *ast.CallExpr) bool {
 	if !ok || lit.Kind != token.STRING {
 		return false
 	}
+	sep, err := strconv.Unquote(lit.Value)
+	if err != nil {
+		return false
+	}
+	if sep == "\n" && textBlock(call) {
+		return false
+	}
 	parts := parts(call)
 	if len(parts) < 2 || len(parts) > maxParts {
 		return false
@@ -87,6 +98,31 @@ func simple(call *ast.CallExpr) bool {
 		}
 	}
 	return true
+}
+
+// textBlock reports whether textblock handles this call as a raw literal.
+// Such a call is left to textblock, so the two rules do not conflict.
+func textBlock(call *ast.CallExpr) bool {
+	elements := parts(call)
+	if len(elements) < 2 {
+		return false
+	}
+	var text strings.Builder
+	for i, part := range elements {
+		lit, ok := ast.Unparen(part).(*ast.BasicLit)
+		if !ok || lit.Kind != token.STRING {
+			return false
+		}
+		value, err := strconv.Unquote(lit.Value)
+		if err != nil {
+			return false
+		}
+		if i > 0 {
+			text.WriteString("\n")
+		}
+		text.WriteString(value)
+	}
+	return rawstring.Holds(text.String())
 }
 
 // joined renders the concatenation the call stands for.
@@ -110,7 +146,7 @@ func joined(call *ast.CallExpr) string {
 
 // parts returns the elements of the call's slice literal.
 func parts(call *ast.CallExpr) []ast.Expr {
-	slice, ok := call.Args[0].(*ast.CompositeLit)
+	slice, ok := ast.Unparen(call.Args[0]).(*ast.CompositeLit)
 	if !ok {
 		return nil
 	}
