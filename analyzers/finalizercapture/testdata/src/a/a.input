@@ -1,0 +1,531 @@
+package a
+
+import "runtime"
+
+type item struct {
+	label int
+}
+
+type holder struct {
+	it *item
+}
+
+func use(...any) {}
+
+func direct() {
+	it := &item{}
+	runtime.SetFinalizer(it, func(*item) { // want `finalizer captures the object it finalizes, so the object may not be collected`
+		use(it)
+	})
+}
+
+func namedParameter() {
+	it := &item{}
+	runtime.SetFinalizer(it, func(v *item) { // want `finalizer captures the object it finalizes, so the object may not be collected`
+		use(v)
+		use(it)
+	})
+}
+
+func blankParameter() {
+	it := &item{}
+	runtime.SetFinalizer(it, func(_ *item) { // want `finalizer captures the object it finalizes, so the object may not be collected`
+		use(it)
+	})
+}
+
+func parameter(it *item) {
+	runtime.SetFinalizer(it, func(*item) { // want `finalizer captures the object it finalizes, so the object may not be collected`
+		use(it)
+	})
+}
+
+func (it *item) release(*item) { use(it) }
+
+func methodValue() {
+	it := &item{}
+	runtime.SetFinalizer(it, it.release) // want `finalizer captures the object it finalizes, so the object may not be collected`
+}
+
+func storedFunction() {
+	it := &item{}
+	release := func(*item) {
+		use(it)
+	}
+	runtime.SetFinalizer(it, release) // want `finalizer captures the object it finalizes, so the object may not be collected`
+}
+
+func argument() {
+	it := &item{}
+	runtime.SetFinalizer(it, func(v *item) {
+		use(v)
+	})
+}
+
+func clear() {
+	it := &item{}
+	runtime.SetFinalizer(it, nil)
+}
+
+var global *item
+
+var globalAny any
+
+func packageVariable() {
+	runtime.SetFinalizer(global, func(*item) {
+		use(global)
+	})
+}
+
+func parent(h *holder) {
+	runtime.SetFinalizer(h.it, func(*item) {
+		use(h)
+	})
+}
+
+func field() {
+	h := &holder{it: &item{}}
+	it := h.it
+	runtime.SetFinalizer(it, func(*item) { // want `finalizer captures the object it finalizes, so the object may not be collected`
+		use(it)
+	})
+}
+
+func address() {
+	var it item
+	runtime.SetFinalizer(&it, func(*item) { // want `finalizer captures the object it finalizes, so the object may not be collected`
+		use(it)
+	})
+}
+
+func assigned() {
+	it := &item{}
+	runtime.SetFinalizer(it, func(*item) { // want `finalizer captures the object it finalizes, so the object may not be collected`
+		it = nil
+		use(it)
+	})
+}
+
+func interfaceParameter() {
+	it := &item{}
+	runtime.SetFinalizer(it, func(v any) { // want `finalizer captures the object it finalizes, so the object may not be collected`
+		use(it, v)
+	})
+}
+
+func shadowedParameter() {
+	it := &item{}
+	runtime.SetFinalizer(it, func(v *item) { // want `finalizer captures the object it finalizes, so the object may not be collected`
+		{
+			v := &item{}
+			use(v)
+		}
+		use(it)
+	})
+}
+
+func reassignedFinalizer() {
+	it := &item{}
+	release := func(*item) { use(it) }
+	release = func(v *item) { use(v) }
+	runtime.SetFinalizer(it, release)
+}
+
+type setter struct{}
+
+func (setter) SetFinalizer(any, any) {}
+
+func namedMethod(s setter) {
+	it := &item{}
+	s.SetFinalizer(it, func(*item) {
+		use(it)
+	})
+}
+
+func shadowedFunction() {
+	it := &item{}
+	SetFinalizer := func(any, any) {}
+	SetFinalizer(it, func(*item) { use(it) })
+}
+
+func (it item) releaseValue(*item) { use(it) }
+
+func valueMethodValue() {
+	it := &item{}
+	runtime.SetFinalizer(it, it.releaseValue)
+}
+
+func packageMethodValue() {
+	runtime.SetFinalizer(global, global.release) // want `finalizer captures the object it finalizes, so the object may not be collected`
+}
+
+func storedMethodValue() {
+	it := &item{}
+	release := it.release
+	runtime.SetFinalizer(it, release)
+}
+
+func addressTaken() {
+	it := &item{}
+	runtime.SetFinalizer(it, func(*item) { // want `finalizer captures the object it finalizes, so the object may not be collected`
+		use(&it)
+	})
+}
+
+func reassignedAfter() {
+	it := &item{}
+	runtime.SetFinalizer(it, func(*item) { // want `finalizer captures the object it finalizes, so the object may not be collected`
+		use(it)
+	})
+	it = &item{}
+}
+
+func aliasCapture() {
+	it := &item{}
+	other := it
+	runtime.SetFinalizer(it, func(v *item) { // want `finalizer captures the object it finalizes, so the object may not be collected`
+		use(other, it)
+	})
+}
+
+func width() {
+	it := &item{}
+	runtime.SetFinalizer(it, func(veryLongParameterName *item) { // want `finalizer captures the object it finalizes, so the object may not be collected`
+		use(it, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)
+	})
+}
+
+var _ = func() bool {
+	it := &item{}
+	runtime.SetFinalizer(it, func(*item) { // want `finalizer captures the object it finalizes, so the object may not be collected`
+		use(it)
+	})
+	return true
+}()
+
+func holderAlias() {
+	it := &item{}
+	h := &holder{it: it}
+	runtime.SetFinalizer(it, func(v *item) { // want `finalizer captures the object it finalizes, so the object may not be collected`
+		use(h, it)
+	})
+}
+
+type wrapper struct {
+	*item
+}
+
+func promotedMethodValue() {
+	w := &wrapper{item: &item{}}
+	runtime.SetFinalizer(w, w.release)
+}
+
+func conditionalFinalizer(flag bool) {
+	it := &item{}
+	release := func(*item) { use(it) }
+	if flag {
+		release = func(*item) { use(it) }
+	}
+	runtime.SetFinalizer(it, release) // want `finalizer captures the object it finalizes, so the object may not be collected`
+}
+
+func loopMutation() {
+	it := &item{}
+	runtime.SetFinalizer(it, func(*item) { // want `finalizer captures the object it finalizes, so the object may not be collected`
+		use(it)
+	})
+	for range 1 {
+		it = &item{}
+	}
+}
+
+func deferredMutation() {
+	it := &item{}
+	runtime.SetFinalizer(it, func(*item) { // want `finalizer captures the object it finalizes, so the object may not be collected`
+		use(it)
+	})
+	defer func() { it = &item{} }()
+}
+
+func makeFinalizer(it *item) func(*item) {
+	return func(*item) { use(it) }
+}
+
+func fromCall() {
+	it := &item{}
+	runtime.SetFinalizer(it, makeFinalizer(it))
+}
+
+func fieldUse() {
+	it := &item{}
+	runtime.SetFinalizer(it, func(v *item) { // want `finalizer captures the object it finalizes, so the object may not be collected`
+		use(it.label)
+	})
+}
+
+func (it *item) touch() { use(it) }
+
+func methodUse() {
+	it := &item{}
+	runtime.SetFinalizer(it, func(v *item) { // want `finalizer captures the object it finalizes, so the object may not be collected`
+		it.touch()
+	})
+}
+
+func selectorMethodValue() {
+	h := &holder{it: &item{}}
+	runtime.SetFinalizer(h.it, h.it.release) // want `finalizer captures the object it finalizes, so the object may not be collected`
+}
+
+func capturedFinalizer() {
+	it := &item{}
+	release := func(*item) { use(it) }
+	go func() { use(release) }()
+	runtime.SetFinalizer(it, release) // want `finalizer captures the object it finalizes, so the object may not be collected`
+}
+
+func capturedMethodValue() {
+	it := &item{}
+	release := it.release
+	go func() { use(release) }()
+	runtime.SetFinalizer(it, release)
+}
+
+func aliasCall() {
+	set := runtime.SetFinalizer
+	it := &item{}
+	set(it, func(*item) { // want `finalizer captures the object it finalizes, so the object may not be collected`
+		use(it)
+	})
+}
+
+func pastWidth() {
+	it := &item{}
+	runtime.SetFinalizer(it, func(veryLongParameterName *item) { // want `finalizer captures the object it finalizes, so the object may not be collected`
+		use(it, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)
+	})
+}
+
+func cyclicFinalizer() {
+	it := &item{}
+	release := func(*item) { use(it) }
+	for i := 0; i < 2; i++ {
+		if i > 0 {
+			release = release
+		}
+	}
+	runtime.SetFinalizer(it, release) // want `finalizer captures the object it finalizes, so the object may not be collected`
+}
+
+func reassignedBefore() {
+	it := &item{}
+	it = &item{}
+	runtime.SetFinalizer(it, func(*item) { // want `finalizer captures the object it finalizes, so the object may not be collected`
+		use(it)
+	})
+}
+
+func addressOnlyAfter() {
+	it := &item{}
+	runtime.SetFinalizer(it, func(*item) { // want `finalizer captures the object it finalizes, so the object may not be collected`
+		use(it)
+	})
+	p := &it
+	use(p)
+}
+
+func methodValueReassigned() {
+	it := &item{}
+	runtime.SetFinalizer(it, it.release) // want `finalizer captures the object it finalizes, so the object may not be collected`
+	it = &item{}
+}
+
+func storedMethodValueReassigned() {
+	it := &item{}
+	release := it.release
+	runtime.SetFinalizer(it, release)
+	it = &item{}
+}
+
+func overwrittenFinalizer() {
+	it := &item{}
+	release := func(*item) { use(it) }
+	use(&release)
+	release = func(v *item) { use(v) }
+	runtime.SetFinalizer(it, release)
+}
+
+func parameterAssigned() {
+	it := &item{}
+	runtime.SetFinalizer(it, func(v *item) { // want `finalizer captures the object it finalizes, so the object may not be collected`
+		v = nil
+		use(it)
+	})
+}
+
+func typeSwitchShadow() {
+	it := &item{}
+	runtime.SetFinalizer(it, func(v *item) { // want `finalizer captures the object it finalizes, so the object may not be collected`
+		switch v := globalAny.(type) {
+		case *item:
+			use(it, v)
+		}
+	})
+}
+
+func conditionalMutation(flag bool) {
+	it := &item{}
+	runtime.SetFinalizer(it, func(*item) { // want `finalizer captures the object it finalizes, so the object may not be collected`
+		use(it)
+	})
+	if flag {
+		it = &item{}
+	}
+}
+
+func closureMutation() {
+	it := &item{}
+	runtime.SetFinalizer(it, func(*item) { // want `finalizer captures the object it finalizes, so the object may not be collected`
+		use(it)
+	})
+	later := func() { it = &item{} }
+	use(later)
+}
+
+func conditionalOverwrite(flag bool) {
+	it := &item{}
+	release := func(*item) { use(it) }
+	go func() { use(release) }()
+	if flag {
+		release = func(v *item) { use(v) }
+	}
+	runtime.SetFinalizer(it, release) // want `finalizer captures the object it finalizes, so the object may not be collected`
+}
+
+func aliasOnly() {
+	it := &item{}
+	other := it
+	runtime.SetFinalizer(it, func(*item) { use(other) })
+}
+
+func aliasAfter() {
+	it := &item{}
+	other := it
+	runtime.SetFinalizer(it, func(*item) { // want `finalizer captures the object it finalizes, so the object may not be collected`
+		use(other, it)
+	})
+	it = &item{}
+}
+
+func storedMethodValueHeap() {
+	it := &item{}
+	use(func() { use(it) })
+	release := it.release
+	runtime.SetFinalizer(it, release)
+}
+
+func deferBefore() {
+	it := &item{}
+	defer func() { it = &item{} }()
+	runtime.SetFinalizer(it, func(*item) { // want `finalizer captures the object it finalizes, so the object may not be collected`
+		use(it)
+	})
+}
+
+func deferredArgument() {
+	it := &item{}
+	runtime.SetFinalizer(it, func(*item) { // want `finalizer captures the object it finalizes, so the object may not be collected`
+		use(it)
+	})
+	defer use(func() { it = &item{} })
+}
+
+func unrelatedAfter() {
+	it := &item{}
+	other := 1
+	runtime.SetFinalizer(it, func(*item) { // want `finalizer captures the object it finalizes, so the object may not be collected`
+		use(it, other)
+	})
+	it = &item{}
+}
+
+func storedReassigned() {
+	it := &item{}
+	release := func(*item) { use(it) }
+	runtime.SetFinalizer(it, release) // want `finalizer captures the object it finalizes, so the object may not be collected`
+	it = &item{}
+}
+
+func unrelatedSameTypeAfter() {
+	it := &item{}
+	other := &item{}
+	runtime.SetFinalizer(it, func(*item) { // want `finalizer captures the object it finalizes, so the object may not be collected`
+		use(it, other)
+	})
+	it = &item{}
+}
+
+func escapedInterfaceFinalizer() {
+	it := &item{}
+	var release any = func(*item) { use(it) }
+	use(&release)
+	runtime.SetFinalizer(it, release) // want `finalizer captures the object it finalizes, so the object may not be collected`
+}
+
+func twoBranchFinalizer(flag bool) {
+	it := &item{}
+	release := func(*item) { use(it) }
+	go func() { use(release) }()
+	if flag {
+		release = func(v *item) { use(v) }
+	} else {
+		release = func(v *item) { use(v) }
+	}
+	runtime.SetFinalizer(it, release)
+}
+
+func loopCapture() {
+	it := &item{}
+	release := func(v *item) { use(v) }
+	go func() { use(release) }()
+	for i := 0; i < 2; i++ {
+		runtime.SetFinalizer(it, release) // want `finalizer captures the object it finalizes, so the object may not be collected`
+		release = func(*item) { use(it) }
+	}
+}
+
+func parameterAddress() {
+	it := &item{}
+	runtime.SetFinalizer(it, func(v *item) { // want `finalizer captures the object it finalizes, so the object may not be collected`
+		use(&v, it)
+	})
+}
+
+func storedFieldMethodValue() {
+	h := &holder{it: &item{}}
+	release := h.it.release
+	runtime.SetFinalizer(h.it, release)
+}
+
+func storedGlobalMethodValue() {
+	release := global.release
+	runtime.SetFinalizer(global, release)
+}
+
+func promotedObjectMethodValue() {
+	w := &wrapper{item: &item{}}
+	runtime.SetFinalizer(w.item, w.release)
+}
+
+func aliasMethodValue() {
+	it := &item{}
+	other := it
+	runtime.SetFinalizer(it, other.release)
+}
+
+func convertedLiteral() {
+	it := &item{}
+	runtime.SetFinalizer(it, any(func(*item) { // want `finalizer captures the object it finalizes, so the object may not be collected`
+		use(it)
+	}))
+}

@@ -1581,6 +1581,19 @@ func config(dir, name string) string {
 }
 ```
 
+## finalizercapture
+
+Reports a runtime.SetFinalizer call whose finalizer captures the object through its own variable or bound receiver. The object is reachable from the finalizer, so it may not be collected and the finalizer may not run.
+
+Adapted from staticcheck's SA5005.
+
+```
+func f() {
+    v := new(int)
+    runtime.SetFinalizer(v, func(*int) { println(v) })
+}
+```
+
 ## findallzero
 
 Reports a FindAll call on a regexp.Regexp whose count is zero. A count of n returns at most n matches and a negative count returns every match, so zero returns none.
