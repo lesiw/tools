@@ -1,0 +1,22 @@
+package a
+
+import (
+	"bytes"
+	"sync"
+)
+
+type counting struct{ sync.WaitGroup }
+
+func (counting) Done() {}
+
+func countOwn(c counting) {
+	c.Add(-1)
+}
+
+type keeping struct{ bytes.Buffer }
+
+func (keeping) Reset() {}
+
+func keepOwn(k keeping) {
+	k.Truncate(0)
+}

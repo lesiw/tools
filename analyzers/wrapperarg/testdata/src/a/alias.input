@@ -1,0 +1,14 @@
+package a
+
+import (
+	str "strings"
+	u "unicode"
+)
+
+func aliasedSplit(s, sep string) []string {
+	return str.SplitN(s, sep, -1) // want `str\.SplitN with a negative count can be replaced by str\.Split`
+}
+
+func aliasedTitle(s string) string {
+	return str.Map(u.ToTitle, s) // want `str\.Map with u\.ToTitle can be replaced by str\.ToTitle`
+}

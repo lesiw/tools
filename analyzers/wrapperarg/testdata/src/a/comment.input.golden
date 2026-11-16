@@ -1,0 +1,11 @@
+package a
+
+import "strings"
+
+func inside(s, sep string) []string {
+	return strings.SplitN(s, sep /* kept */, -1) // want `strings\.SplitN with a negative count can be replaced by strings\.Split`
+}
+
+func after(s, sep string) []string {
+	return strings.Split(s, sep /* kept */) // want `strings\.SplitN with a negative count can be replaced by strings\.Split`
+}

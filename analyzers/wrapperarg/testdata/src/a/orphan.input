@@ -1,0 +1,32 @@
+package a
+
+import (
+	"image"
+	"image/draw"
+)
+
+func maskedLocal(dst draw.Image, r image.Rectangle, src image.Image, sp image.Point) {
+	mp := image.Point{}
+	draw.DrawMask(dst, r, src, sp, nil, mp, draw.Src) // want `draw\.DrawMask with a nil mask can be replaced by draw\.Draw`
+}
+
+func maskedAssigned(dst draw.Image, r image.Rectangle, src image.Image, sp image.Point) {
+	mp := image.Point{}
+	mp = image.Point{X: 1}
+	draw.DrawMask(dst, r, src, sp, nil, mp, draw.Src) // want `draw\.DrawMask with a nil mask can be replaced by draw\.Draw`
+}
+
+func maskedIndexed(dst draw.Image, r image.Rectangle, src image.Image, sp image.Point) {
+	points := map[string]image.Point{}
+	draw.DrawMask(dst, r, src, sp, nil, points["a"], draw.Src) // want `draw\.DrawMask with a nil mask can be replaced by draw\.Draw`
+}
+
+func maskedPointComment(dst draw.Image, r image.Rectangle, src image.Image, sp, mp image.Point) {
+	draw.DrawMask(dst, r, src, sp, nil /* kept */, mp, draw.Src) // want `draw\.DrawMask with a nil mask can be replaced by draw\.Draw`
+}
+
+func maskedTwice(dst draw.Image, r image.Rectangle, src image.Image, sp image.Point) {
+	mp := image.Point{}
+	draw.DrawMask(dst, r, src, sp, nil, mp, draw.Src) // want `draw\.DrawMask with a nil mask can be replaced by draw\.Draw`
+	draw.DrawMask(dst, r, src, sp, nil, mp, draw.Src) // want `draw\.DrawMask with a nil mask can be replaced by draw\.Draw`
+}

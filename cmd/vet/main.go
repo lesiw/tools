@@ -4082,6 +4082,19 @@
 //	}
 //	func c() {}
 //
+// # wrapperarg
+//
+// Reports a call that passes an argument a convenience wrapper already
+// supplies. The argument is a count, a delta, a length, a nil mask, or a
+// mapping.
+//
+// Adapted from go-critic's wrapperFunc. The wrapperfunc analyzer uses that
+// name for a different rule.
+//
+//	func splitEvery(s, sep string) []string {
+//		return strings.SplitN(s, sep, -1)
+//	}
+//
 // # wrapperfunc
 //
 // Reports an unexported function or method with no doc comment whose body only

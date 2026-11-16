@@ -1,0 +1,13 @@
+package a
+
+import (
+	str "strings"
+)
+
+func aliasedSplit(s, sep string) []string {
+	return str.Split(s, sep) // want `str\.SplitN with a negative count can be replaced by str\.Split`
+}
+
+func aliasedTitle(s string) string {
+	return str.ToTitle(s) // want `str\.Map with u\.ToTitle can be replaced by str\.ToTitle`
+}

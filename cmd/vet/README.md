@@ -4071,6 +4071,18 @@ func b() {
 func c() {}
 ```
 
+## wrapperarg
+
+Reports a call that passes an argument a convenience wrapper already supplies. The argument is a count, a delta, a length, a nil mask, or a mapping.
+
+Adapted from go-critic's wrapperFunc. The wrapperfunc analyzer uses that name for a different rule.
+
+```
+func splitEvery(s, sep string) []string {
+    return strings.SplitN(s, sep, -1)
+}
+```
+
 ## wrapperfunc
 
 Reports an unexported function or method with no doc comment whose body only forwards its parameters to another function of the same signature. A wrapper another package can call, or one the doc comment explains, is left alone. A second name for the same behavior is one more name to choose at every call.

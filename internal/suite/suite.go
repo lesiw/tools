@@ -295,6 +295,7 @@ import (
 	"lesiw.io/tools/analyzers/wgbody"
 	"lesiw.io/tools/analyzers/wgogoroutine"
 	"lesiw.io/tools/analyzers/whitespace"
+	"lesiw.io/tools/analyzers/wrapperarg"
 	"lesiw.io/tools/analyzers/wrapperfunc"
 	"lesiw.io/tools/analyzers/writebytes"
 	"lesiw.io/tools/analyzers/yoda"
@@ -605,6 +606,7 @@ var (
 		wgbody.Analyzer,
 		wgogoroutine.Analyzer,
 		whitespace.Analyzer,
+		wrapperarg.Analyzer,
 		wrapperfunc.Analyzer,
 		writebytes.Analyzer,
 		yoda.Analyzer,

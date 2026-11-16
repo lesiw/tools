@@ -1,0 +1,7 @@
+package a
+
+import . "strings"
+
+func dotted(s, sep string) []string {
+	return SplitN(s, sep, -1)
+}

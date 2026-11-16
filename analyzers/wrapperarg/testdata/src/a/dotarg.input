@@ -1,0 +1,10 @@
+package a
+
+import (
+	"strings"
+	. "unicode"
+)
+
+func dottedMapping(s string) string {
+	return strings.Map(ToTitle, s) // want `strings\.Map with ToTitle can be replaced by strings\.ToTitle`
+}

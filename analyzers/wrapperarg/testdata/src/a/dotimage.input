@@ -1,0 +1,10 @@
+package a
+
+import (
+	. "image"
+	"image/draw"
+)
+
+func dottedMask(dst draw.Image, r Rectangle, src Image, sp Point) {
+	draw.DrawMask(dst, r, src, sp, nil, Point{}, draw.Src) // want `draw\.DrawMask with a nil mask can be replaced by draw\.Draw`
+}

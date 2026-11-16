@@ -1,0 +1,122 @@
+package a
+
+import (
+	"bytes"
+	"image"
+	"image/draw"
+	"strings"
+	"sync"
+)
+
+func splitEvery(s, sep string) []string {
+	return strings.Split(s, sep) // want `strings\.SplitN with a negative count can be replaced by strings\.Split`
+}
+
+func splitEveryParenthesized(s, sep string) []string {
+	return (strings.Split)(s, sep) // want `strings\.SplitN with a negative count can be replaced by strings\.Split`
+}
+
+func splitMany(s, sep string) []string {
+	return strings.Split(s, sep) // want `strings\.SplitN with a negative count can be replaced by strings\.Split`
+}
+
+func splitEveryBytes(b, sep []byte) [][]byte {
+	return bytes.Split(b, sep) // want `bytes\.SplitN with a negative count can be replaced by bytes\.Split`
+}
+
+func splitAfterEvery(s, sep string) []string {
+	return strings.SplitAfter(s, sep) // want `strings\.SplitAfterN with a negative count can be replaced by strings\.SplitAfter`
+}
+
+func splitAfterEveryBytes(b, sep []byte) [][]byte {
+	return bytes.SplitAfter(b, sep) // want `bytes\.SplitAfterN with a negative count can be replaced by bytes\.SplitAfter`
+}
+
+func upperEvery(s string) string {
+	return strings.ToUpper(s) // want `strings\.Map with unicode\.ToUpper can be replaced by strings\.ToUpper`
+}
+
+func lowerEvery(s string) string {
+	return strings.ToLower(s) // want `strings\.Map with unicode\.ToLower can be replaced by strings\.ToLower`
+}
+
+func titleEvery(s string) string {
+	return strings.ToTitle(s) // want `strings\.Map with unicode\.ToTitle can be replaced by strings\.ToTitle`
+}
+
+func replacedEvery(b, old, new []byte) []byte {
+	return bytes.ReplaceAll(b, old, new) // want `bytes\.Replace with a negative count can be replaced by bytes\.ReplaceAll`
+}
+
+func upperEveryBytes(b []byte) []byte {
+	return bytes.ToUpper(b) // want `bytes\.Map with unicode\.ToUpper can be replaced by bytes\.ToUpper`
+}
+
+func lowerEveryBytes(b []byte) []byte {
+	return bytes.ToLower(b) // want `bytes\.Map with unicode\.ToLower can be replaced by bytes\.ToLower`
+}
+
+func titleEveryBytes(b []byte) []byte {
+	return bytes.ToTitle(b) // want `bytes\.Map with unicode\.ToTitle can be replaced by bytes\.ToTitle`
+}
+
+func countDown(wg *sync.WaitGroup) {
+	wg.Done() // want `WaitGroup\.Add with a delta of -1 can be replaced by WaitGroup\.Done`
+}
+
+func countDownComma(wg *sync.WaitGroup) {
+	wg.Done() // want `WaitGroup\.Add with a delta of -1 can be replaced by WaitGroup\.Done`
+}
+
+func countDownMultiline(wg *sync.WaitGroup) {
+	// want +1 `WaitGroup\.Add with a delta of -1 can be replaced by WaitGroup\.Done`
+	wg.Done()
+}
+
+type wrapping struct{ bytes.Buffer }
+
+func emptied(w wrapping) {
+	w.Reset() // want `Buffer\.Truncate with a length of 0 can be replaced by Buffer\.Reset`
+}
+
+func emptiedBuffer(buf *bytes.Buffer) {
+	buf.Reset() // want `Buffer\.Truncate with a length of 0 can be replaced by Buffer\.Reset`
+}
+
+func repaint(dst draw.Image, r image.Rectangle, src image.Image, sp image.Point) {
+	draw.Draw(dst, r, src, sp, draw.Src) // want `draw\.DrawMask with a nil mask can be replaced by draw\.Draw`
+}
+
+func repaintAt(dst draw.Image, r image.Rectangle, src image.Image, sp, mp image.Point) {
+	draw.Draw(dst, r, src, sp, draw.Over) // want `draw\.DrawMask with a nil mask can be replaced by draw\.Draw`
+}
+
+func repaintReused(dst draw.Image, r image.Rectangle, src image.Image, sp image.Point) {
+	mp := image.Point{}
+	draw.Draw(dst, r, src, sp, draw.Src) // want `draw\.DrawMask with a nil mask can be replaced by draw\.Draw`
+	usePoint(mp)
+}
+
+var origin image.Point
+
+func repaintPackage(dst draw.Image, r image.Rectangle, src image.Image, sp image.Point) {
+	draw.Draw(dst, r, src, sp, draw.Src) // want `draw\.DrawMask with a nil mask can be replaced by draw\.Draw`
+}
+
+func repaintResult(dst draw.Image, r image.Rectangle, src image.Image, sp image.Point) (mp image.Point) {
+	draw.Draw(dst, r, src, sp, draw.Src) // want `draw\.DrawMask with a nil mask can be replaced by draw\.Draw`
+	return
+}
+
+func repaintCommented(dst draw.Image, r image.Rectangle, src image.Image, sp, mp image.Point) {
+	draw.DrawMask(dst, r, src, sp, nil /* kept */, mp, draw.Src) // want `draw\.DrawMask with a nil mask can be replaced by draw\.Draw`
+	draw.Draw(dst, r, src, sp, draw.Src) // want `draw\.DrawMask with a nil mask can be replaced by draw\.Draw`
+}
+
+func repaintLiteral(dst draw.Image, r image.Rectangle, src image.Image, sp image.Point) {
+	func(mp image.Point) {
+		draw.Draw(dst, r, src, sp, draw.Src) // want `draw\.DrawMask with a nil mask can be replaced by draw\.Draw`
+	}(image.Point{})
+}
+
+func usePoint(image.Point) {}

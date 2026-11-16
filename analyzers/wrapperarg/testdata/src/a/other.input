@@ -1,0 +1,93 @@
+package a
+
+import (
+	"bytes"
+	"image"
+	"image/draw"
+	"strings"
+	"sync"
+)
+
+func splitSome(s, sep string) []string {
+	return strings.SplitN(s, sep, 2)
+}
+
+func splitNone(s, sep string) []string {
+	return strings.SplitN(s, sep, 0)
+}
+
+func splitNamed(s, sep string) []string {
+	const every = -1
+	return strings.SplitN(s, sep, every)
+}
+
+func splitVariable(s, sep string) []string {
+	every := -1
+	return strings.SplitN(s, sep, every)
+}
+
+func splitThroughValue(s, sep string) []string {
+	split := strings.SplitN
+	return split(s, sep, -1)
+}
+
+func mapped(s string, f func(rune) rune) string {
+	return strings.Map(f, s)
+}
+
+func sameRune(r rune) rune { return r }
+
+func mappedLocal(s string) string {
+	return strings.Map(sameRune, s)
+}
+
+func trimmedBuffer(buf *bytes.Buffer) {
+	buf.Truncate(1)
+}
+
+func masked(dst draw.Image, r image.Rectangle, src image.Image, sp image.Point) {
+	draw.DrawMask(dst, r, src, sp, image.Transparent, image.Point{}, draw.Src)
+}
+
+func nextPoint() image.Point { return image.Point{} }
+
+func maskedAt(dst draw.Image, r image.Rectangle, src image.Image, sp image.Point) {
+	draw.DrawMask(dst, r, src, sp, nil, nextPoint(), draw.Src) // want `draw\.DrawMask with a nil mask evaluates an argument draw\.Draw would not evaluate`
+}
+
+func downByOne(wg *sync.WaitGroup) {
+	(*sync.WaitGroup).Add(wg, -1)
+}
+
+func downByTwo(wg *sync.WaitGroup) {
+	wg.Add(-2)
+}
+
+type localCounter struct{}
+
+func (localCounter) Add(int) {}
+
+func localAdd(c localCounter) {
+	c.Add(-1)
+}
+
+type addField struct{ Add func(int) }
+
+func fieldAdd(f addField) {
+	f.Add(-1)
+}
+
+type incrementer interface{ Add(int) }
+
+func throughInterface(inc incrementer) {
+	inc.Add(-1)
+}
+
+type downCounter interface {
+	Add(int)
+	Done()
+}
+
+func throughDownCounter(dec downCounter) {
+	dec.Add(-1)
+}
