@@ -1,0 +1,557 @@
+package a
+
+import (
+	"fmt"
+	"unsafe"
+)
+
+func use(...any) {}
+
+func elseRead(x any) {
+	if v, ok := x.(int); ok {
+		use(v)
+	} else {
+		use(v) // want `v is the zero value in the branch where the type assertion fails`
+	}
+}
+
+func notOK(x any) {
+	if v, ok := x.(int); !ok {
+		use(v) // want `v is the zero value in the branch where the type assertion fails`
+	} else {
+		use(x)
+	}
+}
+
+func elseIfCondition(x any) {
+	if v, ok := x.(int); ok {
+		use(v)
+	} else if v > 0 { // want `v is the zero value in the branch where the type assertion fails`
+		use(x)
+	}
+}
+
+func elseIfBody(x any) {
+	if v, ok := x.(int); ok {
+		use(v)
+	} else if x != nil {
+		use(v) // want `v is the zero value in the branch where the type assertion fails`
+	}
+}
+
+func assignForm(x any) {
+	var (
+		v  int
+		ok bool
+	)
+	if v, ok = x.(int); ok {
+		use(v)
+	} else {
+		use(v) // want `v is the zero value in the branch where the type assertion fails`
+	}
+}
+
+func twice(x any) {
+	if v, ok := x.(int); ok {
+		use(v)
+	} else {
+		use(v) // want `v is the zero value in the branch where the type assertion fails`
+		use(v)
+	}
+}
+
+func deref(x any) {
+	if v, ok := x.(*int); ok {
+		use(v)
+	} else {
+		use(*v) // want `v is the zero value in the branch where the type assertion fails`
+	}
+}
+
+func returned(x any) int {
+	if v, ok := x.(int); ok {
+		return v
+	} else {
+		return v // want `v is the zero value in the branch where the type assertion fails`
+	}
+}
+
+func deferred(x any) {
+	if v, ok := x.(int); ok {
+		use(v)
+	} else {
+		defer use(v) // want `v is the zero value in the branch where the type assertion fails`
+	}
+}
+
+func goroutine(x any) {
+	if v, ok := x.(int); ok {
+		use(v)
+	} else {
+		go use(v) // want `v is the zero value in the branch where the type assertion fails`
+	}
+}
+
+func nested(x any, cond bool) {
+	if v, ok := x.(int); ok {
+		use(v)
+	} else {
+		if cond {
+			use(v) // want `v is the zero value in the branch where the type assertion fails`
+		}
+		use(v)
+	}
+}
+
+func interfaceValue(x any) {
+	if v, ok := x.(interface{ String() string }); ok {
+		use(v)
+	} else {
+		use(v) // want `v is the zero value in the branch where the type assertion fails`
+	}
+}
+
+type record struct{ n int }
+
+func fieldRead(x any) {
+	if v, ok := x.(record); ok {
+		use(v.n)
+	} else {
+		use(v.n) // want `v is the zero value in the branch where the type assertion fails`
+	}
+}
+
+func fieldThen(x any) {
+	if v, ok := x.(record); ok {
+		use(v.n)
+	} else {
+		use(v) // want `v is the zero value in the branch where the type assertion fails`
+	}
+}
+
+func fieldWrite(x any) {
+	if v, ok := x.(record); ok {
+		use(v)
+	} else {
+		v.n = 1
+		use(v)
+	}
+}
+
+func fieldReadBeforeWrite(x any) {
+	if v, ok := x.(record); ok {
+		use(v)
+	} else {
+		use(v.n) // want `v is the zero value in the branch where the type assertion fails`
+		v.n = 1
+	}
+}
+
+func fieldWriteSometimes(x any, cond bool) {
+	if v, ok := x.(record); ok {
+		use(v)
+	} else {
+		if cond {
+			v.n = 1
+		}
+		use(v)
+	}
+}
+
+func notOKField(x any) {
+	if v, ok := x.(record); !ok {
+		use(v.n) // want `v is the zero value in the branch where the type assertion fails`
+	} else {
+		use(v)
+	}
+}
+
+func otherLocalInBranch(x any) {
+	var y record
+	if v, ok := x.(record); ok {
+		use(v)
+	} else {
+		y = v // want `v is the zero value in the branch where the type assertion fails`
+		use(y.n)
+	}
+}
+
+func otherLocal(x any) {
+	var y record
+	if v, ok := x.(record); ok {
+		y = v
+	} else {
+		use(y.n)
+	}
+}
+
+func fieldAddress(x any) {
+	if v, ok := x.(record); ok {
+		use(v)
+	} else {
+		p := &v.n
+		use(p)
+	}
+}
+
+func elementRead(x any) {
+	if v, ok := x.([2]int); ok {
+		use(v[0])
+	} else {
+		use(v[0]) // want `v is the zero value in the branch where the type assertion fails`
+	}
+}
+
+func elementReadBeforeWrite(x any) {
+	if v, ok := x.([2]int); ok {
+		use(v)
+	} else {
+		use(v[0]) // want `v is the zero value in the branch where the type assertion fails`
+		v[0] = 1
+	}
+}
+
+func elementWrite(x any) {
+	if v, ok := x.([2]int); ok {
+		use(v)
+	} else {
+		v[0] = 1
+		use(v[0])
+	}
+}
+
+func successOnly(x any) {
+	if v, ok := x.(int); ok {
+		use(v)
+	} else {
+		use(x)
+	}
+}
+
+func combinedCondition(x any) {
+	if v, ok := x.(int); ok && v > 0 {
+		use(v)
+	} else {
+		use(v)
+	}
+}
+
+func comparedCondition(x any) {
+	if v, ok := x.(int); ok == true {
+		use(v)
+	} else {
+		use(v)
+	}
+}
+
+func assignedFirst(x any) {
+	if v, ok := x.(int); ok {
+		use(v)
+	} else {
+		v = 1
+		use(v)
+	}
+}
+
+func assignedSometimes(x any, cond bool) {
+	if v, ok := x.(int); ok {
+		use(v)
+	} else {
+		if cond {
+			v = 1
+		}
+		use(v)
+	}
+}
+
+func addressed(x any) {
+	if v, ok := x.(int); ok {
+		use(v)
+	} else {
+		p := &v
+		use(*p)
+	}
+}
+
+func captured(x any) func() any {
+	if v, ok := x.(int); ok {
+		return func() any { return v }
+	} else {
+		return func() any {
+			use(v)
+			return v
+		}
+	}
+}
+
+func discarded(x any) {
+	if v, ok := x.(int); ok {
+		use(v)
+	} else {
+		_ = v
+	}
+}
+
+func discardedAllocated(x any) {
+	if v, ok := x.(record); ok {
+		use(v.n)
+	} else {
+		_ = v
+	}
+}
+
+func discardedField(x any) {
+	if v, ok := x.(record); ok {
+		use(v)
+	} else {
+		_ = v.n // want `v is the zero value in the branch where the type assertion fails`
+	}
+}
+
+func discardedMultiple(x any) {
+	if v, ok := x.(int); ok {
+		use(v)
+	} else {
+		_, _ = v, 0
+	}
+}
+
+func discardedMixed(x any) {
+	n := 0
+	if v, ok := x.(int); ok {
+		use(v)
+	} else {
+		_, n = v, 1
+		use(n)
+	}
+}
+
+func discardedMixedDefine(x any) {
+	if v, ok := x.(int); ok {
+		use(v)
+	} else {
+		_, n := v, 0
+		use(n)
+	}
+}
+
+func discardedMixedReverse(x any) {
+	n := 0
+	if v, ok := x.(int); ok {
+		use(v)
+	} else {
+		n, _ = 1, v
+		use(n)
+	}
+}
+
+func discardedCap(x any) {
+	if v, ok := x.([]int); ok {
+		use(v)
+	} else {
+		_ = cap(v) // want `v is the zero value in the branch where the type assertion fails`
+	}
+}
+
+func discardedReceive(x any) {
+	if v, ok := x.(chan int); ok {
+		use(v)
+	} else {
+		_ = <-v // want `v is the zero value in the branch where the type assertion fails`
+	}
+}
+
+func discardedLen(x any, p []int) {
+	if v, ok := x.([]int); ok {
+		use(v)
+	} else {
+		_ = len(v) // want `v is the zero value in the branch where the type assertion fails`
+		v = p
+		use(v)
+	}
+}
+
+func discardedSum(x any, n int) {
+	if v, ok := x.(int); ok {
+		use(v)
+	} else {
+		_ = v + 1 // want `v is the zero value in the branch where the type assertion fails`
+		v = n
+		use(v)
+	}
+}
+
+func blankValue(x any) {
+	if _, ok := x.(int); ok {
+	} else {
+		use(x)
+	}
+}
+
+func noElse(x any) {
+	if v, ok := x.(int); ok {
+		use(v)
+	}
+}
+
+func notOKNoElse(x any) {
+	if v, ok := x.(int); !ok {
+		use(v) // want `v is the zero value in the branch where the type assertion fails`
+	}
+}
+
+func literal(x any) {
+	f := func() {
+		if v, ok := x.(int); ok {
+			use(v)
+		} else {
+			use(v) // want `v is the zero value in the branch where the type assertion fails`
+		}
+	}
+	f()
+}
+
+func blankResult(x any) {
+	if v, _ := x.(int); v > 0 {
+		use(v)
+	} else {
+		use(v)
+	}
+}
+
+func localCopy(x any) int {
+	var y int
+	if v, ok := x.(int); ok {
+		y = 1
+	} else {
+		y = v // want `v is the zero value in the branch where the type assertion fails`
+	}
+	return y
+}
+
+func localCopyAfterWrite(x any, cond bool, n int) int {
+	var y int
+	if v, ok := x.(int); ok {
+		y = 1
+	} else {
+		if cond {
+			v = n
+		}
+		y = v
+	}
+	return y
+}
+
+func rangeOnly(x any) {
+	if v, ok := x.([]int); ok {
+		use(v)
+	} else {
+		for range v { // want `v is the zero value in the branch where the type assertion fails`
+			use(1)
+		}
+	}
+}
+
+func rangeMap(x any) {
+	if v, ok := x.(map[int]int); ok {
+		use(v)
+	} else {
+		for range v { // want `v is the zero value in the branch where the type assertion fails`
+			use(1)
+		}
+	}
+}
+
+func rangeString(x any) {
+	if v, ok := x.(string); ok {
+		use(v)
+	} else {
+		for range v { // want `v is the zero value in the branch where the type assertion fails`
+			use(1)
+		}
+	}
+}
+
+func rangeArray(x any) {
+	if v, ok := x.([2]int); ok {
+		use(v)
+	} else {
+		for range v { // want `v is the zero value in the branch where the type assertion fails`
+			use(v)
+		}
+	}
+}
+
+func sizeof(x any) {
+	if v, ok := x.(record); ok {
+		use(v)
+	} else {
+		_ = unsafe.Sizeof(v)
+	}
+}
+
+func alignof(x any) {
+	if v, ok := x.(record); ok {
+		use(v)
+	} else {
+		_ = unsafe.Alignof(v)
+	}
+}
+
+func offsetof(x any) {
+	if v, ok := x.(record); ok {
+		use(v)
+	} else {
+		_ = unsafe.Offsetof(v.n)
+	}
+}
+
+func loopWrite(x any) {
+	if v, ok := x.(int); ok {
+		use(v)
+	} else {
+		for i := 0; i < 2; i++ {
+			// Not reported: the loop merges the read with the assignment.
+			use(v)
+			v = 1
+		}
+	}
+}
+
+func shadowing(x any) {
+	if x, ok := x.(int); ok {
+		use(x)
+	} else {
+		use(x) // want `x is the zero value in the branch where the type assertion fails`
+	}
+}
+
+func typeOnly(x any) {
+	if v, ok := x.(int); ok {
+		use(v)
+	} else {
+		fmt.Printf("%T", v) // want `v is the zero value in the branch where the type assertion fails`
+	}
+}
+
+func notOKSuccess(x any) {
+	if v, ok := x.(int); !ok {
+		use(x)
+	} else {
+		use(v)
+	}
+}
+
+func singleValue(x any) {
+	v := x.(int)
+	use(v)
+}
+
+func typeSwitch(x any) {
+	switch v := x.(type) {
+	case int:
+		use(v)
+	default:
+		use(v)
+	}
+}

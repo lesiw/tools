@@ -150,6 +150,22 @@ TEXT ·add(SB), NOSPLIT, $0-8
     RET
 ```
 
+## assertelse
+
+Reports a type assertion whose value is read in the branch that runs when the assertion fails. A failed assertion yields the zero value of the asserted type, so a read there gets that value.
+
+Adapted from staticcheck's SA9008.
+
+```
+func f(x any) {
+    if v, ok := x.(int); ok {
+        print(v)
+    } else {
+        print(v)
+    }
+}
+```
+
 ## assertnil
 
 Reports a nil comparison on the result of a type assertion whose success the same if condition already tests. A successful assertion to an interface type yields the source's dynamic type, which is never nil.

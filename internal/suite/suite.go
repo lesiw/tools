@@ -61,6 +61,7 @@ import (
 	"lesiw.io/tools/analyzers/appendunused"
 	"lesiw.io/tools/analyzers/argorder"
 	"lesiw.io/tools/analyzers/argoverwritten"
+	"lesiw.io/tools/analyzers/assertelse"
 	"lesiw.io/tools/analyzers/assertnil"
 	"lesiw.io/tools/analyzers/assignop"
 	"lesiw.io/tools/analyzers/badcond"
@@ -249,6 +250,7 @@ var (
 		argorder.Analyzer,
 		argoverwritten.Analyzer,
 		asmdecl.Analyzer,
+		assertelse.Analyzer,
 		assertnil.Analyzer,
 		assign.Analyzer,
 		assignop.Analyzer,
