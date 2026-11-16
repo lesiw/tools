@@ -1,0 +1,7 @@
+package a
+
+import . "math"
+
+func dotCeil(n int) float64 {
+	return Ceil(float64(n)) // want `math\.Ceil on a converted integer returns its argument`
+}

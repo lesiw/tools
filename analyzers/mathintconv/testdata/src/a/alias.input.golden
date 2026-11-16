@@ -1,0 +1,5 @@
+package a
+
+func aliasCeil(n int) float64 {
+	return float64(n) // want `math\.Ceil on a converted integer returns its argument`
+}

@@ -1,0 +1,15 @@
+package a
+
+import "math"
+
+func commentBefore(n int) float64 {
+	return math.Ceil( /* keep */ float64(n)) // want `math\.Ceil on a converted integer returns its argument`
+}
+
+func commentAfter(n int) float64 {
+	return math.Ceil(float64(n) /* keep */) // want `math\.Ceil on a converted integer returns its argument`
+}
+
+func commentBetween(n int) float64 {
+	return math.Ceil /* keep */ (float64(n)) // want `math\.Ceil on a converted integer returns its argument`
+}

@@ -1,0 +1,40 @@
+package a
+
+import "math"
+
+func expression(n int) {
+	math.Ceil(float64(n)) // want `math\.Ceil on a converted integer returns its argument`
+}
+
+func parenthesizedStatement(n int) {
+	(math.Ceil(float64(n))) // want `math\.Ceil on a converted integer returns its argument`
+}
+
+func goroutine(n int) {
+	go math.Ceil(float64(n)) // want `math\.Ceil on a converted integer returns its argument`
+}
+
+func deferred(n int) {
+	defer math.Ceil(float64(n)) // want `math\.Ceil on a converted integer returns its argument`
+}
+
+func ifInit(n int) {
+	if math.Ceil(float64(n)); n > 0 { // want `math\.Ceil on a converted integer returns its argument`
+	}
+}
+
+func switchInit(n int) {
+	switch math.Ceil(float64(n)); { // want `math\.Ceil on a converted integer returns its argument`
+	}
+}
+
+func forInit(n int) {
+	for math.Ceil(float64(n)); n > 0; n-- { // want `math\.Ceil on a converted integer returns its argument`
+	}
+}
+
+func forPost(n int) {
+	for ; n > 0; math.Ceil(float64(n)) { // want `math\.Ceil on a converted integer returns its argument`
+		n--
+	}
+}

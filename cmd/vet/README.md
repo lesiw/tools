@@ -1780,6 +1780,18 @@ func (i item) MarshalText() ([]byte, error) {
 }
 ```
 
+## mathintconv
+
+Reports a math.Ceil, math.Floor, math.Round, math.RoundToEven, or math.Trunc call on an integer converted to a float. Each rounding function keeps an integer value unchanged, so the call returns its argument.
+
+Adapted from staticcheck's SA4015.
+
+```
+func f(n int) float64 {
+    return math.Ceil(float64(n))
+}
+```
+
 ## methodexprcall
 
 Reports a method expression called with its receiver. The method call names the receiver once, where the expression names it again as the argument.

@@ -1,0 +1,137 @@
+package a
+
+import (
+	"math"
+	"other"
+)
+
+type count int
+
+type number = count
+
+type amount uint64
+
+type comparableInt interface {
+	~int
+	comparable
+}
+
+type exactInt interface {
+	int
+}
+
+const typedInteger int = 3
+
+func ceil(n int) float64 {
+	return math.Ceil(float64(n)) // want `math\.Ceil on a converted integer returns its argument`
+}
+
+func floor(n int) float64 {
+	return math.Floor(float64(n * 2)) // want `math\.Floor on a converted integer returns its argument`
+}
+
+func round(n int) float64 {
+	return math.Round(float64(-n)) // want `math\.Round on a converted integer returns its argument`
+}
+
+func roundToEven(n int) float64 {
+	return math.RoundToEven(float64(n)) // want `math\.RoundToEven on a converted integer returns its argument`
+}
+
+func trunc(n int) float64 {
+	return math.Trunc(float64(n)) // want `math\.Trunc on a converted integer returns its argument`
+}
+
+func named(n count) float64 {
+	return math.Ceil(float64(n)) // want `math\.Ceil on a converted integer returns its argument`
+}
+
+func alias(n number) float64 {
+	return math.Ceil(float64(n)) // want `math\.Ceil on a converted integer returns its argument`
+}
+
+func unsigned(n amount) float64 {
+	return math.Ceil(float64(n)) // want `math\.Ceil on a converted integer returns its argument`
+}
+
+func narrow(n int8) float64 {
+	return math.Ceil(float64(n)) // want `math\.Ceil on a converted integer returns its argument`
+}
+
+func constant() float64 {
+	return math.Ceil(float64(3))
+}
+
+func typedConstant() float64 {
+	return math.Ceil(float64(typedInteger)) // want `math\.Ceil on a converted integer returns its argument`
+}
+
+func parenthesized(n int) float64 {
+	return math.Ceil((float64(n))) // want `math\.Ceil on a converted integer returns its argument`
+}
+
+func callResult(next func() int) float64 {
+	return math.Ceil(float64(next())) // want `math\.Ceil on a converted integer returns its argument`
+}
+
+func ifAssign(n int) {
+	if f := math.Ceil(float64(n)); f > 0 { // want `math\.Ceil on a converted integer returns its argument`
+	}
+}
+
+func generic[T ~int | ~int8](n T) float64 {
+	return math.Ceil(float64(n)) // want `math\.Ceil on a converted integer returns its argument`
+}
+
+func genericComparable[T comparableInt](n T) float64 {
+	return math.Ceil(float64(n)) // want `math\.Ceil on a converted integer returns its argument`
+}
+
+func genericExact[T int](n T) float64 {
+	return math.Ceil(float64(n)) // want `math\.Ceil on a converted integer returns its argument`
+}
+
+func genericExactInterface[T exactInt](n T) float64 {
+	return math.Ceil(float64(n)) // want `math\.Ceil on a converted integer returns its argument`
+}
+
+func genericFloat[T ~int | ~float64](n T) float64 {
+	return math.Ceil(float64(n))
+}
+
+func notANumber(n int) bool {
+	return math.IsNaN(float64(n))
+}
+
+func infinity(n int) bool {
+	return math.IsInf(float64(n), 0)
+}
+
+func floatValue(v float64) float64 {
+	return math.Ceil(v)
+}
+
+func floatConversion(v float32) float64 {
+	return math.Ceil(float64(v))
+}
+
+func nestedConversion(n int) float64 {
+	return math.Ceil(float64(float32(n)))
+}
+
+func otherPackage(n int) float64 {
+	return other.Ceil(float64(n))
+}
+
+func functionValue(n int) float64 {
+	ceil := math.Ceil
+	return ceil(float64(n))
+}
+
+func absolute(n int) float64 {
+	return math.Abs(float64(n))
+}
+
+func commentInside(n int) float64 {
+	return math.Ceil(float64(/* keep */ n)) // want `math\.Ceil on a converted integer returns its argument`
+}

@@ -158,6 +158,7 @@ import (
 	"lesiw.io/tools/analyzers/mapkey"
 	"lesiw.io/tools/analyzers/maplookupinloop"
 	"lesiw.io/tools/analyzers/marshalrecv"
+	"lesiw.io/tools/analyzers/mathintconv"
 	"lesiw.io/tools/analyzers/methodexprcall"
 	"lesiw.io/tools/analyzers/modifiesparam"
 	"lesiw.io/tools/analyzers/nancompare"
@@ -418,6 +419,7 @@ var (
 		mapkey.Analyzer,
 		maplookupinloop.Analyzer,
 		marshalrecv.Analyzer,
+		mathintconv.Analyzer,
 		methodexprcall.Analyzer,
 		modifiesparam.Analyzer,
 		nancompare.Analyzer,
