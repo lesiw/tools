@@ -1,0 +1,241 @@
+package a
+
+import (
+	"bytes"
+	"fmt"
+	"io"
+)
+
+type reader struct{}
+
+func (*reader) Read(p []byte) (int, error) { return 0, nil }
+
+type readwriter struct{}
+
+func (*readwriter) Read(p []byte) (int, error)  { return 0, nil }
+func (*readwriter) Write(p []byte) (int, error) { return 0, nil }
+
+type closer struct{}
+
+func (*closer) Close() error { return nil }
+
+type embed struct{ io.Reader }
+
+type valueReader struct{}
+
+func (valueReader) Read(p []byte) (int, error) { return 0, nil }
+
+type pointerReader struct{}
+
+func (*pointerReader) Read(p []byte) (int, error) { return 0, nil }
+
+type kit interface{ Kind() int }
+
+type lit interface{ Kind() int }
+
+func concrete(x any) {
+	switch x.(type) {
+	case io.Reader:
+	case *bytes.Buffer: // want `unreachable type in case: io.Reader already matches every \*bytes.Buffer; an earlier case is tested first`
+	case *reader: // want `unreachable type in case: io.Reader already matches every \*reader; an earlier case is tested first`
+	case embed: // want `unreachable type in case: io.Reader already matches every embed; an earlier case is tested first`
+	}
+}
+
+func interfaces(x any) {
+	switch x.(type) {
+	case io.Reader:
+	case io.ReadWriter: // want `unreachable type in case: io.Reader already matches every io.ReadWriter; an earlier case is tested first`
+	case io.ReadCloser: // want `unreachable type in case: io.Reader already matches every io.ReadCloser; an earlier case is tested first`
+	}
+}
+
+func reversed(x any) {
+	switch x.(type) {
+	case *bytes.Buffer:
+	case io.Reader:
+	}
+}
+
+func widerFirst(x any) {
+	switch x.(type) {
+	case io.ReadWriter:
+	case io.Reader:
+	}
+}
+
+func unrelated(x any) {
+	switch x.(type) {
+	case fmt.Stringer:
+	case *reader:
+	case io.Writer:
+	case *closer:
+	}
+}
+
+func nilBefore(x any) {
+	switch x.(type) {
+	case nil:
+	case io.Reader:
+	}
+}
+
+func nilAfter(x any) {
+	switch x.(type) {
+	case io.Reader:
+	case nil:
+	}
+}
+
+func nilInGroup(x any) {
+	switch x.(type) {
+	case io.Reader, nil:
+	case *reader: // want `unreachable type in case: io.Reader already matches every \*reader; an earlier case is tested first`
+	}
+}
+
+func nilAfterAny(x any) {
+	switch x.(type) {
+	case any:
+	case nil:
+	}
+}
+
+func mixedLater(x any) {
+	switch x.(type) {
+	case io.Reader:
+	case *reader, io.Closer: // want `unreachable type in case: io.Reader already matches every \*reader; an earlier case is tested first`
+	case fmt.Stringer, *readwriter: // want `unreachable type in case: io.Reader already matches every \*readwriter; an earlier case is tested first`
+	}
+}
+
+func mixedEarlier(x any) {
+	switch x.(type) {
+	case io.Closer, io.Reader:
+	case *reader: // want `unreachable type in case: io.Reader already matches every \*reader; an earlier case is tested first`
+	}
+}
+
+func several(x any) {
+	switch x.(type) {
+	case io.Reader:
+	case io.ReadWriter: // want `unreachable type in case: io.Reader already matches every io.ReadWriter; an earlier case is tested first`
+	case *readwriter: // want `unreachable type in case: io.Reader already matches every \*readwriter; an earlier case is tested first`
+	}
+}
+
+func everything(x any) {
+	switch x.(type) {
+	case any:
+	case io.Reader: // want `unreachable type in case: any already matches every io.Reader; an earlier case is tested first`
+	case *reader: // want `unreachable type in case: any already matches every \*reader; an earlier case is tested first`
+	}
+}
+
+func sameClause(x any) {
+	switch x.(type) {
+	case io.Reader, *reader:
+	}
+}
+
+func concreteOnly(x any) {
+	switch x.(type) {
+	case *reader:
+	case *readwriter:
+	case io.Reader:
+	}
+}
+
+func pointerReceivers(x any) {
+	switch x.(type) {
+	case io.Reader:
+	case pointerReader:
+	case *pointerReader: // want `unreachable type in case: io.Reader already matches every \*pointerReader; an earlier case is tested first`
+	case valueReader: // want `unreachable type in case: io.Reader already matches every valueReader; an earlier case is tested first`
+	}
+}
+
+func defaults(x any) {
+	switch x.(type) {
+	case *reader:
+	default:
+	case io.Reader:
+	case *readwriter: // want `unreachable type in case: io.Reader already matches every \*readwriter; an earlier case is tested first`
+	}
+}
+
+func defaultKeepsEarlier(x any) {
+	switch x.(type) {
+	case io.Reader:
+	default:
+	case *reader: // want `unreachable type in case: io.Reader already matches every \*reader; an earlier case is tested first`
+	}
+}
+
+func binding(x any) string {
+	switch v := x.(type) {
+	case fmt.Stringer:
+		return v.String()
+	case *bytes.Buffer: // want `unreachable type in case: fmt.Stringer already matches every \*bytes.Buffer; an earlier case is tested first`
+		return v.String()
+	}
+	return ""
+}
+
+func equivalent(x any) {
+	switch x.(type) {
+	case kit:
+	case lit: // want `unreachable type in case: kit already matches every lit; an earlier case is tested first`
+	}
+}
+
+func parameterized[P io.Reader](x any) {
+	switch x.(type) {
+	case any:
+	case P: // want `unreachable type in case: any already matches every P; an earlier case is tested first`
+	}
+}
+
+func parameterReader[P io.Reader](x any) {
+	switch x.(type) {
+	case io.Reader:
+	case P: // want `unreachable type in case: io.Reader already matches every P; an earlier case is tested first`
+	}
+}
+
+func parameterUnrelated[P io.Closer](x any) {
+	switch x.(type) {
+	case io.Reader:
+	case P:
+	}
+}
+
+func parameterCase[P io.Reader](x any) {
+	switch x.(type) {
+	case P:
+	case *reader:
+	}
+}
+
+func parameterSingleton[P *reader](x any) {
+	switch x.(type) {
+	case P:
+	case *reader:
+	}
+}
+
+func parameterThenInterface[P *reader](x any) {
+	switch x.(type) {
+	case P:
+	case io.Reader:
+	case *reader: // want `unreachable type in case: io.Reader already matches every \*reader; an earlier case is tested first`
+	}
+}
+
+func twoInClause(x any) {
+	switch x.(type) {
+	case io.Reader:
+	case *reader, // want `unreachable type in case: io.Reader already matches every \*reader; an earlier case is tested first`
+		*readwriter: // want `unreachable type in case: io.Reader already matches every \*readwriter; an earlier case is tested first`
+	}
+}

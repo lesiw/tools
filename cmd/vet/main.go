@@ -2499,6 +2499,22 @@
 //		println("never")
 //	}
 //
+// # unreachablecase
+//
+// Reports a type in a type switch case that an earlier interface case
+// matches. Cases are tested in source order, and a case with an interface
+// type matches every value whose type implements it, so the case for a later
+// type that implements that interface never runs.
+//
+// Adapted from staticcheck's SA4020.
+//
+//	func f(v any) {
+//		switch v.(type) {
+//		case io.Reader:
+//		case *bytes.Buffer:
+//		}
+//	}
+//
 // # unsafefuncs
 //
 // Reports pointer arithmetic written through uintptr conversions, as
