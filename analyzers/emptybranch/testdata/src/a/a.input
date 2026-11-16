@@ -1,0 +1,236 @@
+package a
+
+func use() {}
+
+func emptyThen(cond bool) {
+	// want +1 `empty if branch`
+	if cond {
+	}
+}
+
+func singleLine(cond bool) {
+	// want +1 `empty if branch`
+	if cond {}
+}
+
+func initClause(cond bool) {
+	// want +1 `empty if branch`
+	if ready := cond; ready {
+	}
+}
+
+func emptyElse(cond bool) {
+	if cond {
+		use()
+		// want +1 `empty else branch`
+	} else {
+	}
+}
+
+func emptyThenFilledElse(cond bool) {
+	// want +1 `empty if branch`
+	if cond {
+	} else {
+		use()
+	}
+}
+
+func bothEmpty(cond bool) {
+	// want +1 `empty if branch`
+	if cond {
+	} /* // want `empty else branch` */ else {
+	}
+}
+
+func commentBetweenBranches(cond bool) {
+	// want +1 `empty if branch`
+	if cond {
+	} /* between */ else {
+		use()
+	}
+}
+
+func emptyHead(cond, other bool) {
+	// want +1 `empty if branch`
+	if cond {
+	} else if other {
+		use()
+	}
+}
+
+func emptyTail(cond, other bool) {
+	if cond {
+		use()
+	} else if other {
+		use()
+		// want +1 `empty else branch`
+	} else {
+	}
+}
+
+func emptyElseIfBody(cond, other bool) {
+	if cond {
+		use()
+		// want +1 `empty if branch`
+	} else if other {
+	}
+}
+
+func nested(outer, inner bool) {
+	if outer {
+		// want +1 `empty if branch`
+		if inner {
+		}
+	}
+}
+
+func literal() {
+	f := func(cond bool) {
+		// want +1 `empty if branch`
+		if cond {
+		}
+	}
+	f(true)
+}
+
+func commentedThen(cond bool) {
+	if cond {
+		// The branch is deliberately empty for now.
+	}
+}
+
+func commentedElse(cond bool) {
+	if cond {
+		use()
+	} else {
+		// No follow-up is needed.
+	}
+}
+
+func commentInThenEmptyElse(cond bool) {
+	if cond {
+		// This branch is deliberate.
+		// want +1 `empty else branch`
+	} else {
+	}
+}
+
+func commentBeforeCondition(cond bool) {
+	// want +1 `empty if branch`
+	if /* verified */ cond {
+	}
+}
+
+func commentInExpression(left, right bool) {
+	// want +1 `empty if branch`
+	if left /* checked */ && right {
+	}
+}
+
+func commentBeforeThenBrace(cond bool) {
+	// want +1 `empty if branch`
+	if cond /* checked */ {
+	}
+}
+
+func commentBeforeElseBrace(cond bool) {
+	if cond {
+		use()
+		// want +1 `empty else branch`
+	} else /* fallback */ {
+	}
+}
+
+func commentInElseEmptyThen(cond bool) {
+	// want +1 `empty if branch`
+	if cond {
+	} else {
+		// This branch is deliberate.
+	}
+}
+
+func commentAfterElseBrace(cond bool) {
+	if cond {
+		use()
+		// want +1 `empty else branch`
+	} else {
+	} // This comment is outside the branch.
+}
+
+func inlineComment(cond bool) {
+	if cond { /* Nothing to do. */ }
+}
+
+func trailingComment(cond bool) {
+	if cond { // Deliberately empty.
+	}
+}
+
+func commentAfterBrace(cond bool) {
+	// want +1 `empty if branch`
+	if cond {
+	} // This comment is outside the branch.
+}
+
+func commentAfterBraceOneLine(cond bool) {
+	// want +1 `empty if branch`
+	if cond {} // This comment is outside the branch.
+}
+
+func commentedBoth(cond bool) {
+	if cond {
+		// This branch is deliberate.
+	} else {
+		// This branch is deliberate.
+	}
+}
+
+func commentedEmptyTail(cond, other bool) {
+	if cond {
+		use()
+	} else if other {
+		use()
+	} else {
+		// No follow-up is needed.
+	}
+}
+
+func bothFilled(cond bool) {
+	if cond {
+		use()
+	} else {
+		use()
+	}
+}
+
+func filledThen(cond bool) {
+	if cond {
+		use()
+	}
+}
+
+func elseIf(cond, other bool) {
+	if cond {
+		use()
+	} else if other {
+		use()
+	}
+}
+
+func otherEmptyBlocks(cond bool) {
+	for cond {
+	}
+	switch {
+	}
+	select {}
+}
+
+func emptyClauses(n int, ch <-chan int) {
+	switch n {
+	case 1:
+	}
+	select {
+	case <-ch:
+	}
+}
+

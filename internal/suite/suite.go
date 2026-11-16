@@ -97,6 +97,7 @@ import (
 	"lesiw.io/tools/analyzers/dupsubexpr"
 	"lesiw.io/tools/analyzers/earlyreturn"
 	"lesiw.io/tools/analyzers/elseif"
+	"lesiw.io/tools/analyzers/emptybranch"
 	"lesiw.io/tools/analyzers/emptydecl"
 	"lesiw.io/tools/analyzers/emptyfallthrough"
 	"lesiw.io/tools/analyzers/emptystring"
@@ -280,6 +281,7 @@ var (
 		dupsubexpr.Analyzer,
 		earlyreturn.Analyzer,
 		elseif.Analyzer,
+		emptybranch.Analyzer,
 		emptydecl.Analyzer,
 		emptyfallthrough.Analyzer,
 		emptystring.Analyzer,

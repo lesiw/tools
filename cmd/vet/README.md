@@ -778,6 +778,19 @@ type base struct {
 var first = item{base: base{kind: "alpha-one"}}
 ```
 
+## emptybranch
+
+Reports an if or else branch with no statements and no comment. An empty branch is often a placeholder or a leftover from an edit. A comment between the braces suppresses the report.
+
+Adapted from staticcheck's SA9003.
+
+```
+func f(ready bool) {
+    if ready {
+    }
+}
+```
+
 ## emptydecl
 
 Reports a var, const, type, or import block that declares nothing. The block was emptied and left behind.
