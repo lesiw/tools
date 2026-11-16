@@ -433,3 +433,28 @@ func SamePure(pass *analysis.Pass, a, b ast.Expr) bool {
 	// Equal text is one expression, so one effect check answers for both.
 	return !Effectful(pass, a)
 }
+
+func BoolType(t types.Type) bool {
+	if t == nil {
+		return false
+	}
+	b, ok := types.Unalias(t).(*types.Basic)
+	return ok && b.Info()&types.IsBoolean != 0
+}
+
+// MapLookup reports whether e is an index expression on a map whose element
+// type is the predeclared bool or an alias of it. A type parameter constrained
+// to such a map counts.
+func MapLookup(pass *analysis.Pass, e ast.Expr) bool {
+	index, ok := ast.Unparen(e).(*ast.IndexExpr)
+	if !ok || !PlainBool(pass.TypesInfo.TypeOf(index)) {
+		return false
+	}
+	_, isMap := mapType(pass, index.X)
+	return isMap
+}
+
+// PlainBool reports whether t is the predeclared bool type or an alias of it.
+func PlainBool(t types.Type) bool {
+	return t != nil && types.Identical(types.Unalias(t), types.Typ[types.Bool])
+}
