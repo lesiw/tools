@@ -1,0 +1,199 @@
+package a
+
+import (
+	"bytes"
+	"foreign"
+)
+
+type (
+	byteAlias  = byte
+	sliceAlias = []byte
+	textAlias  = string
+	buffer     = bytes.Buffer
+)
+
+func text(buf *bytes.Buffer) string {
+	return (*buf).String() // want `conversion of Bytes to a string; String returns it for a non-nil buffer`
+}
+
+func data(buf *bytes.Buffer) []byte {
+	return []byte(buf.String()) // want `conversion of String to a byte slice; Bytes aliases the buffer`
+}
+
+func textParenthesized(buf *bytes.Buffer) string {
+	return ((*buf).String()) // want `conversion of Bytes to a string; String returns it for a non-nil buffer`
+}
+
+func textOperand(buf *bytes.Buffer) string {
+	return (*buf).String() // want `conversion of Bytes to a string; String returns it for a non-nil buffer`
+}
+
+func dataOperand(buf *bytes.Buffer) []byte {
+	return []byte((buf.String())) // want `conversion of String to a byte slice; Bytes aliases the buffer`
+}
+
+func textAliasedConversion(buf *bytes.Buffer) textAlias {
+	return (*buf).String() // want `conversion of Bytes to a string; String returns it for a non-nil buffer`
+}
+
+func dataAliasedElement(buf *bytes.Buffer) []byteAlias {
+	return []byteAlias(buf.String()) // want `conversion of String to a byte slice; Bytes aliases the buffer`
+}
+
+func dataAliasedSlice(buf *bytes.Buffer) sliceAlias {
+	return sliceAlias(buf.String()) // want `conversion of String to a byte slice; Bytes aliases the buffer`
+}
+
+func dataUint8(buf *bytes.Buffer) []uint8 {
+	return []uint8(buf.String()) // want `conversion of String to a byte slice; Bytes aliases the buffer`
+}
+
+func textAliasType(buf *buffer) string {
+	return (*buf).String() // want `conversion of Bytes to a string; String returns it for a non-nil buffer`
+}
+
+func textValue(buf bytes.Buffer) string {
+	return buf.String() // want `conversion of Bytes to a string; String returns it for a non-nil buffer`
+}
+
+type wrapped struct{ *bytes.Buffer }
+
+func wrappedText(w wrapped) string {
+	return (*w.Buffer).String() // want `conversion of Bytes to a string; String returns it for a non-nil buffer`
+}
+
+func wrappedData(w wrapped) []byte {
+	return []byte(w.String()) // want `conversion of String to a byte slice; Bytes aliases the buffer`
+}
+
+func receiverComment(buf *bytes.Buffer) string {
+	return (*(buf /* keep */)).String() // want `conversion of Bytes to a string; String returns it for a non-nil buffer`
+}
+
+func prefixComment(buf *bytes.Buffer) string {
+	return string( /* keep */ buf.Bytes()) // want `conversion of Bytes to a string; String returns it for a non-nil buffer`
+}
+
+func suffixComment(buf *bytes.Buffer) []byte {
+	return []byte(buf.String() /* keep */) // want `conversion of String to a byte slice; Bytes aliases the buffer`
+}
+
+func storedText(buf *bytes.Buffer) string {
+	key := (*buf).String() // want `conversion of Bytes to a string; String returns it for a non-nil buffer`
+	return key
+}
+
+func suffixStringComment(buf *bytes.Buffer) string {
+	return string(buf.Bytes() /* keep */) // want `conversion of Bytes to a string; String returns it for a non-nil buffer`
+}
+
+func textValueComment(buf bytes.Buffer) string {
+	return string(buf.Bytes() /* keep */) // want `conversion of Bytes to a string; String returns it for a non-nil buffer`
+}
+
+func textValueParenthesized(buf bytes.Buffer) string {
+	return (buf.String()) // want `conversion of Bytes to a string; String returns it for a non-nil buffer`
+}
+
+type valueWrapped struct{ bytes.Buffer }
+
+func valueWrappedText(w valueWrapped) string {
+	return w.String() // want `conversion of Bytes to a string; String returns it for a non-nil buffer`
+}
+
+func valueWrappedPointer(w *valueWrapped) string {
+	return w.String() // want `conversion of Bytes to a string; String returns it for a non-nil buffer`
+}
+
+func dataValue(buf bytes.Buffer) []byte {
+	return []byte(buf.String()) // want `conversion of String to a byte slice; Bytes aliases the buffer`
+}
+
+const nothing = ""
+
+func blankNamed(buf *bytes.Buffer) bool {
+	return (*buf).String() == nothing // want `conversion of Bytes to a string; String returns it for a non-nil buffer`
+}
+
+func blankLeft(buf *bytes.Buffer) bool {
+	return "" == (*buf).String() // want `conversion of Bytes to a string; String returns it for a non-nil buffer`
+}
+
+func shadowedLen(buf *bytes.Buffer) int {
+	len := func(string) int { return 0 }
+	return len((*buf).String()) // want `conversion of Bytes to a string; String returns it for a non-nil buffer`
+}
+
+func textValueReceiverComment(buf bytes.Buffer) string {
+	return (buf /* keep */).String() // want `conversion of Bytes to a string; String returns it for a non-nil buffer`
+}
+
+func textValuePrefixComment(buf bytes.Buffer) string {
+	return string( /* keep */ buf.Bytes()) // want `conversion of Bytes to a string; String returns it for a non-nil buffer`
+}
+
+func unnamedText(w struct{ bytes.Buffer }) string {
+	return w.String() // want `conversion of Bytes to a string; String returns it for a non-nil buffer`
+}
+
+func addressText(buf bytes.Buffer) string {
+	return (&buf).String() // want `conversion of Bytes to a string; String returns it for a non-nil buffer`
+}
+
+func allocatedText() string {
+	return new(bytes.Buffer).String() // want `conversion of Bytes to a string; String returns it for a non-nil buffer`
+}
+
+func constructedText() string {
+	return bytes.NewBuffer(nil).String() // want `conversion of Bytes to a string; String returns it for a non-nil buffer`
+}
+
+func constructedStringText() string {
+	return bytes.NewBufferString("").String() // want `conversion of Bytes to a string; String returns it for a non-nil buffer`
+}
+
+func indirectText(p *bytes.Buffer) string {
+	return (&*p).String() // want `conversion of Bytes to a string; String returns it for a non-nil buffer`
+}
+
+func textValueOperand(buf bytes.Buffer) string {
+	return buf.String() // want `conversion of Bytes to a string; String returns it for a non-nil buffer`
+}
+
+func blankShadowed(buf *bytes.Buffer) bool {
+	len := func(string) int { return 0 }
+	_ = len
+	return (*buf).String() == "" // want `conversion of Bytes to a string; String returns it for a non-nil buffer`
+}
+
+func unblankShadowed(buf *bytes.Buffer) bool {
+	len := func(string) int { return 0 }
+	_ = len
+	return (*buf).String() != "" // want `conversion of Bytes to a string; String returns it for a non-nil buffer`
+}
+
+func textValueTypeParenthesized(buf bytes.Buffer) string {
+	return buf.String() // want `conversion of Bytes to a string; String returns it for a non-nil buffer`
+}
+
+func same(s string) string { return s }
+
+func nestedIndex(m map[string]int, buf *bytes.Buffer) int {
+	return m[same((*buf).String())] // want `conversion of Bytes to a string; String returns it for a non-nil buffer`
+}
+
+func substringIndex(m map[byte]int, buf *bytes.Buffer) int {
+	return m[(*buf).String()[0]] // want `conversion of Bytes to a string; String returns it for a non-nil buffer`
+}
+
+type innerWrap struct{ *bytes.Buffer }
+
+type outerWrap struct{ innerWrap }
+
+func outerWrapText(w outerWrap) string {
+	return (*w.innerWrap.Buffer).String() // want `conversion of Bytes to a string; String returns it for a non-nil buffer`
+}
+
+func foreignText(w foreign.Wrap) string {
+	return string(w.Bytes()) // want `conversion of Bytes to a string; String returns it for a non-nil buffer`
+}

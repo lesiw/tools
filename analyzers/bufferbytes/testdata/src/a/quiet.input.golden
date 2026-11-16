@@ -1,0 +1,183 @@
+package a
+
+import "bytes"
+
+type blob []byte
+
+type octet byte
+
+type label string
+
+type local struct{}
+
+func (local) Bytes() []byte { return nil }
+
+func (local) String() string { return "" }
+
+type reader interface {
+	Bytes() []byte
+	String() string
+}
+
+type namedText struct{ *bytes.Buffer }
+
+func (namedText) String() string { return "" }
+
+type namedData struct{ *bytes.Buffer }
+
+func (namedData) Bytes() []byte { return nil }
+
+func lookup(m map[string]int, buf *bytes.Buffer) int {
+	return m[string(buf.Bytes())]
+}
+
+func lookupParenthesized(m map[string]int, buf *bytes.Buffer) int {
+	return m[(string(buf.Bytes()))]
+}
+
+func shadowed(buf *bytes.Buffer) string {
+	string := func([]byte) string { return "" }
+	return string(buf.Bytes())
+}
+
+func definedSlice(buf *bytes.Buffer) blob {
+	return blob(buf.String())
+}
+
+func definedString(buf *bytes.Buffer) label {
+	return label(buf.Bytes())
+}
+
+func declaredText(x local) string {
+	return string(x.Bytes())
+}
+
+func declaredData(x local) []byte {
+	return []byte(x.String())
+}
+
+func throughInterface(x reader) string {
+	return string(x.Bytes())
+}
+
+func methodExpression(buf *bytes.Buffer) string {
+	return string((*bytes.Buffer).Bytes(buf))
+}
+
+func methodValue(buf *bytes.Buffer) string {
+	return string((buf.Bytes)())
+}
+
+func methodValueData(buf *bytes.Buffer) []byte {
+	return []byte((buf.String)())
+}
+
+func length(buf *bytes.Buffer) int {
+	return len(string(buf.Bytes()))
+}
+
+func lengthData(buf *bytes.Buffer) int {
+	return len([]byte(buf.String()))
+}
+
+func blank(buf *bytes.Buffer) bool {
+	return string(buf.Bytes()) == ""
+}
+
+func octets(buf *bytes.Buffer) []octet {
+	return []octet(buf.String())
+}
+
+func overriddenText(x namedText) string {
+	return string(x.Bytes())
+}
+
+func overriddenData(x namedData) []byte {
+	return []byte(x.String())
+}
+
+func largeLookup(m map[string][200]byte, buf *bytes.Buffer) [200]byte {
+	return m[string(buf.Bytes())]
+}
+
+type key string
+
+func definedKey(m map[key]int, buf *bytes.Buffer) int {
+	return m[key(string(buf.Bytes()))]
+}
+
+func remove(m map[string]int, buf *bytes.Buffer) {
+	delete(m, string(buf.Bytes()))
+}
+
+func removeDefined(m map[key]int, buf *bytes.Buffer) {
+	delete(m, key(string(buf.Bytes())))
+}
+
+type alias = string
+
+func aliasLookup(m map[string]int, buf *bytes.Buffer) int {
+	return m[alias(string(buf.Bytes()))]
+}
+
+func nestedLookup(m map[string]int, buf *bytes.Buffer) int {
+	return m[string(alias(buf.Bytes()))]
+}
+
+func genericLookup[V any](m map[string]V, buf *bytes.Buffer) V {
+	return m[string(buf.Bytes())]
+}
+
+func setKey(m map[string]int, buf *bytes.Buffer) {
+	m[string(buf.Bytes())] = 1
+}
+
+func interfaceKey(m map[any]int, buf *bytes.Buffer) int {
+	return m[string(buf.Bytes())]
+}
+
+func removeLarge(m map[string][200]byte, buf *bytes.Buffer) {
+	delete(m, string(buf.Bytes()))
+}
+
+func definedKeyLarge(m map[key][200]byte, buf *bytes.Buffer) [200]byte {
+	return m[key(string(buf.Bytes()))]
+}
+
+func genericDefined[V any](m map[key]V, buf *bytes.Buffer) V {
+	return m[key(string(buf.Bytes()))]
+}
+
+func genericDelete[V any](m map[string]V, buf *bytes.Buffer) {
+	delete(m, string(buf.Bytes()))
+}
+
+func genericKeyLookup[T ~string, V any](m map[T]V, buf *bytes.Buffer) V {
+	return m[T(string(buf.Bytes()))]
+}
+
+func genericKeyDelete[T ~string, V any](m map[T]V, buf *bytes.Buffer) {
+	delete(m, T(string(buf.Bytes())))
+}
+
+func compositeKey(buf *bytes.Buffer) map[string]int {
+	return map[string]int{string(buf.Bytes()): 1}
+}
+
+func unblank(buf *bytes.Buffer) bool {
+	return string(buf.Bytes()) != ""
+}
+
+func genericLiteral[T ~map[string]int](buf bytes.Buffer) T {
+	return T{string(buf.Bytes()): 1}
+}
+
+type keyStruct struct{ s string }
+
+func literalKey(m map[keyStruct]int, buf *bytes.Buffer) int {
+	return m[keyStruct{string(buf.Bytes())}]
+}
+
+func pointerLiteralKey(m map[*keyStruct]int, buf *bytes.Buffer) int {
+	return m[&keyStruct{string(buf.Bytes())}]
+}

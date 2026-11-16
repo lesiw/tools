@@ -1,0 +1,11 @@
+package a
+
+import "bytes"
+
+func testValue(buf bytes.Buffer) string {
+	return string(buf.Bytes()) // want `conversion of Bytes to a string; String returns it for a non-nil buffer`
+}
+
+func testPointer(buf *bytes.Buffer) string {
+	return string(buf.Bytes()) // want `conversion of Bytes to a string; String returns it for a non-nil buffer`
+}

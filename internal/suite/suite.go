@@ -83,6 +83,7 @@ import (
 	"lesiw.io/tools/analyzers/boolreturn"
 	"lesiw.io/tools/analyzers/boolset"
 	"lesiw.io/tools/analyzers/breakinselect"
+	"lesiw.io/tools/analyzers/bufferbytes"
 	"lesiw.io/tools/analyzers/builtinprint"
 	"lesiw.io/tools/analyzers/builtinshadow"
 	"lesiw.io/tools/analyzers/caseorder"
@@ -359,6 +360,7 @@ var (
 		bools.Analyzer,
 		boolset.Analyzer,
 		breakinselect.Analyzer,
+		bufferbytes.Analyzer,
 		buildtag.Analyzer,
 		builtinprint.Analyzer,
 		builtinshadow.Analyzer,

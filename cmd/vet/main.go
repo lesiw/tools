@@ -519,6 +519,18 @@
 //		}
 //	}
 //
+// # bufferbytes
+//
+// Reports string(buf.Bytes()) and []byte(buf.String()). String returns the
+// unread contents as a string; Bytes returns them as a slice that aliases the
+// buffer.
+//
+// Inspired by staticcheck's S1030.
+//
+//	func f(buf *bytes.Buffer) string {
+//		return string(buf.Bytes())
+//	}
+//
 // # buildtag
 //
 // Reports a build constraint that is malformed or misplaced, or a //go:build

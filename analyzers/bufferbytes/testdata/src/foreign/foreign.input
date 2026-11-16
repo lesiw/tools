@@ -1,0 +1,7 @@
+package foreign
+
+import "bytes"
+
+type buffer struct{ *bytes.Buffer }
+
+type Wrap struct{ buffer }
