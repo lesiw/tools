@@ -869,6 +869,22 @@ Inspired by go-critic's deprecatedComment.
 func Old() {}
 ```
 
+## deviatingelse
+
+Reports an if/else whose else block does not fall through to the statement after the if. Inverting the condition removes a level of indentation from the then block.
+
+Inspired by revive's early-return.
+
+```
+func show(n int) {
+    if n == 0 {
+        print(n)
+    } else {
+        return
+    }
+}
+```
+
 ## directive
 
 Reports a toolchain directive the file cannot hold: one below the package clause, a //go:debug line outside a package main or a test file, or a space where the directive takes none.

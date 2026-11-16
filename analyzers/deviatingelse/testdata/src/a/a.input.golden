@@ -1,0 +1,453 @@
+package a
+
+import (
+	"log"
+	"os"
+)
+
+func choose(n int) int {
+	if n != 0 {
+		// want `else does not fall through; invert the condition and outdent the then block`
+		return 1
+	}
+	print(n)
+	return 0
+}
+
+func several(n int) int {
+	if !(n > 0) {
+		// want `else does not fall through; invert the condition and outdent the then block`
+		return 0
+	}
+	print(n)
+	print(n + 1)
+	return -1
+}
+
+func negated(ok bool) bool {
+	if ok {
+		// want `else does not fall through; invert the condition and outdent the then block`
+		return false
+	}
+	print("alpha")
+	return true
+}
+
+func binary(n int) bool {
+	if !(n > 0 && n < 10) {
+		// want `else does not fall through; invert the condition and outdent the then block`
+		return false
+	}
+	print(n)
+	return true
+}
+
+func panics(n int) int {
+	if n != 0 {
+		// want `else does not fall through; invert the condition and outdent the then block`
+		panic("some message")
+	}
+	print(n)
+	return -1
+}
+
+func loop(xs []int) {
+	for _, n := range xs {
+		if n != 0 {
+			// want `else does not fall through; invert the condition and outdent the then block`
+			break
+		}
+		print(n)
+	}
+}
+
+func skipper(xs []int) {
+	for _, n := range xs {
+		if !(n < 0) {
+			// want `else does not fall through; invert the condition and outdent the then block`
+			continue
+		}
+		print(n)
+	}
+}
+
+func jumper(n int) {
+again:
+	if n != 0 {
+		// want `else does not fall through; invert the condition and outdent the then block`
+		goto again
+	}
+	print(n)
+}
+
+func exiting(n int) {
+	if n != 0 {
+		// want `else does not fall through; invert the condition and outdent the then block`
+		os.Exit(1)
+	}
+	print(n)
+}
+
+func fatal(n int) {
+	if n != 0 {
+		// want `else does not fall through; invert the condition and outdent the then block`
+		log.Fatal("some message")
+	}
+	print(n)
+}
+
+func fatalf(n int) {
+	if n != 0 {
+		// want `else does not fall through; invert the condition and outdent the then block`
+		log.Fatalf("some message %d", n)
+	}
+	print(n)
+}
+
+func fatalln(n int) {
+	if n != 0 {
+		// want `else does not fall through; invert the condition and outdent the then block`
+		log.Fatalln("some message")
+	}
+	print(n)
+}
+
+func panicking(n int) {
+	if n != 0 {
+		// want `else does not fall through; invert the condition and outdent the then block`
+		log.Panic("some message")
+	}
+	print(n)
+}
+
+func panickingf(n int) {
+	if n != 0 {
+		// want `else does not fall through; invert the condition and outdent the then block`
+		log.Panicf("some message %d", n)
+	}
+	print(n)
+}
+
+func panickingln(n int) {
+	if n != 0 {
+		// want `else does not fall through; invert the condition and outdent the then block`
+		log.Panicln("some message")
+	}
+	print(n)
+}
+
+func declared(n int) int {
+	if n == 0 {
+		step := n + 1
+		print(step)
+	} else { // want `else does not fall through; invert the condition and outdent the then block`
+		return 0
+	}
+	return -1
+}
+
+func variabled(n int) int {
+	if n == 0 {
+		var step = n + 1
+		print(step)
+	} else { // want `else does not fall through; invert the condition and outdent the then block`
+		return 0
+	}
+	return -1
+}
+
+func conditional(n int) int {
+	if n /* why */ != 0 {
+		// want `else does not fall through; invert the condition and outdent the then block`
+		return 0
+	}
+	print(n)
+	return -1
+}
+
+func between(n int) int {
+	if n == 0 {
+		print(n)
+	} else /* why */ { // want `else does not fall through; invert the condition and outdent the then block`
+		return 0
+	}
+	return -1
+}
+
+func inner(n int) int {
+	if n != 0 {
+		// want `else does not fall through; invert the condition and outdent the then block`
+		return 0
+	}
+	// keep
+	print(n)
+	return -1
+}
+
+func raw(n int) int {
+	if n == 0 {
+		print(`alpha
+	beta`)
+	} else { // want `else does not fall through; invert the condition and outdent the then block`
+		return 0
+	}
+	return -1
+}
+
+func elseDeclares(n int) {
+	if n != 0 {
+		// want `else does not fall through; invert the condition and outdent the then block`
+		step := n + 1
+		print(step)
+		return
+	}
+	print(n)
+}
+
+func nestedElse(n int) {
+	if n != 0 {
+		// want `else does not fall through; invert the condition and outdent the then block`
+		if n < 0 {
+			return
+		} else {
+			return
+		}
+	}
+	print(n)
+}
+
+func both(n int) int {
+	if n == 0 {
+		return 0
+	} else {
+		return 1
+	}
+}
+
+func regular(n int) int {
+	if n == 0 {
+		print(n)
+	} else {
+		print(n + 1)
+	}
+	return -1
+}
+
+func emptyThen(n int) int {
+	if n == 0 {
+	} else {
+		return 0
+	}
+	return -1
+}
+
+func initialized(n int) int {
+	if step := n + 1; step > 0 {
+		print(step)
+	} else {
+		return 0
+	}
+	return -1
+}
+
+func chain(n int) int {
+	if n == 0 {
+		print(n)
+	} else if n == 1 {
+		print(n + 1)
+	} else {
+		return 0
+	}
+	return -1
+}
+
+func labeledThen(n int) int {
+	if n != 0 {
+		// want `else does not fall through; invert the condition and outdent the then block`
+		return 0
+	}
+inner:
+	for {
+		break inner
+	}
+	return -1
+}
+
+func labeledElse(n int) int {
+	if n != 0 {
+		// want `else does not fall through; invert the condition and outdent the then block`
+	inner:
+		for {
+			break inner
+		}
+		return -1
+	}
+	print(n)
+	return 0
+}
+
+func wrapped(n int) bool {
+	if n !=
+		0 {
+		// want `else does not fall through; invert the condition and outdent the then block`
+		return false
+	}
+	print(n)
+	return true
+}
+
+func notEqual(n int) int {
+	if n == 0 {
+		// want `else does not fall through; invert the condition and outdent the then block`
+		return 0
+	}
+	print(n)
+	return -1
+}
+
+func elseComment(n int) int {
+	if n != 0 {
+		// want `else does not fall through; invert the condition and outdent the then block`
+		// keep
+		return 0
+	}
+	print(n)
+	return -1
+}
+
+func exitingThen(n int) {
+	if n == 0 {
+		os.Exit(1)
+	} else {
+		return
+	}
+}
+
+func panicThen(n int) {
+	if n == 0 {
+		panic("some message")
+	} else {
+		return
+	}
+}
+
+func gotoInside(n int) {
+	if n != 0 {
+		// want `else does not fall through; invert the condition and outdent the then block`
+	inner:
+		goto inner
+	}
+	print(n)
+}
+
+func commentGap(ok bool) int {
+	if ! /* why */ ok {
+		print("alpha")
+	} else { // want `else does not fall through; invert the condition and outdent the then block`
+		return 0
+	}
+	return -1
+}
+
+func parenCall(n int) {
+	if n != 0 {
+		// want `else does not fall through; invert the condition and outdent the then block`
+		(panic("some message"))
+	}
+	print(n)
+}
+
+func trailingElse(n int) int {
+	if n == 0 {
+		print(n)
+	} else { // want `else does not fall through; invert the condition and outdent the then block`
+		return 0
+	} // note
+	return -1
+}
+
+func switchThen(n int) int {
+	if n != 0 {
+		// want `else does not fall through; invert the condition and outdent the then block`
+		return 1
+	}
+	switch n {
+	case 0:
+		return 0
+	default:
+		return -1
+	}
+}
+
+func selectThen(n int) {
+	if n != 0 {
+		// want `else does not fall through; invert the condition and outdent the then block`
+		return
+	}
+	select {
+	default:
+		return
+	}
+}
+
+func forThen(n int) {
+	if n != 0 {
+		// want `else does not fall through; invert the condition and outdent the then block`
+		return
+	}
+	for {
+	}
+}
+
+func labeledReturn(n int) {
+	if n == 0 {
+		goto done
+	done:
+		return
+	} else {
+		print(n)
+	}
+}
+
+type runner struct{ Exit func(int) }
+
+func shadowing(n int, os runner) {
+	if n == 0 {
+		print(n)
+	} else {
+		os.Exit(0)
+	}
+}
+
+func printing(n int) {
+	if n == 0 {
+		print(n)
+	} else {
+		log.Print("some message")
+	}
+}
+
+func switching(n int) {
+	if n == 0 {
+		print(n)
+	} else {
+		switch n {
+		case 1:
+			return
+		default:
+			return
+		}
+	}
+}
+
+func nestedDeclared(n int) int {
+	if n != 0 {
+		// want `else does not fall through; invert the condition and outdent the then block`
+		return 0
+	}
+	{
+		step := n + 1
+		print(step)
+	}
+	return -1
+}

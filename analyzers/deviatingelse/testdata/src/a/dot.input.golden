@@ -1,0 +1,22 @@
+package a
+
+import (
+	. "log"
+	. "os"
+)
+
+func dotExit(n int) {
+	if n != 0 {
+		// want `else does not fall through; invert the condition and outdent the then block`
+		Exit(1)
+	}
+	print(n)
+}
+
+func dotFatal(n int) {
+	if n != 0 {
+		// want `else does not fall through; invert the condition and outdent the then block`
+		Fatal("some message")
+	}
+	print(n)
+}

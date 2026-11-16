@@ -1,0 +1,78 @@
+package b
+
+func inlineBody(n int) int {
+	if n == 0 { print(n) } else { return 0 } // want `else does not fall through; invert the condition and outdent the then block`
+	return -1
+}
+
+func inlineLabelElse(n int) int {
+	if n == 0 {
+		print(n)
+	} else { inner: // want `else does not fall through; invert the condition and outdent the then block`
+		for {
+			break inner
+		}
+		return -1
+	}
+	return 0
+}
+
+func mixedInline(n int) int {
+	if n == 0 {
+		print(n)
+	} else { return 0 // want `else does not fall through; invert the condition and outdent the then block`
+	}
+	return -1
+}
+
+func parenNot(ok bool) int {
+	if (/* keep */ !ok /* why */) {
+		print("alpha")
+	} else { // want `else does not fall through; invert the condition and outdent the then block`
+		return 0
+	}
+	return -1
+}
+
+func beforeCondition(n int) int {
+	if /* why */ n == 0 {
+		print(n)
+	} else { // want `else does not fall through; invert the condition and outdent the then block`
+		return 0
+	}
+	return -1
+}
+
+func afterCondition(n int) int {
+	if n == 0 /* why */ {
+		print(n)
+	} else { // want `else does not fall through; invert the condition and outdent the then block`
+		return 0
+	}
+	return -1
+}
+
+func inlineEnd(n int) int {
+	if n == 0 {
+		print(n)
+	} else { // want `else does not fall through; invert the condition and outdent the then block`
+		return 0 }
+	return -1
+}
+
+func inlineThen(n int) int {
+	if n == 0 { print(n)
+	} else { // want `else does not fall through; invert the condition and outdent the then block`
+		return 0
+	}
+	return -1
+}
+
+func parenNotTail(ok bool) int {
+	if (!ok /* why */) {
+		print("alpha")
+	} else { // want `else does not fall through; invert the condition and outdent the then block`
+		return 0
+	}
+	return -1
+}
