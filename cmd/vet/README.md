@@ -2060,6 +2060,19 @@ Adapted from revive's package-naming.
 package util
 ```
 
+## panicnil
+
+Reports a call to panic with the predeclared nil. The call passes nil, so the crash report can say only that the argument was nil.
+
+```
+func at(xs []int, i int) int {
+    if i < 0 || i >= len(xs) {
+        panic(nil)
+    }
+    return xs[i]
+}
+```
+
 ## plusbuild
 
 Reports a // +build line in a file that also holds a //go:build line. The older line is obsolete since Go 1.18, and gofmt removes it.

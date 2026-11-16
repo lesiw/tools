@@ -1,0 +1,56 @@
+package a
+
+func literalNil() {
+	panic(nil) // want `a nil panic gives no reason for stopping`
+}
+
+func parenthesized() {
+	panic((nil)) // want `a nil panic gives no reason for stopping`
+}
+
+func parenthesizedCallee() {
+	(panic)(nil) // want `a nil panic gives no reason for stopping`
+}
+
+func deferredNil() {
+	defer panic(nil) // want `a nil panic gives no reason for stopping`
+}
+
+var initializer = func() {
+	panic(nil) // want `a nil panic gives no reason for stopping`
+}
+
+func withMessage() {
+	panic("stopped")
+}
+
+func nilError() {
+	var err error
+	panic(err)
+}
+
+func conversionToInterface() {
+	panic(any(nil))
+}
+
+func conversionToPointer() {
+	panic((*int)(nil))
+}
+
+func shadowedNil() {
+	nil := 3
+	panic(nil)
+}
+
+func shadowedPanic() {
+	panic := func(any) {}
+	panic(nil)
+}
+
+type panicker struct{}
+
+func (panicker) panic(any) {}
+
+func methodNamedPanic(p panicker) {
+	p.panic(nil)
+}

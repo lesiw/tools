@@ -175,6 +175,7 @@ import (
 	"lesiw.io/tools/analyzers/offbyone"
 	"lesiw.io/tools/analyzers/osremoveall"
 	"lesiw.io/tools/analyzers/packagename"
+	"lesiw.io/tools/analyzers/panicnil"
 	"lesiw.io/tools/analyzers/poolarg"
 	"lesiw.io/tools/analyzers/predictivetemp"
 	"lesiw.io/tools/analyzers/preferdecoderune"
@@ -432,6 +433,7 @@ var (
 		offbyone.Analyzer,
 		osremoveall.Analyzer,
 		packagename.Analyzer,
+		panicnil.Analyzer,
 		poolarg.Analyzer,
 		predictivetemp.Analyzer,
 		preferdecoderune.Analyzer,
