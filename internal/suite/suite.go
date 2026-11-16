@@ -58,6 +58,7 @@ import (
 	"lesiw.io/tools/analyzers/appendassign"
 	"lesiw.io/tools/analyzers/appendcombine"
 	"lesiw.io/tools/analyzers/appendself"
+	"lesiw.io/tools/analyzers/appendunused"
 	"lesiw.io/tools/analyzers/argorder"
 	"lesiw.io/tools/analyzers/assertnil"
 	"lesiw.io/tools/analyzers/assignop"
@@ -225,6 +226,7 @@ var (
 		appendcombine.Analyzer,
 		appends.Analyzer,
 		appendself.Analyzer,
+		appendunused.Analyzer,
 		argorder.Analyzer,
 		asmdecl.Analyzer,
 		assertnil.Analyzer,

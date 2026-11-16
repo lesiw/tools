@@ -1,0 +1,185 @@
+package a
+
+func local(v int) {
+	var xs []int
+	_ = append(xs, v) // want `append to xs discards its result, so xs keeps its length`
+}
+
+func dropped(xs []int, v int) []int {
+	_ = append(xs, v) // want `append to xs discards its result, so xs keeps its length`
+	return xs
+}
+
+func spread(xs, ys []int) []int {
+	_ = append(xs, ys...) // want `append to xs discards its result, so xs keeps its length`
+	return xs
+}
+
+func several(xs []int, v, w int) {
+	_ = append(xs, v, w) // want `append to xs discards its result, so xs keeps its length`
+}
+
+func parenthesized(xs []int, v int) {
+	_ = (append(xs, v)) // want `append to xs discards its result, so xs keeps its length`
+}
+
+func parenthesizedLHS(xs []int, v int) {
+	(_) = append(xs, v) // want `append to xs discards its result, so xs keeps its length`
+}
+
+func parenthesizedBuiltin(xs []int, v int) {
+	_ = (append)(xs, v) // want `append to xs discards its result, so xs keeps its length`
+}
+
+func parenthesizedArgument(xs []int, v int) {
+	_ = append((xs), v) // want `append to xs discards its result, so xs keeps its length`
+}
+
+func looped(xs []int, v int) {
+	for range xs {
+		_ = append(xs, v) // want `append to xs discards its result, so xs keeps its length`
+	}
+}
+
+func inited(xs []int, v int, ok bool) {
+	if _ = append(xs, v); ok { // want `append to xs discards its result, so xs keeps its length`
+	}
+}
+
+func bytewise(buf []byte, s string) {
+	_ = append(buf, s...) // want `append to buf discards its result, so buf keeps its length`
+}
+
+func same(xs []int, v int) []int {
+	xs = append(xs, v)
+	return xs
+}
+
+func savedUnread(xs []int, v int) {
+	xs = append(xs, v)
+}
+
+func declared(xs []int, v int) []int {
+	ys := append(xs, v)
+	return ys
+}
+
+func blankDeclared(xs []int, v int) []int {
+	var _ = append(xs, v)
+	return xs
+}
+
+func noValues(xs []int) {
+	_ = append(xs)
+}
+
+func prefixed(xs []int, v int) {
+	_ = append(xs[:1], v)
+}
+
+func field(h holder, v int) {
+	_ = append(h.items, v)
+}
+
+func indexed(m map[string][]int, k string, v int) {
+	_ = append(m[k], v)
+}
+
+func fresh(v int) {
+	_ = append([]int(nil), v)
+}
+
+func converted(b string) {
+	_ = append([]byte(nil), b...)
+}
+
+func convertedSlice(xs []int, v int) {
+	_ = append(numbers(xs), v)
+}
+
+func buffered(buf []byte, b string) {
+	_ = append(buf[:0], b...)
+}
+
+func literal(v int) {
+	_ = append([]int{v}, v)
+}
+
+func made(v int) {
+	_ = append(make([]int, 0, 1), v)
+}
+
+func grown() []int {
+	return global
+}
+
+func called(v int) {
+	_ = append(grown(), v)
+}
+
+func aliased(xs []int, v int) []int {
+	ys := xs[:cap(xs)]
+	_ = append(xs, v) // want `append to xs discards its result, so xs keeps its length`
+	if len(ys) > len(xs) {
+		_ = ys[len(xs)]
+	}
+	return ys
+}
+
+func paired(xs []int, v int, f func() error) {
+	var err error
+	_, err = append(xs, v), f() // want `append to xs discards its result, so xs keeps its length`
+	_ = err
+}
+
+func short(xs []int, v int, f func() error) {
+	_, err := append(xs, v), f() // want `append to xs discards its result, so xs keeps its length`
+	_ = err
+}
+
+func second(xs []int, v int, f func() error) {
+	var err error
+	err, _ = f(), append(xs, v) // want `append to xs discards its result, so xs keeps its length`
+	_ = err
+}
+
+func twice(xs, ys []int, v, w int) {
+	_, _ = append(xs, v), append(ys, w) // want `append to xs discards its result, so xs keeps its length` `append to ys discards its result, so ys keeps its length`
+}
+
+func shadowed(xs []int, v int) {
+	append := func(s []int, v int) []int { return s }
+	_ = append(xs, v)
+	_ = v
+}
+
+type appender struct{}
+
+func (appender) append(xs []int, v int) []int { return xs }
+
+func method(xs []int, v int) {
+	var a appender
+	_ = a.append(xs, v)
+}
+
+func fieldTarget(h *holder, xs []int, v int) {
+	h.items = append(xs, v)
+}
+
+type numbers []int
+
+func namedSlice(xs numbers, v int) {
+	_ = append(xs, v) // want `append to xs discards its result, so xs keeps its length`
+}
+
+var global []int
+
+func packageVar(v int) {
+	_ = append(global, v) // want `append to global discards its result, so global keeps its length`
+}
+
+func generic[T ~[]int](xs T, v int) {
+	_ = append(xs, v) // want `append to xs discards its result, so xs keeps its length`
+}
+
+type holder struct{ items []int }

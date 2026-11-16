@@ -98,6 +98,18 @@ func grow(dst, src []int, v int) []int {
 }
 ```
 
+## appendunused
+
+Reports an append to a slice identifier whose result is assigned to the blank identifier, as \_ = append(xs, v). The returned slice has the new length, and xs keeps its old length.
+
+Adapted from staticcheck's SA4010.
+
+```
+func f(xs []int) {
+    _ = append(xs, 1)
+}
+```
+
 ## argorder
 
 Reports a call whose arguments name the parameters in the other order. Two adjacent parameters of one type can be swapped without a compile error, so only the names show which value went where.
