@@ -1,0 +1,717 @@
+package a
+
+func choose(n int) int {
+	if n == 0 {
+		return 0
+		// want +1 `else follows an if whose body only returns`
+	} else {
+		return 1
+	}
+}
+
+func nested(n int) int {
+	if n < 0 {
+		return -1
+		// want +1 `else follows an if whose body only returns`
+	} else {
+		// keep
+		inner := n * 2
+		if inner > 3 {
+			return inner
+		}
+		return n
+	}
+}
+
+func counted(n int) int {
+	if n == 0 {
+		return 0
+		// want +1 `else follows an if whose body only returns`
+	} else {
+		n++
+		n++
+	}
+	return n
+}
+
+func header(n int) int {
+	if n == 0 {
+		return 0
+		// want +1 `else follows an if whose body only returns`
+	} /* why */ else {
+		return 1
+	}
+}
+
+func raw(n int) int {
+	if n == 0 {
+		return 0
+		// want +1 `else follows an if whose body only returns`
+	} else {
+		s := `alpha
+	beta`
+		_ = s
+	}
+	return n
+}
+
+func local(n int) int {
+	if n == 0 {
+		return 0
+		// want +1 `else follows an if whose body only returns`
+	} else {
+		step := n * 2
+		_ = step
+	}
+	return n
+}
+
+type item struct{ step int }
+
+func selector(n int) int {
+	if n == 0 {
+		return 0
+		// want +1 `else follows an if whose body only returns`
+	} else {
+		step := 1
+		_ = step
+	}
+	it := item{step: n}
+	return it.step
+}
+
+func shadow(n int) int {
+	if n == 0 {
+		return 0
+		// want +1 `else follows an if whose body only returns`
+	} else {
+		step := 1
+		_ = step
+	}
+	step := 2
+	return step
+}
+
+func param(step int) int {
+	if step == 0 {
+		return 0
+		// want +1 `else follows an if whose body only returns`
+	} else {
+		step := 1
+		_ = step
+	}
+	return -1
+}
+
+func nestedParam(step int) int {
+	{
+		if step == 0 {
+			return 0
+			// want +1 `else follows an if whose body only returns`
+		} else {
+			step := 1
+			_ = step
+		}
+	}
+	return step
+}
+
+func generic[T any](n int) int {
+	if n == 0 {
+		return 0
+		// want +1 `else follows an if whose body only returns`
+	} else {
+		T := 1
+		_ = T
+	}
+	return n
+}
+
+type box[T any] struct{}
+
+func (b box[T]) pick(n int) int {
+	if n == 0 {
+		return 0
+		// want +1 `else follows an if whose body only returns`
+	} else {
+		T := 1
+		_ = T
+	}
+	return n
+}
+
+func jump(n int) int {
+	goto done
+	if n == 0 {
+		return 0
+		// want +1 `else follows an if whose body only returns`
+	} else {
+		step := 1
+		_ = step
+	}
+done:
+	return n
+}
+
+func clause(n any) int {
+	switch v := n.(type) {
+	case int:
+		if v == 0 {
+			return 0
+			// want +1 `else follows an if whose body only returns`
+		} else {
+			v := 1
+			_ = v
+		}
+	}
+	return -1
+}
+
+func tail(n int) int {
+	if n == 0 {
+		return 0
+	} else if n == 1 {
+		return 1
+	} else {
+		return 2
+	}
+}
+
+func remark(n int) int {
+	if n == 0 {
+		return 0
+	} else {
+		// why
+	}
+	return n
+}
+
+func result() (step int) {
+	if step == 0 {
+		return 0
+		// want +1 `else follows an if whose body only returns`
+	} else {
+		step := 1
+		_ = step
+	}
+	return 1
+}
+
+func before(n int) int {
+	step := 10
+	if n == 0 {
+		return 0
+		// want +1 `else follows an if whose body only returns`
+	} else {
+		step := 1
+		_ = step
+	}
+	return step
+}
+
+func typed(n int) int {
+	if n == 0 {
+		return 0
+		// want +1 `else follows an if whose body only returns`
+	} else {
+		var step int
+		step = 1
+		_ = step
+	}
+	step := 2
+	return step
+}
+
+func receive(ch chan int) int {
+	select {
+	case n := <-ch:
+		if n == 0 {
+			return 0
+			// want +1 `else follows an if whose body only returns`
+		} else {
+			n := 1
+			_ = n
+		}
+	}
+	return -1
+}
+
+func literal() func(int) int {
+	goto done
+done:
+	return func(n int) int {
+		if n == 0 {
+			return 0
+			// want +1 `else follows an if whose body only returns`
+		} else {
+			return 1
+		}
+	}
+}
+
+func clauseFix(n int) int {
+	switch n {
+	case 0:
+		if n == 0 {
+			return 0
+			// want +1 `else follows an if whose body only returns`
+		} else {
+			n++
+		}
+	}
+	return n
+}
+
+func jumpFix(n int) int {
+	goto done
+	if n == 0 {
+		return 0
+		// want +1 `else follows an if whose body only returns`
+	} else {
+		n++
+	}
+done:
+	return n
+}
+
+func reassign(n int) int {
+	step := 10
+	if step == n {
+		return 0
+		// want +1 `else follows an if whose body only returns`
+	} else {
+		step, other := 1, 2
+		_, _ = step, other
+	}
+	return n
+}
+
+func address(n int) int {
+	step := 10
+	p := &step
+	if n == 0 {
+		return 0
+		// want +1 `else follows an if whose body only returns`
+	} else {
+		step, other := 1, 2
+		_, _ = step, other
+	}
+	return *p
+}
+
+func prior(n int) int {
+	step := 10
+	if step > n {
+		_ = step
+	}
+	if n == 0 {
+		return 0
+		// want +1 `else follows an if whose body only returns`
+	} else {
+		step, other := 1, 2
+		_, _ = step, other
+	}
+	return n
+}
+
+func closure(n int) int {
+	step := 10
+	f := func() int { return step }
+	if n == 0 {
+		return 0
+		// want +1 `else follows an if whose body only returns`
+	} else {
+		step, other := 1, 2
+		_, _ = step, other
+	}
+	return f()
+}
+
+func mismatch(n int) int {
+	step := 10
+	if step == n {
+		return 0
+		// want +1 `else follows an if whose body only returns`
+	} else {
+		step, other := "alpha", 2
+		_, _ = step, other
+	}
+	return n
+}
+
+func constant(n int) int {
+	const step = 10
+	if step == n {
+		return 0
+		// want +1 `else follows an if whose body only returns`
+	} else {
+		step, other := 1, 2
+		_, _ = step, other
+	}
+	return n
+}
+
+func anytype(n int) int {
+	var step any = 10
+	if step == n {
+		return 0
+		// want +1 `else follows an if whose body only returns`
+	} else {
+		step, other := 1, 2
+		_ = step + 1
+		_ = other
+	}
+	return n
+}
+
+var saved func() int
+
+func register(f func() int) int {
+	saved = f
+	return f()
+}
+
+func condition(n int) int {
+	step := 10
+	if register(func() int { return step }) > n {
+		return 0
+		// want +1 `else follows an if whose body only returns`
+	} else {
+		step, other := 1, 2
+		_, _ = step, other
+	}
+	return saved()
+}
+
+func escapeElse(n int) int {
+	step := 10
+	if n == 0 {
+		return 0
+		// want +1 `else follows an if whose body only returns`
+	} else {
+		f := func() int { return step }
+		step, other := 1, 2
+		_, _ = step, other
+		return f()
+	}
+}
+
+func backward(n int) int {
+done:
+	if n == 0 {
+		goto done
+	}
+	if n < 0 {
+		return 0
+		// want +1 `else follows an if whose body only returns`
+	} else {
+		step := 1
+		_ = step
+	}
+	return n
+}
+
+func nestedLater(n int) int {
+	if n == 0 {
+		return 0
+		// want +1 `else follows an if whose body only returns`
+	} else {
+		step := 1
+		_ = step
+	}
+	{
+		step := 2
+		_ = step
+	}
+	return n
+}
+
+func laterErr(n int) int {
+	if n == 0 {
+		return 0
+		// want +1 `else follows an if whose body only returns`
+	} else {
+		err := 1
+		_ = err
+	}
+	if err := n; err > 0 {
+		return err
+	}
+	return -1
+}
+
+func blankType(n int) int {
+	if n == 0 {
+		return 0
+		// want +1 `else follows an if whose body only returns`
+	} else {
+		type _ int
+		n++
+	}
+	return n
+}
+
+func conflict(n int) int {
+	step := 10
+	if step == n {
+		return 0
+		// want +1 `else follows an if whose body only returns`
+	} else {
+		var step int
+		step = 1
+		_ = step
+	}
+	return n
+}
+
+type pair struct{}
+
+func (step pair) pick(n int) int {
+	if n == 0 {
+		return 0
+		// want +1 `else follows an if whose body only returns`
+	} else {
+		step := 1
+		_ = step
+	}
+	return -1
+}
+
+func addressIf(n int) int {
+	step := 10
+	if *(&step) == n {
+		return 0
+		// want +1 `else follows an if whose body only returns`
+	} else {
+		step, other := 1, 2
+		_, _ = step, other
+	}
+	return n
+}
+
+func lone(n int) int {
+	step := 10
+	if step == n {
+		return 0
+		// want +1 `else follows an if whose body only returns`
+	} else {
+		step := 1
+		_ = step
+	}
+	return n
+}
+
+type counter int
+
+func (c *counter) bump() { *c++ }
+
+func deferred(n int) int {
+	step := counter(10)
+	defer step.bump()
+	if n == 0 {
+		return 0
+		// want +1 `else follows an if whose body only returns`
+	} else {
+		step, other := counter(1), 2
+		_, _ = step, other
+	}
+	return int(step)
+}
+
+func arraySlice(n int) int {
+	step := [2]int{10, 20}
+	s := step[:]
+	if n == 0 {
+		return 0
+		// want +1 `else follows an if whose body only returns`
+	} else {
+		step, other := [2]int{1, 2}, 3
+		_, _ = step, other
+	}
+	return s[0]
+}
+
+type pair2 struct{}
+
+func (pair2) step() {}
+
+func methodName(n int) int {
+	if n == 0 {
+		return 0
+		// want +1 `else follows an if whose body only returns`
+	} else {
+		step := 1
+		_ = step
+	}
+	var it pair2
+	it.step()
+	return n
+}
+
+func closureParam(n int) int {
+	if n == 0 {
+		return 0
+		// want +1 `else follows an if whose body only returns`
+	} else {
+		step := 1
+		_ = step
+	}
+	f := func(step int) int { return step }
+	return f(n)
+}
+
+func declared(n int) int {
+	if n == 0 {
+		return 0
+		// want +1 `else follows an if whose body only returns`
+	} else {
+		var step = n * 2
+		_ = step
+	}
+	return n
+}
+
+func order(n int) int {
+	z := 10
+	_ = z
+	if n == 0 {
+		return 0
+		// want +1 `else follows an if whose body only returns`
+	} else {
+		x := 1
+		z, x := 2, 3
+		_, _ = z, x
+	}
+	return n
+}
+
+func reuse(n int) int {
+	x := 10
+	_ = x
+	if n == 0 {
+		return 0
+		// want +1 `else follows an if whose body only returns`
+	} else {
+		x, w := 1, 2
+		x, y := 3, 4
+		_, _, _ = x, w, y
+	}
+	return n
+}
+
+func genericSlice[T ~[2]int](n int, a, b T) int {
+	step := a
+	s := step[:]
+	if n == 0 {
+		return 0
+		// want +1 `else follows an if whose body only returns`
+	} else {
+		step, other := b, 3
+		_, _ = step, other
+	}
+	return s[0]
+}
+
+func laterReuse(n int) int {
+	x := 10
+	_ = x
+	if n == 0 {
+		return 0
+		// want +1 `else follows an if whose body only returns`
+	} else {
+		x, y := 1, 2
+		_, _ = x, y
+	}
+	return x
+}
+
+func blankJump(n int) int {
+	goto done
+	if n == 0 {
+		return 0
+		// want +1 `else follows an if whose body only returns`
+	} else {
+		var _ int
+		n++
+	}
+done:
+	return n
+}
+
+func increment(n int) int {
+	if n > 0 {
+		n++
+	} else {
+		n--
+	}
+	return n
+}
+
+func assign(n int) int {
+	step := 10
+	if step == n {
+		return 0
+		// want +1 `else follows an if whose body only returns`
+	} else {
+		step, other := 1, 2
+		_, _ = step, other
+	}
+	step = 3
+	return step
+}
+
+func namedNested(cond bool) (r int) {
+	{
+		if cond {
+			return 0
+			// want +1 `else follows an if whose body only returns`
+		} else {
+			r := 1
+			_ = r
+		}
+		return
+	}
+}
+
+func extra(n int) int {
+	if n > 0 {
+		n--
+		return n
+	} else {
+		n++
+	}
+	return n
+}
+
+func chain(n int) int {
+	if n == 0 {
+		return 0
+	} else if n == 1 {
+		return 1
+	}
+	return -1
+}
+
+func withInit(n int) int {
+	if m := n * 2; m > 3 {
+		return m
+	} else {
+		_ = n
+	}
+	return n
+}
+
+func empty(n int) int {
+	if n == 0 {
+		return 0
+	} else {
+	}
+	return n
+}
+
+func plain(n int) int {
+	if n == 0 {
+		return 0
+	}
+	return n
+}

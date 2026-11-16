@@ -1456,6 +1456,23 @@
 //		return -1
 //	}
 //
+// # ifreturn
+//
+// Reports an else block after an if whose body only returns. The else runs
+// only when the condition is false, so its statements can follow the if at the
+// same indent.
+//
+// This is the return-only case of errflow's report, adapted from revive's
+// indent-error-flow.
+//
+//	func f(n int) int {
+//		if n == 0 {
+//			return 0
+//		} else {
+//			return 1
+//		}
+//	}
+//
 // # importcomment
 //
 // Reports a package clause with an import comment naming the canonical path.

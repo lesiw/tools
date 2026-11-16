@@ -135,6 +135,7 @@ import (
 	"lesiw.io/tools/analyzers/fortrue"
 	"lesiw.io/tools/analyzers/gospell"
 	"lesiw.io/tools/analyzers/ifelsechain"
+	"lesiw.io/tools/analyzers/ifreturn"
 	"lesiw.io/tools/analyzers/importgroup"
 	"lesiw.io/tools/analyzers/importshadow"
 	"lesiw.io/tools/analyzers/increment"
@@ -385,6 +386,7 @@ var (
 		httpresponse.Analyzer,
 		ifaceassert.Analyzer,
 		ifelsechain.Analyzer,
+		ifreturn.Analyzer,
 		importgroup.Analyzer,
 		importshadow.Analyzer,
 		increment.Analyzer,
