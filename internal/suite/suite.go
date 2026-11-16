@@ -176,6 +176,7 @@ import (
 	"lesiw.io/tools/analyzers/looponce"
 	"lesiw.io/tools/analyzers/loopvarcond"
 	"lesiw.io/tools/analyzers/lowerfold"
+	"lesiw.io/tools/analyzers/makecap"
 	"lesiw.io/tools/analyzers/makezero"
 	"lesiw.io/tools/analyzers/manualtrim"
 	"lesiw.io/tools/analyzers/mapfind"
@@ -476,6 +477,7 @@ var (
 		loopvarcond.Analyzer,
 		lostcancel.Analyzer,
 		lowerfold.Analyzer,
+		makecap.Analyzer,
 		makezero.Analyzer,
 		manualtrim.Analyzer,
 		mapfind.Analyzer,

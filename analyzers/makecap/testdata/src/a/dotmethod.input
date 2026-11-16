@@ -1,0 +1,11 @@
+package a
+
+import (
+	"os"
+	. "time"
+)
+
+func dotMethod(fi os.FileInfo) chan int {
+	_ = fi.ModTime().Year()
+	return make(chan int, Duration(0)) // want `capacity can be omitted; zero is unbuffered`
+}

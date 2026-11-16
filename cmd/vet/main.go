@@ -2056,6 +2056,18 @@
 //		return strings.ToLower(a) == strings.ToLower(b)
 //	}
 //
+// # makecap
+//
+// Reports a make call whose capacity argument is redundant: a slice whose
+// capacity has the same value as its length, or a channel whose size is the
+// constant zero.
+//
+// Adapted from staticcheck's S1019.
+//
+//	func sized(n int) []int {
+//		return make([]int, n, n)
+//	}
+//
 // # makezero
 //
 // Reports a slice made with a non-zero constant length by := and then appended

@@ -1,0 +1,7 @@
+package a
+
+import "time"
+
+func importedZero() chan int {
+	return make(chan int, time.Duration(0)) // want `capacity can be omitted; zero is unbuffered`
+}

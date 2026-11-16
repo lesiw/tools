@@ -1,0 +1,5 @@
+package a
+
+import . "b"
+
+type alias = T

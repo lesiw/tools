@@ -1,0 +1,8 @@
+package a
+
+import . "time"
+
+func dotUsedTwice() chan int {
+	_ = Second
+	return make(chan int) // want `capacity can be omitted; zero is unbuffered`
+}

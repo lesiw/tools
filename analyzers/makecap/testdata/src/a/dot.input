@@ -1,0 +1,7 @@
+package a
+
+import . "time"
+
+func dotZero() chan int {
+	return make(chan int, Duration(0)) // want `capacity can be omitted; zero is unbuffered`
+}

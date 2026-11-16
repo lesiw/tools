@@ -1,0 +1,11 @@
+package a
+
+import . "b"
+
+func dotVarSlice() []int {
+	return make([]int, 3, len(Array)) // want `capacity can be omitted; it equals the length`
+}
+
+func dotVarChan() chan int {
+	return make(chan int, len(Empty)) // want `capacity can be omitted; zero is unbuffered`
+}

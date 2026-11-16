@@ -1,0 +1,8 @@
+package a
+
+import . "b"
+
+func fieldKey() chan int {
+	_ = alias{Field: 1}
+	return make(chan int, N(0)) // want `capacity can be omitted; zero is unbuffered`
+}

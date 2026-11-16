@@ -1,0 +1,7 @@
+package a
+
+import "b"
+
+func importedConstant() []int {
+	return make([]int, b.Three, b.Three) // want `capacity can be omitted; it equals the length`
+}

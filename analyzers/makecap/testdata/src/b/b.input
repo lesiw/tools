@@ -1,0 +1,11 @@
+package b
+
+type T struct{ Field int }
+
+type N int
+
+var Array = [3]int{}
+
+var Empty = [0]int{}
+
+const Three = 3

@@ -1,0 +1,167 @@
+package a
+
+import "time"
+
+type item struct{ n int }
+
+func sameLength(n int) []int {
+	return make([]int, n, n) // want `capacity can be omitted; it equals the length`
+}
+
+func sameField(p item) []int {
+	return make([]int, p.n, p.n) // want `capacity can be omitted; it equals the length`
+}
+
+func sameLiteral() []byte {
+	return make([]byte, 4, 4) // want `capacity can be omitted; it equals the length`
+}
+
+func sameConstant() []int {
+	return make([]int, 2+1, 3) // want `capacity can be omitted; it equals the length`
+}
+
+func constantExpression() []int {
+	return make([]int, 3, 2+1) // want `capacity can be omitted; it equals the length`
+}
+
+func samePure(xs []int) []int {
+	return make([]int, len(xs), len(xs)) // want `capacity can be omitted; it equals the length`
+}
+
+func sameIndex(xs []int) []int {
+	return make([]int, xs[0], xs[0]) // want `capacity can be omitted; it equals the length`
+}
+
+func sameDeref(p *int) []int {
+	return make([]int, *p, *p) // want `capacity can be omitted; it equals the length`
+}
+
+func zeroLength() []int {
+	return make([]int, 0, 0) // want `capacity can be omitted; it equals the length`
+}
+
+type row []int
+
+func named(n int) row {
+	return make(row, n, n) // want `capacity can be omitted; it equals the length`
+}
+
+func namedConstant() []int {
+	const two = 2
+	return make([]int, 3, two+1) // want `capacity can be omitted; it equals the length`
+}
+
+func channel() chan int {
+	return make(chan int, 0) // want `capacity can be omitted; zero is unbuffered`
+}
+
+func namedChannel() chan row {
+	return make(chan row, 0) // want `capacity can be omitted; zero is unbuffered`
+}
+
+func constantChannel() chan int {
+	const zero = 0
+	return make(chan int, zero) // want `capacity can be omitted; zero is unbuffered`
+}
+
+func commented(n int) []int {
+	return make([]int, n /* n */, n) // want `capacity can be omitted; it equals the length`
+}
+
+func commentedType(n int) []int {
+	return make([]int /* items */, n, n) // want `capacity can be omitted; it equals the length`
+}
+
+func commentedCapacity() chan int {
+	return make(chan int, /* zero */ 0) // want `capacity can be omitted; zero is unbuffered`
+}
+
+func multiline(n int) []int {
+	return make(
+		[]int,
+		n,
+		n, // want `capacity can be omitted; it equals the length`
+	)
+}
+
+func larger(n int) []int {
+	return make([]int, n, n+1)
+}
+
+func different(n, m int) []int {
+	return make([]int, n, m)
+}
+
+func noCapacity(n int) []int {
+	return make([]int, n)
+}
+
+func room(n int) []int {
+	return make([]int, 0, n)
+}
+
+func localVariable() []int {
+	a := [3]int{}
+	return make([]int, 3, len(a)) // want `capacity can be omitted; it equals the length`
+}
+
+func assignedVariable() []int {
+	var a [3]int
+	a = [3]int{}
+	return make([]int, 3, len(a)) // want `capacity can be omitted; it equals the length`
+}
+
+func readElsewhere() []int {
+	a := [3]int{}
+	_ = a
+	return make([]int, 3, len(a)) // want `capacity can be omitted; it equals the length`
+}
+
+func redeclaredVariable() []int {
+	var a [3]int
+	a, i := [3]int{}, 0
+	_ = i
+	return make([]int, 3, len(a)) // want `capacity can be omitted; it equals the length`
+}
+
+func parameterVar(a [3]int) []int {
+	return make([]int, 3, len(a)) // want `capacity can be omitted; it equals the length`
+}
+
+func twoCandidates() ([]int, []int) {
+	a := [3]int{}
+	first := make([]int, 3, len(a))  // want `capacity can be omitted; it equals the length`
+	second := make([]int, 3, len(a)) // want `capacity can be omitted; it equals the length`
+	return first, second
+}
+
+func importedElsewhere() chan int {
+	_ = time.Second
+	return make(chan int, time.Duration(0)) // want `capacity can be omitted; zero is unbuffered`
+}
+
+func effectful() []int {
+	return make([]int, next(), next())
+}
+
+func next() int { return 0 }
+
+func channelLength(ch chan int) []int {
+	return make([]int, len(ch), len(ch))
+}
+
+func buffered(n int) chan int {
+	return make(chan int, n)
+}
+
+func one() chan int {
+	return make(chan int, 1)
+}
+
+func hint() map[string]int {
+	return make(map[string]int, 0)
+}
+
+func parameter[T ~[]int](n int) T {
+	return make(T, n, n)
+}
