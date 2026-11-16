@@ -176,6 +176,7 @@ import (
 	"lesiw.io/tools/analyzers/regexpconst"
 	"lesiw.io/tools/analyzers/regexpmatchloop"
 	"lesiw.io/tools/analyzers/regexpmust"
+	"lesiw.io/tools/analyzers/regexpsimplify"
 	"lesiw.io/tools/analyzers/runerange"
 	"lesiw.io/tools/analyzers/selfassert"
 	"lesiw.io/tools/analyzers/shellcommand"
@@ -408,6 +409,7 @@ var (
 		regexpconst.Analyzer,
 		regexpmatchloop.Analyzer,
 		regexpmust.Analyzer,
+		regexpsimplify.Analyzer,
 		runerange.Analyzer,
 		selfassert.Analyzer,
 		shellcommand.Analyzer,

@@ -1,0 +1,118 @@
+package a
+
+import (
+	"regexp"
+	"strings"
+)
+
+var (
+	digits            = regexp.MustCompile(`\d+`)      // want `\[0-9\] can be replaced by \\d`
+	negatedDigits     = regexp.MustCompile(`\D+`)      // want `\[\^0-9\] can be replaced by \\D`
+	single            = regexp.MustCompile(`^x$`)      // want `\[x\] can be replaced by x`
+	singleRange       = regexp.MustCompile(`a`)        // want `\[a-a\] can be replaced by a`
+	escapedDigit      = regexp.MustCompile(`\d`)       // want `\[\\d\] can be replaced by \\d`
+	negatedEscape     = regexp.MustCompile(`\D`)       // want `\[\^\\d\] can be replaced by \\D`
+	namedDigit        = regexp.MustCompile(`\d+`)      // want `\[\[:digit:\]\] can be replaced by \\d`
+	rangedWord        = regexp.MustCompile(`\w+`)      // want `\[A-Za-z0-9_\] can be replaced by \\w`
+	escapeAfter       = regexp.MustCompile(`\d\d{3}`)  // want `\[0-9\] can be replaced by \\d`
+	folded            = regexp.MustCompile(`(?i)\d`)   // want `\[0-9\] can be replaced by \\d`
+	foldedLetter      = regexp.MustCompile(`(?i)k`)    // want `\[k\] can be replaced by k`
+	foldedThenLit     = regexp.MustCompile(`(?i)kx`)   // want `\[k\] can be replaced by k`
+	foldedTail        = regexp.MustCompile(`(?i)abck`) // want `\[k\] can be replaced by k`
+	foldedDigit       = regexp.MustCompile(`(?i)1`)    // want `\[1\] can be replaced by 1`
+	foldedDot         = regexp.MustCompile(`(?i)\.`)   // want `\[\.\] can be replaced by \\.`
+	counted           = regexp.MustCompile(`x{2,3}`)   // want `\[x\] can be replaced by x`
+	twoClasses        = regexp.MustCompile(`\da`)      // want `\[0-9\] can be replaced by \\d; \[a\] can be replaced by a`
+	repeated          = regexp.MustCompile(`\d+:\d+`)  // want `\[0-9\] can be replaced by \\d`
+	interpretedDigits = regexp.MustCompile("\\d")      // want `\[0-9\] can be replaced by \\d`
+	parenthesized     = regexp.MustCompile((`\d`))     // want `\[0-9\] can be replaced by \\d`
+	longEscape        = regexp.MustCompile(`A`)        // want `\[\\x41\] can be replaced by A`
+	escapedDot        = regexp.MustCompile(`\.txt`)    // want `\[\\\.\] can be replaced by \\\.`
+	escapedCloser     = regexp.MustCompile(`\]`)       // want `\[\\\]\] can be replaced by \\\]`
+	escapedTab        = regexp.MustCompile(`\t`)       // want `\[\\t\] can be replaced by \\t`
+	namedWord         = regexp.MustCompile(`\w`)       // want `\[\[:word:\]\] can be replaced by \\w`
+	negatedNamedDigit = regexp.MustCompile(`\D`)       // want `\[\[:\^digit:\]\] can be replaced by \\D`
+	notEscapedSpace   = regexp.MustCompile(`\S`)       // want `\[\^\\s\] can be replaced by \\S`
+	dot               = regexp.MustCompile(`\.txt`)    // want `\[\.\] can be replaced by \\\.`
+	interpretedDot    = regexp.MustCompile("\\.")      // want `\[\.\] can be replaced by \\.`
+	opener            = regexp.MustCompile(`\[`)       // want `\[\[\] can be replaced by \\\[`
+	closer            = regexp.MustCompile(`\]`)       // want `\[\]\] can be replaced by \\\]`
+	brace             = regexp.MustCompile(`\}`)       // want `\[\}\] can be replaced by \\\}`
+	escapedBackslash  = regexp.MustCompile(`\\11`)     // want `\[1\] can be replaced by 1`
+	classOfEscapes    = regexp.MustCompile(`[\d\s]\d`) // want `\[0-9\] can be replaced by \\d`
+	pairOfDigits      = regexp.MustCompile(`12`)       // want `\[1\] can be replaced by 1; \[2\] can be replaced by 2`
+)
+
+var (
+	pairAfterOctal = regexp.MustCompile(`\0[1]`) // want `\[\\0\] can be replaced by \\0`
+	fullOctal      = regexp.MustCompile(`\1231`) // want `\[1\] can be replaced by 1`
+	octalDigit     = regexp.MustCompile(`[\0]1`)
+	octalEscape    = regexp.MustCompile(`\12[1]`)
+)
+
+const constPattern = `[0-9]+`
+
+var (
+	shiftedEscape  = regexp.MustCompile("\x41[0-9]")
+	backtick       = regexp.MustCompile(`\x60`)    // want `\[\\x60\] can be replaced by \\x60`
+	nonASCII       = regexp.MustCompile(`\x{100}`) // want `\[\\x\{100\}\] can be replaced by \\x\{100\}`
+	mark           = regexp.MustCompile("a[\u0301]b")
+	literalWide    = regexp.MustCompile("[é]")
+	negatedProp    = regexp.MustCompile(`\P{L}`) // want `\[\^\\p{L\}\] can be replaced by \\P{L\}`
+	emptyClass     = regexp.MustCompile(`[^\x00-\x{10FFFF}]`)
+	nbsp           = regexp.MustCompile("[\u00a0]")
+	braced         = regexp.MustCompile(`{[1]}`)
+	braceRepeat    = regexp.MustCompile(`x{[0]}`)
+	braceCount     = regexp.MustCompile(`[0-8]{[9]}`)
+	invalidPattern = regexp.MustCompile(`\xA[f]`)
+	underscored    = regexp.MustCompile(`[a-z0-9_]+`)
+	notX           = regexp.MustCompile(`[^x]`)
+	notNine        = regexp.MustCompile(`[0-8]`)
+	blank          = regexp.MustCompile(`a[ ]b`)
+	closerOpen     = regexp.MustCompile(`[][]`)
+	negatedCloser  = regexp.MustCompile(`[^]]`)
+	nul            = regexp.MustCompile("[\x00]")
+	namedSpace     = regexp.MustCompile(`[[:space:]]`)
+	quoted         = regexp.MustCompile(`\Q[x]\E`)
+	quotedTail     = regexp.MustCompile(`\Q[x]`)
+	fromConst      = regexp.MustCompile(constPattern)
+	joined         = regexp.MustCompile("[0-9]" + "+")
+)
+
+var (
+	posix      = regexp.MustCompilePOSIX(`[0-9]+`)
+	posixNamed = regexp.MustCompilePOSIX(`[[:digit:]]+`)
+	posixOne   = regexp.MustCompilePOSIX(`x`) // want `\[x\] can be replaced by x`
+)
+
+func calls() {
+	_, _ = regexp.Compile(`\d`)                            // want `\[0-9\] can be replaced by \\d`
+	_, _ = regexp.Match(`\d`, nil)                         // want `\[0-9\] can be replaced by \\d`
+	_, _ = regexp.MatchReader(`\d`, strings.NewReader("")) // want `\[0-9\] can be replaced by \\d`
+	_, _ = regexp.CompilePOSIX(`[0-9]`)
+	_ = (regexp.MustCompile)(`\d`) // want `\[0-9\] can be replaced by \\d`
+}
+
+func matchString(s string) bool {
+	ok, _ := regexp.MatchString(`\d`, s) // want `\[0-9\] can be replaced by \\d`
+	return ok
+}
+
+func methodArg(re *regexp.Regexp, s string) bool {
+	return re.MatchString(`[0-9]`)
+}
+
+func other(s string) bool {
+	return strings.Contains(s, `[0-9]`) || localMatchString(`[0-9]`, s)
+}
+
+func localMatchString(pattern, s string) bool { return false }
+
+func variable(pattern string) *regexp.Regexp {
+	return regexp.MustCompile(pattern)
+}
+
+func functionValue() {
+	compile := regexp.Compile
+	_, _ = compile(`[0-9]`)
+}

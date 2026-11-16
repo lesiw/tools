@@ -1,0 +1,5 @@
+package a
+
+import r "regexp"
+
+var aliased = r.MustCompile(`[0-9]+`) // want `\[0-9\] can be replaced by \\d`

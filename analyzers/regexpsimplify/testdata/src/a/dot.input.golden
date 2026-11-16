@@ -1,0 +1,5 @@
+package a
+
+import . "regexp"
+
+var dotted = MustCompile(`\d+`) // want `\[0-9\] can be replaced by \\d`

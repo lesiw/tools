@@ -2153,6 +2153,15 @@
 //		return re
 //	}
 //
+// # regexpsimplify
+//
+// Reports a regexp character class that has a shorter spelling. Both spellings
+// are correct, so this is a house rule.
+//
+// Inspired by go-critic's regexpSimplify.
+//
+//	var digits = regexp.MustCompile(`[0-9]`)
+//
 // # runerange
 //
 // Reports a range over a string converted to a rune slice. Ranging over the

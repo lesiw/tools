@@ -2135,6 +2135,16 @@ func must() *regexp.Regexp {
 }
 ```
 
+## regexpsimplify
+
+Reports a regexp character class that has a shorter spelling. Both spellings are correct, so this is a house rule.
+
+Inspired by go-critic's regexpSimplify.
+
+```
+var digits = regexp.MustCompile(`[0-9]`)
+```
+
 ## runerange
 
 Reports a range over a string converted to a rune slice. Ranging over the string decodes one rune per iteration and allocates nothing, where the conversion builds a slice of every rune. A loop whose key is not \_ is left alone, because a string index is a byte offset and a rune slice index is a position.
