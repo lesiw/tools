@@ -2846,6 +2846,19 @@ func f(v any) {
 }
 ```
 
+## unreachablereturn
+
+Reports a return statement after a panic or an endless loop in the same block. Neither falls through, so a return after one does not run unless a goto reaches it.
+
+Inspired by the x/tools unreachable pass.
+
+```
+func f() {
+    panic("some message")
+    return
+}
+```
+
 ## unsafefuncs
 
 Reports pointer arithmetic written through uintptr conversions, as unsafe.Pointer(uintptr(p) + n). unsafe.Add and unsafe.Slice write the same arithmetic, and the garbage collector can follow them.

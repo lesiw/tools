@@ -1,0 +1,333 @@
+package a
+
+func afterPanic() {
+	panic("some message")
+	return // want `return is unreachable after a panic`
+}
+
+func afterPanicWithValue() int {
+	panic("some message")
+	return 1 // want `return is unreachable after a panic`
+}
+
+func afterParenthesizedPanic() {
+	(panic)("some message")
+	return // want `return is unreachable after a panic`
+}
+
+func afterParenthesizedCall() {
+	(panic("some message"))
+	return // want `return is unreachable after a panic`
+}
+
+func afterLoop() {
+	for {
+	}
+	return // want `return is unreachable after a loop that cannot complete normally`
+}
+
+func afterLoopWithPost() {
+	for i := 0; ; i++ {
+		println(i)
+	}
+	return // want `return is unreachable after a loop that cannot complete normally`
+}
+
+func afterSwitchBreak() {
+	for {
+		switch {
+		case true:
+			break
+		}
+	}
+	return // want `return is unreachable after a loop that cannot complete normally`
+}
+
+func afterSelectBreak(ch chan int) {
+	for {
+		select {
+		case <-ch:
+			break
+		}
+	}
+	return // want `return is unreachable after a loop that cannot complete normally`
+}
+
+func afterInnerBreak() {
+	for {
+		for {
+			break
+		}
+	}
+	return // want `return is unreachable after a loop that cannot complete normally`
+}
+
+func afterInnerLabeledBreak() {
+	for {
+	inner:
+		for {
+			break inner
+		}
+	}
+	return // want `return is unreachable after a loop that cannot complete normally`
+}
+
+func afterLoopReturn() int {
+	for {
+		return 1
+	}
+	return 0 // want `return is unreachable after a loop that cannot complete normally`
+}
+
+func afterPanicInCase(n int) int {
+	switch n {
+	case 1:
+		panic("some message")
+		return 1 // want `return is unreachable after a panic`
+	}
+	return 0
+}
+
+func afterPanicInComm(ch chan int) {
+	select {
+	case <-ch:
+		panic("some message")
+		return // want `return is unreachable after a panic`
+	}
+}
+
+func innerBlock() {
+	{
+		panic("some message")
+		return // want `return is unreachable after a panic`
+	}
+}
+
+func outsideBlock() int {
+	{
+		panic("some message")
+	}
+	return 1
+}
+
+func conditionalPanic(n int) int {
+	if n < 0 {
+		panic("some message")
+	}
+	return n
+}
+
+func panicInIf(n int) {
+	if n > 0 {
+		panic("some message")
+		return // want `return is unreachable after a panic`
+	}
+}
+
+func conditionalLoop(n int) int {
+	for n > 0 {
+		n--
+	}
+	return n
+}
+
+func withBreak() int {
+	for {
+		break
+	}
+	return 1
+}
+
+func withConditionalBreak(n int) int {
+	for {
+		if n > 0 {
+			break
+		}
+	}
+	return 1
+}
+
+func withLabeledBreak() int {
+outer:
+	for {
+		for {
+			break outer
+		}
+	}
+	return 1
+}
+
+func withGoto() int {
+	for {
+		goto done
+	}
+done:
+	return 1
+}
+
+func gotoAfterPanic(n int) int {
+	if n > 0 {
+		goto done
+	}
+	panic("some message")
+done:
+	return n
+}
+
+func gotoSkipsPanic(n int) int {
+	if n > 0 {
+		goto done
+	}
+	panic("some message")
+done:
+	println(n)
+	return n
+}
+
+func gotoAfterPanicTarget() {
+	panic("some message")
+	goto done
+done:
+	return
+}
+
+func gotoFromBreakableLoop(n int) int {
+	for n > 0 {
+		goto done
+	}
+	return n
+done:
+	return 0
+}
+
+func gotoBetweenLoopAndReturn(n int) int {
+	if n > 0 {
+		goto middle
+	}
+	for {
+		goto done
+	}
+middle:
+	println(n)
+	return 1
+done:
+	return 2
+}
+
+func gotoLabelThenPanic(n int) int {
+	if n > 0 {
+		goto done
+	}
+done:
+	panic("some message")
+	return n // want `return is unreachable after a panic`
+}
+
+func gotoLabelThenLoop(n int) int {
+	if n > 0 {
+		goto done
+	}
+done:
+	for {
+	}
+	return n // want `return is unreachable after a loop that cannot complete normally`
+}
+
+func breakSwitch(n int) int {
+sw:
+	switch {
+	case n > 0:
+		for {
+			break sw
+		}
+		return 1 // want `return is unreachable after a loop that cannot complete normally`
+	}
+	return n
+}
+
+func breakSelect(ch chan int) int {
+sel:
+	select {
+	case <-ch:
+		for {
+			break sel
+		}
+		return 1 // want `return is unreachable after a loop that cannot complete normally`
+	}
+	return 0
+}
+
+func gotoPastReturn() int {
+	for {
+		goto done
+	}
+	return 1 // want `return is unreachable after a loop that cannot complete normally`
+done:
+	return 2
+}
+
+func backwardGoto() int {
+loop:
+	for {
+		goto loop
+	}
+	return 1 // want `return is unreachable after a loop that cannot complete normally`
+}
+
+func breakOuter() {
+outer:
+	for {
+		for {
+			break outer
+		}
+		return // want `return is unreachable after a loop that cannot complete normally`
+	}
+}
+
+func afterRangeBreak(xs []int) {
+	for {
+		for range xs {
+			break
+		}
+	}
+	return // want `return is unreachable after a loop that cannot complete normally`
+}
+
+func afterRange(xs []int) {
+	for range xs {
+	}
+	return
+}
+
+func afterTypeSwitchBreak(v any) {
+	for {
+		switch v.(type) {
+		case int:
+			break
+		}
+	}
+	return // want `return is unreachable after a loop that cannot complete normally`
+}
+
+func shadowedPanic() int {
+	panic := func(string) {}
+	panic("some message")
+	return 1
+}
+
+func deferredPanic() {
+	defer panic("some message")
+	return
+}
+
+func goroutinePanic() {
+	go panic("some message")
+	return
+}
+
+func innerLiteral() {
+	func() {
+		panic("some message")
+		return // want `return is unreachable after a panic`
+	}()
+}

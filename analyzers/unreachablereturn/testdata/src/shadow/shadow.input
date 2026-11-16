@@ -1,0 +1,8 @@
+package shadow
+
+func panic(string) {}
+
+func f() int {
+	panic("some message")
+	return 1
+}
