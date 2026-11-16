@@ -163,6 +163,7 @@ import (
 	"lesiw.io/tools/analyzers/nanosleep"
 	"lesiw.io/tools/analyzers/negatedbool"
 	"lesiw.io/tools/analyzers/newderef"
+	"lesiw.io/tools/analyzers/nilchansend"
 	"lesiw.io/tools/analyzers/nilchecklen"
 	"lesiw.io/tools/analyzers/nilerrwrap"
 	"lesiw.io/tools/analyzers/nilinterfacecmp"
@@ -420,6 +421,7 @@ var (
 		nanosleep.Analyzer,
 		negatedbool.Analyzer,
 		newderef.Analyzer,
+		nilchansend.Analyzer,
 		nilchecklen.Analyzer,
 		nilerrwrap.Analyzer,
 		nilfunc.Analyzer,

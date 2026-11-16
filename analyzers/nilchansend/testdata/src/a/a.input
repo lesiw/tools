@@ -1,0 +1,527 @@
+package a
+
+type queue chan int
+
+var global chan int
+
+var packageInitializer = func() int {
+	var ch chan int
+	ch <- 1 // want `send on nil channel blocks forever`
+	return 0
+}()
+
+type holder struct {
+	ch chan int
+}
+
+func init() {
+	var ch chan int
+	ch <- 1 // want `send on nil channel blocks forever`
+}
+
+func doubleSend() {
+	var ch chan int
+	ch <- 1 // want `send on nil channel blocks forever`
+	ch <- 2 // want `send on nil channel blocks forever`
+}
+
+func rangeBodySend() {
+	var ch chan int
+	for range ch { // want `receive from nil channel blocks forever`
+		ch <- 1 // want `send on nil channel blocks forever`
+	}
+}
+
+func switchNil(ch chan int) {
+	switch ch {
+	case nil:
+		ch <- 1 // want `send on nil channel blocks forever`
+	}
+}
+
+func nilSend() {
+	var ch chan int
+	ch <- 1 // want `send on nil channel blocks forever`
+}
+
+func nilReceive() {
+	var ch chan int
+	<-ch // want `receive from nil channel blocks forever`
+}
+
+func explicitNil() {
+	ch := (chan int)(nil)
+	ch <- 1 // want `send on nil channel blocks forever`
+}
+
+func namedConversion() {
+	q := queue(nil)
+	<-q // want `receive from nil channel blocks forever`
+}
+
+func copied() {
+	var ch chan int
+	other := ch
+	other <- 1 // want `send on nil channel blocks forever`
+}
+
+func stillNil(ok bool) {
+	var ch chan int
+	if ok {
+		ch = nil
+	}
+	<-ch // want `receive from nil channel blocks forever`
+}
+
+func assignNil() {
+	ch := make(chan int)
+	ch = nil
+	<-ch // want `receive from nil channel blocks forever`
+}
+
+func guarded(ch chan int) {
+	if ch == nil {
+		ch <- 1 // want `send on nil channel blocks forever`
+	}
+}
+
+func notNilElse(ch chan int) {
+	if ch != nil {
+		<-ch
+	} else {
+		<-ch // want `receive from nil channel blocks forever`
+	}
+}
+
+func earlyReturn(ch chan int) {
+	if ch != nil {
+		return
+	}
+	ch <- 1 // want `send on nil channel blocks forever`
+}
+
+func conjunction(ch chan int, ok bool) {
+	if ok && ch == nil {
+		<-ch // want `receive from nil channel blocks forever`
+	}
+}
+
+func reversedGuard(ch chan int) {
+	if nil == ch {
+		<-ch // want `receive from nil channel blocks forever`
+	}
+}
+
+func negated(ch chan int) {
+	if !(ch != nil) {
+		ch <- 1 // want `send on nil channel blocks forever`
+	}
+}
+
+func namedResult() (ch chan int) {
+	ch <- 1 // want `send on nil channel blocks forever`
+	return
+}
+
+func namedResultWithDefer() (ch chan int) {
+	defer func() { _ = ch }()
+	ch <- 1
+	return
+}
+
+func bothBranchesNil(ok bool) {
+	var ch chan int
+	if ok {
+		ch = nil
+	} else {
+		ch = nil
+	}
+	<-ch // want `receive from nil channel blocks forever`
+}
+
+func loopBody(ch chan int) {
+	if ch == nil {
+		for i := 0; i < 1; i++ {
+			ch <- 1 // want `send on nil channel blocks forever`
+		}
+	}
+}
+
+func afterLoop(ch chan int) {
+	if ch == nil {
+		for i := 0; i < 1; i++ {
+		}
+		ch <- 1 // want `send on nil channel blocks forever`
+	}
+}
+
+func callResultGuard() {
+	ch := fromCall()
+	if ch == nil {
+		ch <- 1 // want `send on nil channel blocks forever`
+	}
+}
+
+func receiveGuard(chans chan chan int) {
+	ch := <-chans
+	if ch == nil {
+		ch <- 1 // want `send on nil channel blocks forever`
+	}
+}
+
+func asserted(v any) {
+	ch := v.(chan int)
+	if ch == nil {
+		ch <- 1 // want `send on nil channel blocks forever`
+	}
+}
+
+func assertedNoGuard(v any) {
+	ch := v.(chan int)
+	ch <- 1
+}
+
+func addressedGuard() {
+	var ch chan int
+	p := &ch
+	_ = p
+	if ch == nil {
+		ch <- 1
+	}
+}
+
+func capturedGuard() {
+	var ch chan int
+	go func() {
+		if ch == nil {
+			ch <- 1
+		}
+	}()
+}
+
+func rangeNil() {
+	var ch chan int
+	for range ch { // want `receive from nil channel blocks forever`
+	}
+}
+
+func selectBody(other chan int) {
+	var ch chan int
+	select {
+	case <-other:
+		ch <- 1 // want `send on nil channel blocks forever`
+	case other <- 1:
+	}
+}
+
+func made() {
+	ch := make(chan int)
+	ch <- 1
+	<-ch
+}
+
+func reassigned() {
+	var ch chan int
+	ch = make(chan int)
+	ch <- 1
+}
+
+func maybeMade(ok bool) {
+	var ch chan int
+	if ok {
+		ch = make(chan int)
+	}
+	ch <- 1
+}
+
+func parameter(ch chan int) {
+	ch <- 1
+	<-ch
+}
+
+func parameterGuard(ch chan int) {
+	if ch == nil {
+		ch = make(chan int)
+	}
+	ch <- 1
+}
+
+func fromCall() chan int { return nil }
+
+func callResult() {
+	ch := fromCall()
+	ch <- 1
+}
+
+func fromField() {
+	var h holder
+	h.ch <- 1
+}
+
+func fromPackage() {
+	global <- 1
+}
+
+func fromElement(chans []chan int) {
+	chans[0] <- 1
+}
+
+func fromReceive(chans chan chan int) {
+	<-<-chans
+}
+
+func addressed() {
+	var ch chan int
+	p := &ch
+	_ = p
+	ch <- 1
+}
+
+func literal() {
+	var ch chan int
+	go func() {
+		ch <- 1
+	}()
+}
+
+func literalLocalNil() {
+	func() {
+		var ch chan int
+		ch <- 1 // want `send on nil channel blocks forever`
+	}()
+}
+
+func guardedField(h holder) {
+	if h.ch == nil {
+		h.ch <- 1
+	}
+}
+
+func guardedElement(chans []chan int) {
+	if chans[0] == nil {
+		chans[0] <- 1
+	}
+}
+
+func guardedPackage() {
+	if global == nil {
+		global <- 1
+	}
+}
+
+func madeThenGuard() {
+	ch := make(chan int)
+	if ch == nil {
+		ch <- 1
+	}
+}
+
+func bothMake(ok bool) {
+	var ch chan int
+	if ok {
+		ch = make(chan int)
+	} else {
+		ch = make(chan int)
+	}
+	if ch == nil {
+		ch <- 1
+	}
+}
+
+func sameMake(ok bool) {
+	m := make(chan int)
+	var ch chan int
+	if ok {
+		ch = m
+	} else {
+		ch = m
+	}
+	if ch == nil {
+		ch <- 1
+	}
+}
+
+func mergeNil(ch chan int) {
+	if ch != nil {
+		ch = nil
+	}
+	ch <- 1 // want `send on nil channel blocks forever`
+}
+
+func loopBackedgeNil() {
+	ch := make(chan int)
+	for i := 0; i < 1; i++ {
+		ch <- 1
+		ch = nil
+	}
+}
+
+func swappedChannels() {
+	a, b := make(chan int), make(chan int)
+	for {
+		a <- 1
+		a, b = b, a
+	}
+}
+
+func firstIteration() {
+	var ch chan int
+	for {
+		ch <- 1
+		ch = make(chan int)
+	}
+}
+
+func makeOnFirstPass() {
+	var ch chan int
+	ready := false
+	for {
+		if !ready {
+			ch = make(chan int)
+			ready = true
+			continue
+		}
+		ch <- 1
+		return
+	}
+}
+
+func redundantGuard(ch chan int) {
+	if ch != nil {
+		if ch == nil {
+			ch <- 1
+		}
+	}
+}
+
+func guardAssignmentThenGuard(ch chan int) {
+	if ch == nil {
+		ch = make(chan int)
+	}
+	if ch == nil {
+		ch <- 1
+	}
+}
+
+func guardedConversion(ch chan int) {
+	if ch != nil {
+		q := queue(ch)
+		if q == nil {
+			q <- 1
+		}
+	}
+}
+
+func oppositeRedundant(ch chan int) {
+	if ch == nil {
+		if ch != nil {
+			ch <- 1
+		}
+	}
+}
+
+func earlyReturnRedundant(ch chan int) {
+	if ch != nil {
+		return
+	}
+	if ch != nil {
+		ch <- 1
+	}
+}
+
+func reassignedThenGuard() {
+	ch := make(chan int)
+	if ch == nil {
+		ch = make(chan int)
+	}
+	if ch == nil {
+		ch <- 1
+	}
+}
+
+func loopGuard(ch chan int) {
+	for {
+		if ch != nil {
+			ch <- 1
+			ch = nil
+		}
+		break
+	}
+}
+
+func loopCarriedMakeGuard(again bool) {
+	ch := make(chan int)
+	for again {
+		if ch == nil {
+			ch <- 1
+		}
+		if again {
+			ch = make(chan int)
+		}
+		again = false
+	}
+}
+
+func loopCarriedMake(ok bool) {
+	ch := make(chan int)
+	for ok {
+		if ch == nil {
+			ch <- 1
+		}
+		ch = make(chan int)
+		ok = false
+	}
+}
+
+func guardedAssignment(ch chan int) {
+	if ch == nil {
+		ch = make(chan int)
+	}
+	<-ch
+}
+
+func closeNil() {
+	var ch chan int
+	close(ch)
+	_ = len(ch)
+	_ = cap(ch)
+}
+
+func selectDisabled() {
+	var ch chan int
+	select {
+	case ch <- 1:
+	case <-ch:
+	default:
+	}
+}
+
+func selectAllNil() {
+	var a, b chan int
+	select {
+	case a <- 1:
+	case <-b:
+	}
+}
+
+func selectSingleSend() {
+	var ch chan int
+	select {
+	case ch <- 1: // want `send on nil channel blocks forever`
+	}
+}
+
+func selectSingleReceive() {
+	var ch chan int
+	select {
+	case <-ch: // want `receive from nil channel blocks forever`
+	}
+}
+
+func selectSingleDefault() {
+	var ch chan int
+	select {
+	case ch <- 1:
+	default:
+	}
+}

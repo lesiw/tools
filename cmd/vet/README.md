@@ -1868,6 +1868,19 @@ func ptr(v int) *int {
 }
 ```
 
+## nilchansend
+
+Reports a send or receive on a channel that is nil at that point. The operation blocks forever.
+
+Adapted from staticcheck's SA5011 family.
+
+```
+func f() {
+    var ch chan int
+    ch <- 1
+}
+```
+
 ## nilchecklen
 
 Reports a nil test joined to a comparison of len that already answers it. The length of a nil slice, map, or channel is zero.
