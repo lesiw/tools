@@ -1,0 +1,32 @@
+package a
+
+import "io"
+
+type spy struct{}
+
+func (*spy) Write(b []byte) (int, error) { return len(b), nil }
+
+func (*spy) WriteString(s string) (int, error) { return len(s), nil }
+
+func stringWriter(s *spy, b []byte) error {
+	_, err := io.WriteString(s, string(b))
+	return err
+}
+
+type holder struct{ spy }
+
+func promoted(w *holder, b []byte) error {
+	_, err := io.WriteString(w, string(b))
+	return err
+}
+
+type valueString struct{}
+
+func (valueString) Write(b []byte) (int, error) { return len(b), nil }
+
+func (valueString) WriteString(s string) (int, error) { return len(s), nil }
+
+func valueWriter(w valueString, b []byte) error {
+	_, err := io.WriteString(w, string(b))
+	return err
+}

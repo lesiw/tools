@@ -1,0 +1,21 @@
+package a
+
+import (
+	"bytes"
+	"io"
+)
+
+func testOwn(s *spy, b []byte) error {
+	_, err := io.WriteString(s, string(b))
+	return err
+}
+
+func testOther(buf *bytes.Buffer, b []byte) error {
+	_, err := io.WriteString(buf, string(b))
+	return err
+}
+
+func testConcrete(w *writer) error {
+	_, err := io.WriteString(w, string([]byte{1, 2})) // want `byte slice converted to a string for io\.WriteString; use Write`
+	return err
+}

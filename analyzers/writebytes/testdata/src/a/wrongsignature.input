@@ -1,0 +1,14 @@
+package a
+
+import "io"
+
+type odd struct{}
+
+func (odd) Write(b []byte) (int, error) { return len(b), nil }
+
+func (odd) WriteString(b []byte) (int, error) { return len(b), nil }
+
+func wrongSignature(w odd) error {
+	_, err := io.WriteString(w, string([]byte{1, 2})) // want `byte slice converted to a string for io\.WriteString; use Write`
+	return err
+}

@@ -1,0 +1,10 @@
+package a
+
+import stream "io"
+
+var _ stream.Writer = (*writer)(nil)
+
+func aliased(w *writer) error {
+	_, err := w.Write([]byte{1, 2}) // want `byte slice converted to a string for io\.WriteString; use Write`
+	return err
+}

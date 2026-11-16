@@ -1,0 +1,9 @@
+package a
+
+import . "io"
+
+func dottedDelayed(w *writer, b []byte) error {
+	defer WriteString(w, string(b)) // want `byte slice converted to a string for io\.WriteString`
+	_, err := WriteString(w, string([]byte{1, 2})) // want `byte slice converted to a string for io\.WriteString; use Write`
+	return err
+}

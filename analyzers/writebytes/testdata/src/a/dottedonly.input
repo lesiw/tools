@@ -1,0 +1,11 @@
+package a
+
+import . "io"
+
+type sink struct{}
+
+func (sink) Write(b []byte) (int, error) { return len(b), nil }
+
+func dottedOnly() {
+	WriteString(sink{}, string([]byte{1, 2})) // want `byte slice converted to a string for io\.WriteString; use Write`
+}

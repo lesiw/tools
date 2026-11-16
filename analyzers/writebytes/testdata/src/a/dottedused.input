@@ -1,0 +1,10 @@
+package a
+
+import . "io"
+
+var _ Writer = (*writer)(nil)
+
+func dottedUsed(w *writer) error {
+	_, err := WriteString(w, string([]byte{1, 2})) // want `byte slice converted to a string for io\.WriteString; use Write`
+	return err
+}

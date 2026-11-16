@@ -1,0 +1,13 @@
+package a
+
+import "io"
+
+func nilSlice(w *writer) error {
+	_, err := io.WriteString(w, string([]byte(nil))) // want `byte slice converted to a string for io\.WriteString`
+	return err
+}
+
+func fromCall(w *writer, f func() []byte) error {
+	_, err := io.WriteString(w, string(f())) // want `byte slice converted to a string for io\.WriteString`
+	return err
+}

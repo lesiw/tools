@@ -1,0 +1,44 @@
+package a
+
+func basic(w *writer) error {
+	_, err := w.Write([]byte{1, 2}) // want `byte slice converted to a string for io\.WriteString; use Write`
+	return err
+}
+
+type buffer []byte
+
+func named(w *writer) error {
+	_, err := w.Write(buffer{1, 2}) // want `byte slice converted to a string for io\.WriteString; use Write`
+	return err
+}
+
+func parenthesized(w *writer) error {
+	_, err := w.Write([]byte{1, 2}) // want `byte slice converted to a string for io\.WriteString; use Write`
+	return err
+}
+
+func dereferenced(w **writer) error {
+	_, err := (*w).Write(make([]byte, 2)) // want `byte slice converted to a string for io\.WriteString; use Write`
+	return err
+}
+
+func literal() error {
+	_, err := writer{}.Write([]byte{1, 2}) // want `byte slice converted to a string for io\.WriteString; use Write`
+	return err
+}
+
+type pointerString struct{}
+
+func (pointerString) Write(b []byte) (int, error) { return len(b), nil }
+
+func (*pointerString) WriteString(s string) (int, error) { return len(s), nil }
+
+func pointerWriteString(w pointerString) error {
+	_, err := w.Write([]byte{1, 2}) // want `byte slice converted to a string for io\.WriteString; use Write`
+	return err
+}
+
+func convertedString(w *writer) error {
+	_, err := w.Write([]byte("aaaa")) // want `byte slice converted to a string for io\.WriteString; use Write`
+	return err
+}

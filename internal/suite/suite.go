@@ -267,6 +267,7 @@ import (
 	"lesiw.io/tools/analyzers/wgogoroutine"
 	"lesiw.io/tools/analyzers/whitespace"
 	"lesiw.io/tools/analyzers/wrapperfunc"
+	"lesiw.io/tools/analyzers/writebytes"
 	"lesiw.io/tools/analyzers/yoda"
 	"lesiw.io/tools/analyzers/zerorepeat"
 )
@@ -547,6 +548,7 @@ var (
 		wgogoroutine.Analyzer,
 		whitespace.Analyzer,
 		wrapperfunc.Analyzer,
+		writebytes.Analyzer,
 		yoda.Analyzer,
 		zerorepeat.Analyzer,
 	}

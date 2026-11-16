@@ -1,0 +1,59 @@
+package a
+
+import "io"
+
+func text(w *writer, s string) error {
+	_, err := io.WriteString(w, s)
+	return err
+}
+
+func conversion(w *writer, s string) error {
+	_, err := io.WriteString(w, string(s))
+	return err
+}
+
+type word string
+
+func definedString(w *writer, t word) error {
+	_, err := io.WriteString(w, string(t))
+	return err
+}
+
+func methodExpression(w io.StringWriter, b []byte) {
+	io.StringWriter.WriteString(w, string(b))
+}
+
+func functionValue(w *writer, b []byte) error {
+	write := io.WriteString
+	_, err := write(w, string(b))
+	return err
+}
+
+func integer(w *writer) error {
+	_, err := io.WriteString(w, string(123))
+	return err
+}
+
+func runes(w *writer, r []rune) error {
+	_, err := io.WriteString(w, string(r))
+	return err
+}
+
+func element(w *writer) error {
+	type octet byte
+	_, err := io.WriteString(w, string([]octet{1, 2}))
+	return err
+}
+
+func local(w *writer, b []byte) error {
+	WriteString := func(io.Writer, string) (int, error) { return 0, nil }
+	_, err := WriteString(w, string(b))
+	return err
+}
+
+func own(w *writer, b []byte) error {
+	_, err := writeString(w, string(b))
+	return err
+}
+
+func writeString(io.Writer, string) (int, error) { return 0, nil }

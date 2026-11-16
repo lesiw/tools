@@ -1,0 +1,13 @@
+package a
+
+import "io"
+
+func beforeConversion(w *writer) error {
+	_, err := io.WriteString(w, /* copy */ string([]byte{1, 2})) // want `byte slice converted to a string for io\.WriteString; use Write`
+	return err
+}
+
+func beforeWriter(w *writer) error {
+	_, err := io.WriteString( /* writer */ w, string([]byte{1, 2})) // want `byte slice converted to a string for io\.WriteString; use Write`
+	return err
+}

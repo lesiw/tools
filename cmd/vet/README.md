@@ -3692,6 +3692,22 @@ func outer(x int) int {
 }
 ```
 
+## writebytes
+
+Reports a byte slice converted to a string for io.WriteString when the writer is concrete and does not implement io.StringWriter. Write takes the byte slice, so the conversion is unnecessary.
+
+Adapted from staticcheck's SA6006.
+
+```
+type sink struct{}
+
+func (sink) Write([]byte) (int, error) { return 0, nil }
+
+func write(w sink, b []byte) {
+    io.WriteString(w, string(b))
+}
+```
+
 ## yoda
 
 Reports an == or != comparison with a literal or nil on the left. Go code reads left to right as a sentence about the variable, and a mistyped assignment does not compile in Go.

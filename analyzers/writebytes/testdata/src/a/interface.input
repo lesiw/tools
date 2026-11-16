@@ -1,0 +1,13 @@
+package a
+
+import "io"
+
+func interfaceWriter(w io.Writer, b []byte) error {
+	_, err := io.WriteString(w, string(b))
+	return err
+}
+
+func pointerToInterface(w *io.Writer, b []byte) error {
+	_, err := io.WriteString(*w, string(b))
+	return err
+}

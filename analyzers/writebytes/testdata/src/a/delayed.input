@@ -1,0 +1,11 @@
+package a
+
+import "io"
+
+func deferred(w *writer) {
+	defer io.WriteString(w, string([]byte{1, 2})) // want `byte slice converted to a string for io\.WriteString`
+}
+
+func goroutine(w *writer) {
+	go io.WriteString(w, string([]byte{1, 2})) // want `byte slice converted to a string for io\.WriteString`
+}

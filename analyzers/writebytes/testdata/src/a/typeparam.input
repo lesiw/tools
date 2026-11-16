@@ -1,0 +1,13 @@
+package a
+
+import "io"
+
+func typeParameter[T interface{ Write([]byte) (int, error) }](w T, b []byte) error {
+	_, err := io.WriteString(w, string(b))
+	return err
+}
+
+func typeSlice[T ~[]byte](w *writer, b T) error {
+	_, err := io.WriteString(w, string(b)) // want `byte slice converted to a string for io\.WriteString`
+	return err
+}
