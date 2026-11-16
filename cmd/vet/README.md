@@ -770,6 +770,20 @@ func f(s string) bool {
 }
 ```
 
+## duplicatedcond
+
+Reports an if whose condition repeats the condition of the if it is nested in. The rule reports when the inner if is the first statement of the outer body, has no init statement, and the condition reads the same value both times, so the inner test is true whenever the outer body runs.
+
+```
+func f(ready bool) {
+    if ready {
+        if ready {
+            println("ready")
+        }
+    }
+}
+```
+
 ## dupsubexpr
 
 Reports a binary operator whose operands are the same value, as xs\[k] \< xs\[k]. One of them was meant to name something else. A NaN changes the answer of ==, !=, \<=, >=, - and /, so an operand that can hold one is left alone for those operators, and so is a call whose second read can differ.

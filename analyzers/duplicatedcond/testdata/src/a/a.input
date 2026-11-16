@@ -1,0 +1,136 @@
+package a
+
+func repeated(ready bool) {
+	if ready {
+		if ready { // want `condition repeats the condition of the if it is nested in`
+			println("ready")
+		}
+	}
+}
+
+func different(ready, done bool) {
+	if ready {
+		if done {
+			println("done")
+		}
+	}
+}
+
+func initialized(xs []int) {
+	if n := len(xs); n > 0 {
+		if n > 0 { // want `condition repeats the condition of the if it is nested in`
+			println(n)
+		}
+	}
+}
+
+func measured(xs []int) {
+	if len(xs) > 0 {
+		if len(xs) > 0 { // want `condition repeats the condition of the if it is nested in`
+			println(len(xs))
+		}
+	}
+}
+
+func parenthesized(ready bool) {
+	if ready {
+		if (ready) { // want `condition repeats the condition of the if it is nested in`
+			println("ready")
+		}
+	}
+}
+
+func evaluated(next func() bool) {
+	if next() {
+		if next() {
+			println("next")
+		}
+	}
+}
+
+func shadowed(ready bool, next func() bool) {
+	if ready {
+		if ready := next(); ready {
+			println("ready")
+		}
+	}
+}
+
+func changed(ready bool) {
+	if ready {
+		ready = false
+		if ready {
+			println("ready")
+		}
+	}
+}
+
+func branched(ready bool) {
+	if ready {
+		println("ready")
+	} else if ready {
+		println("ready")
+	}
+}
+
+func thrice(ready bool) {
+	if ready {
+		if ready { // want `condition repeats the condition of the if it is nested in`
+			if ready { // want `condition repeats the condition of the if it is nested in`
+				println("ready")
+			}
+		}
+	}
+}
+
+func otherwise(ready bool) {
+	if ready {
+		if ready { // want `condition repeats the condition of the if it is nested in`
+			println("ready")
+		} else {
+			println("not ready")
+		}
+	}
+}
+
+func readLength(ch chan int) {
+	if len(ch) > 0 {
+		if len(ch) > 0 {
+			println("ready")
+		}
+	}
+}
+
+func received(ch chan bool) {
+	if <-ch {
+		if <-ch {
+			println("ready")
+		}
+	}
+}
+
+func parametricChannel[T ~chan int](ch T) {
+	if len(ch) > 0 {
+		if len(ch) > 0 {
+			println("ready")
+		}
+	}
+}
+
+func parametricSlice[T ~[]int](xs T) {
+	if len(xs) > 0 {
+		if len(xs) > 0 { // want `condition repeats the condition of the if it is nested in`
+			println(len(xs))
+		}
+	}
+}
+
+type channelName chan int
+
+func parametricNamed[T channelName](ch T) {
+	if len(ch) > 0 {
+		if len(ch) > 0 {
+			println("ready")
+		}
+	}
+}

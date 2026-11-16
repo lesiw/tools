@@ -781,6 +781,21 @@
 //		return strings.Contains(s, s)
 //	}
 //
+// # duplicatedcond
+//
+// Reports an if whose condition repeats the condition of the if it is nested
+// in. The rule reports when the inner if is the first statement of the outer
+// body, has no init statement, and the condition reads the same value both
+// times, so the inner test is true whenever the outer body runs.
+//
+//	func f(ready bool) {
+//		if ready {
+//			if ready {
+//				println("ready")
+//			}
+//		}
+//	}
+//
 // # dupsubexpr
 //
 // Reports a binary operator whose operands are the same value, as

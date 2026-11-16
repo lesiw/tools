@@ -98,6 +98,7 @@ import (
 	"lesiw.io/tools/analyzers/dupcase"
 	"lesiw.io/tools/analyzers/dupimport"
 	"lesiw.io/tools/analyzers/duplarg"
+	"lesiw.io/tools/analyzers/duplicatedcond"
 	"lesiw.io/tools/analyzers/dupsubexpr"
 	"lesiw.io/tools/analyzers/earlyreturn"
 	"lesiw.io/tools/analyzers/elseif"
@@ -300,6 +301,7 @@ var (
 		dupcase.Analyzer,
 		dupimport.Analyzer,
 		duplarg.Analyzer,
+		duplicatedcond.Analyzer,
 		dupsubexpr.Analyzer,
 		earlyreturn.Analyzer,
 		elseif.Analyzer,
