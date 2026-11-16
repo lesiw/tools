@@ -246,6 +246,20 @@ func bump() {
 }
 ```
 
+## badcall
+
+Reports a Replace call whose count is zero, an EqualFold call on two ASCII constants of different lengths, or a write of nil to a hash. Folding maps one byte to one byte in ASCII, so different lengths cannot match.
+
+The Replace check is adapted from go-critic's badCall.
+
+```
+func f(s string, h hash.Hash) {
+    _ = strings.Replace(s, "a", "b", 0)
+    _ = strings.EqualFold("alpha", "alphas")
+    h.Write(nil)
+}
+```
+
 ## badcond
 
 Reports a condition that is always true or always false, as a conjunction of bounds that no value satisfies, a disjunction that every value satisfies, or a for loop whose init statement makes its condition false. The tool cannot tell which condition was meant, so no fix is offered.

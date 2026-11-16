@@ -1,0 +1,48 @@
+package replace
+
+import (
+	"bytes"
+	"strings"
+)
+
+func calls(s, old, new string, b []byte) {
+	_ = strings.Replace(s, old, new, 0) // want `replaces nothing`
+	_ = strings.Replace(s, old, new, -1)
+	_ = strings.Replace(s, old, new, 3)
+	_ = bytes.Replace(b, []byte(old), []byte(new), 0) // want `replaces nothing`
+	_ = bytes.Replace(b, []byte(old), []byte(new), 2)
+}
+
+func constantCounts(s, old, new string) {
+	const none = 0
+	_ = strings.Replace(s, old, new, none) // want `replaces nothing`
+	_ = strings.Replace(s, old, new, 1-1)  // want `replaces nothing`
+	_ = (strings.Replace)(s, old, new, 0)  // want `replaces nothing`
+	n := 0
+	_ = strings.Replace(s, old, new, n)
+	_ = strings.Replace(s, old, new, 0.0) // want `replaces nothing`
+}
+
+func splitN(s string) {
+	_ = strings.SplitN(s, "", 0)
+	_ = bytes.SplitN([]byte(s), nil, 0)
+}
+
+type editor struct{}
+
+func (editor) Replace(s, old, new string, n int) string { return s }
+
+func notThePackage(s string) {
+	var e editor
+	_ = e.Replace(s, "", "", 0)
+	_ = strings.NewReplacer("a", "b").Replace(s)
+}
+
+func predeclared(err error) {
+	_ = err.Error()
+}
+
+func throughValue(s, old, new string) {
+	held := strings.Replace
+	_ = held(s, old, new, 0)
+}

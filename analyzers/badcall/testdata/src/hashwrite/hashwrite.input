@@ -1,0 +1,109 @@
+package hashwrite
+
+import (
+	"hash"
+	"io"
+)
+
+func hashWrite(h hash.Hash) {
+	var nothing []byte
+	empty := []byte{}
+	h.Write(nil)         // want `adds nothing to the hash`
+	(h.Write)(nil)       // want `adds nothing to the hash`
+	h.Write([]byte(nil)) // want `adds nothing to the hash`
+	h.Write([]byte("x"))
+	h.Write(nothing)
+	h.Write(empty)
+	h.Write([]byte(""))
+	h.Write([]byte{})
+}
+
+type sum8 struct{ n int }
+
+func (d *sum8) Write(p []byte) (int, error) { return len(p), nil }
+func (d *sum8) Sum(b []byte) []byte         { return b }
+func (d *sum8) Reset()                      { d.n = 0 }
+func (d *sum8) Size() int                   { return 8 }
+func (d *sum8) BlockSize() int              { return 8 }
+
+func concreteWrite() {
+	var d sum8
+	d.Write(nil)
+}
+
+type pair struct{ hash.Hash }
+
+func (p *pair) Sum(b []byte) []byte { return b }
+
+func pointerReceiver() {
+	var p pair
+	p.Write(nil) // want `adds nothing to the hash`
+}
+
+type counted struct {
+	hash.Hash
+	n int
+}
+
+func (c *counted) Write(p []byte) (int, error) {
+	c.n++
+	return c.Hash.Write(p)
+}
+
+func override(c *counted) {
+	c.Write(nil)
+}
+
+func throughInterface(c *counted) {
+	var h hash.Hash = c
+	h.Write(nil) // want `adds nothing to the hash`
+}
+
+func typeParameter[T hash.Hash](h T) {
+	h.Write(nil) // want `adds nothing to the hash`
+}
+
+type buffer []byte
+
+func namedSlice(h hash.Hash) {
+	h.Write(buffer(nil)) // want `adds nothing to the hash`
+}
+
+type salted struct{ hash.Hash }
+
+func embedded(s salted) {
+	s.Write(nil) // want `adds nothing to the hash`
+}
+
+type writerSum interface {
+	io.Writer
+	Sum(b []byte) []byte
+}
+
+func partialHash(w writerSum) {
+	w.Write(nil)
+}
+
+func methodForms(h hash.Hash) {
+	write := h.Write
+	write(nil)
+	hash.Hash.Write(nil, nil)
+}
+
+type closerHash interface {
+	hash.Hash
+	io.Closer
+}
+
+func widerInterface(h closerHash) {
+	h.Write(nil) // want `adds nothing to the hash`
+}
+
+func notAHash(w io.Writer) {
+	w.Write(nil)
+}
+
+func hashThroughWriter(h hash.Hash) {
+	var w io.Writer = h
+	w.Write(nil)
+}

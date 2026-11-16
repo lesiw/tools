@@ -244,6 +244,20 @@
 //		atomic.AddInt32(&n, 1)
 //	}
 //
+// # badcall
+//
+// Reports a Replace call whose count is zero, an EqualFold call on two ASCII
+// constants of different lengths, or a write of nil to a hash. Folding maps
+// one byte to one byte in ASCII, so different lengths cannot match.
+//
+// The Replace check is adapted from go-critic's badCall.
+//
+//	func f(s string, h hash.Hash) {
+//		_ = strings.Replace(s, "a", "b", 0)
+//		_ = strings.EqualFold("alpha", "alphas")
+//		h.Write(nil)
+//	}
+//
 // # badcond
 //
 // Reports a condition that is always true or always false, as a conjunction

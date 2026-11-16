@@ -1,0 +1,15 @@
+package noimport
+
+import (
+	"crypto/sha256"
+	"hash/fnv"
+)
+
+func sum(data []byte) {
+	h := sha256.New()
+	h.Write(nil) // want `adds nothing to the hash`
+	h.Write(data)
+
+	f := fnv.New32()
+	f.Write(nil) // want `adds nothing to the hash`
+}

@@ -1,0 +1,33 @@
+package fold
+
+import (
+	"bytes"
+	"strings"
+)
+
+type blob []byte
+
+func compare(s string, b []byte) {
+	_ = strings.EqualFold("alpha", "alphas")    // want `differ in length`
+	_ = (strings.EqualFold)("alpha", "alphas")  // want `differ in length`
+	_ = strings.EqualFold("al"+"pha", "alphas") // want `differ in length`
+	_ = strings.EqualFold("alpha", "ALPHA")
+	_ = strings.EqualFold("k", "\u212a")
+	_ = strings.EqualFold("\u212a", "k")
+	_ = strings.EqualFold(s, "alpha")
+	_ = strings.EqualFold("alpha", s)
+
+	const (
+		one = "one"
+		two = "two"
+	)
+	_ = strings.EqualFold(one, two)
+	_ = strings.EqualFold(one, "ones") // want `differ in length`
+
+	_ = bytes.EqualFold([]byte("alpha"), []byte("alphas")) // want `differ in length`
+	_ = bytes.EqualFold([]byte("alpha"), []byte("ALPHA"))
+	_ = bytes.EqualFold([]byte("k"), []byte("\u212a"))
+	_ = bytes.EqualFold(b, []byte("alpha"))
+	_ = bytes.EqualFold([]byte(s), []byte("alpha"))
+	_ = bytes.EqualFold(blob("alpha"), blob("alphas")) // want `differ in length`
+}

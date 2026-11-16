@@ -1,0 +1,8 @@
+package replace
+
+import . "strings"
+
+func dotImport(s, old, new string) {
+	_ = Replace(s, old, new, 0)      // want `replaces nothing`
+	_ = EqualFold("alpha", "alphas") // want `differ in length`
+}
