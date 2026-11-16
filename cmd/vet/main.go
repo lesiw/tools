@@ -1226,6 +1226,19 @@
 //		return xs[k] < xs[k]
 //	}
 //
+// # dynformat
+//
+// Reports a printf-style call with a non-constant format string, no argument
+// after it, and a plain counterpart. The value is used as a format string, so
+// a percent sign in it begins a format operation and the value does not appear
+// as written.
+//
+// Adapted from staticcheck's SA1006.
+//
+//	func f(s string) {
+//		fmt.Printf(s)
+//	}
+//
 // # earlyreturn
 //
 // Reports a return whose chain of conditions mixes && with || and does not fit

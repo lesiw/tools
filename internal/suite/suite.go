@@ -128,6 +128,7 @@ import (
 	"lesiw.io/tools/analyzers/duplicatedcond"
 	"lesiw.io/tools/analyzers/dupoption"
 	"lesiw.io/tools/analyzers/dupsubexpr"
+	"lesiw.io/tools/analyzers/dynformat"
 	"lesiw.io/tools/analyzers/earlyreturn"
 	"lesiw.io/tools/analyzers/elseif"
 	"lesiw.io/tools/analyzers/emptybranch"
@@ -423,6 +424,7 @@ var (
 		duplicatedcond.Analyzer,
 		dupoption.Analyzer,
 		dupsubexpr.Analyzer,
+		dynformat.Analyzer,
 		earlyreturn.Analyzer,
 		elseif.Analyzer,
 		emptybranch.Analyzer,

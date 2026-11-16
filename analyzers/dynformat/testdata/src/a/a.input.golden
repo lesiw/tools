@@ -1,0 +1,133 @@
+package a
+
+import (
+	"context"
+	"fmt"
+	"io"
+	"log"
+	"os"
+	"runtime/trace"
+	"testing"
+)
+
+func formatted(s string) {
+	fmt.Print(s)             // want `format string is not constant; use Print`
+	(fmt.Print)(s)           // want `format string is not constant; use Print`
+	_ = fmt.Sprint(s)        // want `format string is not constant; use Sprint`
+	fmt.Fprint(os.Stderr, s) // want `format string is not constant; use Fprint`
+	fmt.Fprintf(os.Stderr, s, "value")
+	fmt.Append(nil, s) // want `format string is not constant; use Append`
+	fmt.Appendf(nil, s, "value")
+	fmt.Print(s + "!") // want `format string is not constant; use Print`
+	fmt.Printf("%s", s)
+	fmt.Printf(s, "value")
+	fmt.Printf("some greeting")
+	fmt.Printf(greeting)
+	fmt.Printf("some" + " greeting")
+	fmt.Print(build()) // want `format string is not constant; use Print`
+	fmt.Printf(pair())
+	_ = fmt.Sprintf(pair())
+	fmt.Fprint(pairWriter()) // want `format string is not constant; use Fprint`
+	fmt.Fprintf(pairWriterArgument())
+	fmt.Append(pairBuffer()) // want `format string is not constant; use Append`
+	fmt.Appendf(pairBufferArgument())
+	fmt.Errorf(s)
+}
+
+func logged(s string) {
+	log.Print(s) // want `format string is not constant; use Print`
+	log.Fatal(s) // want `format string is not constant; use Fatal`
+	log.Panic(s) // want `format string is not constant; use Panic`
+	sink := log.New(os.Stderr, "some: ", log.LstdFlags)
+	sink.Print(s) // want `format string is not constant; use Print`
+	sink.Fatal(s) // want `format string is not constant; use Fatal`
+	sink.Panic(s) // want `format string is not constant; use Panic`
+	sink.Printf(pair())
+	log.Printf("%s", s)
+	log.Printf(s, "value")
+	logLine := log.Printf
+	logLine(s)
+}
+
+type embeddedLogger struct{ *log.Logger }
+
+func (l *embeddedLogger) promoted(s string) {
+	l.Print(s) // want `format string is not constant; use Print`
+}
+
+func methodExpression(l *log.Logger, s string) {
+	(*log.Logger).Print(l, s) // want `format string is not constant; use Print`
+	(*log.Logger).Fatal(l, s) // want `format string is not constant; use Fatal`
+	(*log.Logger).Printf(l, s, "value")
+}
+
+func (l *embeddedLogger) promotedExpression(s string) {
+	(*embeddedLogger).Print(l, s) // want `format string is not constant; use Print`
+}
+
+func methodExpressionTuple() {
+	(*log.Logger).Print(pairLogger()) // want `format string is not constant; use Print`
+	(*log.Logger).Printf(pairLoggerArgument())
+}
+
+func multiline(s string) {
+	fmt.Print( // want `format string is not constant; use Print`
+		s,
+	)
+}
+
+func traced(s string) {
+	trace.Logf(context.Background(), "some", s)
+}
+
+type formatter interface{ Printf(string) }
+
+func interfaced(f formatter, s string) {
+	f.Printf(s)
+}
+
+type shadowedLogger struct{ *log.Logger }
+
+func (shadowedLogger) Print(...any) {}
+
+func (l *shadowedLogger) shadowed(s string) {
+	l.Printf(s)
+	(*shadowedLogger).Printf(l, s)
+}
+
+func tested(t *testing.T, b *testing.B, f *testing.F, tb testing.TB, s string) {
+	t.Errorf(s)
+	t.Fatalf(s)
+	t.Logf(s)
+	t.Skipf(s)
+	b.Errorf(s)
+	b.Fatalf(s)
+	b.Logf(s)
+	b.Skipf(s)
+	f.Errorf(s)
+	f.Fatalf(s)
+	f.Logf(s)
+	f.Skipf(s)
+	tb.Errorf(s)
+	tb.Fatalf(s)
+	tb.Logf(s)
+	tb.Skipf(s)
+}
+
+const greeting = "some greeting"
+
+func build() string { return "%s" }
+
+func pair() (string, int) { return "%s", 1 }
+
+func pairWriter() (io.Writer, string) { return os.Stderr, "%s" }
+
+func pairBuffer() ([]byte, string) { return nil, "%s" }
+
+func pairWriterArgument() (io.Writer, string, int) { return os.Stderr, "%s", 1 }
+
+func pairBufferArgument() ([]byte, string, int) { return nil, "%s", 1 }
+
+func pairLogger() (*log.Logger, string) { return nil, "%s" }
+
+func pairLoggerArgument() (*log.Logger, string, int) { return nil, "%s", 1 }

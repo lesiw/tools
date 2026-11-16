@@ -1,0 +1,8 @@
+package a
+
+import f "fmt"
+
+func aliased(s string) {
+	f.Print(s)  // want `format string is not constant; use Print`
+	f.Sprint(s) // want `format string is not constant; use Sprint`
+}

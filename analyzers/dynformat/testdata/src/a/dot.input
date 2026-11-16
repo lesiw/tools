@@ -1,0 +1,8 @@
+package a
+
+import . "fmt"
+
+func dotted(s string) {
+	Printf(s)
+	Sprintf(s)
+}
