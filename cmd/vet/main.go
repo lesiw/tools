@@ -2755,6 +2755,18 @@
 //		return fmt.Sprintf("%d", "one")
 //	}
 //
+// # queryadd
+//
+// Reports an Add call on the values returned by URL.Query. Query builds a
+// separate map from RawQuery, so the added value is discarded and RawQuery is
+// unchanged.
+//
+// Inspired by staticcheck's SA4027.
+//
+//	func add(u *url.URL) {
+//		u.Query().Add("some-key", "some-value")
+//	}
+//
 // # randzero
 //
 // Reports a call to math/rand or math/rand/v2 whose upper bound is one. A

@@ -1,0 +1,88 @@
+package a
+
+import "net/url"
+
+func add(u *url.URL) {
+	u.Query().Add("some-key", "some-value") // want "the added value is discarded"
+}
+
+func addParenthesized(u *url.URL) {
+	(u.Query()).Add("some-key", "some-value") // want "the added value is discarded"
+}
+
+func addEmbedded(e *embedded) {
+	e.Query().Add("some-key", "some-value") // want "the added value is discarded"
+}
+
+func addDeferred(u *url.URL) {
+	defer u.Query().Add("some-key", "some-value") // want "the added value is discarded"
+}
+
+func addGoroutine(u *url.URL) {
+	go u.Query().Add("some-key", "some-value") // want "the added value is discarded"
+}
+
+func addConverted(u *url.URL) {
+	url.Values(u.Query()).Add("some-key", "some-value") // want "the added value is discarded"
+}
+
+func addMethodExpression(u *url.URL) {
+	url.Values.Add(u.Query(), "some-key", "some-value") // want "the added value is discarded"
+}
+
+func addQueryMethodExpression(u *url.URL) {
+	(*url.URL).Query(u).Add("some-key", "some-value") // want "the added value is discarded"
+}
+
+type embedded struct{ *url.URL }
+
+type adder interface {
+	Add(string, string)
+}
+
+func interfaceExpression(u *url.URL) {
+	adder.Add(u.Query(), "some-key", "some-value") // want "the added value is discarded"
+}
+
+type values struct{}
+
+func (values) Query() values { return values{} }
+func (values) Add(string, string) {}
+
+type definedValues url.Values
+
+func (definedValues) Add(string, string) {}
+
+func otherConversion(u *url.URL) {
+	definedValues(u.Query()).Add("some-key", "some-value")
+}
+
+func other(v values) {
+	v.Query().Add("some-key", "some-value")
+}
+
+type lookup struct{}
+
+func (lookup) Query() url.Values { return nil }
+
+func otherQuery(l lookup) {
+	l.Query().Add("some-key", "some-value")
+}
+
+func held(u *url.URL) {
+	q := u.Query()
+	q.Add("some-key", "some-value")
+	u.RawQuery = q.Encode()
+}
+
+func read(u *url.URL) string {
+	return u.Query().Encode()
+}
+
+func set(u *url.URL) {
+	u.Query().Set("some-key", "some-value")
+}
+
+func del(u *url.URL) {
+	u.Query().Del("some-key")
+}
