@@ -1,0 +1,15 @@
+package b
+
+func use(...any) {}
+
+func nested(left, right <-chan int) {
+	// want +1 `select with a single case is redundant`
+	select {
+	case v := <-left:
+		// want +1 `select with a single case is redundant`
+		select {
+		case w := <-right:
+			use(v, w)
+		}
+	}
+}

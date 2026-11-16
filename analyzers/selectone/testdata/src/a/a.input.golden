@@ -1,0 +1,435 @@
+package a
+
+import "fmt"
+
+func use(...any) {}
+
+func receive(ch <-chan int) {
+	// want +1 `select with a single case is redundant`
+	v := <-ch
+	use(v)
+}
+
+func send(ch chan<- int, v int) {
+	// want +1 `select with a single case is redundant`
+	ch <- v
+	use(v)
+}
+
+func receiveTwo(ch <-chan int) {
+	// want +1 `select with a single case is redundant`
+	v, ok := <-ch
+	use(v, ok)
+}
+
+func discard(ch <-chan int) {
+	// want +1 `select with a single case is redundant`
+	<-ch
+}
+
+func discardSend(ch chan<- int, v int) {
+	// want +1 `select with a single case is redundant`
+	ch <- v
+}
+
+func assign(ch <-chan int) {
+	var v int
+	// want +1 `select with a single case is redundant`
+	v = <-ch
+	use(v)
+}
+
+func declares(ch <-chan int) {
+	// want +1 `select with a single case is redundant`
+	v := <-ch
+	w := v + 1
+	use(w)
+}
+
+func loop(ch <-chan int) {
+	for {
+		// want +1 `select with a single case is redundant`
+		v := <-ch
+		use(v)
+	}
+}
+
+func literal(ch <-chan int) {
+	go func() {
+		// want +1 `select with a single case is redundant`
+		v := <-ch
+		use(v)
+	}()
+}
+
+func nestedIndent(ch <-chan int, cond bool) {
+	if cond {
+		// want +1 `select with a single case is redundant`
+		v := <-ch
+		use(v)
+	}
+}
+
+func inSwitch(n int, ch <-chan int) {
+	switch n {
+	case 0:
+		// want +1 `select with a single case is redundant`
+		v := <-ch
+		use(v)
+	}
+}
+
+func inSelect(left, right <-chan int) {
+	select {
+	case v := <-left:
+		// want +1 `select with a single case is redundant`
+		w := <-right
+		use(v, w)
+	case <-right:
+	}
+}
+
+func inline(ch <-chan int) {
+	// want +1 `select with a single case is redundant`
+	<-ch
+}
+
+func inlineBody(ch <-chan int) {
+	// want +1 `select with a single case is redundant`
+	v := <-ch
+	use(v)
+}
+
+func nestedBreak(ch <-chan int) {
+	// want +1 `select with a single case is redundant`
+	v := <-ch
+	switch v {
+	case 0:
+		break
+	}
+	use(v)
+}
+
+type waiter struct{}
+
+func (waiter) wait(ch <-chan int) {
+	// want +1 `select with a single case is redundant`
+	v := <-ch
+	use(v)
+}
+
+func labeledGoto(ch <-chan int, cond bool) {
+wait:
+	// want +1 `select with a single case is redundant`
+	v := <-ch
+	if cond {
+		return
+	}
+	use(v)
+	goto wait
+}
+
+func commented(ch <-chan int) {
+	// want +1 `select with a single case is redundant`
+	v := <-ch
+	// note
+	use(v)
+}
+
+func rawText(ch <-chan int) {
+	// want +1 `select with a single case is redundant`
+	select {
+	case v := <-ch:
+		use(v, `alpha
+	beta`)
+	}
+}
+
+func headerComment(ch <-chan int) {
+	// want +1 `select with a single case is redundant`
+	select {
+	// note
+	case v := <-ch:
+		use(v)
+	}
+}
+
+func commComment(ch <-chan int) {
+	// want +1 `select with a single case is redundant`
+	select {
+	case <-ch /* note */:
+		use(0)
+	}
+}
+
+func inlinePrefix(ch <-chan int) {
+	// want +1 `select with a single case is redundant`
+	/* note */ select {
+	case <-ch:
+	}
+}
+
+func inlineSuffix(ch <-chan int) {
+	// want +1 `select with a single case is redundant`
+	select {
+	case <-ch:
+	} /* note */
+}
+
+func rangeBreak(ch <-chan int, xs []int) {
+	for range xs {
+		// want +1 `select with a single case is redundant`
+		<-ch
+		for range xs {
+			break
+		}
+		use(0)
+	}
+}
+
+func typeSwitchBreak(ch <-chan int, v any) {
+	// want +1 `select with a single case is redundant`
+	<-ch
+	switch v.(type) {
+	case int:
+		break
+	}
+	use(v)
+}
+
+func gotoNone(ch <-chan int) {
+	// want +1 `select with a single case is redundant`
+	<-ch
+	goto done
+done:
+	use(0)
+}
+
+func withDefault(ch <-chan int) {
+	select {
+	case v := <-ch:
+		use(v)
+	default:
+		use(0)
+	}
+}
+
+func twoCases(left, right <-chan int) {
+	select {
+	case v := <-left:
+		use(v)
+	case v := <-right:
+		use(v)
+	}
+}
+
+func onlyDefault(ch <-chan int) {
+	select {
+	default:
+		use(ch)
+	}
+}
+
+func emptySelect() {
+	select {}
+}
+
+func breaking(ch <-chan int) {
+	for {
+		select {
+		case v := <-ch:
+			if v > 0 {
+				break
+			}
+			use(v)
+		}
+		break
+	}
+}
+
+func labeled(ch <-chan int) {
+wait:
+	select {
+	case <-ch:
+		break wait
+	}
+}
+
+func labeledLoop(ch <-chan int) {
+wait:
+	select {
+	case <-ch:
+		for {
+			break wait
+		}
+	}
+}
+
+func labeledOuter(ch <-chan int) {
+outer:
+	for {
+		// want +1 `select with a single case is redundant`
+		<-ch
+		break outer
+	}
+}
+
+func shadowComm(ch <-chan int) {
+	v := 0
+	// want +1 `select with a single case is redundant`
+	select {
+	case v := <-ch:
+		use(v)
+	}
+	use(v)
+}
+
+func shadowBody(ch <-chan int) {
+	w := 0
+	// want +1 `select with a single case is redundant`
+	select {
+	case <-ch:
+		w := 1
+		use(w)
+	}
+	use(w)
+}
+
+func shadowLater(ch <-chan int) {
+	// want +1 `select with a single case is redundant`
+	select {
+	case v := <-ch:
+		use(v)
+	}
+	v := 0
+	use(v)
+}
+
+func shadowParam(ch <-chan int, v int) {
+	// want +1 `select with a single case is redundant`
+	select {
+	case v := <-ch:
+		use(v)
+	}
+	use(v)
+}
+
+func shadowResult(ch <-chan int) (v int) {
+	// want +1 `select with a single case is redundant`
+	select {
+	case v := <-ch:
+		use(v)
+	}
+	return v
+}
+
+func shadowImport(ch <-chan int) {
+	// want +1 `select with a single case is redundant`
+	select {
+	case fmt := <-ch:
+		use(fmt)
+	}
+	fmt.Println()
+}
+
+func shadowBuiltin(ch <-chan int) {
+	// want +1 `select with a single case is redundant`
+	select {
+	case len := <-ch:
+		use(len)
+	}
+	use(len([]int{}))
+}
+
+func shadowTwo(ch <-chan int) {
+	ok := false
+	// want +1 `select with a single case is redundant`
+	select {
+	case v, ok := <-ch:
+		use(v, ok)
+	}
+	use(ok)
+}
+
+func declaresConst(ch <-chan int) {
+	// want +1 `select with a single case is redundant`
+	<-ch
+	const c = 1
+	type t int
+	use(c, t(0))
+}
+
+var outer int
+
+func shadowPackage(ch <-chan int) {
+	// want +1 `select with a single case is redundant`
+	select {
+	case outer := <-ch:
+		use(outer)
+	}
+	use(outer)
+}
+
+func jump(ch <-chan int) {
+	goto done
+	// want +1 `select with a single case is redundant`
+	select {
+	case v := <-ch:
+		use(v)
+	}
+done:
+	use(0)
+}
+
+func gotoOut(ch <-chan int) {
+	// want +1 `select with a single case is redundant`
+	select {
+	case <-ch:
+		goto done
+		v := 1
+		use(v)
+	}
+done:
+	use(0)
+}
+
+func gotoAfter(ch <-chan int) {
+	// want +1 `select with a single case is redundant`
+	<-ch
+	v := 1
+	use(v)
+	goto done
+done:
+	use(0)
+}
+
+func gotoBlank(ch <-chan int) {
+	// want +1 `select with a single case is redundant`
+	select {
+	case <-ch:
+		goto done
+		var _ = use
+	}
+done:
+	use(0)
+}
+
+func gotoBody(ch <-chan int) {
+	goto done
+	// want +1 `select with a single case is redundant`
+	select {
+	case <-ch:
+		v := 1
+		use(v)
+	}
+done:
+	use(0)
+}
+
+func trailing(ch <-chan int) {
+	// want +1 `select with a single case is redundant`
+	select {
+	case v := <-ch:
+		use(v)
+	} // note
+}

@@ -185,6 +185,7 @@ import (
 	"lesiw.io/tools/analyzers/regexpmust"
 	"lesiw.io/tools/analyzers/regexpsimplify"
 	"lesiw.io/tools/analyzers/runerange"
+	"lesiw.io/tools/analyzers/selectone"
 	"lesiw.io/tools/analyzers/selfassert"
 	"lesiw.io/tools/analyzers/shellcommand"
 	"lesiw.io/tools/analyzers/singlefield"
@@ -427,6 +428,7 @@ var (
 		regexpmust.Analyzer,
 		regexpsimplify.Analyzer,
 		runerange.Analyzer,
+		selectone.Analyzer,
 		selfassert.Analyzer,
 		shellcommand.Analyzer,
 		shift.Analyzer,

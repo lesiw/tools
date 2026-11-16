@@ -2250,6 +2250,20 @@ func f(s string) {
 }
 ```
 
+## selectone
+
+Reports a select statement with a single case clause and no default. The send or receive in the case blocks the same way without the select. A select whose case body holds a break that leaves the select is left alone.
+
+Adapted from staticcheck's S1000.
+
+```
+func wait(ch <-chan int) {
+    select {
+    case <-ch:
+    }
+}
+```
+
 ## selfassert
 
 Reports a type assertion from a type to itself. The assertion yields the value it was given, so it does nothing. A nil value panics in the assertion, so removing it would change behavior, and the rule reports without a fix.
