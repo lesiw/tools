@@ -1,0 +1,7 @@
+package c
+
+import "net/http"
+
+func Held() http.Header {
+	return http.Header{"x-hidden": nil}
+}

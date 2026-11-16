@@ -1,0 +1,7 @@
+package d
+
+import "net/http"
+
+func Use(h http.Header) {
+	h["x-hidden"] = nil // want `header key "x-hidden" is not canonical`
+}

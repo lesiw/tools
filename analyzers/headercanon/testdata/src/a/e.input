@@ -1,0 +1,13 @@
+package a
+
+import . "net/http"
+
+func dotted(h Header) {
+	h[tag] = nil // want `header key "x-tag" is not canonical`
+}
+
+func dottedShadow(h Header) {
+	CanonicalHeaderKey := 0
+	_ = CanonicalHeaderKey
+	h[other] = nil // want `header key "x-other" is not canonical`
+}

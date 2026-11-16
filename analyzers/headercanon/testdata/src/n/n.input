@@ -1,0 +1,14 @@
+package n
+
+import "net/http"
+
+type plainGetter map[string][]string
+
+func (plainGetter) Get(string) string { return "" }
+
+func unionKeep[T interface {
+	http.Header | plainGetter
+	Get(string) string
+}](h T) {
+	_ = h["x-narrowed-keep"]
+}

@@ -1,0 +1,11 @@
+package b
+
+import "net/http"
+
+func dynamic(h http.Header, key string) {
+	_ = h[key]
+}
+
+func concrete(h http.Header) {
+	h["x-dynamic"] = nil // want `header key "x-dynamic" is not canonical`
+}

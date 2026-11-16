@@ -1,0 +1,12 @@
+package o
+
+import "net/http"
+
+func plain(m map[string][]string) {
+	_ = m["x"]
+	delete(m, "y")
+}
+
+func header(h http.Header) {
+	h["x-plain"] = nil // want `header key "x-plain" is not canonical`
+}

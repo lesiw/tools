@@ -1,0 +1,13 @@
+package m
+
+import "net/http"
+
+type defined map[string][]string
+
+func other(m defined) {
+	_ = m["x-other"]
+}
+
+func concrete(h http.Header) {
+	h["x-other"] = nil // want `header key "x-other" is not canonical`
+}

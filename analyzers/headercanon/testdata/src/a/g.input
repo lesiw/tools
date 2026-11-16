@@ -1,0 +1,13 @@
+package a
+
+import "net/http"
+
+func fieldAccess(b *holder) {
+	_ = b.h["x-field"]   // want `header key "x-field" is not canonical`
+	b.h["x-field"] = nil // want `header key "x-field" is not canonical`
+}
+
+func aliasOfLiteral(h http.Header) {
+	g := h
+	_ = g["x-field"] // want `header key "x-field" is not canonical`
+}

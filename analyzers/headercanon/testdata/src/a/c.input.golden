@@ -1,0 +1,7 @@
+package a
+
+import hdr "net/http"
+
+func aliasedImport(h hdr.Header) {
+	h[hdr.CanonicalHeaderKey(tag)] = nil // want `header key "x-tag" is not canonical`
+}

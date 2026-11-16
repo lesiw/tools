@@ -1,0 +1,11 @@
+package k
+
+import "net/http"
+
+func dynamicDelete(h http.Header, key string) {
+	delete(h, key)
+}
+
+func concrete(h http.Header) {
+	h["x-delete-dyn"] = nil // want `header key "x-delete-dyn" is not canonical`
+}

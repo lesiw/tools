@@ -1,0 +1,16 @@
+package h
+
+import "net/http"
+
+type open interface{ any }
+
+func generic[T interface {
+	~map[string][]string
+	open
+}](h T, key string) {
+	_ = h[key]
+}
+
+func concrete(h http.Header) {
+	h["x-map"] = nil // want `header key "x-map" is not canonical`
+}

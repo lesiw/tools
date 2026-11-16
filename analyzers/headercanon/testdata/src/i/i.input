@@ -1,0 +1,14 @@
+package i
+
+import "net/http"
+
+func intersect[T interface {
+	~map[string][]string | int
+	~map[string][]string | []byte
+}](h T, key string) {
+	_ = h[key]
+}
+
+func concrete(h http.Header) {
+	h["x-union"] = nil // want `header key "x-union" is not canonical`
+}

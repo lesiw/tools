@@ -1669,6 +1669,20 @@
 //	// The behaviour is deliberate.
 //	func f() {}
 //
+// # headercanon
+//
+// Reports a non-canonical constant key used to index or delete from an
+// http.Header map. Set, Add, Get, Values, and Del canonicalize their key; a
+// direct key is used as written, so a later Get canonicalizes the key and
+// returns the zero value. A key in a variable is left alone, so a
+// non-canonical key can still be used through one.
+//
+// Adapted from staticcheck's SA1008.
+//
+//	func f(h http.Header) {
+//		h["content-type"] = nil
+//	}
+//
 // # hostport
 //
 // Reports an address built with fmt.Sprintf from a host and a port and passed

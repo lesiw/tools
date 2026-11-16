@@ -1,0 +1,11 @@
+package e
+
+import (
+	"net/http"
+	"net/textproto"
+)
+
+func converted(h http.Header) {
+	textproto.MIMEHeader(h)["x-six"] = nil
+	h["x-six"] = nil // want `header key "x-six" is not canonical`
+}

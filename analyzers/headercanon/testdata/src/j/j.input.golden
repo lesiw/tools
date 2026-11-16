@@ -1,0 +1,32 @@
+package j
+
+import (
+	"net/http"
+	"net/textproto"
+)
+
+type defined map[string][]string
+
+func canonicalCall(h http.Header, key string) {
+	h[http.CanonicalHeaderKey(key)] = nil
+}
+
+func canonicalMap(m defined) {
+	_ = m["X-Other"]
+}
+
+func canonicalLiteral() http.Header {
+	return http.Header{http.CanonicalHeaderKey("x-call"): nil}
+}
+
+func canonicalMIME(h http.Header, key string) {
+	h[textproto.CanonicalMIMEHeaderKey(key)] = nil
+}
+
+func canonicalMIMELiteral() http.Header {
+	return http.Header{textproto.CanonicalMIMEHeaderKey("x-mime"): nil}
+}
+
+func concrete(h http.Header) {
+	h["X-Canonical"] = nil // want `header key "x-canonical" is not canonical`
+}

@@ -1,0 +1,16 @@
+package l
+
+import "net/http"
+
+type open interface{ any }
+
+func genericDelete[T interface {
+	http.Header
+	open
+}](h T, key string) {
+	delete(h, key)
+}
+
+func concrete(h http.Header) {
+	h["x-gdelete-dyn"] = nil // want `header key "x-gdelete-dyn" is not canonical`
+}

@@ -1,0 +1,12 @@
+package g
+
+import "net/http"
+
+func held() http.Header {
+	key := "x-var"
+	return http.Header{key: nil}
+}
+
+func concrete(h http.Header) {
+	h["x-var"] = nil // want `header key "x-var" is not canonical`
+}

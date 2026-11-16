@@ -1,0 +1,10 @@
+package a
+
+const tag = "x-tag"
+const other = "x-other"
+
+func noImport(h alias) {
+	h[tag] = nil   // want `header key "x-tag" is not canonical`
+	_ = h[tag]     // want `header key "x-tag" is not canonical`
+	h[other] = nil // want `header key "x-other" is not canonical`
+}

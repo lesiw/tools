@@ -154,6 +154,7 @@ import (
 	"lesiw.io/tools/analyzers/flagname"
 	"lesiw.io/tools/analyzers/fortrue"
 	"lesiw.io/tools/analyzers/gospell"
+	"lesiw.io/tools/analyzers/headercanon"
 	"lesiw.io/tools/analyzers/hostportconst"
 	"lesiw.io/tools/analyzers/ifelsechain"
 	"lesiw.io/tools/analyzers/ifreturn"
@@ -443,6 +444,7 @@ var (
 		framepointer.Analyzer,
 		gofix.Analyzer,
 		gospell.Analyzer,
+		headercanon.Analyzer,
 		hostport.Analyzer,
 		hostportconst.Analyzer,
 		httpmux.Analyzer,

@@ -1,0 +1,163 @@
+package a
+
+import "net/http"
+
+func literals(h http.Header) {
+	_ = h["content-type"]   // want `header key "content-type" is not canonical`
+	h["X-Request-Id"] = nil // want `header key "x-request-id" is not canonical`
+	_ = h["Content-Type"]
+	h["X-Request-Id"] = nil
+}
+
+func request(r *http.Request) {
+	_ = r.Header["Accept"]       // want `header key "accept" is not canonical`
+	r.Header["User-Agent"] = nil // want `header key "user-agent" is not canonical`
+}
+
+func invalid(h http.Header) {
+	_ = h["not a key"]
+	_ = h[""]
+}
+
+type alias = http.Header
+
+func aliased(h alias) {
+	_ = h["Some-Kind"]   // want `header key "some-kind" is not canonical`
+	h["Some-Kind"] = nil // want `header key "some-kind" is not canonical`
+}
+
+const versionKey = "x-version"
+
+func constants(h http.Header) {
+	_ = h[http.CanonicalHeaderKey(versionKey)]                // want `header key "x-version" is not canonical`
+	h[http.CanonicalHeaderKey(versionKey)] = nil              // want `header key "x-version" is not canonical`
+	_ = h[http.CanonicalHeaderKey("x-"+"trace")]              // want `header key "x-trace" is not canonical`
+	h[http.CanonicalHeaderKey("x-" /* why */ +"trace")] = nil // want `header key "x-trace" is not canonical`
+}
+
+type holder struct{ h http.Header }
+
+func composite(h http.Header) {
+	h = http.Header{"content-type": {"x"}}
+	_ = h["content-type"]   // want `header key "content-type" is not canonical`
+	h["content-type"] = nil // want `header key "content-type" is not canonical`
+}
+
+func field(b *holder) {
+	b.h = http.Header{"x-field": {"x"}}
+}
+
+type open interface{ any }
+
+func openGeneric[T interface {
+	http.Header
+	open
+}](h T) {
+	_ = h["X-Open"] // want `header key "x-open" is not canonical`
+}
+
+func methodGeneric[T interface {
+	http.Header
+	Get(string) string
+}](h T) {
+	_ = h["X-Method"] // want `header key "x-method" is not canonical`
+}
+
+func deleted(h http.Header) {
+	delete(h, "X-Delete")                          // want `header key "x-delete" is not canonical`
+	delete(h, http.CanonicalHeaderKey(versionKey)) // want `header key "x-version" is not canonical`
+}
+
+func converted(h http.Header) {
+	h = http.Header(map[string][]string{"x-conv": {"v"}})
+	_ = h["x-conv"] // want `header key "x-conv" is not canonical`
+}
+
+const literalKey = "x-literal"
+
+func literalConstant(h http.Header) {
+	_ = http.Header{literalKey: nil}
+	_ = h[literalKey] // want `header key "x-literal" is not canonical`
+}
+
+type Key string
+
+type Values []string
+
+type Table map[Key]Values
+
+func table(t Table) {
+	_ = t["x"]
+}
+
+type getter interface{ Get(string) string }
+
+type methodEmbedded interface {
+	http.Header
+	getter
+}
+
+func embeddedMethod[T methodEmbedded](h T) {
+	_ = h["X-Embedded"] // want `header key "x-embedded" is not canonical`
+}
+
+type tildeHeader interface {
+	http.Header
+	~map[string][]string
+}
+
+func tildeIntersection[T tildeHeader](h T) {
+	_ = h["X-Tilde"] // want `header key "x-tilde" is not canonical`
+}
+
+func genericDelete[T http.Header](h T) {
+	delete(h, "X-Gdelete") // want `header key "x-gdelete" is not canonical`
+}
+
+type plain map[string][]string
+
+func unionMethod[T interface {
+	http.Header | plain
+	Get(string) string
+}](h T) {
+	_ = h["X-Narrowed"] // want `header key "x-narrowed" is not canonical`
+}
+
+func plainLiteral(h http.Header) {
+	_ = map[string]int{"x-plain": 1}
+	h["X-Plain"] = nil // want `header key "x-plain" is not canonical`
+}
+
+func parenthesized(h http.Header) {
+	h["X-Paren"] = nil // want `header key "x-paren" is not canonical`
+}
+
+func parenthesizedComment(h http.Header) {
+	h[("X-Keep" /* why */)] = nil // want `header key "x-keep" is not canonical`
+}
+
+func shadowLiteral(h alias) {
+	http := 0
+	_ = http
+	h["X-Shadow"] = nil // want `header key "x-shadow" is not canonical`
+}
+
+func unionIntersect[T interface {
+	http.Header | int
+	http.Header | string
+}](h T) {
+	_ = h["X-Union"] // want `header key "x-union" is not canonical`
+}
+
+func openDelete[T interface {
+	http.Header
+	open
+}](h T) {
+	delete(h, "X-Opendelete") // want `header key "x-opendelete" is not canonical`
+}
+
+func ranged(h http.Header, values [][]string) {
+	for _, h["X-Range"] = range values { // want `header key "x-range" is not canonical`
+		_ = h
+	}
+}
