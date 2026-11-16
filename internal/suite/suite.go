@@ -91,6 +91,7 @@ import (
 	"lesiw.io/tools/analyzers/ctxvaluetype"
 	"lesiw.io/tools/analyzers/cyclo"
 	"lesiw.io/tools/analyzers/deepequalptr"
+	"lesiw.io/tools/analyzers/deepequalptr2"
 	"lesiw.io/tools/analyzers/deepexit"
 	"lesiw.io/tools/analyzers/defaultcaseorder"
 	"lesiw.io/tools/analyzers/deferbeforeerr"
@@ -328,6 +329,7 @@ var (
 		cyclo.Analyzer,
 		deepequalerrors.Analyzer,
 		deepequalptr.Analyzer,
+		deepequalptr2.Analyzer,
 		deepexit.Analyzer,
 		defaultcaseorder.Analyzer,
 		deferbeforeerr.Analyzer,

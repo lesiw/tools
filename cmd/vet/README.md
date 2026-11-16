@@ -668,6 +668,18 @@ func same(a, b item) bool {
 }
 ```
 
+## deepequalptr2
+
+Reports a reflect.DeepEqual call on two pointer values of the same type with a plain pointee, on two assignable pointer values of different types, or on two values of the same unsafe.Pointer type. A pointee is plain when its underlying type is a basic type, a channel, a zero-length array, or an array or struct built from those. For a pointer value, DeepEqual compares the pointee as well, so distinct pointers of the same type that point to deeply equal values compare equal; a defined pointer type and its underlying pointer type are reported because DeepEqual is always false for different static types.
+
+Adapted from staticcheck's SA1021, which reports a net.IP comparison by its bytes.
+
+```
+func same(left, right *int) bool {
+    return reflect.DeepEqual(left, right)
+}
+```
+
 ## deepexit
 
 Reports a call to os.Exit, syscall.Exit, or a Fatal function of the log package outside main or init. The call ends the program at that point, so the caller gets no error to handle.
