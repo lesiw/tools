@@ -1,0 +1,14 @@
+package main
+
+import "context"
+
+type key int
+
+const (
+	used key = iota
+	Dead     // want `context key Dead is never used with context.WithValue`
+)
+
+func store(ctx context.Context) context.Context {
+	return context.WithValue(ctx, used, nil)
+}

@@ -211,6 +211,7 @@ import (
 	"lesiw.io/tools/analyzers/unreachablereturn"
 	"lesiw.io/tools/analyzers/unsignedcmp"
 	"lesiw.io/tools/analyzers/unslice"
+	"lesiw.io/tools/analyzers/unusedctxkey"
 	"lesiw.io/tools/analyzers/unusedparams"
 	"lesiw.io/tools/analyzers/unusedrecv"
 	"lesiw.io/tools/analyzers/unusefultag"
@@ -445,6 +446,7 @@ var (
 		unsafeptr.Analyzer,
 		unsignedcmp.Analyzer,
 		unslice.Analyzer,
+		unusedctxkey.Analyzer,
 		unusedparams.Analyzer,
 		unusedrecv.Analyzer,
 		unusedresult.Analyzer,

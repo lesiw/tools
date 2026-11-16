@@ -1,0 +1,180 @@
+package a
+
+import (
+	"context"
+
+	"elsewhere"
+)
+
+type key int
+
+const (
+	usedKey key = iota
+	deadKey     // want `context key deadKey is never used with context.WithValue`
+	readKey     // want `context key readKey is never used with context.WithValue`
+	valueKey
+	offsetKey
+	aliasKey     key = 7
+	wrapperKey   key = 8
+	indirectKey  key = 9
+	storedKey    key = 10
+	fieldKey     key = 13
+	returnKey    key = 14
+	interfaceKey key = 15
+	methodKey    key = 16 // want `context key methodKey is never used with context.WithValue`
+	computedKeyA key = 17
+	computedKeyB key = 18
+	mapKey       key = 19
+	chanKey      key = 20
+	compareKey   key = 21
+	helperArg    key = 22 // want `context key helperArg is never used with context.WithValue`
+	methodValKey key = 23
+	mixedKey     key = 24
+)
+
+const (
+	ExportedKey key = 1
+	_           key = 2
+)
+
+type alias = key
+
+const (
+	untyped         = "some-key"
+	deadAlias alias = 3 // want `context key deadAlias is never used with context.WithValue`
+)
+
+type other int
+
+const otherKey other = 1
+
+type idle int
+
+const idleKey idle = 1
+
+const borrowed elsewhere.Key = 1 // want `context key borrowed is never used with context.WithValue`
+
+func store(ctx context.Context, v any) context.Context {
+	ctx = context.WithValue(ctx, aliasKey, v)
+	return context.WithValue(ctx, usedKey, v)
+}
+
+func read(ctx context.Context) any {
+	return ctx.Value(readKey)
+}
+
+func passedAsValue(ctx context.Context, v any) context.Context {
+	return context.WithValue(ctx, usedKey, valueKey)
+}
+
+func computed(ctx context.Context, v any) context.Context {
+	return context.WithValue(ctx, offsetKey+1, v)
+}
+
+func withKey(ctx context.Context, k key, v any) context.Context {
+	return context.WithValue(ctx, k, v)
+}
+
+func passedThrough(ctx context.Context, v any) context.Context {
+	return withKey(ctx, wrapperKey, v)
+}
+
+func set(ctx context.Context, k, v any) context.Context {
+	return context.WithValue(ctx, k, v)
+}
+
+func passedAsAny(ctx context.Context, v any) context.Context {
+	return set(ctx, indirectKey, v)
+}
+
+func storedInVariable(ctx context.Context, v any) context.Context {
+	k := storedKey
+	return context.WithValue(ctx, k, v)
+}
+
+type holder struct{ k key }
+
+func storedInField(ctx context.Context, v any) context.Context {
+	h := holder{k: fieldKey}
+	return context.WithValue(ctx, h.k, v)
+}
+
+func keyValue() key { return returnKey }
+
+func returned(ctx context.Context, v any) context.Context {
+	return context.WithValue(ctx, keyValue(), v)
+}
+
+type carrier interface{ marker() }
+
+func (key) marker() {}
+
+func forward(c carrier) {}
+
+func passedAsInterface() {
+	forward(interfaceKey)
+}
+
+func readMethodExpr(ctx context.Context) any {
+	return context.Context.Value(ctx, methodKey)
+}
+
+func helper(k key) key { return k + 1 }
+
+func readComputed(ctx context.Context) any {
+	return ctx.Value(helper(helperArg))
+}
+
+func readMethodValue(ctx context.Context) any {
+	value := ctx.Value
+	return value(methodValKey)
+}
+
+func mixedValue(ctx context.Context, k key) bool {
+	return ctx.Value(mixedKey) != nil || k == mixedKey
+}
+
+func computedValue() key { return computedKeyA + computedKeyB }
+
+func fromComputed(ctx context.Context, v any) context.Context {
+	return context.WithValue(ctx, computedValue(), v)
+}
+
+func fromMap(ctx context.Context, v any) context.Context {
+	m := map[key]bool{mapKey: true}
+	for k := range m {
+		return context.WithValue(ctx, k, v)
+	}
+	return ctx
+}
+
+func fromChan(ctx context.Context, v any) context.Context {
+	ch := make(chan key, 1)
+	ch <- chanKey
+	return context.WithValue(ctx, <-ch, v)
+}
+
+func compared(k key) bool {
+	return k == compareKey
+}
+
+func imported(ctx context.Context, v any) context.Context {
+	return context.WithValue(ctx, elsewhere.Key(0), v)
+}
+
+type readOnlyKeyType int
+
+const readOnlyKey readOnlyKeyType = 1 // want `context key readOnlyKey is never used with context.WithValue`
+
+func readOnly(ctx context.Context) any {
+	return ctx.Value(readOnlyKey)
+}
+
+func local(ctx context.Context, v any) context.Context {
+	const localKey key = 11
+	return context.WithValue(ctx, usedKey, localKey)
+}
+
+func localExported() {
+	const LocalKey key = 12 // want `context key LocalKey is never used with context.WithValue`
+}

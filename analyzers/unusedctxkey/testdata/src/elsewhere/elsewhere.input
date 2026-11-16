@@ -1,0 +1,3 @@
+package elsewhere
+
+type Key int

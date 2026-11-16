@@ -2907,6 +2907,20 @@ func f(s []int) []int {
 }
 ```
 
+## unusedctxkey
+
+Reports a context key constant with no use outside a Context.Value lookup.
+
+```
+type key int
+
+const deadKey key = 0
+
+func read(ctx context.Context) any {
+    return ctx.Value(deadKey)
+}
+```
+
 ## unusedparams
 
 Reports a parameter of a declared function that the body never reads. Renaming it to the blank identifier says the position is deliberate, and an exported function, a matching interface method, and a function used as a value keep their names.

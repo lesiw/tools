@@ -1,0 +1,14 @@
+package dotimport
+
+import . "context"
+
+type key string
+
+const (
+	used key = "used"
+	dead key = "dead" // want `context key dead is never used with context.WithValue`
+)
+
+func store(ctx Context) Context {
+	return WithValue(ctx, used, nil)
+}
