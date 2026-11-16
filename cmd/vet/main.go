@@ -343,6 +343,18 @@
 //		}
 //	}
 //
+// # benchassign
+//
+// Reports an assignment to the N field of a testing.B. The testing package
+// sets N and adjusts it until a benchmark is long enough to time reliably;
+// assigning to N replaces that count.
+//
+// Inspired by staticcheck's SA3001.
+//
+//	func benchmark(b *testing.B) {
+//		b.N = 1
+//	}
+//
 // # blankassign
 //
 // Reports a statement that assigns the value of a name or a basic literal to

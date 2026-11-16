@@ -1,0 +1,170 @@
+package a
+
+import (
+	"testing"
+
+	t "testing"
+)
+
+type (
+	box        struct{ N int }
+	bench      = testing.B
+	benchPtr   = *testing.B
+	derived    testing.B
+	ptrDerived *testing.B
+	embedded   struct{ testing.B }
+	wrapper    struct{ *testing.B }
+	inner      struct{ *testing.B }
+	outer      struct{ *inner }
+)
+
+type override struct {
+	*testing.B
+	N int
+}
+
+func benchmark(b *testing.B) {
+	b.N = 100 // want `assignment to b.N`
+}
+
+func compound(b *testing.B) {
+	b.N *= 2 // want `assignment to b.N`
+}
+
+func increment(b *testing.B) {
+	b.N++ // want `assignment to b.N`
+}
+
+func decrement(b *testing.B) {
+	b.N-- // want `assignment to b.N`
+}
+
+func dereferenced(b *testing.B) {
+	(*b).N = 1 // want `assignment to \(\*b\)\.N`
+}
+
+func nested(b *testing.B) {
+	func() {
+		b.N = 1 // want `assignment to b.N`
+	}()
+}
+
+func pair(b *testing.B) {
+	x := 0
+	x, b.N = 1, 2 // want `assignment to b.N`
+	_ = x
+}
+
+func several(b1, b2 *testing.B) {
+	b1.N, b2.N = 1, 2 // want `assignment to b1.N` `assignment to b2.N`
+}
+
+func ranged(b *testing.B, xs []int) {
+	for b.N = range xs { // want `assignment to b.N`
+	}
+}
+
+func rangedValue(b *testing.B, xs []int) {
+	for _, b.N = range xs { // want `assignment to b.N`
+	}
+}
+
+func starredIncrement(b *testing.B) {
+	(*b).N++ // want `assignment to \(\*b\)\.N`
+}
+
+func read(b *testing.B) int {
+	return b.N
+}
+
+func field(v box) {
+	v.N = 1
+}
+
+func copied(b testing.B) {
+	b.N = 1
+}
+
+func aliasValue(b bench) {
+	b.N = 1
+}
+
+func definedValue(d derived) {
+	d.N = 1
+}
+
+func addressed(b testing.B) {
+	p := &b
+	p.N = 1 // want `assignment to p.N`
+}
+
+func allocated() {
+	b := new(testing.B)
+	b.N = 1 // want `assignment to b.N`
+}
+
+func addressedDefined(d derived) {
+	p := &d
+	p.N = 1 // want `assignment to p.N`
+}
+
+func aliased(b *t.B) {
+	b.N = 1 // want `assignment to b.N`
+}
+
+func typeAlias(b *bench) {
+	b.N = 1 // want `assignment to b.N`
+}
+
+func pointerAlias(b benchPtr) {
+	b.N = 1 // want `assignment to b.N`
+}
+
+func promoted(w wrapper) {
+	w.N = 1 // want `assignment to w.N`
+}
+
+func pointerContainer(w *wrapper) {
+	w.N = 1 // want `assignment to w.N`
+}
+
+func nestedPointer(o *outer) {
+	o.N = 1 // want `assignment to o.N`
+}
+
+func nestedValue(o outer) {
+	o.N = 1 // want `assignment to o.N`
+}
+
+func rangedPromoted(w wrapper, xs []int) {
+	for w.N = range xs { // want `assignment to w.N`
+	}
+}
+
+func defined(b *derived) {
+	b.N = 1 // want `assignment to b.N`
+}
+
+func definedPointer(b ptrDerived) {
+	b.N = 1 // want `assignment to b.N`
+}
+
+func embeddedValue(e embedded) {
+	e.N = 1
+}
+
+func embeddedPointer(e *embedded) {
+	e.N = 1
+}
+
+func overridden(o override) {
+	o.N = 1
+}
+
+func result(r testing.BenchmarkResult) {
+	r.N = 1
+}
+
+func timer(b *testing.B) {
+	b.ResetTimer()
+}

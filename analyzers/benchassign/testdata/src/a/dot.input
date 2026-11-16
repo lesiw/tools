@@ -1,0 +1,7 @@
+package a
+
+import . "testing"
+
+func dotted(b *B) {
+	b.N = 1 // want `assignment to b.N`
+}

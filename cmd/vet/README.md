@@ -340,6 +340,18 @@ func f(ready *sync.Once, names []string) {
 }
 ```
 
+## benchassign
+
+Reports an assignment to the N field of a testing.B. The testing package sets N and adjusts it until a benchmark is long enough to time reliably; assigning to N replaces that count.
+
+Inspired by staticcheck's SA3001.
+
+```
+func benchmark(b *testing.B) {
+    b.N = 1
+}
+```
+
 ## blankassign
 
 Reports a statement that assigns the value of a name or a basic literal to the blank identifier when the assignment has no effect. A name is reported when the code reads it again with no write in between; a basic literal or predeclared constant is reported without another use. A numeric or boolean variable is reported only inside a function, and a numeric or boolean named constant wherever it is declared, each with another read; a variable of any other type can hold a reference or be written through another name for the same storage.
