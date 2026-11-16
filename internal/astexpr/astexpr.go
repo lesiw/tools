@@ -3,7 +3,8 @@
 // value or can be evaluated twice, whether evaluating one can run code or
 // panic, whether a type has no interface in it, whether a selection goes
 // through a pointer, whether a type can hold a NaN, whether its type set holds
-// only arrays, and whether a statement reads the value it writes.
+// only arrays, whether its type set can be written through an index, and
+// whether a statement reads the value it writes.
 package astexpr
 
 import (
@@ -255,6 +256,46 @@ func IsArray(t types.Type) (found bool) {
 			continue
 		}
 		if !IsArray(embedded) {
+			return false
+		}
+		found = true
+	}
+	return found
+}
+
+// IsWritableIndex reports whether every type in t's type set can be written
+// through an index: an array, a slice, or a pointer to an array.
+func IsWritableIndex(t types.Type) (found bool) {
+	switch t := t.(type) {
+	case *types.Union:
+		if t.Len() == 0 {
+			return false
+		}
+		for term := range t.Terms() {
+			if !IsWritableIndex(term.Type()) {
+				return false
+			}
+		}
+		return true
+	case *types.TypeParam:
+		return IsWritableIndex(t.Constraint())
+	}
+	iface, ok := t.Underlying().(*types.Interface)
+	if !ok {
+		switch t := t.Underlying().(type) {
+		case *types.Array, *types.Slice:
+			return true
+		case *types.Pointer:
+			_, ok := t.Elem().Underlying().(*types.Array)
+			return ok
+		}
+		return false
+	}
+	for embedded := range iface.EmbeddedTypes() {
+		if unrestricted(embedded) {
+			continue
+		}
+		if !IsWritableIndex(embedded) {
 			return false
 		}
 		found = true
