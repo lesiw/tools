@@ -1,0 +1,95 @@
+package a
+
+import "strconv"
+
+const (
+	one       = 1
+	ten       = 10
+	highBase  = 37
+	lowBits   = -1
+	highBits  = 65
+	bits      = 64
+	floatBits = 32
+)
+
+func parse(s string, base, bitSize int) {
+	strconv.ParseInt(s, 1, bits)        // want `base 1 is outside 0, 2 to 36`
+	strconv.ParseInt(s, highBase, bits) // want `base 37 is outside 0, 2 to 36`
+	strconv.ParseInt(s, -1, bits)       // want `base -1 is outside 0, 2 to 36`
+	strconv.ParseInt(s, 0+1, bits)      // want `base 1 is outside 0, 2 to 36`
+	strconv.ParseInt(s, 0, lowBits)     // want `bitSize -1 is outside 0 to 64`
+	strconv.ParseInt(s, 0, highBits)    // want `bitSize 65 is outside 0 to 64`
+	strconv.ParseInt(s, 0, bits)
+	strconv.ParseInt(s, 2, 1)
+	strconv.ParseInt(s, 36, 0)
+	strconv.ParseInt(s, base, bitSize)
+	strconv.ParseInt(s, one, highBits) // want `base 1 is outside 0, 2 to 36` `bitSize 65 is outside 0 to 64`
+	strconv.ParseInt(s, ten, bits)
+
+	strconv.ParseUint(s, 1, bits)     // want `base 1 is outside 0, 2 to 36`
+	strconv.ParseUint(s, 0, highBits) // want `bitSize 65 is outside 0 to 64`
+	strconv.ParseUint(s, 0, bits)
+	strconv.ParseUint(s, 36, 1)
+
+	strconv.ParseFloat(s, 16) // want `bitSize 16 is neither 32 nor 64`
+	strconv.ParseFloat(s, 0)  // want `bitSize 0 is neither 32 nor 64`
+	strconv.ParseFloat(s, floatBits)
+	strconv.ParseFloat(s, 64)
+
+	strconv.ParseComplex(s, 32)  // want `bitSize 32 is neither 64 nor 128`
+	strconv.ParseComplex(s, 256) // want `bitSize 256 is neither 64 nor 128`
+	strconv.ParseComplex(s, 64)
+	strconv.ParseComplex(s, 128)
+}
+
+func format(n int64, u uint64, f float64, c complex128) {
+	strconv.FormatInt(n, 0)  // want `base 0 is outside 2 to 36`
+	strconv.FormatInt(n, 1)  // want `base 1 is outside 2 to 36`
+	strconv.FormatInt(n, 37) // want `base 37 is outside 2 to 36`
+	strconv.FormatInt(n, 2)
+	strconv.FormatInt(n, 36)
+
+	strconv.FormatUint(u, 0) // want `base 0 is outside 2 to 36`
+	strconv.FormatUint(u, 36)
+
+	strconv.FormatFloat(f, 'j', 0, 64) // want `format 'j' is invalid`
+	strconv.FormatFloat(f, 'e', 0, 16) // want `bitSize 16 is neither 32 nor 64`
+	strconv.FormatFloat(f, 'e', 0, 64)
+	strconv.FormatFloat(f, 'X', 0, 32)
+	strconv.FormatFloat(f, 106, 0, 64)  // want `format 'j' is invalid`
+	strconv.FormatFloat(f, 'e', 0, 128) // want `bitSize 128 is neither 32 nor 64`
+
+	strconv.FormatComplex(c, 'q', 0, 128) // want `format 'q' is invalid`
+	strconv.FormatComplex(c, 'e', 0, 32)  // want `bitSize 32 is neither 64 nor 128`
+	strconv.FormatComplex(c, 'g', 0, 64)
+	strconv.FormatComplex(c, 'G', 0, 128)
+}
+
+func append(dst []byte, n int64, u uint64, f float64) {
+	dst = strconv.AppendInt(dst, n, 0)  // want `base 0 is outside 2 to 36`
+	dst = strconv.AppendInt(dst, n, 37) // want `base 37 is outside 2 to 36`
+	dst = strconv.AppendInt(dst, n, 10)
+
+	dst = strconv.AppendUint(dst, u, 1) // want `base 1 is outside 2 to 36`
+	dst = strconv.AppendUint(dst, u, 36)
+
+	dst = strconv.AppendFloat(dst, f, 'z', 0, 64) // want `format 'z' is invalid`
+	dst = strconv.AppendFloat(dst, f, 'e', 0, 16) // want `bitSize 16 is neither 32 nor 64`
+	dst = strconv.AppendFloat(dst, f, 'e', 0, 64)
+	dst = strconv.AppendFloat(dst, f, 'b', 0, 32)
+}
+
+func held(s string) {
+	f := strconv.ParseInt
+	f(s, 1, 65)
+}
+
+type parser struct{}
+
+func (parser) ParseInt(s string, base, bitSize int) (int64, error) {
+	return 0, nil
+}
+
+func method(s string) {
+	parser{}.ParseInt(s, 1, 65)
+}

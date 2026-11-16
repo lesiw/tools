@@ -209,6 +209,7 @@ import (
 	"lesiw.io/tools/analyzers/sprintfquotedstring"
 	"lesiw.io/tools/analyzers/strcompare"
 	"lesiw.io/tools/analyzers/strconcat"
+	"lesiw.io/tools/analyzers/strconvrange"
 	"lesiw.io/tools/analyzers/strictvar"
 	"lesiw.io/tools/analyzers/stringofint"
 	"lesiw.io/tools/analyzers/stringscount"
@@ -472,6 +473,7 @@ var (
 		stdversion.Analyzer,
 		strcompare.Analyzer,
 		strconcat.Analyzer,
+		strconvrange.Analyzer,
 		strictvar.Analyzer,
 		stringintconv.Analyzer,
 		stringofint.Analyzer,

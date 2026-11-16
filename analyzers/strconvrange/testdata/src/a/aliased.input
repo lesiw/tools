@@ -1,0 +1,7 @@
+package a
+
+import text "strconv"
+
+func aliased(s string) {
+	text.ParseFloat(s, 16) // want `bitSize 16 is neither 32 nor 64`
+}

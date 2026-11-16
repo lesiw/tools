@@ -2743,6 +2743,17 @@
 //		return strings.Join([]string{a, b}, "-")
 //	}
 //
+// # strconvrange
+//
+// Reports a strconv base, bit size, or format argument outside the documented
+// values.
+//
+// Adapted from staticcheck's SA1030.
+//
+//	func f(s string) {
+//		strconv.ParseInt(s, 1, 64)
+//	}
+//
 // # strictvar
 //
 // Reports a declaration the suite would write another way, such as a zero

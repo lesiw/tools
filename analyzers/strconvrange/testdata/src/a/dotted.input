@@ -1,0 +1,7 @@
+package a
+
+import . "strconv"
+
+func dotted(s string) {
+	ParseUint(s, 1, 0) // want `base 1 is outside 0, 2 to 36`
+}
