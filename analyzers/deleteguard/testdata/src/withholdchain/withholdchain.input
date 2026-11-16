@@ -1,0 +1,11 @@
+package withholdchain
+
+func drop(first map[string]int, veryLongMap map[string]int, veryLongKey string) {
+	if len(first) > 0 {
+		delete(first, veryLongKey)
+	// want+1 `delete does not need a presence check`
+	} else if _, found :=
+		veryLongMap[veryLongKey]; found {
+		delete(veryLongMap, veryLongKey)
+	}
+}

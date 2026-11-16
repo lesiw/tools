@@ -920,6 +920,20 @@ func release() {
 }
 ```
 
+## deleteguard
+
+Reports an existence check around a delete of the same key. delete does nothing when the key is absent, so the check has no effect.
+
+Adapted from staticcheck's S1033.
+
+```
+func f(rows map[string]int, name string) {
+    if _, found := rows[name]; found {
+        delete(rows, name)
+    }
+}
+```
+
 ## deprecated
 
 Reports a doc comment that marks something deprecated without the paragraph godoc reads. godoc and the editors that render it warn a caller only for a paragraph beginning with Deprecated: .

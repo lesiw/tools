@@ -1,0 +1,127 @@
+package a
+
+type ledger struct {
+	rows map[string]int
+}
+
+func drop(rows map[string]int, name string) {
+	// want+1 `delete does not need a presence check`
+	if _, found := rows[name]; found {
+		delete(rows, name)
+	}
+}
+
+func dropNested(groups map[string]map[string]int, group, name string) {
+	// want+1 `delete does not need a presence check`
+	if _, present := groups[group][name]; present {
+		delete(groups[group], name)
+	}
+}
+
+func (l *ledger) drop(name string) {
+	// want+1 `delete does not need a presence check`
+	if _, ok := l.rows[name]; ok {
+		delete(l.rows, name)
+	}
+}
+
+func dropDeref(rows map[string]int, name *string) {
+	// want+1 `delete does not need a presence check`
+	if _, found := rows[*name]; found {
+		delete(rows, *name)
+	}
+}
+
+func dropSplit(rows map[string]int, name string) {
+	// want+1 `delete does not need a presence check`
+	if _, found := rows[name]; found {
+		delete(
+			rows,
+			name,
+		)
+	}
+}
+
+type entry struct {
+	key string
+}
+
+func dropSelectorKey(rows map[string]int, e entry) {
+	// want+1 `delete does not need a presence check`
+	if _, found := rows[e.key]; found {
+		delete(rows, e.key)
+	}
+}
+
+func dropIndexKey(rows map[int]int, keys []int) {
+	// want+1 `delete does not need a presence check`
+	if _, found := rows[keys[0]]; found {
+		delete(rows, keys[0])
+	}
+}
+
+func dropLiteral(rows map[string]int) {
+	// want+1 `delete does not need a presence check`
+	if _, found := rows["alpha"]; found {
+		delete(rows, "alpha")
+	}
+}
+
+func dropMapDeref(rows *map[string]int, name string) {
+	// want+1 `delete does not need a presence check`
+	if _, found := (*rows)[name]; found {
+		delete(*rows, name)
+	}
+}
+
+func leadingComment(rows map[string]int, name string) {
+	// want+2 `delete does not need a presence check`
+	// note
+	if _, found := rows[name]; found {
+		delete(rows, name)
+	}
+}
+
+func dropInline(rows map[string]int, name string) {
+	// want+1 `delete does not need a presence check`
+	if _, found := rows[name]; found { delete(rows, name) }
+}
+
+func dropParenthesized(rows map[string]int, name string) {
+	// want+1 `delete does not need a presence check`
+	if _, found := rows[name]; found {
+		(delete)((rows), (name))
+	}
+}
+
+func dropLabeled(rows map[string]int, name string) {
+	if len(rows) > 0 {
+		goto done
+	}
+done:
+	// want+1 `delete does not need a presence check`
+	if _, found := rows[name]; found {
+		delete(rows, name)
+	}
+}
+
+func dropElseChain(first, second, third map[string]int, name string) {
+	if len(first) > 0 {
+		delete(first, name)
+	} else if _, found := second[name]; found {
+		delete(second, name)
+	// want+1 `delete does not need a presence check`
+	} else if _, found := third[name]; found {
+		delete(third, name)
+	}
+}
+
+func dropElseIf(first, second map[string]int, name string) {
+	if len(first) > 0 {
+		delete(first, name)
+	// note
+	// want+1 `delete does not need a presence check`
+	} else if _, found := second[name]; found {
+		delete(second, name)
+	}
+}

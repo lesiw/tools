@@ -1,0 +1,23 @@
+package narrow
+
+func drop(veryLongMapName map[string]int, veryLongKeyName string) {
+	// want+1 `delete does not need a presence check`
+	if _, found := veryLongMapName[veryLongKeyName]; found {
+		delete(
+			veryLongMapName,
+			veryLongKeyName,
+		)
+	}
+}
+
+func dropChain(first, veryLongSecondMapName map[string]int, veryLongKeyName string) {
+	if len(first) > 0 {
+		delete(first, veryLongKeyName)
+	// want+1 `delete does not need a presence check`
+	} else if _, found := veryLongSecondMapName[veryLongKeyName]; found {
+		delete(
+			veryLongSecondMapName,
+			veryLongKeyName,
+		)
+	}
+}

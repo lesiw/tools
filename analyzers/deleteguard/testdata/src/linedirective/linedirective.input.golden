@@ -1,0 +1,16 @@
+package linedirective
+
+//line other.go:999999
+func drop(rows map[string]int, name string) {
+	// want+1 `delete does not need a presence check`
+	delete(rows, name)
+}
+
+func dropElseIf(first, second map[string]int, name string) {
+	if len(first) > 0 {
+		delete(first, name)
+		// want+1 `delete does not need a presence check`
+	} else {
+		delete(second, name)
+	}
+}

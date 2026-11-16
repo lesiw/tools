@@ -1,0 +1,117 @@
+package a
+
+type shelf struct {
+	rows map[string]int
+}
+
+func missingKey(rows map[string]int, name, other string) {
+	if _, found := rows[name]; found {
+		delete(rows, other)
+	}
+}
+
+func inverted(rows map[string]int, name string) {
+	if _, found := rows[name]; !found {
+		delete(rows, name)
+	}
+}
+
+func eitherCondition(rows map[string]int, name string, ready bool) {
+	if _, found := rows[name]; found || ready {
+		delete(rows, name)
+	}
+}
+
+func extraStatement(rows map[string]int, name string) {
+	if _, found := rows[name]; found {
+		delete(rows, name)
+		println(len(rows))
+	}
+}
+
+func valueCondition(scores map[string]int, name string, ready bool) {
+	if _, found := scores[name]; found && ready {
+		delete(scores, name)
+	}
+}
+
+func guardedElseIf(first, second map[string]int, name string) {
+	if len(first) > 0 {
+		delete(first, name)
+	} else if _, found := second[name]; found {
+		delete(second, name)
+	} else {
+		second[name] = 0
+	}
+}
+
+func withElse(rows map[string]int, name string) {
+	if _, found := rows[name]; found {
+		delete(rows, name)
+	} else {
+		rows[name] = 0
+	}
+}
+
+func assigned(rows map[string]int, name string, found bool) {
+	if _, found = rows[name]; found {
+		delete(rows, name)
+	}
+}
+
+func localDelete(rows map[string]int, name string) {
+	delete := func(map[string]int, string) {}
+	if _, found := rows[name]; found {
+		delete(rows, name)
+	}
+}
+
+func differentMap(one, two map[string]int, name string) {
+	if _, found := one[name]; found {
+		delete(two, name)
+	}
+}
+
+func differentReceiver(one, two shelf, name string) {
+	if _, found := one.rows[name]; found {
+		delete(two.rows, name)
+	}
+}
+
+func binaryKey(rows map[int]int) {
+	if _, found := rows[1+2]; found {
+		delete(rows, 1+2)
+	}
+}
+
+func literalKey(rows map[[2]int]int) {
+	if _, found := rows[[2]int{1, 2}]; found {
+		delete(rows, [2]int{1, 2})
+	}
+}
+
+func assertedKey(rows map[string]int, key any) {
+	if _, found := rows[key.(string)]; found {
+		delete(rows, key.(string))
+	}
+}
+
+func unaryKey(rows map[int]int) {
+	if _, found := rows[-1]; found {
+		delete(rows, -1)
+	}
+}
+
+func shadowedKey(rows map[bool]int, key bool) {
+	if _, key := rows[key]; key {
+		delete(rows, key)
+	}
+}
+
+func callKey(rows map[string]int, name string) {
+	if _, found := rows[next(name)]; found {
+		delete(rows, next(name))
+	}
+}
+
+func next(name string) string { return name }

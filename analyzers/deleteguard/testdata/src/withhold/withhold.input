@@ -1,0 +1,9 @@
+package withhold
+
+func drop(rows map[string]int, name string) {
+	// want+1 `delete does not need a presence check`
+	if _, found :=
+		rows[name]; found {
+		delete(rows, name)
+	}
+}

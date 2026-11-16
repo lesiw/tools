@@ -1,0 +1,41 @@
+package a
+
+func noted(rows map[string]int, name string) {
+	// want+1 `delete does not need a presence check`
+	if _, found := rows[name]; found {
+		// note
+		delete(rows, name)
+	}
+}
+
+func rawKey(rows map[string]int) {
+	// want+1 `delete does not need a presence check`
+	if _, found := rows[`alpha
+beta`]; found {
+		delete(rows, `alpha
+beta`)
+	}
+}
+
+func trailingNote(rows map[string]int, name string) {
+	// want+1 `delete does not need a presence check`
+	if _, found := rows[name]; found {
+		delete(rows, name)
+	} // only when the key is present
+}
+
+func elseNote(first, second map[string]int, name string) {
+	if len(first) > 0 {
+		delete(first, name)
+	// want+1 `delete does not need a presence check`
+	} else /* only when present */ if _, found := second[name]; found {
+		delete(second, name)
+	}
+}
+
+func leadingNote(rows map[string]int, name string) {
+	// want+1 `delete does not need a presence check`
+	/* only when present */ if _, found := rows[name]; found {
+		delete(rows, name)
+	}
+}
