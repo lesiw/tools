@@ -1985,6 +1985,21 @@ func f() {
 }
 ```
 
+## nilrange
+
+Reports a nil check that wraps a range loop over a slice or a map. Ranging over a nil slice or map runs the body zero times, so the check is redundant.
+
+Adapted from staticcheck's S1031.
+
+```
+func walk(xs []int) {
+    if xs != nil {
+        for range xs {
+        }
+    }
+}
+```
+
 ## nilreturn
 
 Reports a return of an error the if just found to be nil. The return always yields nil, so either the test is inverted or the return should be nil. A nil guard on another type is left alone.

@@ -170,6 +170,7 @@ import (
 	"lesiw.io/tools/analyzers/nilerrwrap"
 	"lesiw.io/tools/analyzers/nilinterfacecmp"
 	"lesiw.io/tools/analyzers/nilmapassign"
+	"lesiw.io/tools/analyzers/nilrange"
 	"lesiw.io/tools/analyzers/nilreturn"
 	"lesiw.io/tools/analyzers/nilsliceappend"
 	"lesiw.io/tools/analyzers/niltimer"
@@ -433,6 +434,7 @@ var (
 		nilinterfacecmp.Analyzer,
 		nilmapassign.Analyzer,
 		nilness.Analyzer,
+		nilrange.Analyzer,
 		nilreturn.Analyzer,
 		nilsliceappend.Analyzer,
 		niltimer.Analyzer,

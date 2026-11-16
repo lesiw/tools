@@ -1,0 +1,189 @@
+package a
+
+func use(...any) {}
+
+type box struct {
+	items []int
+}
+
+type numbers []int
+
+type entries map[string]int
+
+type first []int
+
+type second []int
+
+type slices interface{ first | second }
+
+type mfirst map[string]int
+
+type msecond map[string]int
+
+type mappings interface{ mfirst | msecond }
+
+type channels chan int
+
+type methodOnly interface{ M() }
+
+type wrappedMethod interface{ methodOnly }
+
+func slice(xs []int) {
+	// want +1 `nil check around range is unnecessary`
+	for _, x := range xs {
+		use(x)
+	}
+}
+
+func mapping(m map[string]int) {
+	// want +1 `nil check around range is unnecessary`
+	for k, v := range m {
+		use(k, v)
+	}
+}
+
+func fill(m map[string]int) {
+	// want +1 `nil check around range is unnecessary`
+	for k := range m {
+		m[k]++
+	}
+}
+
+func reversed(xs []int) {
+	// want +1 `nil check around range is unnecessary`
+	for range xs {
+	}
+}
+
+func parenthesized(xs []int) {
+	// want +1 `nil check around range is unnecessary`
+	for range xs {
+	}
+}
+
+func field(b box) {
+	// want +1 `nil check around range is unnecessary`
+	for _, x := range b.items {
+		use(x)
+	}
+}
+
+func defined(xs numbers) {
+	// want +1 `nil check around range is unnecessary`
+	for range xs {
+	}
+}
+
+func declared(m entries) {
+	// want +1 `nil check around range is unnecessary`
+	for range m {
+	}
+}
+
+func sliceParameter[T ~[]int](xs T) {
+	// want +1 `nil check around range is unnecessary`
+	for range xs {
+	}
+}
+
+func mapParameter[T ~map[string]int](m T) {
+	// want +1 `nil check around range is unnecessary`
+	for range m {
+	}
+}
+
+func sliceSet[T slices](xs T) {
+	// want +1 `nil check around range is unnecessary`
+	for range xs {
+	}
+}
+
+func mapSet[T mappings](m T) {
+	// want +1 `nil check around range is unnecessary`
+	for range m {
+	}
+}
+
+func composed[T interface{ slices }](xs T) {
+	// want +1 `nil check around range is unnecessary`
+	for range xs {
+	}
+}
+
+func narrowed[T interface {
+	~[]int | ~[1]int
+	~[]int
+}](xs T) {
+	// want +1 `nil check around range is unnecessary`
+	for range xs {
+	}
+}
+
+func loopComment(xs []int) {
+	// want +1 `nil check around range is unnecessary`
+	for range xs {
+		// keep
+	}
+}
+
+func afterComment(xs []int) {
+	// want +1 `nil check around range is unnecessary`
+	if xs != nil {
+		for range xs {
+		}
+		// keep
+	}
+}
+
+func wrappedConstraint[T interface {
+	~[]int
+	wrappedMethod
+}](xs T) {
+	// want +1 `nil check around range is unnecessary`
+	for range xs {
+	}
+}
+
+func labeled(xs []int) {
+	// want +1 `nil check around range is unnecessary`
+loop:
+	for range xs {
+		break loop
+	}
+}
+
+func wholeCondition(xs []int) {
+	// want +1 `nil check around range is unnecessary`
+	for range xs {
+	}
+}
+
+func inline(xs []int) {
+	// want +1 `nil check around range is unnecessary`
+	for range xs {
+	}
+}
+
+func innerComment(xs []int) {
+	// want +1 `nil check around range is unnecessary`
+	if xs != nil { // keep
+		for range xs {
+		}
+	}
+}
+
+func conditionComment(xs []int) {
+	// want +1 `nil check around range is unnecessary`
+	if xs != /* keep */ nil {
+		for range xs {
+		}
+	}
+}
+
+func headerComment(xs []int) {
+	// want +1 `nil check around range is unnecessary`
+	if xs != nil /* keep */ {
+		for range xs {
+		}
+	}
+}

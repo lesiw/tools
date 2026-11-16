@@ -1,0 +1,184 @@
+package a
+
+func channel(c chan int) {
+	if c != nil {
+		for range c {
+		}
+	}
+}
+
+func channelParameter[T channels](c T) {
+	if c != nil {
+		for range c {
+		}
+	}
+}
+
+func pointerToArray(p *[4]int) {
+	if p != nil {
+		for i, v := range p {
+			use(i, v)
+		}
+	}
+}
+
+func withElse(xs []int) {
+	if xs != nil {
+		for range xs {
+		}
+	} else {
+		use(xs)
+	}
+}
+
+func withInit(next func() []int) {
+	if xs := next(); xs != nil {
+		for range xs {
+		}
+	}
+}
+
+func withWork(xs []int) {
+	if xs != nil {
+		use(xs)
+		for range xs {
+		}
+	}
+}
+
+func afterWork(xs []int) {
+	if xs != nil {
+		for range xs {
+		}
+		use(xs)
+	}
+}
+
+func different(xs, ys []int) {
+	if xs != nil {
+		for range ys {
+		}
+	}
+}
+
+func equality(xs []int) {
+	if xs == nil {
+		return
+	}
+	for range xs {
+	}
+}
+
+func equalityWrapped(xs []int) {
+	if xs == nil {
+		for range xs {
+		}
+	}
+}
+
+func called(next func() []int) {
+	if next() != nil {
+		for range next() {
+		}
+	}
+}
+
+func indexed(values []numbers, i int) {
+	if values[i] != nil {
+		for range values[i] {
+		}
+	}
+}
+
+func indexedSelector(hs []struct{ items []int }, i int) {
+	if hs[i].items != nil {
+		for range hs[i].items {
+		}
+	}
+}
+
+func pointed(p *[]int) {
+	if *p != nil {
+		for range *p {
+		}
+	}
+}
+
+func function(next func(func(int) bool)) {
+	if next != nil {
+		for range next {
+		}
+	}
+}
+
+func pointerParameter[T ~*[4]int](p T) {
+	if p != nil {
+		for i, v := range p {
+			use(i, v)
+		}
+	}
+}
+
+func functionParameter[T ~func(func(int) bool)](next T) {
+	if next != nil {
+		for range next {
+		}
+	}
+}
+
+func emptyBody(xs []int) {
+	if xs != nil {
+	}
+}
+
+func nonRangeBody(xs []int) {
+	if xs != nil {
+		use(xs)
+	}
+}
+
+func stringSet[T ~string](s T) {
+	if s != "" {
+		for range s {
+		}
+	}
+}
+
+func arraySet[T ~[2]int](a T) {
+	if a != [2]int{} {
+		for range a {
+		}
+	}
+}
+
+func otherOperator(xs []int, ok bool) {
+	if ok {
+		for range xs {
+		}
+	}
+}
+
+func nestedElse(xs []int, ok bool) {
+	if xs != nil {
+		for range xs {
+		}
+	} else if ok {
+		use(xs)
+	}
+}
+
+func nilAsValue(xs []int, other []int) {
+	if xs != nil {
+		for range other {
+		}
+	}
+}
+
+func oneStatementElsewhere(xs []int) {
+	if xs != nil {
+		if len(xs) > 0 {
+			for range xs {
+			}
+		}
+	}
+}
