@@ -1578,6 +1578,18 @@ func f(xs []int) bool {
 }
 ```
 
+## nilerrwrap
+
+Reports a fmt.Errorf call whose %w verb has no error to wrap: the argument is missing, is not an error, or is nil. The errors package documentation states that a nil error returned from Unwrap means the error wraps nothing.
+
+Inspired by the x/tools printf analyzer, which reports the missing and non-error operands; this rule adds the nil error.
+
+```
+func load() error {
+    return fmt.Errorf("read: %w", nil)
+}
+```
+
 ## nilfunc
 
 Reports a comparison of a function with nil. A function declared in the source is never nil, so the comparison is always false.

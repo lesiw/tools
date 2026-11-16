@@ -142,6 +142,7 @@ import (
 	"lesiw.io/tools/analyzers/nancompare"
 	"lesiw.io/tools/analyzers/newderef"
 	"lesiw.io/tools/analyzers/nilchecklen"
+	"lesiw.io/tools/analyzers/nilerrwrap"
 	"lesiw.io/tools/analyzers/nilinterfacecmp"
 	"lesiw.io/tools/analyzers/nilmapassign"
 	"lesiw.io/tools/analyzers/nilreturn"
@@ -356,6 +357,7 @@ var (
 		nancompare.Analyzer,
 		newderef.Analyzer,
 		nilchecklen.Analyzer,
+		nilerrwrap.Analyzer,
 		nilfunc.Analyzer,
 		nilinterfacecmp.Analyzer,
 		nilmapassign.Analyzer,

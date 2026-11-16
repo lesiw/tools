@@ -1,0 +1,7 @@
+package a
+
+import . "fmt"
+
+func dotted() error {
+	return Errorf("some: %w", nil) // want `%w operand is nil`
+}

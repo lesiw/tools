@@ -1,0 +1,220 @@
+package a
+
+import (
+	"errors"
+	"fmt"
+)
+
+const formatSome = "some: %w"
+
+var errSentinel = errors.New("sentinel")
+
+func missing() error {
+	return fmt.Errorf("some: %w") // want `format has %w but no error argument`
+}
+
+func missingSecond(name string) error {
+	return fmt.Errorf("%s: %w", name) // want `format has %w but no error argument`
+}
+
+func nilError() error {
+	return fmt.Errorf("some: %w", nil) // want `%w operand is nil`
+}
+
+func nilSecond(err error) error {
+	return fmt.Errorf("%w and %w", err, nil) // want `%w operand is nil`
+}
+
+func nilFirst(err error) error {
+	return fmt.Errorf("%w and %w", nil, err) // want `%w operand is nil`
+}
+
+func nonError() error {
+	return fmt.Errorf("some: %w", "text") // want `%w argument is not an error`
+}
+
+func nonErrorInt() error {
+	return fmt.Errorf("some: %w", 1) // want `%w argument is not an error`
+}
+
+func constantFormat() error {
+	return fmt.Errorf(formatSome, nil) // want `%w operand is nil`
+}
+
+func variableFormat(format string) error {
+	return fmt.Errorf(format, nil)
+}
+
+func good(err error) error {
+	return fmt.Errorf("some: %w", err)
+}
+
+func nonWThenGood(name string, err error) error {
+	return fmt.Errorf("%s: %w", name, err)
+}
+
+func nonWThenNil(name string) error {
+	return fmt.Errorf("%s: %w", name, nil) // want `%w operand is nil`
+}
+
+func variableNil() error {
+	var err error
+	return fmt.Errorf("some: %w", err)
+}
+
+func spread(args []any) error {
+	return fmt.Errorf("some: %w", args...)
+}
+
+func functionValue() error {
+	f := fmt.Errorf
+	return f("some: %w", nil)
+}
+
+func goodSentinel() error {
+	return fmt.Errorf("some: %w", errSentinel)
+}
+
+func multiple(err error) error {
+	return fmt.Errorf("%w and %w", err, errSentinel)
+}
+
+func escaped(err error) error {
+	return fmt.Errorf("100%%: %w", err)
+}
+
+func escapedNil() error {
+	return fmt.Errorf("100%%: %w", nil) // want `%w operand is nil`
+}
+
+func adjacentPercent() error {
+	return fmt.Errorf("%%%w", nil) // want `%w operand is nil`
+}
+
+func trailingPercent() error {
+	return fmt.Errorf("%w%%", nil) // want `%w operand is nil`
+}
+
+func noVerb(err error) error {
+	return fmt.Errorf("100%%: no verb", err)
+}
+
+func literalPercent() error {
+	return fmt.Errorf("100%%w")
+}
+
+func pointerToError(err *error) error {
+	return fmt.Errorf("some: %w", err) // want `%w argument is not an error`
+}
+
+type customError struct{}
+
+func (*customError) Error() string { return "custom" }
+
+func convertedNil() error {
+	return fmt.Errorf("some: %w", error(nil)) // want `%w operand is nil`
+}
+
+func parenthesizedNil() error {
+	return fmt.Errorf("some: %w", (nil)) // want `%w operand is nil`
+}
+
+func convertedError() error {
+	return fmt.Errorf("some: %w", error(errSentinel))
+}
+
+func genericNil[T interface{ *customError }]() error {
+	return fmt.Errorf("some: %w", T(nil))
+}
+
+func genericValue[T ~int](v T) error {
+	return fmt.Errorf("some: %w", v)
+}
+
+func convertedAnyNil() error {
+	return fmt.Errorf("some: %w", any(nil)) // want `%w operand is nil`
+}
+
+func typedNil() error {
+	return fmt.Errorf("some: %w", (*customError)(nil))
+}
+
+func interfaceWithError(err interface{ Error() string }) error {
+	return fmt.Errorf("some: %w", err)
+}
+
+func anyError(err error) error {
+	return fmt.Errorf("some: %w", any(err))
+}
+
+func anyInt() error {
+	return fmt.Errorf("some: %w", any(1)) // want `%w argument is not an error`
+}
+
+func anyPointer() error {
+	return fmt.Errorf("some: %w", any((*string)(nil))) // want `%w argument is not an error`
+}
+
+func anyInterface(v any) error {
+	return fmt.Errorf("some: %w", any(v))
+}
+
+func anyErrorValue() error {
+	return fmt.Errorf("some: %w", any(&customError{}))
+}
+
+func interfaceValue(v any) error {
+	return fmt.Errorf("some: %w", v)
+}
+
+func flagged() error {
+	return fmt.Errorf("%-10w", nil) // want `%w operand is nil`
+}
+
+func precision() error {
+	return fmt.Errorf("%.2w", nil) // want `%w operand is nil`
+}
+
+func precedingWidth(name string) error {
+	return fmt.Errorf("%5s: %w", name, nil) // want `%w operand is nil`
+}
+
+func percentWidth() error {
+	return fmt.Errorf("%5%: %w", nil) // want `%w operand is nil`
+}
+
+func plusFlag() error {
+	return fmt.Errorf("%+w", nil) // want `%w operand is nil`
+}
+
+func indexed() error {
+	return fmt.Errorf("%[1]w", nil)
+}
+
+func mixedIndexed() error {
+	return fmt.Errorf("%[1]w and %w", nil, nil)
+}
+
+func starred(width int) error {
+	return fmt.Errorf("%*w", width, nil)
+}
+
+func mixedStar(width int) error {
+	return fmt.Errorf("%*w and %w", width, nil, nil)
+}
+
+func starPrecision(precision int) error {
+	return fmt.Errorf("%.*w", precision, nil)
+}
+
+type wrapper struct{}
+
+func (wrapper) Errorf(format string, args ...any) error { return nil }
+
+func method(w wrapper) error {
+	return w.Errorf("some: %w", nil)
+}
+
+func parenthesizedCall() error {
+	return (fmt.Errorf)("some: %w", nil) // want `%w operand is nil`
+}

@@ -1,0 +1,13 @@
+package b
+
+import "fmt"
+
+func Errorf(format string, args ...any) error { return nil }
+
+func localErrorf() error {
+	return Errorf("some: %w", nil)
+}
+
+func sprintf() string {
+	return fmt.Sprintf("some: %w", nil)
+}
