@@ -1191,6 +1191,20 @@
 //		return len(s) == 0
 //	}
 //
+// # encodeoverlap
+//
+// Reports a call to an encoder in encoding/base64, encoding/base32,
+// encoding/hex, or encoding/ascii85 whose destination and source are slices
+// of one backing array that start at the same index. The encoders write to the
+// destination before reading the next source bytes, so the source can be
+// overwritten before it is read.
+//
+// Inspired by staticcheck's SA1031.
+//
+//	func encode(dst []byte) {
+//		base64.StdEncoding.Encode(dst, dst)
+//	}
+//
 // # equalfold
 //
 // Reports a comparison of two values converted to the same case. Each side

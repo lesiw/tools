@@ -1,0 +1,256 @@
+package a
+
+import (
+	"b"
+
+	"encoding/ascii85"
+	"encoding/base32"
+	"encoding/base64"
+	"encoding/hex"
+)
+
+type blob []byte
+
+func sameHex(buf []byte) {
+	hex.Encode(buf, buf) // want `dst and src share memory`
+}
+
+func copiedBase64(dst, src []byte) {
+	src = dst
+	base64.StdEncoding.Encode(dst, src) // want `dst and src share memory`
+}
+
+func slicedBase32(buf []byte) {
+	base32.StdEncoding.Encode(buf[3:], buf[3:]) // want `dst and src share memory`
+}
+
+func repeatedAscii85(buf []byte) {
+	first := buf[2:]
+	second := buf[2:]
+	ascii85.Encode(first, second) // want `dst and src share memory`
+}
+
+func namedBlob(buf blob) {
+	hex.Encode(buf, buf) // want `dst and src share memory`
+}
+
+func methodExpression(buf []byte) {
+	(*base64.Encoding).Encode(base64.StdEncoding, buf, buf) // want `dst and src share memory`
+}
+
+func omittedLow(buf []byte) {
+	hex.Encode(buf[:], buf[0:]) // want `dst and src share memory`
+}
+
+func separateArrays(dst, src []byte) {
+	hex.Encode(dst, src)
+}
+
+func nilDestination(src []byte) {
+	hex.Encode(nil, src)
+}
+
+func nilSource(dst []byte) {
+	hex.Encode(dst, nil)
+}
+
+func nilPair() {
+	hex.Encode(nil, nil)
+}
+
+func appendEncoder(dst, src []byte) []byte {
+	return base64.StdEncoding.AppendEncode(dst, src)
+}
+
+func localEncode(dst, src []byte) {
+	Encode(dst, src)
+}
+
+func Encode(dst, src []byte) {}
+
+var packageBuffer = make([]byte, 8)
+
+type holder struct{ buf []byte }
+
+func packageVariable() {
+	hex.Encode(packageBuffer, packageBuffer) // want `dst and src share memory`
+}
+
+func structField(h *holder) {
+	hex.Encode(h.buf, h.buf) // want `dst and src share memory`
+}
+
+func valueField(h holder) {
+	hex.Encode(h.buf, h.buf) // want `dst and src share memory`
+}
+
+func capturedBuffer(buf []byte) {
+	func() {
+		hex.Encode(buf, buf) // want `dst and src share memory`
+	}()
+}
+
+func addressTaken(buf []byte) {
+	ptr := &buf
+	hex.Encode(*ptr, *ptr) // want `dst and src share memory`
+}
+
+func methodValue(buf []byte) {
+	encode := base64.StdEncoding.Encode
+	encode(buf, buf) // want `dst and src share memory`
+}
+
+func branchValue(flag bool, buf []byte) {
+	other := buf
+	if flag {
+		other = buf
+	}
+	hex.Encode(buf, other) // want `dst and src share memory`
+}
+
+func loopValue(buf []byte) {
+	other := buf
+	for range 2 {
+		other = buf
+	}
+	hex.Encode(buf, other) // want `dst and src share memory`
+}
+
+func zeroLength(buf []byte) {
+	hex.Encode(buf[:0], buf) // want `dst and src share memory`
+	hex.Encode(buf, buf[:0])
+	hex.Encode(buf[:0], buf[:0])
+}
+
+func allocatingConversion(s string) {
+	hex.Encode([]byte(s), []byte(s))
+}
+
+func differentFields(left, right *holder) {
+	hex.Encode(left.buf, right.buf)
+}
+
+func emptyMake() {
+	buf := make([]byte, 0)
+	hex.Encode(buf, buf)
+}
+
+var storedMethodValue = base64.StdEncoding.Encode
+
+func storedMethod(buf []byte) {
+	storedMethodValue(buf, buf)
+}
+
+type byteEncoder interface {
+	Encode(dst, src []byte)
+}
+
+func interfaceCall(enc byteEncoder, buf []byte) {
+	enc.Encode(buf, buf)
+}
+
+func reassignedPointer(ptr *[]byte, other []byte) {
+	dst := (*ptr)[1:]
+	*ptr = other
+	hex.Encode(dst, (*ptr)[1:])
+}
+
+func reassignedField(h *holder, other []byte) {
+	dst := h.buf[1:]
+	h.buf = other
+	hex.Encode(dst, h.buf[1:])
+}
+
+func reassignedPointerField(pp **holder, other *holder) {
+	dst := (*pp).buf[1:]
+	*pp = other
+	hex.Encode(dst, (*pp).buf[1:])
+}
+
+func nestedSlices(buf []byte) {
+	hex.Encode(buf[1:][2:], buf[1:][2:])
+}
+
+func branchBase(flag bool, buf []byte) {
+	other := buf
+	if flag {
+		other = buf
+	}
+	hex.Encode(other[1:], buf[1:]) // want `dst and src share memory`
+}
+
+func swappedPointers(flag bool, a, b []byte) {
+	p, q := &a, &b
+	if flag {
+		p, q = &b, &a
+	}
+	hex.Encode(*p, *q)
+}
+
+type arrayHolder struct{ arr [8]byte }
+
+func arrayField(h *arrayHolder) {
+	hex.Encode(h.arr[:], h.arr[:]) // want `dst and src share memory`
+}
+
+func indexedArray(arrs [][8]byte, i int) {
+	hex.Encode(arrs[i][:], arrs[i][:]) // want `dst and src share memory`
+}
+
+func reusedNested(buf []byte) {
+	s := buf[1:][2:]
+	hex.Encode(s, s) // want `dst and src share memory`
+}
+
+func nestedSameBase(buf []byte) {
+	s := buf[1:]
+	hex.Encode(s[2:], s[2:]) // want `dst and src share memory`
+}
+
+type methodHolder struct{ encode func(dst, src []byte) }
+
+func methodField(h *methodHolder, buf []byte) {
+	h.encode(buf, buf)
+}
+
+func addressTakenMethod(buf []byte) {
+	encode := base64.StdEncoding.Encode
+	ptr := &encode
+	(*ptr)(buf, buf)
+}
+
+func otherPackage(buf []byte) {
+	b.Encode(buf, buf)
+}
+
+func differentBounds(buf []byte) {
+	hex.Encode(buf[1:], buf[2:])
+	hex.Encode(buf[2:], buf[1:])
+}
+
+func branchCopies(flag bool, buf []byte) {
+	left := buf[1:]
+	right := buf[1:]
+	var chosen []byte
+	if flag {
+		chosen = left
+	} else {
+		chosen = right
+	}
+	hex.Encode(chosen, buf[1:])
+}
+
+func addressCopy(buf []byte) {
+	other := buf[1:]
+	ptr := &other
+	hex.Encode(buf[1:], *ptr)
+}
+
+func genericSlice[T ~[]byte](buf T) {
+	hex.Encode(buf, buf)
+}
+
+func zeroArraySource() {
+	var empty [0]byte
+	hex.Encode(empty[:], empty[:])
+}
