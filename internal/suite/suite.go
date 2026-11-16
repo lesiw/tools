@@ -185,6 +185,7 @@ import (
 	"lesiw.io/tools/analyzers/recvtype"
 	"lesiw.io/tools/analyzers/redundantalias"
 	"lesiw.io/tools/analyzers/redundantbuildtag"
+	"lesiw.io/tools/analyzers/redundantreturn"
 	"lesiw.io/tools/analyzers/redundantsprint"
 	"lesiw.io/tools/analyzers/regexpconst"
 	"lesiw.io/tools/analyzers/regexpmatchloop"
@@ -436,6 +437,7 @@ var (
 		recvtype.Analyzer,
 		redundantalias.Analyzer,
 		redundantbuildtag.Analyzer,
+		redundantreturn.Analyzer,
 		redundantsprint.Analyzer,
 		reflectvaluecompare.Analyzer,
 		regexpconst.Analyzer,

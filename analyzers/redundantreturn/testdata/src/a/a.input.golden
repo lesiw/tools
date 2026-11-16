@@ -1,0 +1,133 @@
+package a
+
+func finish(n int) {
+	if n > 0 {
+		return
+	}
+	// want +1 `return statement at the end of a function with no results has no effect`
+}
+
+type item struct{}
+
+func (item) finish() {
+	// want +1 `return statement at the end of a function with no results has no effect`
+}
+
+func count() int {
+	return 0
+}
+
+func values() (n int) {
+	return
+}
+
+func noResultsList() () {
+	// want +1 `return statement at the end of a function with no results has no effect`
+}
+
+func semicolon() {
+	// want +1 `return statement at the end of a function with no results has no effect`
+}
+
+func spaceSemicolon() {
+	// want +1 `return statement at the end of a function with no results has no effect`
+}
+
+func literal() func() {
+	return func() {
+		// want +1 `return statement at the end of a function with no results has no effect`
+	}
+}
+
+func invoke() {
+	func() {
+		// want +1 `return statement at the end of a function with no results has no effect`
+	}()
+}
+
+func inline() {} // want `return statement at the end of a function with no results has no effect`
+
+func inlineSemicolon() {} // want `return statement at the end of a function with no results has no effect`
+
+func noted() {
+	// want +1 `return statement at the end of a function with no results has no effect`
+	// note
+}
+
+func branch(n int) {
+	if n > 0 {
+		return
+	}
+}
+
+func after(n int) {
+	if n > 0 {
+		return
+	}
+	_ = n
+}
+
+func followed() {
+	return
+	_ = 1
+}
+
+func labeled(n int) {
+	if n > 0 {
+		goto done
+	}
+done:
+	return
+}
+
+func ifTail(n int) {
+	if n > 0 {
+		return
+	} else {
+		return
+	}
+}
+
+func blockTail() {
+	{
+		return
+	}
+}
+
+func switchTail(n int) {
+	switch n {
+	case 0:
+		return
+	default:
+		return
+	}
+}
+
+func selectTail(ch <-chan int) {
+	select {
+	case <-ch:
+		return
+	default:
+		return
+	}
+}
+
+func loopTail() {
+	for {
+		return
+	}
+}
+
+func rangeTail(xs []int) {
+	for range xs {
+		return
+	}
+}
+
+func empty() {}
+
+func bodyless()
+
+var packageLiteral = func() {
+	// want +1 `return statement at the end of a function with no results has no effect`
+}

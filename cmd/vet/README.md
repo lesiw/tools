@@ -2229,6 +2229,18 @@ Adapted from revive's redundant-build-tag.
 package a
 ```
 
+## redundantreturn
+
+Reports a return that ends the body of a function declaring no results. The function ends either way, so the return has no effect.
+
+Adapted from the return check in staticcheck's S1023.
+
+```
+func f() {
+    return
+}
+```
+
 ## redundantsprint
 
 Reports a fmt.Sprint whose operand has static type string, and a string conversion around one. Both return the operand unchanged. A named string type is left alone, since Sprint may call its String method.
