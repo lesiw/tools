@@ -7,8 +7,8 @@
 [![Discord](https://img.shields.io/discord/1145827224516300971?logo=discord&logoColor=white&color=5865F2&label=discord)](https://lesiw.dev/discord)
 [![License](https://img.shields.io/github/license/lesiw/tools)](../../../LICENSE)
 
-An `analysis.Analyzer` that reports a `//go:build` line the file name already
-implies.
+An `analysis.Analyzer` that reports a `//go:build` line the file name or the
+module's Go version already implies.
 
 ```go
 //go:build linux
@@ -17,6 +17,15 @@ package a
 ```
 
 In `a_linux.go`, the line is reported, and the fix removes it.
+
+```go
+//go:build go1.21
+
+package a
+```
+
+In a module that declares `go 1.21`, the line clamps to the module's version
+and is reported.
 
 Go's build constraint documentation, `go help buildconstraint`, makes a file
 name that matches `*_GOOS`, `*_GOARCH` or `*_GOOS_GOARCH` part of the
@@ -35,18 +44,40 @@ does not spell: `//go:build unix` in `a_linux.go` and `//go:build !unix` in
 either, since `-tags=android` matches an `android` name on any system, where
 `linux` is unset.
 
-A file whose only constraint is a `// +build` line is left alone: gofmt writes
-the `//go:build` line from it, and the next run has something to report.
+The go command sets the release tags `go1.1` through `go1.N` for the toolchain
+version 1.N, and a `//go:build` line can name one of them. Since Go 1.21 the
+`go` directive is a minimum version, so a module at Go 1.21 or later is built
+only by a toolchain that sets every release tag up to the module's version. A
+`go1.X` tag at or below that version holds in every build.
 
-The rule reports a file only in a build that includes it, so a name another
-platform compiles is left to that platform's run.
+Go also uses the `//go:build` line to set the file's language version, clamped
+to Go 1.21. The rule removes a line whose version settles the condition only
+when the line sets no version, so removing it changes nothing, or when its
+version after the clamp is the module's, so the file is already at the module's
+version. A line whose version after the clamp is not the module's is left
+alone, since dropping it would move the file to the module's version. A module
+below Go 1.21 is left alone too, because its `go` directive was advisory. A
+tag that is not one of the `go1.N` release tags is left alone as well, since
+the go command sets no such tag.
+
+Leaves alone: a file the current build does not include, since the go command
+does not offer it and a run on the platform the name selects reports it. A
+`// +build` line in a file that is not reported for another reason is left
+alone too, since the suite's `plusbuild` pass reports that line in a file at Go
+1.18 or later and both analyzers would then report the same line. A `// +build`
+line in a group with another comment is left alone, since it may be
+documentation; gofmt writes the `//go:build` line back from it, and the next run
+has the same line to report. The rule also leaves a file whose only constraint
+is a `// +build` line, since gofmt writes the `//go:build` line from it and the
+next run has something to report.
 
 The rule is adapted from revive's redundant-build-tag.
 
 Fixable: the line is removed, and the blank line after it when the line is the
-whole of its comment group. A `// +build` line beside it goes as well: the
-build ignores those while a `//go:build` line is present, and gofmt would write
-the `//go:build` line back from one, so the redundancy would return.
+whole of its comment group. A `// +build` line in a group that holds only build
+constraints goes as well: the build ignores those while a `//go:build` line is
+present, and gofmt would write the `//go:build` line back from one, so the
+redundancy would return.
 
 ## Usage
 

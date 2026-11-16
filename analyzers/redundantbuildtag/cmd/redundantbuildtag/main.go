@@ -1,4 +1,5 @@
-// Command redundantbuildtag reports a build constraint the file name implies.
+// Command redundantbuildtag reports a build constraint the file name or the
+// module's Go version implies.
 package main
 
 import (
