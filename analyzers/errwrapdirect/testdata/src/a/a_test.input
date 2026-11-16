@@ -1,0 +1,8 @@
+package a
+
+import "fmt"
+
+func testFile(err error) error {
+	_ = fmt.Sprintf("some message")
+	return fmt.Errorf("%w", err) // want `error is wrapped without a message`
+}

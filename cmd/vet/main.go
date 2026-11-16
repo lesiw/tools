@@ -1194,6 +1194,19 @@
 //
 //	var errMissing = errors.New("Not found")
 //
+// # errwrapdirect
+//
+// Reports a fmt.Errorf call whose format is exactly %w. The call adds no
+// text, so an ordinary error can stand in its place. An argument whose static
+// type implements fmt.Formatter is left alone, and a wrapper around a
+// sentinel is reported even though only the replacement equals the sentinel.
+//
+// Adapted from staticcheck's S1028.
+//
+//	func wrap(err error) error {
+//		return fmt.Errorf("%w", err)
+//	}
+//
 // # evalorder
 //
 // Reports a return that reads a value and passes its address to a call in the

@@ -122,6 +122,7 @@ import (
 	"lesiw.io/tools/analyzers/errorlast"
 	"lesiw.io/tools/analyzers/errshadow"
 	"lesiw.io/tools/analyzers/errstrings"
+	"lesiw.io/tools/analyzers/errwrapdirect"
 	"lesiw.io/tools/analyzers/evalorder"
 	"lesiw.io/tools/analyzers/exposedsyncmutex"
 	"lesiw.io/tools/analyzers/filepathjoin"
@@ -359,6 +360,7 @@ var (
 		errorsas.Analyzer,
 		errshadow.Analyzer,
 		errstrings.Analyzer,
+		errwrapdirect.Analyzer,
 		evalorder.Analyzer,
 		exposedsyncmutex.Analyzer,
 		filepathjoin.Analyzer,

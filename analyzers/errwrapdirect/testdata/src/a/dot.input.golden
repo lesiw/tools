@@ -1,0 +1,8 @@
+package a
+
+import . "fmt"
+
+func dotted(err error) error {
+	_ = Sprintf("some message")
+	return err // want `error is wrapped without a message`
+}

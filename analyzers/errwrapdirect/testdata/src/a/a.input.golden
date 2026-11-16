@@ -1,0 +1,299 @@
+package a
+
+import "fmt"
+
+type inner struct{}
+
+func (inner) Error() string { return "some message" }
+
+type sliceError []int
+
+func (sliceError) Error() string { return "some message" }
+
+type holder struct{ err error }
+
+var errSentinel = inner{}
+
+func direct(err error) error {
+	return err // want `error is wrapped without a message`
+}
+
+func parenthesized(err error) error {
+	return err // want `error is wrapped without a message`
+}
+
+func raw(err error) error {
+	return err // want `error is wrapped without a message`
+}
+
+func nilVariable() error {
+	var err error
+	return err // want `error is wrapped without a message`
+}
+
+func concrete(err *inner) error {
+	return error(err) // want `error is wrapped without a message`
+}
+
+func literalArgument() error {
+	return error(&inner{}) // want `error is wrapped without a message`
+}
+
+func selected(p *inner) string {
+	return error(*p).Error() // want `error is wrapped without a message`
+}
+
+func received(ch chan error) string {
+	return (<-ch).Error() // want `error is wrapped without a message`
+}
+
+func compared(e sliceError, other error) bool {
+	return fmt.Errorf("%w", e) == other // want `error is wrapped without a message`
+}
+
+func comparedError(err, other error) bool {
+	return fmt.Errorf("%w", err) == other // want `error is wrapped without a message`
+}
+
+func keyed(m map[error]bool, e sliceError) bool {
+	return m[fmt.Errorf("%w", e)] // want `error is wrapped without a message`
+}
+
+func deleted(m map[error]bool, e sliceError) {
+	delete(m, fmt.Errorf("%w", e)) // want `error is wrapped without a message`
+}
+
+func comparedNot(e sliceError, other error) bool {
+	return fmt.Errorf("%w", e) != other // want `error is wrapped without a message`
+}
+
+func convertedCompare(e sliceError, other error) bool {
+	return error(fmt.Errorf("%w", e)) == other // want `error is wrapped without a message`
+}
+
+func convertedKey(e sliceError) map[error]bool {
+	return map[error]bool{error(fmt.Errorf("%w", e)): true} // want `error is wrapped without a message`
+}
+
+func convertedDelete(m map[error]bool, e sliceError) {
+	delete(m, error(fmt.Errorf("%w", e))) // want `error is wrapped without a message`
+}
+
+func convertedSwitch(e sliceError, other error) string {
+	switch error(fmt.Errorf("%w", e)) { // want `error is wrapped without a message`
+	case other:
+		return "some message"
+	}
+	return "other message"
+}
+
+func assertedKey(m map[any]bool, e sliceError) bool {
+	return m[fmt.Errorf("%w", e).(any)] // want `error is wrapped without a message`
+}
+
+func compositeCompare(e sliceError, other holder) bool {
+	return holder{fmt.Errorf("%w", e)} == other // want `error is wrapped without a message`
+}
+
+func compositeKey(e sliceError) map[holder]bool {
+	return map[holder]bool{holder{fmt.Errorf("%w", e)}: true} // want `error is wrapped without a message`
+}
+
+func mapKey(e sliceError) map[error]bool {
+	return map[error]bool{fmt.Errorf("%w", e): true} // want `error is wrapped without a message`
+}
+
+func switchTag(e sliceError, other error) string {
+	switch fmt.Errorf("%w", e) { // want `error is wrapped without a message`
+	case other:
+		return "some message"
+	}
+	return "other message"
+}
+
+func switchCase(e sliceError, other error) bool {
+	switch other {
+	case fmt.Errorf("%w", e): // want `error is wrapped without a message`
+		return true
+	}
+	return false
+}
+
+func switchInit(e sliceError, other error) string {
+	switch v := fmt.Errorf("%w", e); v { // want `error is wrapped without a message`
+	case other:
+		return "some message"
+	}
+	return "other message"
+}
+
+func typeSwitchInit(e sliceError) string {
+	switch v := fmt.Errorf("%w", e); v.(type) { // want `error is wrapped without a message`
+	case sliceError:
+		return "slice"
+	}
+	return "other"
+}
+
+func ifInit(e sliceError, other error) bool {
+	if v := fmt.Errorf("%w", e); v == other { // want `error is wrapped without a message`
+		return true
+	}
+	return false
+}
+
+func forInit(e sliceError, other error) bool {
+	for v := fmt.Errorf("%w", e); v == other; { // want `error is wrapped without a message`
+		return true
+	}
+	return false
+}
+
+func asserted(e sliceError) bool {
+	_, ok := error(e).(interface{ Error() string }) // want `error is wrapped without a message`
+	return ok
+}
+
+func selectedError(pe *error) string {
+	return (*pe).Error() // want `error is wrapped without a message`
+}
+
+func assertedError(pe *error) bool {
+	_, ok := (*pe).(interface{ Error() string }) // want `error is wrapped without a message`
+	return ok
+}
+
+func typedNil() error {
+	return fmt.Errorf("%w", (*inner)(nil))
+}
+
+func sentinelArgument() error {
+	return error(errSentinel) // want `error is wrapped without a message`
+}
+
+func commented(err error) error {
+	return fmt.Errorf( /* why */ "%w", err) // want `error is wrapped without a message`
+}
+
+func trailingComment(err error) error {
+	return fmt.Errorf("%w", err /* why */) // want `error is wrapped without a message`
+}
+
+func discarded(err error) {
+	fmt.Errorf("%w", err) // want `error is wrapped without a message`
+}
+
+func deferred(err error) {
+	defer fmt.Errorf("%w", err) // want `error is wrapped without a message`
+}
+
+func launched(err error) {
+	go fmt.Errorf("%w", err) // want `error is wrapped without a message`
+}
+
+func shadowedError(err *inner) error {
+	error := func(v *inner) *inner { return v }
+	_ = error
+	return fmt.Errorf("%w", err) // want `error is wrapped without a message`
+}
+
+type formatterError struct{}
+
+func (formatterError) Error() string { return "some message" }
+
+func (formatterError) Format(state fmt.State, verb rune) {
+	fmt.Fprint(state, "formatted")
+}
+
+func formatterArgument(err formatterError) error {
+	return fmt.Errorf("%w", err)
+}
+
+func hiddenFormatter() error {
+	var err error = formatterError{}
+	return err // want `error is wrapped without a message`
+}
+
+func genericFormatter[T interface {
+	error
+	fmt.Formatter
+}](err T) error {
+	return fmt.Errorf("%w", err)
+}
+
+func genericError[T error](err T) error {
+	return error(err) // want `error is wrapped without a message`
+}
+
+func prefixed(err error) error {
+	return fmt.Errorf("some: %w", err)
+}
+
+func suffixed(err error) error {
+	return fmt.Errorf("%w: some", err)
+}
+
+func newline(err error) error {
+	return fmt.Errorf("%w\n", err)
+}
+
+func flagged(err error) error {
+	return fmt.Errorf("%+w", err)
+}
+
+func indexed(err error) error {
+	return fmt.Errorf("%[1]w", err)
+}
+
+func twice(err error) error {
+	return fmt.Errorf("%w %w", err)
+}
+
+func extra(err error) error {
+	return fmt.Errorf("%w", err, "some message")
+}
+
+func spread(args []any) error {
+	return fmt.Errorf("%w", args...)
+}
+
+func missing() error {
+	return fmt.Errorf("%w")
+}
+
+func nilArgument() error {
+	return fmt.Errorf("%w", nil)
+}
+
+func convertedNil() error {
+	return fmt.Errorf("%w", error(nil))
+}
+
+func anyArgument(err any) error {
+	return fmt.Errorf("%w", err)
+}
+
+func textArgument() error {
+	return fmt.Errorf("%w", "some message")
+}
+
+func variableFormat(format string, err error) error {
+	return fmt.Errorf(format, err)
+}
+
+func constantFormat(err error) error {
+	const format = "%w"
+	return fmt.Errorf(format, err)
+}
+
+func formatted(err error) string {
+	return fmt.Sprintf("%w", err)
+}
+
+type errorf interface {
+	Errorf(string, ...any) error
+}
+
+func shadowed(f errorf, err error) error {
+	return f.Errorf("%w", err)
+}
