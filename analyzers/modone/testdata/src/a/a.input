@@ -1,0 +1,216 @@
+package a
+
+const one = 1
+
+const (
+	untypedRuneConstant = 5 % '\x01' // want `the remainder is zero when the divisor is one`
+	five                = 5
+)
+
+type level int
+
+const oneLevel level = 1
+
+func use(int) {}
+
+func intValue(n int) int {
+	return n % 1 // want `the remainder is zero when the divisor is one`
+}
+
+func nested(n int) int {
+	return 2 + n % 1 // want `the remainder is zero when the divisor is one`
+}
+
+func int32Context() int32 {
+	var value int32 = 5 % 1 // want `the remainder is zero when the divisor is one`
+	return value
+}
+
+func typedInt32(value int32) int32 {
+	return value % 1 // want `the remainder is zero when the divisor is one`
+}
+
+func byteContext() byte {
+	return '\x05' % 1 // want `the remainder is zero when the divisor is one`
+}
+
+func floatContext() float64 {
+	return '\x05' % 1 // want `the remainder is zero when the divisor is one`
+}
+
+func typedNamed() level {
+	value := 5 % oneLevel
+	return value
+}
+
+func product(n int) int {
+	return n % 1 * 2 // want `the remainder is zero when the divisor is one`
+}
+
+func complexLiteral(n int) int {
+	return n % (1 + 0i) // want `the remainder is zero when the divisor is one`
+}
+
+func repeated(n int) int {
+	return n % 1 % 1 // want `the remainder is zero when the divisor is one` `the remainder is zero when the divisor is one`
+}
+
+func uintValue(count uint) uint {
+	return count % 1 // want `the remainder is zero when the divisor is one`
+}
+
+func definedValue(step level) level {
+	return step % 1 // want `the remainder is zero when the divisor is one`
+}
+
+func generic[T ~int](n T) T {
+	return n % 1 // want `the remainder is zero when the divisor is one`
+}
+
+func shortDeclaration(step level) level {
+	count := step % 1 // want `the remainder is zero when the divisor is one`
+	return count
+}
+
+func call() int {
+	return 7
+}
+
+func called() int {
+	return call() % 1 // want `the remainder is zero when the divisor is one`
+}
+
+func compound(left, right int) int {
+	return (left + right) % 1 // want `the remainder is zero when the divisor is one`
+}
+
+func asserted(v any) int {
+	return v.(int) % 1 // want `the remainder is zero when the divisor is one`
+}
+
+func parenthesized(n int) int {
+	return (n) % (1) // want `the remainder is zero when the divisor is one`
+}
+
+func plus(n int) int {
+	return n % +1 // want `the remainder is zero when the divisor is one`
+}
+
+func hexadecimal(n int) int {
+	return n % 0x1 // want `the remainder is zero when the divisor is one`
+}
+
+func octal(n int) int {
+	return n % 01 // want `the remainder is zero when the divisor is one`
+}
+
+func binaryLiteral(n int) int {
+	return n % 0b1 // want `the remainder is zero when the divisor is one`
+}
+
+func floatLiteral(n int) int {
+	return n % 1.0 // want `the remainder is zero when the divisor is one`
+}
+
+func runeLiteral(n int) int {
+	return n % '\x01' // want `the remainder is zero when the divisor is one`
+}
+
+func untypedRune() rune {
+	return 5 % '\x01' // want `the remainder is zero when the divisor is one`
+}
+
+func runeLeft() rune {
+	return '\x05' % 1 // want `the remainder is zero when the divisor is one`
+}
+
+func inferredRune() rune {
+	value := 5 % '\x01' // want `the remainder is zero when the divisor is one`
+	return value
+}
+
+func directRune() rune {
+	value := '\x05' % 1 // want `the remainder is zero when the divisor is one`
+	return value
+}
+
+func namedLeft() rune {
+	return five % '\x01' // want `the remainder is zero when the divisor is one`
+}
+
+func inferredNamedRune() rune {
+	value := five % '\x01' // want `the remainder is zero when the divisor is one`
+	return value
+}
+
+func typedRune(value rune) rune {
+	return value % 1 // want `the remainder is zero when the divisor is one`
+}
+
+func sumLiteral(n int) int {
+	return n % (1 + 0) // want `the remainder is zero when the divisor is one`
+}
+
+func constant() int {
+	return 9 % 1 // want `the remainder is zero when the divisor is one`
+}
+
+func named(n int) int {
+	return n % one
+}
+
+func namedExpression(n int) int {
+	return n % (one + 0)
+}
+
+func converted(n int) int {
+	return n % int(1)
+}
+
+func variable(n, divisor int) int {
+	return n % divisor
+}
+
+func otherDivisor(n int) int {
+	return n % 2
+}
+
+func division(n int) int {
+	return n / 1
+}
+
+func negativeDivisor(n int) int {
+	return n % -1
+}
+
+func leftOne(n int) int {
+	return 1 % n
+}
+
+func assigned(n int) {
+	n %= 1
+}
+
+func commentBefore(n int) int {
+	return n /* keep */ % 1 // want `the remainder is zero when the divisor is one`
+}
+
+func commentAfter(n int) int {
+	return n % /* keep */ 1 // want `the remainder is zero when the divisor is one`
+}
+
+func commentTrailing(n int) int {
+	return n % 1 /* keep */ // want `the remainder is zero when the divisor is one`
+}
+
+func commentInside(n int) int {
+	return n % (1 /* keep */) // want `the remainder is zero when the divisor is one`
+}
+
+func used(n int) {
+	use(n % 1) // want `the remainder is zero when the divisor is one`
+}
+
+func shadowed(one int) int {
+	return one % 1 // want `the remainder is zero when the divisor is one`
+}

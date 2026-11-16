@@ -2248,6 +2248,18 @@ func normalize(name string) {
 }
 ```
 
+## modone
+
+Reports a binary remainder operation whose divisor is a constant expression with value one and no identifier. The result is zero for every integer left operand.
+
+Adapted from staticcheck's SA4028.
+
+```
+func f(n int) int {
+    return n % 1
+}
+```
+
 ## nancompare
 
 Reports a comparison with math.NaN(). Under IEEE 754 a NaN is unequal to every value, including itself, and every ordering comparison with one is false, so the comparison has a constant answer. A case in an expression switch that compares the tag with NaN is reported, and so is a switch whose tag is NaN; no case can match.

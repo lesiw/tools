@@ -192,6 +192,7 @@ import (
 	"lesiw.io/tools/analyzers/mathintconv"
 	"lesiw.io/tools/analyzers/methodexprcall"
 	"lesiw.io/tools/analyzers/modifiesparam"
+	"lesiw.io/tools/analyzers/modone"
 	"lesiw.io/tools/analyzers/nancompare"
 	"lesiw.io/tools/analyzers/nanosleep"
 	"lesiw.io/tools/analyzers/negatedbool"
@@ -501,6 +502,7 @@ var (
 		mathintconv.Analyzer,
 		methodexprcall.Analyzer,
 		modifiesparam.Analyzer,
+		modone.Analyzer,
 		nancompare.Analyzer,
 		nanosleep.Analyzer,
 		negatedbool.Analyzer,
