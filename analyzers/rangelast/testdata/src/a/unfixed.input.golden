@@ -1,0 +1,96 @@
+package a
+
+type numbers []int
+
+func sliceParam(xs []int) (last int) {
+	// want +1 `loop only keeps the last element`
+	for _, v := range xs {
+		last = v
+	}
+	return last
+}
+
+func named(xs numbers) (last int) {
+	// want +1 `loop only keeps the last element`
+	for _, v := range xs {
+		last = v
+	}
+	return last
+}
+
+func generic[S ~[]int](xs S) (last int) {
+	// want +1 `loop only keeps the last element`
+	for _, v := range xs {
+		last = v
+	}
+	return last
+}
+
+func pair() [2]int { return [2]int{} }
+
+func calledRange() (last int) {
+	// want +1 `loop only keeps the last element`
+	for _, v := range pair() {
+		last = v
+	}
+	return last
+}
+
+func item() string { return "alpha" }
+
+func calledLiteral() (last string) {
+	// want +1 `loop only keeps the last element`
+	for _, v := range []string{item()} {
+		last = v
+	}
+	return last
+}
+
+func shadowedLen(len int, xs [2]int) (last int) {
+	// want +1 `loop only keeps the last element`
+	for _, v := range xs {
+		last = v
+	}
+	return last
+}
+
+func shadowedTarget(len int, xs [2]int) {
+	// want +1 `loop only keeps the last element`
+	for _, v := range xs {
+		len = v
+	}
+}
+
+func annotated(xs [2]int) (last int) {
+	// want +1 `loop only keeps the last element`
+	for _, v := range xs {
+		/* */
+		last = v
+	}
+	return last
+}
+
+func rangeTarget(last [2]int, xs [][2]int) (out [2]int) {
+	// want +1 `loop only keeps the last element`
+	for _, v := range xs[last[0]:] {
+		last = v
+	}
+	return last
+}
+
+func addressed() (last int) {
+	// want +1 `loop only keeps the last element`
+	for _, v := range *&[2]int{} {
+		last = v
+	}
+	return last
+}
+
+func multilineLiteral() (last string) {
+	// want +1 `loop only keeps the last element`
+	for _, v := range []string{`alpha
+bravo`} {
+		last = v
+	}
+	return last
+}

@@ -2132,6 +2132,21 @@ func f(n int) {
 }
 ```
 
+## rangelast
+
+Reports a range loop that keeps only the last element of a slice or array. The loop assigns every element in turn, and the last assignment sets the value.
+
+The rule is original to this suite.
+
+```
+func f(xs [3]int) (last int) {
+    for _, v := range xs {
+        last = v
+    }
+    return last
+}
+```
+
 ## rangevaladdress
 
 Reports an address taken from a range loop's variable and kept past the iteration. In a file that declares a Go version before 1.22 every iteration shares the variable, so a pointer kept past the iteration reads the value the loop wrote last, and a range clause that assigns its variables with = shares them at every version.

@@ -178,6 +178,7 @@ import (
 	"lesiw.io/tools/analyzers/preferstringwriter"
 	"lesiw.io/tools/analyzers/preferwritebyte"
 	"lesiw.io/tools/analyzers/rangeappendall"
+	"lesiw.io/tools/analyzers/rangelast"
 	"lesiw.io/tools/analyzers/rangevaladdress"
 	"lesiw.io/tools/analyzers/recvname"
 	"lesiw.io/tools/analyzers/recvtype"
@@ -427,6 +428,7 @@ var (
 		preferwritebyte.Analyzer,
 		printf.Analyzer,
 		rangeappendall.Analyzer,
+		rangelast.Analyzer,
 		rangevaladdress.Analyzer,
 		recvname.Analyzer,
 		recvtype.Analyzer,

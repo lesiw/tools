@@ -1,0 +1,6 @@
+package other
+
+var (
+	Last int
+	Arr  [2]int
+)

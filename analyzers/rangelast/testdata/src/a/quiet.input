@@ -1,0 +1,227 @@
+package a
+
+type cell struct {
+	last int
+}
+
+func emptyArray(xs [0]int) (last int) {
+	for _, v := range xs {
+		last = v
+	}
+	return last
+}
+
+func emptyLiteral() (last int) {
+	for _, v := range []int{} {
+		last = v
+	}
+	return last
+}
+
+func mapValue(m map[string]int) (last int) {
+	for _, v := range m {
+		last = v
+	}
+	return last
+}
+
+func stringValue(s string) (last rune) {
+	for _, v := range s {
+		last = v
+	}
+	return last
+}
+
+func channelValue(ch chan int) (last int) {
+	for v := range ch {
+		last = v
+	}
+	return last
+}
+
+func keyedIndex(xs []int) (last int) {
+	for i, v := range xs {
+		last = v
+		_ = i
+	}
+	return last
+}
+
+func keyOnly(xs []int) (last int) {
+	for i := range xs {
+		last = i
+	}
+	return last
+}
+
+func twoStatements(xs []int) (last, n int) {
+	for _, v := range xs {
+		last = v
+		n++
+	}
+	return last, n
+}
+
+func assigned(xs []int) (last, v int) {
+	for _, v = range xs {
+		last = v
+	}
+	return last, v
+}
+
+func accumulates(xs []int) (last int) {
+	for _, v := range xs {
+		last += v
+	}
+	return last
+}
+
+func conditional(xs []int, keep bool) (last int) {
+	for _, v := range xs {
+		if keep {
+			last = v
+		}
+	}
+	return last
+}
+
+func keyedByValue(rows []cell, m map[int]cell) {
+	for _, v := range rows {
+		m[v.last] = v
+	}
+}
+
+func blank(xs []int) {
+	for _, v := range xs {
+		_ = v
+	}
+}
+
+func sameValue(xs []int) {
+	for _, v := range xs {
+		v = v
+	}
+}
+
+func emptyPointer(xs *[0]int) (last int) {
+	for _, v := range xs {
+		last = v
+	}
+	return last
+}
+
+func pointerFieldTarget(p *cell, xs [2]int) {
+	for _, v := range xs {
+		p.last = v
+	}
+}
+
+type node struct {
+	next *node
+}
+
+func rangeValueField(nodes []*node) {
+	for _, v := range nodes {
+		v.next = v
+	}
+}
+
+func elementTarget(dst []int, xs [2]int) {
+	for _, v := range xs {
+		dst[0] = v
+	}
+}
+
+func dereferenceTarget(p *int, xs [2]int) {
+	for _, v := range xs {
+		*p = v
+	}
+}
+
+func mapTarget(m map[string]int, xs []int, key string) {
+	for _, v := range xs {
+		m[key] = v
+	}
+}
+
+func emptyGeneric[S ~[0]int](xs S) (last int) {
+	for _, v := range xs {
+		last = v
+	}
+	return last
+}
+
+func emptyIntersection[T interface {
+	~[0]int | ~[1]int
+	~[0]int
+}](xs T) (last int) {
+	for _, v := range xs {
+		last = v
+	}
+	return last
+}
+
+func intersectionEmpty[T interface {
+	~[0]int | ~[1]int
+	~[0]int | ~[2]int
+}](xs T) (last int) {
+	for _, v := range xs {
+		last = v
+	}
+	return last
+}
+
+func otherValue(xs []int, other int) (last int) {
+	for _, v := range xs {
+		last = other + v
+	}
+	return last
+}
+
+func constantValue(xs []int) (last int) {
+	for _, v := range xs {
+		last = 1 + v
+	}
+	return last
+}
+
+func intRange(n int) (last int) {
+	for i := range n {
+		last = i
+	}
+	return last
+}
+
+func intersectionEmptyKinds[T interface {
+	~[0]int | ~[1]int
+	~[0]int | ~[1]string
+}](xs T) (last int) {
+	for _, v := range xs {
+		last = v
+	}
+	return last
+}
+
+func comparableEmpty[T interface {
+	~[2][]int | ~[0]int
+	comparable
+}](xs T) (last int) {
+	for _, v := range xs {
+		last = v
+	}
+	return last
+}
+
+type inner struct {
+	last int
+}
+
+type outer struct {
+	*inner
+}
+
+func promotedField(o outer, xs [2]int) {
+	for _, v := range xs {
+		o.last = v
+	}
+}

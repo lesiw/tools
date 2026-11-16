@@ -2156,6 +2156,21 @@
 //		}
 //	}
 //
+// # rangelast
+//
+// Reports a range loop that keeps only the last element of a slice or array.
+// The loop assigns every element in turn, and the last assignment sets the
+// value.
+//
+// The rule is original to this suite.
+//
+//	func f(xs [3]int) (last int) {
+//		for _, v := range xs {
+//			last = v
+//		}
+//		return last
+//	}
+//
 // # rangevaladdress
 //
 // Reports an address taken from a range loop's variable and kept past the

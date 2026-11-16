@@ -1,0 +1,11 @@
+package shadow
+
+func f(xs [2]int) (last int) {
+	// want +1 `loop only keeps the last element`
+	for _, v := range xs {
+		last = v
+	}
+	return last
+}
+
+var len int

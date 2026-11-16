@@ -1,0 +1,216 @@
+package a
+
+import "other"
+
+type box struct {
+	last int
+}
+
+func array(xs [3]int) (last int) {
+	// want +1 `loop only keeps the last element`
+	for _, v := range xs {
+		last = v
+	}
+	return last
+}
+
+func pointer(xs *[2]int) (last int) {
+	// want +1 `loop only keeps the last element`
+	for _, v := range xs {
+		last = v
+	}
+	return last
+}
+
+func literal() (last string) {
+	// want +1 `loop only keeps the last element`
+	for _, v := range []string{"alpha", "bravo"} {
+		last = v
+	}
+	return last
+}
+
+func arrayLiteral() (last int) {
+	// want +1 `loop only keeps the last element`
+	for _, v := range [2]int{} {
+		last = v
+	}
+	return last
+}
+
+func genericArray[S ~[2]int](xs S) (last int) {
+	// want +1 `loop only keeps the last element`
+	for _, v := range xs {
+		last = v
+	}
+	return last
+}
+
+func dereferencedRange(xs *[2]int) (last int) {
+	// want +1 `loop only keeps the last element`
+	for _, v := range *xs {
+		last = v
+	}
+	return last
+}
+
+func packageTarget(xs [2]int) {
+	// want +1 `loop only keeps the last element`
+	for _, v := range xs {
+		other.Last = v
+	}
+}
+
+func fieldTarget(b box, xs [2]int) box {
+	// want +1 `loop only keeps the last element`
+	for _, v := range xs {
+		b.last = v
+	}
+	return b
+}
+
+type holder struct {
+	arr [2]int
+}
+
+func rangeSelector(h holder) (last int) {
+	// want +1 `loop only keeps the last element`
+	for _, v := range h.arr {
+		last = v
+	}
+	return last
+}
+
+type rowp *[2]int
+
+func definedPointer(xs rowp) (last int) {
+	// want +1 `loop only keeps the last element`
+	for _, v := range xs {
+		last = v
+	}
+	return last
+}
+
+func packageRange() (last int) {
+	// want +1 `loop only keeps the last element`
+	for _, v := range other.Arr {
+		last = v
+	}
+	return last
+}
+
+func genericPointer[S ~*[2]int](xs S) (last int) {
+	// want +1 `loop only keeps the last element`
+	for _, v := range xs {
+		last = v
+	}
+	return last
+}
+
+func embeddedAny[S interface {
+	~[2]int
+	any
+}](xs S) (last int) {
+	// want +1 `loop only keeps the last element`
+	for _, v := range xs {
+		last = v
+	}
+	return last
+}
+
+func embeddedComparable[S interface {
+	~[2]int
+	comparable
+}](xs S) (last int) {
+	// want +1 `loop only keeps the last element`
+	for _, v := range xs {
+		last = v
+	}
+	return last
+}
+
+type left [2]int
+type right [2]int
+
+func namedArrayUnion[S left | right](xs S) (last int) {
+	// want +1 `loop only keeps the last element`
+	for _, v := range xs {
+		last = v
+	}
+	return last
+}
+
+func labelled(xs [2]int) (last int) {
+	goto L
+L:
+	// want +1 `loop only keeps the last element`
+	for _, v := range xs {
+		last = v
+	}
+	return last
+}
+
+func nested(xs, ys [2]int) (last int) {
+	for _, x := range xs {
+		// want +1 `loop only keeps the last element`
+		for _, v := range ys {
+			last = v
+		}
+		_ = x
+	}
+	return last
+}
+
+type comparableOnly interface{ comparable }
+
+func embeddedNamed[S interface {
+	~[2]int
+	comparableOnly
+}](xs S) (last int) {
+	// want +1 `loop only keeps the last element`
+	for _, v := range xs {
+		last = v
+	}
+	return last
+}
+
+func rangeArrayTarget(last int, ys [][2]int) int {
+	// want +1 `loop only keeps the last element`
+	for _, v := range ys[last] {
+		last = v
+	}
+	return last
+}
+
+func filledIntersection[T interface {
+	~[1]int | ~[2]int
+	~[1]int | ~[3]int
+}](xs T) (last int) {
+	// want +1 `loop only keeps the last element`
+	for _, v := range xs {
+		last = v
+	}
+	return last
+}
+
+func filledIntersectionKinds[T interface {
+	~[1]int | ~[0]string
+	~[1]int | ~[0]int
+}](xs T) (last int) {
+	// want +1 `loop only keeps the last element`
+	for _, v := range xs {
+		last = v
+	}
+	return last
+}
+
+func comparableFilled[T interface {
+	~[]int | ~[2]int
+	comparable
+}](xs T) (last int) {
+	// want +1 `loop only keeps the last element`
+	for _, v := range xs {
+		last = v
+	}
+	return last
+}
