@@ -1,0 +1,42 @@
+//go:build !386 && !arm && !mips && !mipsle
+
+package a
+
+import "strconv"
+
+type word int32
+
+func narrow32(s string) int32 {
+	n, _ := strconv.Atoi(s)
+	return int32(n) // want `conversion of a strconv\.Atoi result to int32 can overflow`
+}
+
+func namedWide(s string) word {
+	n, _ := strconv.Atoi(s)
+	return word(n) // want `conversion of a strconv\.Atoi result to word can overflow`
+}
+
+func character(s string) rune {
+	n, _ := strconv.Atoi(s)
+	return rune(n) // want `conversion of a strconv\.Atoi result to rune can overflow`
+}
+
+func crossed(s string) int32 {
+	n, _ := strconv.Atoi(s)
+	return int32(int16(n)) // want `conversion of a strconv\.Atoi result to int16 can overflow`
+}
+
+func genericWide[T ~int32](s string) T {
+	n, _ := strconv.Atoi(s)
+	return T(n)
+}
+
+func genericCrossed[T ~int16](s string) int32 {
+	n, _ := strconv.Atoi(s)
+	return int32(T(n))
+}
+
+func nested(s string) int16 {
+	n, _ := strconv.Atoi(s)
+	return int16(int32(n)) // want `conversion of a strconv\.Atoi result to int32 can overflow` `conversion of a strconv\.Atoi result to int16 can overflow`
+}

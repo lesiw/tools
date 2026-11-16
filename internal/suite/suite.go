@@ -66,6 +66,7 @@ import (
 	"lesiw.io/tools/analyzers/assertelse"
 	"lesiw.io/tools/analyzers/assertnil"
 	"lesiw.io/tools/analyzers/assignop"
+	"lesiw.io/tools/analyzers/atoinarrow"
 	"lesiw.io/tools/analyzers/badcall"
 	"lesiw.io/tools/analyzers/badcond"
 	"lesiw.io/tools/analyzers/badlock"
@@ -336,6 +337,7 @@ var (
 		assertnil.Analyzer,
 		assign.Analyzer,
 		assignop.Analyzer,
+		atoinarrow.Analyzer,
 		atomic.Analyzer,
 		atomicalign.Analyzer,
 		badcall.Analyzer,

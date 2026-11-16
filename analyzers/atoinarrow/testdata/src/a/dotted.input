@@ -1,0 +1,8 @@
+package a
+
+import . "strconv"
+
+func dotted(s string) int16 {
+	n, _ := Atoi(s)
+	return int16(n) // want `conversion of a strconv\.Atoi result to int16 can overflow`
+}

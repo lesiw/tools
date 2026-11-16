@@ -228,6 +228,20 @@
 //		x = x + y
 //	}
 //
+// # atoinarrow
+//
+// Reports a conversion of a strconv.Atoi result to int16, or to int32 where
+// int is 64 bits. Atoi is ParseInt with a base of 10 and a bit size of 0,
+// converted to int, so its result can lie outside int16, or outside int32
+// where int is 64 bits.
+//
+// Adapted from gosec's G109.
+//
+//	func f(s string) int16 {
+//		n, _ := strconv.Atoi(s)
+//		return int16(n)
+//	}
+//
 // # atomic
 //
 // Reports an assignment that stores an atomic call's result back into the

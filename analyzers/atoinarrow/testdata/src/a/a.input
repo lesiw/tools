@@ -1,0 +1,283 @@
+package a
+
+import "strconv"
+
+type short int16
+
+type myint int
+
+func narrow(s string) int16 {
+	n, err := strconv.Atoi(s)
+	if err != nil {
+		return 0
+	}
+	return int16(n) // want `conversion of a strconv\.Atoi result to int16 can overflow`
+}
+
+func named(s string) short {
+	n, _ := strconv.Atoi(s)
+	return short(n) // want `conversion of a strconv\.Atoi result to short can overflow`
+}
+
+func copied(s string) int16 {
+	n, _ := strconv.Atoi(s)
+	m := n
+	return int16(m) // want `conversion of a strconv\.Atoi result to int16 can overflow`
+}
+
+func converted(s string) int16 {
+	n, _ := strconv.Atoi(s)
+	return int16(int64(n)) // want `conversion of a strconv\.Atoi result to int16 can overflow`
+}
+
+func parenthesized(s string) int16 {
+	n, _ := strconv.Atoi(s)
+	return (int16)(n) // want `conversion of a strconv\.Atoi result to int16 can overflow`
+}
+
+func changedType(s string) int16 {
+	n, _ := strconv.Atoi(s)
+	return int16(myint(n)) // want `conversion of a strconv\.Atoi result to int16 can overflow`
+}
+
+func narrowed(s string) int16 {
+	n, _ := strconv.Atoi(s)
+	return int16(int8(n))
+}
+
+func unsignedIntermediate(s string) int16 {
+	n, _ := strconv.Atoi(s)
+	return int16(uint16(n)) // want `conversion of a strconv\.Atoi result to int16 can overflow`
+}
+
+func unsignedFits(s string) int16 {
+	n, _ := strconv.Atoi(s)
+	return int16(uint8(n))
+}
+
+func branch(s string, found bool) int16 {
+	n := 0
+	if found {
+		n, _ = strconv.Atoi(s)
+	}
+	return int16(n) // want `conversion of a strconv\.Atoi result to int16 can overflow`
+}
+
+func literal(s string) func() int16 {
+	return func() int16 {
+		n, _ := strconv.Atoi(s)
+		return int16(n) // want `conversion of a strconv\.Atoi result to int16 can overflow`
+	}
+}
+
+var packageLiteral = func(s string) int16 {
+	n, _ := strconv.Atoi(s)
+	return int16(n) // want `conversion of a strconv\.Atoi result to int16 can overflow`
+}
+
+func captured(s string) func() int16 {
+	n, _ := strconv.Atoi(s)
+	return func() int16 {
+		return int16(n)
+	}
+}
+
+func boxed(s string) int16 {
+	n, _ := strconv.Atoi(s)
+	var v any = n
+	return int16(v.(int))
+}
+
+func channelled(s string) int16 {
+	ch := make(chan int, 1)
+	n, _ := strconv.Atoi(s)
+	ch <- n
+	m := <-ch
+	return int16(m)
+}
+
+func otherTypes(s string) {
+	n, _ := strconv.Atoi(s)
+	_ = int(n)
+	_ = int8(n)
+	_ = int64(n)
+	_ = uint16(n)
+	_ = uint32(n)
+	_ = float64(n)
+}
+
+func parsed(s string) int16 {
+	n, _ := strconv.ParseInt(s, 10, 16)
+	return int16(n)
+}
+
+func parsedZero(s string) int16 {
+	n, _ := strconv.ParseInt(s, 10, 0)
+	return int16(n)
+}
+
+func unsigned(s string) int16 {
+	n, _ := strconv.ParseUint(s, 10, 64)
+	return int16(n)
+}
+
+func replaced(s string) int16 {
+	n, _ := strconv.Atoi(s)
+	n = 7
+	return int16(n)
+}
+
+func changed(s string) int16 {
+	n, _ := strconv.Atoi(s)
+	n *= 2
+	return int16(n)
+}
+
+func checked(s string) int16 {
+	n, _ := strconv.Atoi(s)
+	if n < -32768 || n > 32767 {
+		return 0
+	}
+	return int16(n) // want `conversion of a strconv\.Atoi result to int16 can overflow`
+}
+
+func looping(s string) int16 {
+	n, _ := strconv.Atoi(s)
+	for i := 0; i < 2; i++ {
+		n += i
+	}
+	return int16(n) // want `conversion of a strconv\.Atoi result to int16 can overflow`
+}
+
+func countdown(n int) int16 {
+	for n > 0 {
+		n--
+	}
+	return int16(n)
+}
+
+func cycled() int16 {
+	n := 0
+	for i := 0; i < 2; i++ {
+		n = int(int64(n))
+	}
+	return int16(n)
+}
+
+func cycledAtoi(s string) int16 {
+	n := 0
+	for i := 0; i < 2; i++ {
+		if i == 0 {
+			n = int(int64(n))
+		} else {
+			n, _ = strconv.Atoi(s)
+		}
+	}
+	return int16(n) // want `conversion of a strconv\.Atoi result to int16 can overflow`
+}
+
+func stored(s string) int16 {
+	n, _ := strconv.Atoi(s)
+	p := &n
+	return int16(*p)
+}
+
+func field(s string) int16 {
+	var v struct{ n int }
+	v.n, _ = strconv.Atoi(s)
+	return int16(v.n)
+}
+
+func element(s string) int16 {
+	var n [1]int
+	n[0], _ = strconv.Atoi(s)
+	return int16(n[0])
+}
+
+func parse(s string) int {
+	n, _ := strconv.Atoi(s)
+	return n
+}
+
+func throughCall(s string) int16 {
+	return int16(parse(s))
+}
+
+func throughValue(s string) int16 {
+	atoi := strconv.Atoi
+	n, _ := atoi(s)
+	return int16(n) // want `conversion of a strconv\.Atoi result to int16 can overflow`
+}
+
+func throughParam(s string, atoi func(string) (int, error)) int16 {
+	n, _ := atoi(s)
+	return int16(n)
+}
+
+func generic[T ~int16](s string) T {
+	n, _ := strconv.Atoi(s)
+	return T(n)
+}
+
+func genericSafe[T ~int8](s string) int16 {
+	n, _ := strconv.Atoi(s)
+	return int16(T(n))
+}
+
+func genericIntermediate[T ~int16](s string) int16 {
+	n, _ := strconv.Atoi(s)
+	return int16(T(n))
+}
+
+var text = "7"
+
+var number, _ = strconv.Atoi(text)
+
+func packageValue() int16 {
+	return int16(number)
+}
+
+func constantFits() int16 {
+	n, _ := strconv.Atoi("7")
+	return int16(n)
+}
+
+func constantOverflows() int16 {
+	n, _ := strconv.Atoi("40000")
+	return int16(n) // want `conversion of a strconv\.Atoi result to int16 can overflow`
+}
+
+func constantConverted() int16 {
+	n, _ := strconv.Atoi("65536")
+	return int16(uint16(n)) // want `conversion of a strconv\.Atoi result to int16 can overflow`
+}
+
+func constantFitConverted() int16 {
+	n, _ := strconv.Atoi("7")
+	return int16(uint16(n)) // want `conversion of a strconv\.Atoi result to int16 can overflow`
+}
+
+func constantOutsideFitting() int16 {
+	n, _ := strconv.Atoi("65536")
+	return int16(uint8(n))
+}
+
+func constantWideConverted() int16 {
+	n, _ := strconv.Atoi("7")
+	return int16(int64(n)) // want `conversion of a strconv\.Atoi result to int16 can overflow`
+}
+
+func constantNamed() int16 {
+	n, _ := strconv.Atoi("40000")
+	return int16(myint(n)) // want `conversion of a strconv\.Atoi result to int16 can overflow`
+}
+
+func constantSyntax() int16 {
+	n, _ := strconv.Atoi("seven")
+	return int16(n)
+}
+
+func constantRange() int16 {
+	n, _ := strconv.Atoi("999999999999999999999999")
+	return int16(n) // want `conversion of a strconv\.Atoi result to int16 can overflow`
+}

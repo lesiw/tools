@@ -1,0 +1,10 @@
+//go:build 386 || arm || mips || mipsle
+
+package a
+
+import "strconv"
+
+func narrow32On32Bit(s string) int32 {
+	n, _ := strconv.Atoi(s)
+	return int32(n)
+}
