@@ -1,0 +1,363 @@
+package a
+
+import (
+	"time"
+	"unsafe"
+)
+
+type timerAlias = time.Timer
+type tickerAlias = time.Ticker
+type timerPointer *time.Timer
+
+type holder struct {
+	timer  *time.Timer
+	ticker *time.Ticker
+}
+
+func timerStopParameter(t *time.Timer) {
+	t.Stop()
+}
+
+func timerResetParameter(t *time.Timer) {
+	t.Reset(time.Second)
+}
+
+func tickerStopParameter(t *time.Ticker) {
+	t.Stop()
+}
+
+func tickerResetParameter(t *time.Ticker) {
+	t.Reset(time.Second)
+}
+
+func maybeTimer(ok bool) *time.Timer {
+	if ok {
+		return time.NewTimer(time.Second)
+	}
+	return nil
+}
+
+func namedResult() (t *time.Timer) {
+	t.Stop() // want `call to Stop on a nil Timer`
+	return
+}
+
+func namedResultMaybe(ok bool) (t *time.Timer) {
+	if ok {
+		t = time.NewTimer(time.Second)
+	}
+	t.Stop()
+	return
+}
+
+func namedResultDefer() (t *time.Timer) {
+	defer func() {}()
+	t.Stop()
+	return
+}
+
+func namedResultDeferredCall() (t *time.Timer) {
+	defer t.Stop()
+	return
+}
+
+func afterFunc() {
+	t := time.AfterFunc(time.Second, func() {})
+	t.Stop()
+}
+
+func fromResult() {
+	t := maybeTimer(false)
+	t.Stop()
+}
+
+func fromCall() {
+	maybeTimer(false).Stop()
+}
+
+func fromField(h holder) {
+	h.timer.Stop()
+	h.ticker.Reset(time.Second)
+}
+
+func fromLocalField() {
+	var h holder
+	h.timer.Stop()
+	h.ticker.Reset(time.Second)
+}
+
+func fromPointerField(h *holder) {
+	h.timer.Stop()
+	h.ticker.Reset(time.Second)
+}
+
+func fromElement() {
+	var t *time.Timer
+	m := map[string]*time.Timer{"t": t}
+	m["t"].Stop()
+	timers := []*time.Timer{t}
+	timers[0].Stop()
+}
+
+var packageTimer *time.Timer
+
+func fromPackage() {
+	packageTimer.Stop()
+}
+
+func fromChannel() {
+	ch := make(chan *time.Timer)
+	(<-ch).Stop()
+}
+
+func timerStop() {
+	var t *time.Timer
+	t.Stop() // want `call to Stop on a nil Timer`
+}
+
+func timerReset() {
+	var t *time.Timer
+	t.Reset(time.Second) // want `call to Reset on a nil Timer`
+}
+
+func tickerStop() {
+	var t *time.Ticker
+	t.Stop() // want `call to Stop on a nil Ticker`
+}
+
+func tickerReset() {
+	var t *time.Ticker
+	t.Reset(time.Second) // want `call to Reset on a nil Ticker`
+}
+
+func explicitNil() {
+	var t *time.Timer = nil
+	t.Stop() // want `call to Stop on a nil Timer`
+}
+
+func convertedNil() {
+	t := (*time.Timer)(nil)
+	t.Stop() // want `call to Stop on a nil Timer`
+}
+
+func parenthesizedNil() {
+	t := ((*time.Ticker))(nil)
+	t.Reset(time.Second) // want `call to Reset on a nil Ticker`
+}
+
+func convertedDefined() {
+	var p timerPointer
+	t := (*time.Timer)(p)
+	t.Stop() // want `call to Stop on a nil Timer`
+}
+
+func convertedUnsafe() {
+	var p unsafe.Pointer
+	t := (*time.Timer)(p)
+	t.Stop() // want `call to Stop on a nil Timer`
+}
+
+func aliasedNil() {
+	var t *timerAlias
+	t.Stop() // want `call to Stop on a nil Timer`
+}
+
+func aliasedTickerNil() {
+	var t *tickerAlias
+	t.Stop() // want `call to Stop on a nil Ticker`
+}
+
+func copied() {
+	var t *time.Timer
+	u := t
+	u.Stop() // want `call to Stop on a nil Timer`
+}
+
+func copiedTwice() {
+	var t *time.Ticker
+	u := t
+	v := u
+	v.Reset(time.Second) // want `call to Reset on a nil Ticker`
+}
+
+func assigned() {
+	t := time.NewTimer(time.Second)
+	t.Stop()
+}
+
+func reassigned() {
+	t := time.NewTicker(time.Second)
+	t = nil
+	t.Stop() // want `call to Stop on a nil Ticker`
+}
+
+func maybeAssigned(ok bool) {
+	var t *time.Timer
+	if ok {
+		t = time.NewTimer(time.Second)
+	}
+	t.Stop()
+}
+
+func stillNil(ok bool) {
+	var t *time.Timer
+	if ok {
+		t = nil
+	}
+	t.Stop() // want `call to Stop on a nil Timer`
+}
+
+func timerOnOneBranch(ok bool) {
+	t := time.NewTimer(time.Second)
+	if ok {
+		t = nil
+	}
+	t.Stop()
+}
+
+func direct() {
+	(*time.Timer)(nil).Stop() // want `call to Stop on a nil Timer`
+}
+
+func methodExpression() {
+	(*time.Ticker).Reset(nil, time.Second) // want `call to Reset on a nil Ticker`
+	(*time.Timer).Stop(nil)                // want `call to Stop on a nil Timer`
+}
+
+func indirectMethodExpression() {
+	stop := (*time.Timer).Stop
+	stop(nil) // want `call to Stop on a nil Timer`
+}
+
+func storedMethodExpression() {
+	stop := storedStop
+	stop(nil)
+}
+
+var storedStop = (*time.Timer).Stop
+
+func deferred() {
+	var t *time.Timer
+	defer t.Stop() // want `call to Stop on a nil Timer`
+	var k *time.Ticker
+	defer k.Stop() // want `call to Stop on a nil Ticker`
+}
+
+func goroutine() {
+	var t *time.Ticker
+	go t.Reset(time.Second) // want `call to Reset on a nil Ticker`
+	var k *time.Timer
+	go k.Stop() // want `call to Stop on a nil Timer`
+}
+
+func zeroTimer() {
+	var t time.Timer
+	t.Stop()
+	t.Reset(time.Second)
+}
+
+func zeroTicker() {
+	var t time.Ticker
+	t.Stop()
+	t.Reset(time.Second)
+}
+
+func addressed() {
+	var t *time.Timer
+	p := &t
+	*p = time.NewTimer(time.Second)
+	t.Stop()
+}
+
+func addressedNil() {
+	var t *time.Timer
+	p := &t
+	*p = nil
+	t.Stop()
+}
+
+func captured() {
+	var t *time.Timer
+	f := func() {
+		t.Stop()
+	}
+	t = time.NewTimer(time.Second)
+	f()
+}
+
+func capturedNil() {
+	var t *time.Timer
+	f := func() {
+		t.Stop()
+	}
+	f()
+}
+
+func loopBackedge(ok bool) {
+	var t *time.Timer
+	for {
+		t.Stop() // want `call to Stop on a nil Timer`
+		if ok {
+			continue
+		}
+		t = nil
+	}
+}
+
+func loopMerge(ok bool) {
+	var t *time.Timer
+	for {
+		t.Stop()
+		if ok {
+			t = time.NewTimer(time.Second)
+			continue
+		}
+		break
+	}
+}
+
+func guardedNil() {
+	var t *time.Timer
+	if t != nil {
+		t.Stop() // want `call to Stop on a nil Timer`
+	}
+}
+
+func fromAssertion() {
+	var v any = (*time.Timer)(nil)
+	v.(*time.Timer).Stop()
+}
+
+func methodValue() {
+	var t *time.Timer
+	stop := t.Stop
+	stop()
+}
+
+func immediateMethodValue() {
+	var t *time.Timer
+	(t.Stop)() // want `call to Stop on a nil Timer`
+}
+
+func immediateMethodValueDefer() {
+	var t *time.Timer
+	defer (t.Stop)() // want `call to Stop on a nil Timer`
+}
+
+func immediateMethodValueGo() {
+	var t *time.Timer
+	go (t.Stop)() // want `call to Stop on a nil Timer`
+}
+
+func throughInterface() {
+	var t interface{ Stop() bool } = (*time.Timer)(nil)
+	t.Stop()
+}
+
+var _ = func() int {
+	var t *time.Timer
+	t.Stop()
+	return 0
+}()
+
+var _ = (*time.Timer)(nil).Stop()

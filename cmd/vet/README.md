@@ -1583,6 +1583,19 @@ func f(err error) error {
 }
 ```
 
+## niltimer
+
+Reports a call to a method of time.Timer or time.Ticker on a nil pointer. A nil receiver panics.
+
+Adapted from staticcheck's SA1019 family.
+
+```
+func f() {
+    var t *time.Timer
+    t.Stop()
+}
+```
+
 ## nowsub
 
 Reports time.Now().Sub(t) or t.Sub(time.Now()). time.Since and time.Until are shorthand for these two calls. In the Since direction a call is reported only when the argument does no work, because the rewrite moves the clock read past the argument.

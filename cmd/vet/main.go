@@ -1593,6 +1593,18 @@
 //		return nil
 //	}
 //
+// # niltimer
+//
+// Reports a call to a method of time.Timer or time.Ticker on a nil pointer. A
+// nil receiver panics.
+//
+// Adapted from staticcheck's SA1019 family.
+//
+//	func f() {
+//		var t *time.Timer
+//		t.Stop()
+//	}
+//
 // # nowsub
 //
 // Reports time.Now().Sub(t) or t.Sub(time.Now()). time.Since and time.Until
