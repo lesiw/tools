@@ -102,6 +102,7 @@ import (
 	"lesiw.io/tools/analyzers/deepexit"
 	"lesiw.io/tools/analyzers/defaultcaseorder"
 	"lesiw.io/tools/analyzers/deferbeforeerr"
+	"lesiw.io/tools/analyzers/deferchain"
 	"lesiw.io/tools/analyzers/defercloseunchecked"
 	"lesiw.io/tools/analyzers/deferinfinite"
 	"lesiw.io/tools/analyzers/deferinloop"
@@ -392,6 +393,7 @@ var (
 		deepexit.Analyzer,
 		defaultcaseorder.Analyzer,
 		deferbeforeerr.Analyzer,
+		deferchain.Analyzer,
 		defercloseunchecked.Analyzer,
 		deferinfinite.Analyzer,
 		deferinloop.Analyzer,

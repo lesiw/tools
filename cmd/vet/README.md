@@ -811,6 +811,18 @@ func f() error {
 }
 ```
 
+## deferchain
+
+Reports a deferred call that returns a function. The function value and arguments are evaluated when the defer statement executes, and the call runs when the surrounding function returns, so the returned function is discarded.
+
+Adapted from staticcheck's SA9010.
+
+```
+func chain(cleanup func() func()) {
+    defer cleanup()
+}
+```
+
 ## defercloseunchecked
 
 Reports a deferred Close on a file or buffered writer, or a deferred Flush, whose error is discarded. A Write can return while its data is still buffered, and the later Close or Flush writes it and can fail. A Close on an os.File is reported when the file came from a write-opening call, is os.Stdout or os.Stderr, or when its origin is unknown and the function writes through it.

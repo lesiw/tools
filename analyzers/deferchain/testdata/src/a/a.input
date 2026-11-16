@@ -1,0 +1,75 @@
+package a
+
+type handle struct{}
+
+func (handle) release() func() { return func() {} }
+
+type hook func()
+
+type repeat func() repeat
+
+type first func() second
+
+type second func() first
+
+func cleanup() func()                      { return func() {} }
+func release(int) func(int)                { return func(int) {} }
+func schedule(func()) func()               { return func() {} }
+func nested() func() func()                { return func() func() { return func() {} } }
+func named() hook                          { return func() {} }
+func variadic(...string) func(...int)      { return func(...int) {} }
+func fixed(...string) func(string, ...int) { return func(string, ...int) {} }
+func partly() func() func(int)             { return func() func(int) { return func(int) {} } }
+func scalar() func() int                   { return func() int { return 0 } }
+func multi() func() (int, func())          { return func() (int, func()) { return 0, func() {} } }
+func again() repeat                        { return nil }
+func ping() first                          { return nil }
+func pair() (int, func())                  { return 0, func() {} }
+func count() int                           { return 0 }
+func noop()                                {}
+func identity[T any](v T) T                { return v }
+
+func calls() {
+	defer cleanup()                            // want `deferred call returns a function that is not called`
+	defer release(1)                           // want `deferred call returns a function that is not called`
+	defer schedule(noop)                       // want `deferred call returns a function that is not called`
+	defer nested()                             // want `deferred call returns a function that is not called`
+	defer named()                              // want `deferred call returns a function that is not called`
+	defer variadic("first")                    // want `deferred call returns a function that is not called`
+	defer fixed("first")                       // want `deferred call returns a function that is not called`
+	defer partly()                             // want `deferred call returns a function that is not called`
+	defer scalar()                             // want `deferred call returns a function that is not called`
+	defer multi()                              // want `deferred call returns a function that is not called`
+	defer again()                              // want `deferred call returns a function that is not called`
+	defer ping()                               // want `deferred call returns a function that is not called`
+	defer identity(noop)                       // want `deferred call returns a function that is not called`
+	defer func() func() { return func() {} }() // want `deferred call returns a function that is not called`
+}
+
+func method(h handle) {
+	defer h.release() // want `deferred call returns a function that is not called`
+}
+
+func genericCall(v func()) {
+	defer identity(v) // want `deferred call returns a function that is not called`
+}
+
+func genericBody[T ~func()](v T) {
+	defer identity(v)
+}
+
+func called() {
+	defer cleanup()()
+	defer schedule(noop)()
+	defer variadic("first")()
+	defer fixed("first")("second")
+}
+
+func notFunctions() {
+	defer noop()
+	defer count()
+	defer pair()
+	defer func() {}()
+	defer func() int { return 0 }()
+	defer close(make(chan int))
+}

@@ -836,6 +836,19 @@
 //		return nil
 //	}
 //
+// # deferchain
+//
+// Reports a deferred call that returns a function. The function value and
+// arguments are evaluated when the defer statement executes, and the call runs
+// when the surrounding function returns, so the returned function is
+// discarded.
+//
+// Adapted from staticcheck's SA9010.
+//
+//	func chain(cleanup func() func()) {
+//		defer cleanup()
+//	}
+//
 // # defercloseunchecked
 //
 // Reports a deferred Close on a file or buffered writer, or a deferred Flush,
