@@ -1394,6 +1394,18 @@
 //		return strings.Index(string(b), "alpha")
 //	}
 //
+// # indexcontains
+//
+// Reports a test of a strings.Index or bytes.Index result against -1. A
+// Contains call returns the same boolean, negated when the test is for an
+// absent substring.
+//
+// Adapted from staticcheck's S1003.
+//
+//	func has(s, sub string) bool {
+//		return strings.Index(s, sub) != -1
+//	}
+//
 // # ineffectualcall
 //
 // Reports a call written as a statement to a method that has a value receiver

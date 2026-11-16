@@ -1,0 +1,7 @@
+package a
+
+import . "strings"
+
+func dotted(s, sub string) bool {
+	return Index(s, sub) != -1
+}

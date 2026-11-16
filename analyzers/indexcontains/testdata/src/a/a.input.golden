@@ -1,0 +1,128 @@
+package a
+
+import (
+	octets "bytes"
+	"strings"
+)
+
+func hasText(s, sub string) bool {
+	return strings.Contains(s, sub) // want `Index tested against -1; use Contains`
+}
+
+func lacksText(s, sub string) bool {
+	return !strings.Contains(s, sub) // want `Index tested against -1; use !Contains`
+}
+
+func afterText(s, sub string) bool {
+	return strings.Contains(s, sub) // want `Index tested against -1; use Contains`
+}
+
+func atMostText(s, sub string) bool {
+	return !strings.Contains(s, sub) // want `Index tested against -1; use !Contains`
+}
+
+func valueFirst(s, sub string) bool {
+	return strings.Contains(s, sub) // want `Index tested against -1; use Contains`
+}
+
+func equalValueFirst(s, sub string) bool {
+	return !strings.Contains(s, sub) // want `Index tested against -1; use !Contains`
+}
+
+func valueBefore(s, sub string) bool {
+	return strings.Contains(s, sub) // want `Index tested against -1; use Contains`
+}
+
+func valueAtMost(s, sub string) bool {
+	return !strings.Contains(s, sub) // want `Index tested against -1; use !Contains`
+}
+
+func hasBytes(b, sub []byte) bool {
+	return octets.Contains(b, sub) // want `Index tested against -1; use Contains`
+}
+
+func lacksBytes(b, sub []byte) bool {
+	return !octets.Contains(b, sub) // want `Index tested against -1; use !Contains`
+}
+
+func parenthesized(s, sub string) bool {
+	return !(strings.Contains(s, sub)) // want `Index tested against -1; use !Contains`
+}
+
+func valueParenthesized(s, sub string) bool {
+	return !(strings.Contains(s, sub)) // want `Index tested against -1; use !Contains`
+}
+
+func commented(s, sub string) bool {
+	return strings.Index(s, sub) /* keep */ != -1 // want `Index tested against -1; use Contains`
+}
+
+func commentedValue(s, sub string) bool {
+	return -1 /* keep */ != strings.Index(s, sub) // want `Index tested against -1; use Contains`
+}
+
+const notFound = -1
+
+func namedValue(s, sub string) bool {
+	return strings.Index(s, sub) != notFound
+}
+
+func foldedValue(s, sub string) bool {
+	return strings.Index(s, sub) != -1+0
+}
+
+func otherNegative(s, sub string) bool {
+	return strings.Index(s, sub) != -2
+}
+
+func unknownValue(s, sub string, n int) bool {
+	return strings.Index(s, sub) != n
+}
+
+func zeroValue(s, sub string) bool {
+	return strings.Index(s, sub) >= 0
+}
+
+func alwaysFalse(s, sub string) bool {
+	return strings.Index(s, sub) < -1
+}
+
+func alwaysTrue(s, sub string) bool {
+	return strings.Index(s, sub) >= -1
+}
+
+func valueAfter(s, sub string) bool {
+	return -1 > strings.Index(s, sub)
+}
+
+func valueAtLeast(s, sub string) bool {
+	return -1 <= strings.Index(s, sub)
+}
+
+type searcher struct{}
+
+func (searcher) Index(string, string) int {
+	return 0
+}
+
+func shadowed(s, sub string) bool {
+	strings := searcher{}
+	return strings.Index(s, sub) != -1
+}
+
+func functionValue(s, sub string) bool {
+	index := strings.Index
+	return index(s, sub) != -1
+}
+
+func otherIndex(s, sub string) bool {
+	return strings.IndexAny(s, sub) != -1
+}
+
+func runeIndex(s string) bool {
+	return strings.IndexRune(s, 'x') != -1
+}
+
+func byteIndex(s string) bool {
+	return strings.IndexByte(s, 'x') != -1
+}
