@@ -996,6 +996,23 @@ func trim(s string) string {
 }
 ```
 
+## dupelseif
+
+Reports an else-if whose condition repeats an earlier condition in the same chain, when each condition reads the same value both times and no init statement or condition that can read a different value lies between them. By the time the later one is reached, the earlier condition was false, so the repeated condition is false too and the branch can never run.
+
+Inspired by staticcheck's SA4014.
+
+```
+func f(n int) int {
+    if n > 0 {
+        return 1
+    } else if n > 0 {
+        return 2
+    }
+    return 0
+}
+```
+
 ## dupimport
 
 Reports one package imported twice under different names. Both names reach the same package, so a reader has to check which one a use site means.
