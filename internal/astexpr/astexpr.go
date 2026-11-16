@@ -1,10 +1,11 @@
 // Package astexpr holds the facts about the syntax tree that the analyzers
-// share: an expression's printed form, whether two expressions read the same
-// value or can be evaluated twice, whether evaluating one can run code or
-// panic, whether a type has no interface in it, whether a selection goes
-// through a pointer, whether a type can hold a NaN, whether its type set holds
-// only arrays, whether its type set can be written through an index, and
-// whether a statement reads the value it writes.
+// share: an expression's printed form, whether it begins with a composite
+// literal, whether two expressions read the same value or can be evaluated
+// twice, whether evaluating one can run code or panic, whether a type has no
+// interface in it, whether a selection goes through a pointer, whether a type
+// is the predeclared boolean, whether a type can hold a NaN, whether its type
+// set holds only arrays, whether its type set can be written through an index,
+// and whether a statement reads the value it writes.
 package astexpr
 
 import (
@@ -301,6 +302,40 @@ func IsWritableIndex(t types.Type) (found bool) {
 		found = true
 	}
 	return found
+}
+
+// IsBool reports whether t is the predeclared boolean type, typed or untyped.
+// A defined boolean type does not qualify, because a bool value does not take
+// its place in every context.
+func IsBool(t types.Type) bool {
+	b, ok := types.Unalias(t).(*types.Basic)
+	return ok && b.Info()&types.IsBoolean != 0
+}
+
+// Composite reports whether e begins with a composite literal. A statement
+// header cannot begin with one, so a caller that prints e there must
+// parenthesize it.
+func Composite(e ast.Expr) bool {
+	for {
+		switch n := e.(type) {
+		case *ast.SelectorExpr:
+			e = n.X
+		case *ast.IndexExpr:
+			e = n.X
+		case *ast.IndexListExpr:
+			e = n.X
+		case *ast.CallExpr:
+			e = n.Fun
+		case *ast.SliceExpr:
+			e = n.X
+		case *ast.TypeAssertExpr:
+			e = n.X
+		case *ast.CompositeLit:
+			return true
+		default:
+			return false
+		}
+	}
 }
 
 // unrestricted reports whether an element of a type set names no type of its
