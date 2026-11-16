@@ -458,3 +458,67 @@ func MapLookup(pass *analysis.Pass, e ast.Expr) bool {
 func PlainBool(t types.Type) bool {
 	return t != nil && types.Identical(types.Unalias(t), types.Typ[types.Bool])
 }
+
+// StableLength reports whether e cannot read a channel length, which another
+// goroutine can change between two calls.
+func StableLength(pass *analysis.Pass, e ast.Expr) bool {
+	var found bool
+	ast.Inspect(e, func(n ast.Node) bool {
+		if found {
+			return false
+		}
+		call, ok := n.(*ast.CallExpr)
+		if !ok || len(call.Args) != 1 {
+			return true
+		}
+		ident, ok := ast.Unparen(call.Fun).(*ast.Ident)
+		if !ok {
+			return true
+		}
+		if pass.TypesInfo.Uses[ident] != types.Universe.Lookup("len") {
+			return true
+		}
+		found = mayBeChan(pass.TypesInfo.TypeOf(call.Args[0]))
+		return !found
+	})
+	return !found
+}
+
+// constraintChan reports whether the type set of c holds a channel. The
+// elements of an interface are intersected, so one element without a channel
+// settles the constraint.
+func constraintChan(c types.Type) bool {
+	c = types.Unalias(c)
+	if union, ok := c.(*types.Union); ok {
+		for term := range union.Terms() {
+			if mayBeChan(term.Type()) {
+				return true
+			}
+		}
+		return false
+	}
+	iface, ok := c.Underlying().(*types.Interface)
+	if !ok {
+		return mayBeChan(c)
+	}
+	for embedded := range iface.EmbeddedTypes() {
+		if !constraintChan(embedded) {
+			return false
+		}
+	}
+	return true
+}
+
+// mayBeChan reports whether a value of type t can be a channel. A type
+// parameter is left to its constraint.
+func mayBeChan(t types.Type) bool {
+	if t == nil {
+		return true
+	}
+	t = types.Unalias(t)
+	if param, ok := t.(*types.TypeParam); ok {
+		return constraintChan(param.Constraint())
+	}
+	_, ok := t.Underlying().(*types.Chan)
+	return ok
+}
