@@ -1,0 +1,322 @@
+package a
+
+type handle struct{}
+
+func (*handle) close() {}
+
+func open(name string) *handle { return &handle{} }
+
+func perIteration(names []string) {
+	for _, name := range names {
+		defer open(name).close() // want `deferred calls in a loop accumulate until the function returns`
+	}
+}
+
+func forever() {
+	for {
+		defer open("first").close() // want `deferred calls in a loop accumulate until the function returns`
+	}
+}
+
+func conditional(ok bool) {
+	for ok {
+		defer open("first").close() // want `deferred calls in a loop accumulate until the function returns`
+	}
+}
+
+func guarded(names []string, ok bool) {
+	for _, name := range names {
+		if ok {
+			defer open(name).close() // want `deferred calls in a loop accumulate until the function returns`
+		}
+	}
+}
+
+func continued(names []string) {
+	for _, name := range names {
+		defer open(name).close() // want `deferred calls in a loop accumulate until the function returns`
+		continue
+	}
+}
+
+func received(ch chan string) {
+	for {
+		select {
+		case name := <-ch:
+			defer open(name).close() // want `deferred calls in a loop accumulate until the function returns`
+		}
+	}
+}
+
+func loopInLiteral(names []string) {
+	func() {
+		for _, name := range names {
+			defer open(name).close() // want `deferred calls in a loop accumulate until the function returns`
+		}
+	}()
+}
+
+func afterClauseBreak(ch chan string) {
+	for {
+		select {
+		case name := <-ch:
+			defer open(name).close() // want `deferred calls in a loop accumulate until the function returns`
+			break
+		}
+	}
+}
+
+func afterClauseContinue(names []string, ok bool) {
+	for _, name := range names {
+		switch {
+		case ok:
+			defer open(name).close() // want `deferred calls in a loop accumulate until the function returns`
+			continue
+		}
+	}
+}
+
+func afterFallthrough(names []string, ok bool) {
+	for _, name := range names {
+		switch {
+		case ok:
+			defer open(name).close() // want `deferred calls in a loop accumulate until the function returns`
+			fallthrough
+		default:
+			open(name).close()
+		}
+	}
+}
+
+func elseContinues(names []string, ok bool) {
+	for _, name := range names {
+		defer open(name).close() // want `deferred calls in a loop accumulate until the function returns`
+		if ok {
+			continue
+		} else {
+			return
+		}
+	}
+}
+
+func elsePasses(names []string, ok bool) {
+	for _, name := range names {
+		defer open(name).close() // want `deferred calls in a loop accumulate until the function returns`
+		if ok {
+			return
+		} else {
+			open(name).close()
+		}
+	}
+}
+
+func innerBreak(names []string, inner []string) {
+	for _, name := range names {
+		defer open(name).close() // want `deferred calls in a loop accumulate until the function returns`
+		for range inner {
+			break
+		}
+	}
+}
+
+func foreverBreak(names []string) {
+	for _, name := range names {
+		defer open(name).close() // want `deferred calls in a loop accumulate until the function returns`
+		for {
+			break
+		}
+	}
+}
+
+func switchEnds(names []string) {
+	for _, name := range names {
+		defer open(name).close() // want `deferred calls in a loop accumulate until the function returns`
+		switch {
+		default:
+			open(name).close()
+		}
+	}
+}
+
+func switchMaySkip(names []string, ok bool) {
+	for _, name := range names {
+		defer open(name).close() // want `deferred calls in a loop accumulate until the function returns`
+		switch {
+		case ok:
+			return
+		}
+	}
+}
+
+func labeledContinue(names []string, inner []string) {
+outer:
+	for _, name := range names {
+		defer open(name).close() // want `deferred calls in a loop accumulate until the function returns`
+		for range inner {
+			continue outer
+		}
+	}
+}
+
+func breakInBranch(ch chan string, ok bool) {
+	for {
+		select {
+		case name := <-ch:
+			if ok {
+				defer open(name).close() // want `deferred calls in a loop accumulate until the function returns`
+				break
+			}
+		}
+	}
+}
+
+func breakOut(names []string) {
+outer:
+	for _, name := range names {
+		defer open(name).close()
+		for {
+			break outer
+		}
+	}
+}
+
+func fallthroughReturns(names []string, ok bool) {
+	for _, name := range names {
+		defer open(name).close()
+		switch {
+		case ok:
+			fallthrough
+		default:
+			return
+		}
+	}
+}
+
+func inLiteral(names []string) {
+	for _, name := range names {
+		func() {
+			defer open(name).close()
+		}()
+	}
+}
+
+func inBranch(names []string, ok bool) {
+	for _, name := range names {
+		if ok {
+			defer open(name).close()
+			return
+		}
+	}
+}
+
+func afterReturn(names []string) {
+	for _, name := range names {
+		defer open(name).close()
+		return
+	}
+}
+
+func afterBreak(names []string) {
+	for _, name := range names {
+		defer open(name).close()
+		break
+	}
+}
+
+func afterGoto(names []string) {
+	for _, name := range names {
+		defer open(name).close()
+		goto done
+	}
+done:
+}
+
+func afterPanic(names []string) {
+	for _, name := range names {
+		defer open(name).close()
+		panic("stop")
+	}
+}
+
+func bothLeave(names []string, ok bool) {
+	for _, name := range names {
+		defer open(name).close()
+		if ok {
+			return
+		} else {
+			panic("stop")
+		}
+	}
+}
+
+func foreverAfter(names []string) {
+	for _, name := range names {
+		defer open(name).close()
+		for {
+		}
+	}
+}
+
+func selectLeaves(ch chan string, ok bool) {
+	for {
+		defer open("first").close()
+		select {
+		case <-ch:
+			return
+		default:
+			return
+		}
+	}
+}
+
+func selectReturns(ch chan string) {
+	for {
+		defer open("first").close()
+		select {
+		case <-ch:
+			return
+		}
+	}
+}
+
+func oneShot(names []string) {
+	for i := 0; i < 1; i++ {
+		defer open(names[i]).close() // want `deferred calls in a loop accumulate until the function returns`
+	}
+}
+
+func dead(names []string) {
+	return
+	for _, name := range names {
+		defer open(name).close()
+	}
+}
+
+func alwaysPanics() {
+	panic("stop")
+}
+
+func afterHelper(names []string) {
+	for _, name := range names {
+		defer open(name).close()
+		alwaysPanics()
+	}
+}
+
+// declared has no body, which a package may do for an assembly stub.
+func declared()
+
+// gotoOnly cycles without a loop, and a cycle is not what the rule reads.
+func gotoOnly(ok bool) {
+top:
+	defer open("first").close()
+	if ok {
+		goto top
+	}
+}
+
+func outsideLoop(names []string) {
+	defer open("first").close()
+	for range names {
+	}
+}

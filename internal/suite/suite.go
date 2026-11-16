@@ -95,6 +95,7 @@ import (
 	"lesiw.io/tools/analyzers/deferbeforeerr"
 	"lesiw.io/tools/analyzers/defercloseunchecked"
 	"lesiw.io/tools/analyzers/deferinfinite"
+	"lesiw.io/tools/analyzers/deferinloop"
 	"lesiw.io/tools/analyzers/deferunlambda"
 	"lesiw.io/tools/analyzers/deprecated"
 	"lesiw.io/tools/analyzers/discardedpure"
@@ -326,6 +327,7 @@ var (
 		deferbeforeerr.Analyzer,
 		defercloseunchecked.Analyzer,
 		deferinfinite.Analyzer,
+		deferinloop.Analyzer,
 		defers.Analyzer,
 		deferunlambda.Analyzer,
 		deprecated.Analyzer,

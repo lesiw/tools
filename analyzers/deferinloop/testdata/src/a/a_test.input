@@ -1,0 +1,7 @@
+package a
+
+func inTest(names []string) {
+	for _, name := range names {
+		defer open(name).close()
+	}
+}

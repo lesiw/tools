@@ -743,6 +743,24 @@
 //		}
 //	}
 //
+// # deferinloop
+//
+// Reports a defer inside a loop body, where the deferred call runs when the
+// function returns and not when the iteration ends. A loop that runs many
+// times holds every deferred call open at once.
+//
+// Inspired by go-critic's deferInLoop.
+//
+//	func f(paths []string) {
+//		for _, p := range paths {
+//			f, err := os.Open(p)
+//			if err != nil {
+//				continue
+//			}
+//			defer f.Close()
+//		}
+//	}
+//
 // # defers
 //
 // Reports a defer statement whose argument calls time.Since. The argument is
