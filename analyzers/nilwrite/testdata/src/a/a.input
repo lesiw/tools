@@ -1,0 +1,221 @@
+package a
+
+type (
+	indexed      struct{}
+	compound     struct{}
+	increment    struct{}
+	sliceOf      struct{}
+	ranged       struct{}
+	rangedTarget struct{}
+	closure      struct{}
+	appended     struct{}
+	appended2    struct{}
+	appended3    struct{}
+	bounded      struct{}
+	called       struct{}
+	fullCap      struct{}
+	copied       struct{}
+	copied2      struct{}
+	cleared      struct{}
+	cleared2     struct{}
+	empty        struct{}
+	pointer      struct{}
+	aliased      struct{}
+	rebound      struct{}
+	shadowed     struct{}
+	through      struct{}
+	zeroLength   struct{}
+	extra        struct{}
+	renamed      struct{}
+	result       struct{}
+	defined      struct{}
+	variadic     struct{}
+)
+
+type (
+	buffer []byte
+	octets = []byte
+)
+
+var seed = []byte("seed")
+
+func (indexed) Write(p []byte) (int, error) {
+	p[0] = 0 // want `Write may modify the buffer it was given`
+	return len(p), nil
+}
+
+func (compound) Write(p []byte) (int, error) {
+	p[0] += 1 // want `Write may modify the buffer it was given`
+	return len(p), nil
+}
+
+func (increment) Write(p []byte) (int, error) {
+	p[0]++ // want `Write may modify the buffer it was given`
+	return len(p), nil
+}
+
+func (sliceOf) Write(p []byte) (int, error) {
+	p[1:][0] = 0 // want `Write may modify the buffer it was given`
+	return len(p), nil
+}
+
+func (ranged) Write(p []byte) (int, error) {
+	for i := range p {
+		p[i] = 0 // want `Write may modify the buffer it was given`
+	}
+	return len(p), nil
+}
+
+func (rangedTarget) Write(p []byte) (int, error) {
+	for _, p[0] = range []byte{0} { // want `Write may modify the buffer it was given`
+	}
+	return len(p), nil
+}
+
+func (closure) Write(p []byte) (int, error) {
+	func() {
+		p[0] = 0 // want `Write may modify the buffer it was given`
+	}()
+	return len(p), nil
+}
+
+func (appended) Write(p []byte) (int, error) {
+	p = append(p, 0) // want `Write may modify the buffer it was given`
+	return len(p), nil
+}
+
+func (appended2) Write(p []byte) (int, error) {
+	_ = append(p, 0) // want `Write may modify the buffer it was given`
+	return len(p), nil
+}
+
+func (appended3) Write(p []byte) (int, error) {
+	p = append(p[:len(p):len(p)], 0)
+	return len(p), nil
+}
+
+func (bounded) Write(p []byte) (int, error) {
+	p = append(p[0:1:2], 0)     // want `Write may modify the buffer it was given`
+	p = append(p[:0:cap(p)], 0) // want `Write may modify the buffer it was given`
+	return len(p), nil
+}
+
+func (called) Write(p []byte) (int, error) {
+	p = append(p[:f():f()], 0) // want `Write may modify the buffer it was given`
+	return len(p), nil
+}
+
+func f() int { return 0 }
+
+func (fullCap) Write(p []byte) (int, error) {
+	p = append(p[:0:0], 0)
+	return len(p), nil
+}
+
+func (copied) Write(p []byte) (int, error) {
+	copy(p, seed) // want `Write may modify the buffer it was given`
+	return len(p), nil
+}
+
+func (copied2) Write(p []byte) (int, error) {
+	copy(p[1:], seed) // want `Write may modify the buffer it was given`
+	return len(p), nil
+}
+
+func (cleared) Write(p []byte) (int, error) {
+	clear(p) // want `Write may modify the buffer it was given`
+	return len(p), nil
+}
+
+func (cleared2) Write(p []byte) (int, error) {
+	clear(p[1:]) // want `Write may modify the buffer it was given`
+	return len(p), nil
+}
+
+func (empty) Write(p []byte) (int, error) {
+	copy(p[:0], seed)
+	copy(p[1:1], seed)
+	copy(p, p[:0])
+	copy(p, []byte(nil))
+	copy(p, "")
+	copy(p, []byte{})
+	_ = append(p)
+	clear(p[:0:0])
+	clear(p[2:2])
+	return len(p), nil
+}
+
+func (pointer) Write(p []byte) (n int, err error) {
+	p[0] = 0 // want `Write may modify the buffer it was given`
+	return len(p), nil
+}
+
+func (aliased) Write(p octets) (int, error) {
+	p[0] = 0 // want `Write may modify the buffer it was given`
+	return len(p), nil
+}
+
+func (rebound) Write(p []byte) (int, error) {
+	p = nil
+	p = p[:0]
+	return len(p), nil
+}
+
+func (shadowed) Write(p []byte) (int, error) {
+	{
+		p := []byte{0}
+		p[0] = 0
+		_ = append(p, 0)
+		clear(p)
+		copy(p, seed)
+	}
+	return len(p), nil
+}
+
+func (through) Write(p []byte) (int, error) {
+	q := p
+	q[0] = 0
+	modify(p)
+	return len(p), nil
+}
+
+func modify(p []byte) {
+	p[0] = 0
+}
+
+func (zeroLength) Write(p []byte) (int, error) {
+	n := 0
+	copy(p[:n], seed) // want `Write may modify the buffer it was given`
+	clear(p[:n])      // want `Write may modify the buffer it was given`
+	return len(p), nil
+}
+
+func (extra) Write(p []byte, extra int) (int, error) {
+	p[0] = 0
+	return len(p), nil
+}
+
+func (renamed) WriteString(p []byte) (int, error) {
+	p[0] = 0
+	return len(p), nil
+}
+
+func (result) Write(p []byte) int {
+	p[0] = 0
+	return len(p)
+}
+
+func (defined) Write(p buffer) (int, error) {
+	p[0] = 0
+	return len(p), nil
+}
+
+func (variadic) Write(p ...byte) (int, error) {
+	p[0] = 0
+	return len(p), nil
+}
+
+func Write(p []byte) (int, error) {
+	p[0] = 0
+	return len(p), nil
+}

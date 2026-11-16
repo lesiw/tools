@@ -2545,6 +2545,19 @@
 //		t.Stop()
 //	}
 //
+// # nilwrite
+//
+// Reports a Write method with io.Writer's signature that may modify the byte
+// slice it was given, as p[0] = 0 or p = append(p, 0). io.Writer's doc says
+// the method must not modify the slice data, even temporarily.
+//
+// Adapted from staticcheck's SA1023.
+//
+//	func (sink) Write(p []byte) (int, error) {
+//		p[0] = 0
+//		return len(p), nil
+//	}
+//
 // # noopbits
 //
 // Reports a bitwise AND, OR, or XOR whose right operand is a zero integer
