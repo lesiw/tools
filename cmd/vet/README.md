@@ -644,6 +644,20 @@ func f(m sync.Mutex) {
 }
 ```
 
+## copyto
+
+Reports a loop that copies one slice into another element by element. The builtin copy writes the elements in one call, at most the destination's length, and is defined for overlapping slices.
+
+Adapted from staticcheck's S1001.
+
+```
+func f(dst, src []int) {
+    for i, v := range src {
+        dst[i] = v
+    }
+}
+```
+
 ## ctxfield
 
 Reports a context.Context in a struct field. A context has the deadline and the cancellation of one request, so a struct that keeps one cannot serve the next request. An embedded context is left alone.

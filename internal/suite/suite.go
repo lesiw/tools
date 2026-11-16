@@ -90,6 +90,7 @@ import (
 	"lesiw.io/tools/analyzers/commentedoutcode"
 	"lesiw.io/tools/analyzers/commentfmt"
 	"lesiw.io/tools/analyzers/containscut"
+	"lesiw.io/tools/analyzers/copyto"
 	"lesiw.io/tools/analyzers/ctxfield"
 	"lesiw.io/tools/analyzers/ctxfirst"
 	"lesiw.io/tools/analyzers/ctxguard"
@@ -389,6 +390,7 @@ var (
 		composite.Analyzer,
 		containscut.Analyzer,
 		copylock.Analyzer,
+		copyto.Analyzer,
 		ctxfield.Analyzer,
 		ctxfirst.Analyzer,
 		ctxguard.Analyzer,

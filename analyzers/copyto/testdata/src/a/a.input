@@ -1,0 +1,488 @@
+package a
+
+type ints []int
+
+type prices []int
+
+type holder struct {
+	src []int
+	dst []int
+}
+
+func rangedValue(dst, src []int) {
+	// want+1 `loop copies src into dst element by element; use copy\(dst, src\), which writes at most the destination's length and allows overlap`
+	for i, v := range src {
+		dst[i] = v
+	}
+}
+
+func rangedIndex(dst, src []int) {
+	// want+1 `loop copies src into dst element by element; use copy\(dst, src\)`
+	for i := range src {
+		dst[i] = src[i]
+	}
+}
+
+func rangedBlankValue(dst, src []int) {
+	// want+1 `loop copies src into dst element by element; use copy\(dst, src\)`
+	for i, _ := range src {
+		dst[i] = src[i]
+	}
+}
+
+func counted(dst, src []int) {
+	// want+1 `loop copies src into dst element by element; use copy\(dst, src\)`
+	for i := 0; i < len(src); i++ {
+		dst[i] = src[i]
+	}
+}
+
+func countedParens(dst, src []int) {
+	// want+1 `loop copies src into dst element by element; use copy\(dst, src\)`
+	for i := 0; (i < len(src)); i++ {
+		dst[i] = src[i]
+	}
+}
+
+func oneLine(dst, src []int) {
+	for i := range src { dst[i] = src[i] } // want `loop copies src`
+}
+
+func parentheses(dst, src []int) {
+	// want+1 `loop copies src into dst element by element; use copy\(dst, src\)`
+	for i := range src {
+		(dst)[i] = (src)[i]
+	}
+}
+
+func named(dst, src ints) {
+	// want+1 `loop copies src into dst element by element; use copy\(dst, src\)`
+	for i, v := range src {
+		dst[i] = v
+	}
+}
+
+func fields(h *holder) {
+	// want+1 `loop copies h.src into h.dst element by element; use copy\(h.dst, h.src\)`
+	for i, v := range h.src {
+		h.dst[i] = v
+	}
+}
+
+func indexed(rows [][]int, k int) {
+	// want+1 `loop copies rows\[k\] into rows\[0\] element by element; use copy\(rows\[0\], rows\[k\]\)`
+	for i, v := range rows[k] {
+		rows[0][i] = v
+	}
+}
+
+func sliced(dst, src []int) {
+	// want+1 `loop copies src\[1:\] into dst element by element; use copy\(dst, src\[1:\]\)`
+	for i, v := range src[1:] {
+		dst[i] = v
+	}
+}
+
+func converted(dst, src []int) {
+	// want+1 `loop copies prices\(src\) into dst element by element; use copy\(dst, prices\(src\)\)`
+	for i, v := range prices(src) {
+		dst[i] = v
+	}
+}
+
+func literal(dst []int) {
+	// want+1 `loop copies \[\]int\{1, 2\} into dst element by element; use copy\(dst, \[\]int\{1, 2\}\)`
+	for i, v := range []int{
+		1,
+		2,
+	} {
+		dst[i] = v
+	}
+}
+
+func rangedLen(dst, src []int) {
+	// want+1 `loop copies src into dst element by element; use copy\(dst, src\)`
+	for i := range len(src) {
+		dst[i] = src[i]
+	}
+}
+
+func commented(dst, src []int) {
+	// want+1 `loop copies src into dst element by element; use copy\(dst, src\)`
+	for i, v := range src {
+		dst[i] = v // keep
+	}
+}
+
+func widened(dst []any, src []int) {
+	for i, v := range src {
+		dst[i] = v
+	}
+}
+
+func arrayTarget(dst [4]int, src []int) {
+	for i, v := range src {
+		dst[i] = v
+	}
+}
+
+func arraySource(dst []int, src [4]int) {
+	for i, v := range src {
+		dst[i] = v
+	}
+}
+
+func generic[T ~[]int](dst, src T) {
+	for i, v := range src {
+		dst[i] = v
+	}
+}
+
+func extra(dst, src []int) {
+	for i, v := range src {
+		dst[i] = v
+		dst[i]++
+	}
+}
+
+func offset(dst, src []int) {
+	for i, v := range src {
+		dst[i+1] = v
+	}
+}
+
+func loopIndexShadowsSource(dst []int, rows [][]int, i int) {
+	for i := range rows[i] {
+		dst[i] = rows[i][i]
+	}
+}
+
+func other(dst, src, more []int) {
+	for i := range src {
+		dst[i] = more[i]
+	}
+}
+
+func refreshed(dst []int, next func() []int) {
+	for i, v := range next() {
+		dst[i] = v
+	}
+}
+
+func targetCall(src []int, next func() []int) {
+	for i, v := range src {
+		next()[i] = v
+	}
+}
+
+func shadowedLen(dst, src []int) {
+	len := func([]int) int { return 0 }
+	for i := 0; i < len(src); i++ {
+		dst[i] = src[i]
+	}
+}
+
+func nestedTarget(dst [][]int, src []int) {
+	for i, v := range src {
+		dst[i][i] = v
+	}
+}
+
+func valueTarget(dst [][]int, src []int) {
+	for i, v := range src {
+		dst[v][i] = v
+	}
+}
+
+func shrinkingBound(dst, src []int) {
+	for i := 0; i < len(src[i:]); i++ {
+		dst[i] = src[i]
+	}
+}
+
+func fromOne(dst, src []int) {
+	for i := 1; i < len(src); i++ {
+		dst[i] = src[i]
+	}
+}
+
+func inclusive(dst, src []int) {
+	for i := 0; i <= len(src); i++ {
+		dst[i] = src[i]
+	}
+}
+
+func stepped(dst, src []int) {
+	for i := 0; i < len(src); i += 1 {
+		dst[i] = src[i]
+	}
+}
+
+func assigned(dst, src []int) {
+	var i, v int
+	for i, v = range src {
+		dst[i] = v
+	}
+	_, _ = i, v
+}
+
+func shadowed(dst, src []int) {
+	copy := func(dst, src []int) {}
+	for i, v := range src {
+		dst[i] = v
+	}
+	copy(dst, src)
+}
+
+func indexedConversion(dst, src []int) {
+	// want+1 `loop copies prices\(src\) into dst element by element; use copy\(dst, prices\(src\)\)`
+	for i := range prices(src) {
+		dst[i] = prices(src)[i]
+	}
+}
+
+func indexedSlice(dst, src []int) {
+	// want+1 `loop copies src\[1:\] into dst element by element; use copy\(dst, src\[1:\]\)`
+	for i := 0; i < len(src[1:]); i++ {
+		dst[i] = src[1:][i]
+	}
+}
+
+func rawString(dst []string) {
+	// want+1 `^loop copies one slice into another element by element; use copy, which writes at most the destination's length and allows overlap$`
+	for i, v := range []string{`a
+b`} {
+		dst[i] = v
+	}
+}
+
+func shadowedLenValue(dst, src []int) {
+	len := func([]int) int { return 0 }
+	_ = len
+	// want+1 `loop copies src into dst element by element; use copy\(dst, src\)`
+	for i, v := range src {
+		dst[i] = v
+	}
+}
+
+func stringSource(dst []byte, s string) {
+	for i := 0; i < len(s); i++ {
+		dst[i] = s[i]
+	}
+}
+
+func guardedLiteral(dst [][]int) {
+	// want+1 `loop copies \[\]int\{1, 2\} into dst\[0\] element by element; use copy\(dst\[0\], \[\]int\{1, 2\}\)`
+	for i, v := range []int{1, 2} {
+		dst[0][i] = v
+	}
+}
+
+func guardedShadowedLen(rows [][]int, src []int) {
+	len := func([]int) int { return 0 }
+	_ = len
+	// want+1 `loop copies src into rows\[0\] element by element; use copy\(rows\[0\], src\)`
+	for i, v := range src {
+		rows[0][i] = v
+	}
+}
+
+func guardedCall(rows [][]int, src []int) {
+	// want+1 `loop copies prices\(src\) into rows\[0\] element by element; use copy\(rows\[0\], prices\(src\)\)`
+	for i, v := range prices(src) {
+		rows[0][i] = v
+	}
+}
+
+func sourceIndexReadsTarget(dst, src []int) {
+	for i := range src[:dst[0]] {
+		dst[i] = src[:dst[0]][i]
+	}
+}
+
+func targetIndexReadsTarget(dst [][]int, src []int) {
+	for i, v := range src {
+		dst[dst[0][0]][i] = v
+	}
+}
+
+func shadowedLenRangeBound(dst, src []int) {
+	len := func([]int) int { return 0 }
+	_ = len
+	for i := range len(src) {
+		dst[i] = src[i]
+	}
+}
+
+func countedGuard(rows [][]int, src []int) {
+	// want+1 `loop copies src into rows\[0\] element by element; use copy\(rows\[0\], src\)`
+	for i := 0; i < len(src); i++ {
+		rows[0][i] = src[i]
+	}
+}
+
+func rangedLenGuard(rows [][]int, src []int) {
+	// want+1 `loop copies src into rows\[0\] element by element; use copy\(rows\[0\], src\)`
+	for i := range len(src) {
+		rows[0][i] = src[i]
+	}
+}
+
+type node struct{ children []node }
+
+func childCopy(nodes []node) {
+	for i := range nodes[0].children {
+		nodes[i] = nodes[0].children[i]
+	}
+}
+
+func wideDirect(destinationSliceWithALongNameForTheFix, sourceSliceWithALongNameForTheFix []int) {
+	// want+1 `loop copies sourceSliceWithALongNameForTheFix into destinationSliceWithALongNameForTheFix element by element; use copy\(destinationSliceWithALongNameForTheFix, sourceSliceWithALongNameForTheFix\)`
+	for i, v := range sourceSliceWithALongNameForTheFix {
+		destinationSliceWithALongNameForTheFix[i] = v
+	}
+}
+
+func midLine(dst, src []int) {
+	// want+1 `loop copies src into dst element by element; use copy\(dst, src\)`
+	if len(src) > 0 { for i, v := range src { dst[i] = v } }
+}
+
+func wideGuard(rowsWithALongNameForTheGuard [][]int, sourceSliceWithALongNameForTheGuard []int) {
+	// want+1 `loop copies sourceSliceWithALongNameForTheGuard into rowsWithALongNameForTheGuard\[0\] element by element; use copy\(rowsWithALongNameForTheGuard\[0\], sourceSliceWithALongNameForTheGuard\)`
+	for i, v := range sourceSliceWithALongNameForTheGuard {
+		rowsWithALongNameForTheGuard[0][i] = v
+	}
+}
+
+func childCopyValue(dst []node, nodes []node) {
+	// want+1 `loop copies nodes\[0\].children into dst element by element; use copy\(dst, nodes\[0\].children\)`
+	for i, v := range nodes[0].children {
+		dst[i] = v
+	}
+}
+
+func pointerSource(dst []node, p *node) {
+	for i := range p.children {
+		dst[i] = p.children[i]
+	}
+}
+
+func pointerDestination(p *node, src []node) {
+	for i, v := range src {
+		p.children[i] = v
+	}
+}
+
+func literalTarget(src []int) {
+	for i, v := range src {
+		[]int{0, 0}[i] = v
+	}
+}
+
+type holderNode struct{ *node }
+
+type nodePointer *node
+
+func promotedSource(dst []node, h holderNode) {
+	for i := range h.children {
+		dst[i] = h.children[i]
+	}
+}
+
+func promotedDestination(h holderNode, src []node) {
+	for i, v := range src {
+		h.children[i] = v
+	}
+}
+
+func definedPointerSource(dst []node, p nodePointer) {
+	for i := range p.children {
+		dst[i] = p.children[i]
+	}
+}
+
+type tree []tree
+
+func recursiveSource(dst tree) {
+	for i := 0; i < len(dst[0]); i++ {
+		dst[i] = dst[0][i]
+	}
+}
+
+func assertedTarget(x any, src []int) {
+	// want+1 `loop copies src into x\.\(\[\]int\) element by element; use copy\(x\.\(\[\]int\), src\)`
+	for i, v := range src {
+		x.([]int)[i] = v
+	}
+}
+
+func convertedTarget(dst, src []int) {
+	// want+1 `loop copies src into prices\(dst\) element by element; use copy\(prices\(dst\), src\)`
+	for i, v := range src {
+		prices(dst)[i] = v
+	}
+}
+
+func slicedTarget(dst, src []int) {
+	// want+1 `loop copies src into dst\[1:\] element by element; use copy\(dst\[1:\], src\)`
+	for i, v := range src {
+		dst[1:][i] = v
+	}
+}
+
+func countedOffset(dst []int, rows [][]int, k int) {
+	for i := 0; i < len(rows[k]); i++ {
+		dst[i+1] = rows[k][i]
+	}
+}
+
+func recursiveSlice(dst tree) {
+	for i := 0; i < len(dst[0]); i++ {
+		dst[:][i] = dst[0][i]
+	}
+}
+
+func recursiveTarget(dst, src tree) {
+	for i, v := range src {
+		dst[0][i] = v
+	}
+}
+
+type cell struct{ n int }
+
+type box struct{ c cell }
+
+func pointerBound(dst []box, src []box, c *cell) {
+	for i, v := range src {
+		dst[c.n:][i] = v
+	}
+}
+
+func wideTrailing(destinationSliceWithALongNameForTheFix, sourceSliceWithALongNameForTheFix []int) {
+	// want+1 `loop copies sourceSliceWithALongNameForTheFix into destinationSliceWithALongNameForTheFix`
+	for i, v := range sourceSliceWithALongNameForTheFix {
+		destinationSliceWithALongNameForTheFix[i] = v
+	} // keep
+}
+
+func recursiveAlias(rows tree) {
+	dst := rows
+	for i := 0; i < len(rows[0]); i++ {
+		dst[i] = rows[0][i]
+	}
+}
+
+func dereferenced(dst []int, src *[]int) {
+	// want+1 `loop copies \*src into dst element by element; use copy\(dst, \*src\)`
+	for i, v := range *src {
+		dst[i] = v
+	}
+}
+
+func dereferencedTarget(dst *[]int, src []int) {
+	// want+1 `loop copies src into \*dst element by element; use copy\(\*dst, src\)`
+	for i, v := range src {
+		(*dst)[i] = v
+	}
+}
