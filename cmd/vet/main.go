@@ -2237,6 +2237,18 @@
 //		return !ok && ok
 //	}
 //
+// # negzero
+//
+// Reports a unary minus on a constant zero of a floating-point or complex
+// type, including a type parameter restricted to those types. An explicit
+// conversion of a typed integer constant zero to one of those types is
+// reported too. The spec says there are no constants denoting the IEEE 754
+// negative zero, so the minus is not part of the value.
+//
+// Adapted from staticcheck's SA4026.
+//
+//	const x = -0.0
+//
 // # newderef
 //
 // Reports a dereference of a fresh allocation. new(T) zeroes a T and the

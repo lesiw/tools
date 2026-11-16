@@ -188,6 +188,7 @@ import (
 	"lesiw.io/tools/analyzers/nancompare"
 	"lesiw.io/tools/analyzers/nanosleep"
 	"lesiw.io/tools/analyzers/negatedbool"
+	"lesiw.io/tools/analyzers/negzero"
 	"lesiw.io/tools/analyzers/newderef"
 	"lesiw.io/tools/analyzers/nilchansend"
 	"lesiw.io/tools/analyzers/nilchecklen"
@@ -484,6 +485,7 @@ var (
 		nancompare.Analyzer,
 		nanosleep.Analyzer,
 		negatedbool.Analyzer,
+		negzero.Analyzer,
 		newderef.Analyzer,
 		nilchansend.Analyzer,
 		nilchecklen.Analyzer,

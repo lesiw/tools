@@ -1,0 +1,189 @@
+package a
+
+const zero = 0.0
+
+const typedZero float32 = 0
+
+const literal = -0.0 // want `a constant cannot be negative zero; this is zero`
+
+const fromNamed = -zero // want `a constant cannot be negative zero; this is zero`
+
+var packageVar = -0.0 // want `a constant cannot be negative zero; this is zero`
+
+var implicitFloat float64 = -0 // want `a constant cannot be negative zero; this is zero`
+
+var implicitComplex complex128 = -0 // want `a constant cannot be negative zero; this is zero`
+
+var implicitInt int = -0
+
+var implicitTiny float64 = -1e-400
+
+type temperature float64
+
+func literals() {
+	_ = -0.0 // want `a constant cannot be negative zero; this is zero`
+	_ = -0. // want `a constant cannot be negative zero; this is zero`
+	_ = -.0 // want `a constant cannot be negative zero; this is zero`
+	_ = -0e0 // want `a constant cannot be negative zero; this is zero`
+	_ = -0x0p0 // want `a constant cannot be negative zero; this is zero`
+	_ = -(0.0) // want `a constant cannot be negative zero; this is zero`
+}
+
+func conversions() {
+	_ = float32(-0.0) // want `a constant cannot be negative zero; this is zero`
+	_ = -float32(0) // want `a constant cannot be negative zero; this is zero`
+	_ = -float64(0.0) // want `a constant cannot be negative zero; this is zero`
+	_ = -float64(0x0p0) // want `a constant cannot be negative zero; this is zero`
+	_ = float32(-0) // want `a constant cannot be negative zero; this is zero`
+	_ = float64(-0) // want `a constant cannot be negative zero; this is zero`
+	_ = temperature(-0) // want `a constant cannot be negative zero; this is zero`
+}
+
+const intZero = 0
+
+const typedIntZero int = 0
+
+func typedConversions() {
+	_ = float64(-intZero) // want `a constant cannot be negative zero; this is zero`
+	_ = float64(-int8(0)) // want `a constant cannot be negative zero; this is zero`
+	_ = float64(-uint8(0)) // want `a constant cannot be negative zero; this is zero`
+	_ = float64((-int8(0))) // want `a constant cannot be negative zero; this is zero`
+	_ = float32(-int32(0)) // want `a constant cannot be negative zero; this is zero`
+	_ = float64(-int64(0)) // want `a constant cannot be negative zero; this is zero`
+	_ = float64(-typedIntZero) // want `a constant cannot be negative zero; this is zero`
+	_ = complex128(-intZero) // want `a constant cannot be negative zero; this is zero`
+	_ = float64(-int64(1))
+}
+
+func named() {
+	_ = -zero // want `a constant cannot be negative zero; this is zero`
+	_ = -typedZero // want `a constant cannot be negative zero; this is zero`
+}
+
+func complexValues() {
+	_ = -0i // want `a constant cannot be negative zero; this is zero`
+	_ = -complex128(0) // want `a constant cannot be negative zero; this is zero`
+	_ = complex128(-0) // want `a constant cannot be negative zero; this is zero`
+	_ = -complex(0, 0) // want `a constant cannot be negative zero; this is zero`
+}
+
+func takesFloat(float64) {}
+
+func takesComplex(complex128) {}
+
+func takesInt64(int64) {}
+
+func notConversions() {
+	n := 0
+	_ = float64(-n)
+	takesInt64(-int64(0))
+	_ = int64(-int64(0))
+}
+
+func implicit() {
+	takesFloat(-0) // want `a constant cannot be negative zero; this is zero`
+	takesComplex(-0) // want `a constant cannot be negative zero; this is zero`
+	var f float64 = -0 // want `a constant cannot be negative zero; this is zero`
+	_ = f
+	var c complex128 = -0 // want `a constant cannot be negative zero; this is zero`
+	_ = c
+}
+
+func implicitReturn() float64 {
+	return -0 // want `a constant cannot be negative zero; this is zero`
+}
+
+func genericReturn[T ~float64]() T {
+	return -0.0 // want `a constant cannot be negative zero; this is zero`
+}
+
+func genericIntZero[T ~float64]() T {
+	return -0 // want `a constant cannot be negative zero; this is zero`
+}
+
+func genericComplex[T ~complex128]() T {
+	return -0i // want `a constant cannot be negative zero; this is zero`
+}
+
+func genericMixed[T ~float64 | ~int]() T {
+	return -0
+}
+
+type floatUnion interface{ ~float64 | ~float32 }
+
+type realUnion interface{ ~float64 | ~float32 | ~int }
+
+type both interface {
+	floatUnion
+	realUnion
+}
+
+func genericIntersection[T both]() T {
+	return -0.0 // want `a constant cannot be negative zero; this is zero`
+}
+
+func genericIntersectionConversion[T both]() T {
+	return T(-intZero) // want `a constant cannot be negative zero; this is zero`
+}
+
+func takesGeneric[T ~float64](T) {}
+
+func genericCall() {
+	takesGeneric(-0.0) // want `a constant cannot be negative zero; this is zero`
+}
+
+func spaced() {
+	_ = - 0.0 // want `a constant cannot be negative zero; this is zero`
+}
+
+func commented() {
+	_ = - /* why */ 0.0 // want `a constant cannot be negative zero; this is zero`
+}
+
+func joined() float64 {
+	return-0.0 // want `a constant cannot be negative zero; this is zero`
+}
+
+func divided(v float64) float64 {
+	return v /-/* why */0.0 // want `a constant cannot be negative zero; this is zero`
+}
+
+func lineComment() float64 {
+	return - // want `a constant cannot be negative zero; this is zero`
+		0.0
+}
+
+func expressions(v float64) {
+	_ = -0.0 * v // want `a constant cannot be negative zero; this is zero`
+	_ = v + -0.0 // want `a constant cannot be negative zero; this is zero`
+	_ = v + -0 // want `a constant cannot be negative zero; this is zero`
+	_ = -0 * v // want `a constant cannot be negative zero; this is zero`
+}
+
+func notZero() {
+	_ = -1.0
+	_ = -0.5
+	_ = -1e-400
+	_ = -float64(1)
+	_ = -1i
+}
+
+func integers() {
+	_ = -0
+	_ = -int(0)
+	_ = int64(-0)
+}
+
+func runtime(v float64) {
+	_ = -v
+}
+
+func variableZero() {
+	v := 0.0
+	_ = -v
+}
+
+func shadowed() {
+	zero := 1.0
+	_ = -zero
+}
