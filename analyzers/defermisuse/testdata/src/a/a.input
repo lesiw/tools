@@ -1,0 +1,448 @@
+package a
+
+func take(any) {}
+
+func run(f func()) { f() }
+
+func recoverOutside() {
+	recover() // want `recover outside a deferred function has no effect`
+}
+
+func callRecoverOutside() {
+	recoverOutside()
+}
+
+func recoverInLiteral() {
+	defer func() {
+		recover()
+	}()
+}
+
+func recoverParenLiteral() {
+	defer (func() {
+		recover()
+	})()
+}
+
+func recoverNested() {
+	defer func() {
+		func() {
+			recover() // want `recover outside a deferred function has no effect`
+		}()
+	}()
+}
+
+func recoverInNestedDeferArgument() {
+	defer func() {
+		defer take(recover())
+	}()
+}
+
+func deferRecover() {
+	defer recover() // want `recover is the deferred call; call it directly in a deferred function`
+}
+
+func callDeferRecover() {
+	deferRecover()
+}
+
+func deferParenRecover() {
+	defer (recover)() // want `recover is the deferred call; call it directly in a deferred function`
+}
+
+func callDeferParenRecover() {
+	deferParenRecover()
+}
+
+func deferArgument() {
+	defer take(recover()) // want `recover runs when the defer is registered; call it inside the deferred function`
+}
+
+func callDeferArgument() {
+	deferArgument()
+}
+
+func deferRecoverInLiteral() {
+	defer func() {
+		defer recover() // want `recover is the deferred call; call it directly in a deferred function`
+	}()
+}
+
+func deferRecoverInNamedHelper() {
+	defer recover() // want `recover is the deferred call; call it directly in a deferred function`
+}
+
+func callDeferredRecoverHelper() {
+	defer deferRecoverInNamedHelper()
+}
+
+func shadowed() {
+	recover := func() {}
+	recover()
+}
+
+func deferredHelper() {
+	recover()
+}
+
+func callDeferredHelper() {
+	defer deferredHelper()
+}
+
+func nestedInDeferredHelper() {
+	func() {
+		recover() // want `recover outside a deferred function has no effect`
+	}()
+}
+
+func callNestedInDeferredHelper() {
+	defer nestedInDeferredHelper()
+}
+
+type item struct{}
+
+func (*item) check() {
+	recover()
+}
+
+func callMethod(i *item) {
+	defer i.check()
+}
+
+type handle struct{}
+
+func (*handle) close() {}
+
+func openHandle() *handle { return &handle{} }
+
+func deferredMethodCall() {
+	defer openHandle().close()
+}
+
+type valueHandle struct{}
+
+func (valueHandle) close() {}
+
+func deferredValueMethod(h valueHandle) {
+	defer h.close()
+}
+
+func cleanup() {}
+
+func directDefer() {
+	defer cleanup()
+}
+
+func restore() func() { return func() {} }
+
+func callChain() {
+	defer restore()()
+}
+
+func valueHelper() int { return 1 }
+
+func callValueHelper() {
+	defer valueHelper()
+}
+
+func Catch() {
+	recover()
+}
+
+func callCatch() {
+	Catch()
+}
+
+func valueRecover() {
+	recover()
+}
+
+func deferValue() {
+	f := valueRecover
+	defer f()
+}
+
+func deferLiteralValue() {
+	f := func() {
+		recover()
+	}
+	defer f()
+}
+
+func deferLiteralReturnValue() {
+	f := func() error {
+		return nil // want `return in a deferred function does not return from the function that deferred it`
+	}
+	defer f()
+}
+
+func storedLiteral() {
+	f := func() {
+		recover()
+	}
+	f()
+}
+
+func deferBeforeAssign() {
+	var f func() error
+	defer f()
+	f = func() error {
+		return nil
+	}
+}
+
+func reassignAfterDefer() {
+	f := func() error {
+		return nil // want `return in a deferred function does not return from the function that deferred it`
+	}
+	defer f()
+	f = nil
+}
+
+func mixedUse() {
+	recover()
+}
+
+func useMixed() {
+	mixedUse()
+	take(mixedUse)
+}
+
+func reassignLiteral() {
+	f := func() error {
+		return nil // want `return in a deferred function does not return from the function that deferred it`
+	}
+	defer f()
+	f = func() error {
+		return nil
+	}
+}
+
+type checker interface {
+	check()
+}
+
+type impl struct{}
+
+func (impl) check() {
+	recover()
+}
+
+func callImpl(i impl) {
+	i.check()
+}
+
+func deferInterface(c checker) {
+	defer c.check()
+}
+
+func callDeferInterface() {
+	deferInterface(impl{})
+}
+
+type checkerOnly interface {
+	probe()
+}
+
+type onlyImpl struct{}
+
+func (onlyImpl) probe() {
+	recover() // want `recover outside a deferred function has no effect`
+}
+
+func callOnly(c checkerOnly) {
+	c.probe()
+}
+
+func useOnly() {
+	callOnly(onlyImpl{})
+}
+
+type twoIface interface {
+	run()
+}
+
+type usedImpl struct{}
+
+func (usedImpl) run() {
+	recover()
+}
+
+type unusedImpl struct{}
+
+func (unusedImpl) run() {
+	recover()
+}
+
+func callTwo(i twoIface) {
+	i.run()
+}
+
+func useTwo() {
+	callTwo(usedImpl{})
+}
+
+type wider interface {
+	inspect()
+	other()
+}
+
+type partial struct{}
+
+func (partial) inspect() {
+	recover() // want `recover outside a deferred function has no effect`
+}
+
+func callPartial(p partial) {
+	p.inspect()
+}
+
+type widerImpl struct{}
+
+func (widerImpl) inspect() {}
+
+func (widerImpl) other() {}
+
+func deferWider(w wider) {
+	defer w.inspect()
+}
+
+func callDeferWider() {
+	deferWider(widerImpl{})
+}
+
+func unusedRecover() {
+	recover()
+}
+
+func onlyTestHelper() {
+	recover()
+}
+
+func directAndTest() {
+	recover() // want `recover outside a deferred function has no effect`
+}
+
+func callDirectAndTest() {
+	directAndTest()
+}
+
+func goRecoverArgument() {
+	defer func() {
+		go take(recover())
+	}()
+}
+
+func goRecoverArgumentOutside() {
+	go take(recover()) // want `recover outside a deferred function has no effect`
+}
+
+func callGoRecoverArgumentOutside() {
+	goRecoverArgumentOutside()
+}
+
+func goRecoverOutside() {
+	go recover() // want `recover in a new goroutine has no effect`
+}
+
+func callGoRecoverOutside() {
+	goRecoverOutside()
+}
+
+func goRecoverInLiteral() {
+	defer func() {
+		go recover() // want `recover in a new goroutine has no effect`
+	}()
+}
+
+type box[T any] struct{}
+
+func (box[T]) broken() {
+	recover()
+}
+
+func callBox(b box[int]) {
+	b.broken()
+}
+
+func deferBoxBroken(b box[int]) {
+	defer b.broken()
+}
+
+type runner[T any] interface {
+	run(T)
+}
+
+type runnerImpl struct{}
+
+func (runnerImpl) run(int) {
+	recover()
+}
+
+func callRunnerImpl(r runnerImpl) {
+	r.run(0)
+}
+
+func deferRunner[T any](r runner[T], v T) {
+	defer r.run(v)
+}
+
+func callDeferRunner() {
+	deferRunner[int](runnerImpl{}, 0)
+}
+
+type boxRunner[T any] interface {
+	run(struct{ X T })
+}
+
+type boxRunnerImpl struct{}
+
+func (boxRunnerImpl) run(struct{ X int }) {
+	recover()
+}
+
+func callBoxRunnerImpl(r boxRunnerImpl) {
+	r.run(struct{ X int }{})
+}
+
+func deferBoxRunner[T any](r boxRunner[T], v struct{ X T }) {
+	defer r.run(v)
+}
+
+func callDeferBoxRunner() {
+	deferBoxRunner[int](boxRunnerImpl{}, struct{ X int }{})
+}
+
+func returnValue() {
+	defer func() error {
+		return nil // want `return in a deferred function does not return from the function that deferred it`
+	}()
+}
+
+func returnValueNested() {
+	defer func() {
+		func() error {
+			return nil
+		}()
+	}()
+}
+
+func bareReturn() {
+	defer func() {
+		if false {
+			return
+		}
+	}()
+}
+
+func ordinaryLiteral() {
+	func() error {
+		return nil
+	}()
+}
+
+func loop(xs []int) {
+	for range xs {
+		defer run(func() {})
+	}
+}

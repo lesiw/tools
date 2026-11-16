@@ -1,0 +1,9 @@
+package main
+
+func init() {
+	recover() // want `recover outside a deferred function has no effect`
+}
+
+func main() {
+	recover() // want `recover outside a deferred function has no effect`
+}

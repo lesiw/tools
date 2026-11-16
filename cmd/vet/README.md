@@ -805,6 +805,22 @@ func f(paths []string) {
 }
 ```
 
+## defermisuse
+
+Reports a recover call that does not run directly in a deferred function, and a return with results in a deferred literal. The recover builtin stops a panic only when the deferred function calls it directly, and a return from a deferred literal discards its results.
+
+Adapted from revive's defer; defermisuse covers its recover, immediate-recover, and return parts.
+
+```
+func f() {
+    recover()
+}
+
+func g() {
+    f()
+}
+```
+
 ## defers
 
 Reports a defer statement whose argument calls time.Since. The argument is evaluated where the defer stands, so the elapsed time is measured at once; a func literal that makes the call when the defer runs is the fix.

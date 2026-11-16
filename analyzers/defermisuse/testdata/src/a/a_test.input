@@ -1,0 +1,21 @@
+package a
+
+import "testing"
+
+func TestRecover(t *testing.T) {
+	func() { recover() }()
+}
+
+func TestReturn(t *testing.T) {
+	defer func() error {
+		return nil
+	}()
+}
+
+func TestHelper(t *testing.T) {
+	onlyTestHelper()
+}
+
+func TestDeferDirect(t *testing.T) {
+	defer directAndTest()
+}
