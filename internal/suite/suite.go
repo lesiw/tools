@@ -108,6 +108,7 @@ import (
 	"lesiw.io/tools/analyzers/docsyntax"
 	"lesiw.io/tools/analyzers/dubbitshift"
 	"lesiw.io/tools/analyzers/dupbranch"
+	"lesiw.io/tools/analyzers/dupbuildtag"
 	"lesiw.io/tools/analyzers/dupcase"
 	"lesiw.io/tools/analyzers/dupimport"
 	"lesiw.io/tools/analyzers/duplarg"
@@ -372,6 +373,7 @@ var (
 		docsyntax.Analyzer,
 		dubbitshift.Analyzer,
 		dupbranch.Analyzer,
+		dupbuildtag.Analyzer,
 		dupcase.Analyzer,
 		dupimport.Analyzer,
 		duplarg.Analyzer,

@@ -909,6 +909,19 @@ func f(ok bool) {
 }
 ```
 
+## dupbuildtag
+
+Reports a // +build line whose condition an earlier line in the same file already gives. The repeated line adds nothing and is usually a copy-paste error.
+
+Adapted from staticcheck's SA4019.
+
+```
+// +build linux
+// +build linux
+
+package a
+```
+
 ## dupcase
 
 Reports a case that names an expression an earlier case in the same switch named. The second case can never match, and the compiler folds only constants.

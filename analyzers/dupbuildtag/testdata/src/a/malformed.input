@@ -1,0 +1,4 @@
+// +build !go1.1/amd64
+// +build !a/b
+
+package a

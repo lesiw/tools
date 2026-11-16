@@ -1,0 +1,3 @@
+//+build go1.1
+
+package a // want `equivalent build constraints "go1.1" and "go1.1"`
