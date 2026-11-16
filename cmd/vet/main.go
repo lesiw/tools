@@ -369,6 +369,18 @@
 //		b.N = 1
 //	}
 //
+// # bidicontrol
+//
+// Reports a bidirectional control character in a source file. These characters
+// control the direction of the text around them, so the displayed order can
+// differ from the order the compiler parses.
+//
+// Inspired by gosec's G116.
+//
+//	func f() string {
+//		return "alpha‎ bravo" //ignore:bidicontrol
+//	}
+//
 // # blankassign
 //
 // Reports a statement that assigns the value of a name or a basic literal to

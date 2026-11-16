@@ -365,6 +365,18 @@ func benchmark(b *testing.B) {
 }
 ```
 
+## bidicontrol
+
+Reports a bidirectional control character in a source file. These characters control the direction of the text around them, so the displayed order can differ from the order the compiler parses.
+
+Inspired by gosec's G116.
+
+```
+func f() string {
+    return "alpha‎ bravo" //ignore:bidicontrol
+}
+```
+
 ## blankassign
 
 Reports a statement that assigns the value of a name or a basic literal to the blank identifier when the assignment has no effect. A name is reported when the code reads it again with no write in between; a basic literal or predeclared constant is reported without another use. A numeric or boolean variable is reported only inside a function, and a numeric or boolean named constant wherever it is declared, each with another read; a variable of any other type can hold a reference or be written through another name for the same storage.

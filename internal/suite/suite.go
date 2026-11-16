@@ -73,6 +73,7 @@ import (
 	"lesiw.io/tools/analyzers/badsorting"
 	"lesiw.io/tools/analyzers/badsyncfunc"
 	"lesiw.io/tools/analyzers/benchassign"
+	"lesiw.io/tools/analyzers/bidicontrol"
 	"lesiw.io/tools/analyzers/blankassign"
 	"lesiw.io/tools/analyzers/blankimports"
 	"lesiw.io/tools/analyzers/blankrange"
@@ -347,6 +348,7 @@ var (
 		badsorting.Analyzer,
 		badsyncfunc.Analyzer,
 		benchassign.Analyzer,
+		bidicontrol.Analyzer,
 		blankassign.Analyzer,
 		blankimports.Analyzer,
 		blankrange.Analyzer,
