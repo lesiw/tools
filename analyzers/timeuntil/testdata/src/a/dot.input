@@ -1,0 +1,14 @@
+package a
+
+import (
+	. "time"
+	"time"
+)
+
+func dotted(deadline Time, wait Duration) bool {
+	return Now().Add(wait).Before(deadline)
+}
+
+func qualified(deadline Time, wait Duration) bool {
+	return time.Now().Add(wait).Before(deadline) // want `comparison can be replaced by time\.Until\(deadline\) > wait`
+}

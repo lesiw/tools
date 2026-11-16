@@ -1,0 +1,15 @@
+package a
+
+import tm "time"
+
+func aliased(deadline tm.Time, wait tm.Duration) bool {
+	return tm.Until(deadline) > wait // want `comparison can be replaced by tm\.Until\(deadline\) > wait`
+}
+
+func pointedAlias(p *tm.Time, wait tm.Duration) bool {
+	return tm.Until(*p) > wait // want `comparison can be replaced by tm\.Until\(\*p\) > wait`
+}
+
+func aliasedSince(deadline tm.Time) bool {
+	return tm.Since(deadline) < tm.Minute // want `comparison can be replaced by tm\.Since\(deadline\) < tm\.Minute`
+}

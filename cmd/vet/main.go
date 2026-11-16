@@ -3808,6 +3808,18 @@
 //		return t.Format("yyyy-mm-dd")
 //	}
 //
+// # timeuntil
+//
+// Reports a Before or After comparison of time.Now().Add(d) with a time.Time.
+// The same test is a comparison of time.Until(t) or time.Since(t) with a
+// duration.
+//
+// Adapted from staticcheck's S1024.
+//
+//	func f(deadline time.Time, wait time.Duration) bool {
+//		return time.Now().Add(wait).Before(deadline)
+//	}
+//
 // # todocomment
 //
 // Reports a TODO, FIXME, or BUG doc comment with no detail. The note gives the

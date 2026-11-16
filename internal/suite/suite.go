@@ -281,6 +281,7 @@ import (
 	"lesiw.io/tools/analyzers/timedate"
 	"lesiw.io/tools/analyzers/timeequal"
 	"lesiw.io/tools/analyzers/timelayout"
+	"lesiw.io/tools/analyzers/timeuntil"
 	"lesiw.io/tools/analyzers/todocomment"
 	"lesiw.io/tools/analyzers/truncatecmp"
 	"lesiw.io/tools/analyzers/typeassertchain"
@@ -613,6 +614,7 @@ var (
 		timeequal.Analyzer,
 		timeformat.Analyzer,
 		timelayout.Analyzer,
+		timeuntil.Analyzer,
 		todocomment.Analyzer,
 		truncatecmp.Analyzer,
 		typeassertchain.Analyzer,

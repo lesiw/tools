@@ -1,0 +1,291 @@
+package a
+
+import "time"
+
+func ahead(deadline time.Time, wait time.Duration) bool {
+	return time.Now().Add(wait).Before(deadline) // want `comparison can be replaced by time\.Until\(deadline\) > wait`
+}
+
+func bounded(deadline time.Time, wait time.Duration) bool {
+	return time.Now().Add(max(wait, 0)).Before(deadline) // want `comparison can be replaced by time\.Until\(deadline\) > max\(wait, 0\)`
+}
+
+func converted(deadline time.Time, wait int) bool {
+	return time.Now().Add(time.Duration(wait)).Before(deadline) // want `comparison can be replaced by time\.Until\(deadline\) > time\.Duration\(wait\)`
+}
+
+func convertedOperand(deadline time.Time, start time.Time) bool {
+	return time.Now().Add(time.Minute).Before(time.Time(start)) // want `comparison can be replaced by time\.Until\(time\.Time\(start\)\) > time\.Minute`
+}
+
+func lowest(deadline time.Time, wait time.Duration) bool {
+	return time.Now().Add(min(wait, time.Hour)).Before(deadline) // want `comparison can be replaced by time\.Until\(deadline\) > min\(wait, time\.Hour\)`
+}
+
+func later(deadline time.Time, wait time.Duration) bool {
+	return deadline.After(time.Now().Add(wait)) // want `comparison can be replaced by time\.Until\(deadline\) > wait`
+}
+
+func early(deadline time.Time, wait time.Duration) bool {
+	return deadline.Before(time.Now().Add(wait)) // want `comparison can be replaced by time\.Until\(deadline\) < wait`
+}
+
+func soon(deadline time.Time, wait time.Duration) bool {
+	return time.Now().Add(wait).After(deadline) // want `comparison can be replaced by time\.Until\(deadline\) < wait`
+}
+
+func recent(deadline time.Time) bool {
+	return deadline.After(time.Now().Add(-time.Minute)) // want `comparison can be replaced by time\.Since\(deadline\) < time\.Minute`
+}
+
+func missing(deadline time.Time) bool {
+	return time.Now().Add(-time.Minute).Before(deadline) // want `comparison can be replaced by time\.Since\(deadline\) < time\.Minute`
+}
+
+func passed(deadline time.Time) bool {
+	return deadline.Before(time.Now().Add(-time.Minute)) // want `comparison can be replaced by time\.Since\(deadline\) > time\.Minute`
+}
+
+func within(deadline time.Time) bool {
+	return time.Now().Add(-time.Minute).After(deadline) // want `comparison can be replaced by time\.Since\(deadline\) > time\.Minute`
+}
+
+func variableNegative(deadline time.Time, wait time.Duration) bool {
+	return deadline.After(time.Now().Add(-wait)) // want `comparison can be replaced by time\.Until\(deadline\) > -wait`
+}
+
+func scaled(deadline time.Time, wait time.Duration) bool {
+	return deadline.After(time.Now().Add(-1 * wait)) // want `comparison can be replaced by time\.Until\(deadline\) > -1 \* wait`
+}
+
+func boundary(deadline time.Time) bool {
+	d := time.Duration(-1 << 63)
+	return deadline.After(time.Now().Add(-d)) // want `comparison can be replaced by time\.Until\(deadline\) > -d`
+}
+
+func tooLarge(deadline time.Time) bool {
+	return deadline.After(time.Now().Add(-(1 << 63))) // want `comparison can be replaced by time\.Until\(deadline\) > -\(1 << 63\)`
+}
+
+func notAhead(deadline time.Time, wait time.Duration) bool {
+	return !time.Now().Add(wait).Before(deadline) // want `comparison can be replaced by time\.Until\(deadline\) <= wait`
+}
+
+func notRecent(deadline time.Time) bool {
+	return !deadline.After(time.Now().Add(-time.Minute)) // want `comparison can be replaced by time\.Since\(deadline\) >= time\.Minute`
+}
+
+func notEarly(deadline time.Time, wait time.Duration) bool {
+	return !deadline.Before(time.Now().Add(wait)) // want `comparison can be replaced by time\.Until\(deadline\) >= wait`
+}
+
+func notSoon(deadline time.Time, wait time.Duration) bool {
+	return !time.Now().Add(wait).After(deadline) // want `comparison can be replaced by time\.Until\(deadline\) >= wait`
+}
+
+func notCompared(deadline time.Time, wait time.Duration) bool {
+	return !time.Now().Add(wait).Before(deadline) == false // want `comparison can be replaced by \(time\.Until\(deadline\) <= wait\)`
+}
+
+func pointed(p *time.Time, wait time.Duration) bool {
+	return p.After(time.Now().Add(wait)) // want `comparison can be replaced by time\.Until\(\*p\) > wait`
+}
+
+func pointedVariable(p *time.Time, wait func() time.Duration) bool {
+	return p.After(time.Now().Add(wait()))
+}
+
+func addressedVariable(start time.Time, wait func() time.Duration) bool {
+	return (&start).Before(time.Now().Add(wait()))
+}
+
+func assertedDuration(v any, wait func() time.Duration) bool {
+	return v.(time.Time).Before(time.Now().Add(wait()))
+}
+
+func convertedDuration(start time.Time, wait func() time.Duration) bool {
+	return time.Time(start).Before(time.Now().Add(wait()))
+}
+
+func asserted(v any, wait time.Duration) bool {
+	return time.Now().Add(wait).Before(v.(time.Time)) // want `comparison can be replaced by time\.Until\(v\.\(time\.Time\)\) > wait`
+}
+
+func addressed(start time.Time, wait time.Duration) bool {
+	return (&start).Before(time.Now().Add(wait)) // want `comparison can be replaced by time\.Until\(start\) < wait`
+}
+
+func parenthesized(deadline time.Time, wait time.Duration) bool {
+	return (time.Now().Add(wait).Before(deadline)) // want `comparison can be replaced by time\.Until\(deadline\) > wait`
+}
+
+func twice(deadline time.Time, wait time.Duration) bool {
+	return !!time.Now().Add(wait).Before(deadline) // want `comparison can be replaced by time\.Until\(deadline\) > wait`
+}
+
+func comparedLeft(deadline time.Time, wait time.Duration) bool {
+	return time.Now().Add(wait).Before(deadline) == false // want `comparison can be replaced by \(time\.Until\(deadline\) > wait\)`
+}
+
+func comparedRight(deadline time.Time, wait time.Duration) bool {
+	return false != time.Now().Add(wait).Before(deadline) // want `comparison can be replaced by \(time\.Until\(deadline\) > wait\)`
+}
+
+func wrapped(deadline time.Time, wait time.Duration) bool {
+	// want+1 `comparison can be replaced by time\.Until\(deadline\) > wait`
+	return time.Now().
+		Add(wait).
+		Before(deadline)
+}
+
+func commented(deadline time.Time, wait time.Duration) bool {
+	return time.Now().Add(wait). /* marked */ Before(deadline) // want `comparison can be replaced by time\.Until\(deadline\) > wait`
+}
+
+func multiline(deadline time.Time) bool {
+	// want+1 `comparison can be replaced by a comparison with time\.Until`
+	return time.Now().Add(time.Duration(len(`
+aaaa
+`)) * time.Second).Before(deadline)
+}
+
+func multilineOther(times map[string]time.Time, wait time.Duration) bool {
+	// want+1 `comparison can be replaced by a comparison with time\.Until`
+	return times[`
+aaaa
+`].After(time.Now().Add(wait))
+}
+
+func multilineSince(deadline time.Time) bool {
+	// want+1 `comparison can be replaced by a comparison with time\.Since`
+	return deadline.After(time.Now().Add(-time.Duration(len(`
+aaaa
+`))))
+}
+
+func addedDate(deadline time.Time) bool {
+	return deadline.After(time.Now().AddDate(0, 0, 1))
+}
+
+func held(deadline time.Time, wait time.Duration) bool {
+	now := time.Now
+	return deadline.After(now().Add(wait))
+}
+
+func shifted(deadline time.Time, wait time.Duration) bool {
+	return deadline.After(time.Now().Add(wait).Add(wait))
+}
+
+func subtracted(deadline time.Time, wait time.Duration) bool {
+	return time.Now().Add(wait).Sub(deadline) > 0
+}
+
+func equalMethod(deadline time.Time, wait time.Duration) bool {
+	return time.Now().Add(wait).Equal(deadline)
+}
+
+func calledOperand(deadline func() time.Time, wait time.Duration) bool {
+	return deadline().After(time.Now().Add(wait)) // want `comparison can be replaced by time\.Until\(deadline\(\)\) > wait`
+}
+
+func constructed(wait time.Duration) bool {
+	return time.Now().Add(wait).Before(time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC))
+}
+
+func calledReceiver(deadline func() time.Time, wait time.Duration) bool {
+	return time.Now().Add(wait).Before(deadline())
+}
+
+func variableReceiver(deadline time.Time, wait func() time.Duration) bool {
+	return time.Now().Add(wait()).Before(deadline)
+}
+
+func addressedLiteral(wait time.Duration) bool {
+	return (&time.Time{}).Before(time.Now().Add(wait)) // want `comparison can be replaced by time\.Until\(time\.Time\{\}\) < wait`
+}
+
+func dereferencedLiteral(wait time.Duration) bool {
+	return time.Now().Add(wait).Before(*&time.Time{})
+}
+
+func calledDuration(deadline func() time.Time, wait func() time.Duration) bool {
+	return deadline().After(time.Now().Add(wait())) // want `comparison can be replaced by time\.Until\(deadline\(\)\) > wait\(\)`
+}
+
+func variableOperand(deadline time.Time, wait func() time.Duration) bool {
+	return deadline.After(time.Now().Add(wait()))
+}
+
+func received(ch chan time.Time, wait func() time.Duration) bool {
+	return (<-ch).After(time.Now().Add(wait())) // want `comparison can be replaced by time\.Until\(<-ch\) > wait\(\)`
+}
+
+func receivedReceiver(ch chan time.Time, wait time.Duration) bool {
+	return time.Now().Add(wait).Before(<-ch)
+}
+
+func receivedDuration(deadline time.Time, ch chan time.Duration) bool {
+	return time.Now().Add(<-ch).Before(deadline)
+}
+
+var captured time.Time
+
+func advance(wait time.Duration) time.Duration {
+	captured = time.Now().Add(wait)
+	return wait
+}
+
+func capturedDuration(wait time.Duration) bool {
+	return captured.After(time.Now().Add(advance(wait)))
+}
+
+type stamped struct{ at time.Time }
+
+func fieldDuration(s stamped, wait func() time.Duration) bool {
+	return s.at.Before(time.Now().Add(wait()))
+}
+
+func indexDuration(times []time.Time, wait func() time.Duration) bool {
+	return times[0].Before(time.Now().Add(wait()))
+}
+
+func derefDuration(p *time.Time, wait func() time.Duration) bool {
+	return (*p).Before(time.Now().Add(wait()))
+}
+
+func embedded(e struct{ time.Time }, wait time.Duration) bool {
+	return e.Before(time.Now().Add(wait))
+}
+
+type local struct{}
+
+func (local) Before(time.Time) bool { return false }
+
+func custom(l local, wait time.Duration) bool {
+	return l.Before(time.Now().Add(wait))
+}
+
+func doubled(deadline time.Time, wait time.Duration) bool {
+	return time.Now().Add(wait).Before(time.Now().Add(wait))
+}
+
+func launch(deadline time.Time, wait time.Duration) {
+	go deadline.Before(time.Now().Add(wait))
+}
+
+func deferred(deadline time.Time, wait time.Duration) {
+	defer deadline.Before(time.Now().Add(wait))
+}
+
+func discard(deadline time.Time, wait time.Duration) {
+	deadline.Before(time.Now().Add(wait))
+}
+
+func methodExpression(deadline time.Time, wait time.Duration) bool {
+	return time.Time.Before(deadline, time.Now().Add(wait))
+}
+
+func methodValue(deadline time.Time, wait time.Duration) bool {
+	before := deadline.Before
+	return before(time.Now().Add(wait))
+}
