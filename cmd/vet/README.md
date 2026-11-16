@@ -3821,6 +3821,16 @@ func f(t time.Time) string {
 }
 ```
 
+## timenowloop
+
+Reports a call to time.Now in the condition of a for statement. The condition is evaluated before each iteration, so a call there can run on each pass.
+
+```
+for time.Now().Before(deadline) {
+    ready()
+}
+```
+
 ## timeuntil
 
 Reports a Before or After comparison of time.Now().Add(d) with a time.Time. The same test is a comparison of time.Until(t) or time.Since(t) with a duration.

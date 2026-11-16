@@ -1,0 +1,94 @@
+package a
+
+import "time"
+
+func register(func() bool) bool { return false }
+
+func literal(deadline time.Time) {
+	for register(func() bool { return time.Now().Before(deadline) }) {
+	}
+}
+
+func invokedLiteral(deadline time.Time) {
+	for func() bool { return time.Now().Before(deadline) }() { // want `^time.Now is called in the loop condition$`
+	}
+}
+
+func concurrentLiteral(deadline time.Time) {
+	for func() bool {
+		go func() { _ = time.Now() }()
+		defer func() { _ = time.Now() }() // want `^time.Now is called in the loop condition$`
+		return time.Now().Before(deadline) // want `^time.Now is called in the loop condition$`
+	}() {
+	}
+}
+
+func goArgument(deadline time.Time) {
+	for func() bool {
+		go work(time.Now()) // want `^time.Now is called in the loop condition$`
+		return true
+	}() {
+	}
+}
+
+func goCallee(deadline time.Time) {
+	for func() bool {
+		go time.Now()
+		return time.Now().Before(deadline) // want `^time.Now is called in the loop condition$`
+	}() {
+	}
+}
+
+func goReceiver(deadline time.Time) {
+	for func() bool {
+		go time.Now().Before(deadline) // want `^time.Now is called in the loop condition$`
+		return true
+	}() {
+	}
+}
+
+func rangeLiteral(deadline time.Time) {
+	for func() bool {
+		for range []int{0} {
+			_ = time.Now()
+		}
+		return true
+	}() {
+	}
+}
+
+func passedLiteral(deadline time.Time) {
+	register(func() bool {
+		for time.Now().Before(deadline) { // want `^time.Now is called in the loop condition$`
+			return false
+		}
+		return true
+	})
+}
+
+func indirectLiteral(deadline time.Time) {
+	f := func() bool { return time.Now().Before(deadline) }
+	for f() {
+	}
+}
+
+func makeLiteral(deadline time.Time) func() bool {
+	return func() bool { return time.Now().Before(deadline) }
+}
+
+func callLiteral(deadline time.Time) {
+	for makeLiteral(deadline)() {
+	}
+}
+
+func work(time.Time) {}
+
+func nestedLiteral(deadline time.Time) {
+	for func() bool {
+		for time.Now().Before(deadline) { // want `^time.Now is called in the loop condition$`
+			return false
+		}
+		return true
+	}() {
+	}
+}

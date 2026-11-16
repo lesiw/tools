@@ -1,0 +1,9 @@
+package a
+
+import clock "time"
+
+func aliased(deadline clock.Time) {
+	for clock.Now().Before(deadline) { // want `^time.Now is called in the loop condition$`
+		clock.Sleep(clock.Millisecond)
+	}
+}

@@ -3855,6 +3855,16 @@
 //		return t.Format("yyyy-mm-dd")
 //	}
 //
+// # timenowloop
+//
+// Reports a call to time.Now in the condition of a for statement. The
+// condition is evaluated before each iteration, so a call there can run on
+// each pass.
+//
+//	for time.Now().Before(deadline) {
+//		ready()
+//	}
+//
 // # timeuntil
 //
 // Reports a Before or After comparison of time.Now().Add(d) with a time.Time.

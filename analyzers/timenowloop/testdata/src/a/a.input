@@ -1,0 +1,80 @@
+package a
+
+import "time"
+
+func wait(deadline time.Time, ready func() bool) {
+	for time.Now().Before(deadline) { // want `^time.Now is called in the loop condition$`
+		if ready() {
+			return
+		}
+	}
+}
+
+func seconds(deadline time.Time) {
+	for time.Now().Unix() < deadline.Unix() { // want `^time.Now is called in the loop condition$`
+		time.Sleep(time.Millisecond)
+	}
+}
+
+func nested(deadline time.Time) {
+	for {
+		for time.Now().Before(deadline) { // want `^time.Now is called in the loop condition$`
+			return
+		}
+	}
+}
+
+func captured(deadline time.Time) {
+	now := time.Now()
+	for now.Before(deadline) {
+		time.Sleep(time.Millisecond)
+	}
+}
+
+func helper(deadline time.Time) {
+	for before(deadline) {
+		time.Sleep(time.Millisecond)
+	}
+}
+
+type ticker struct{}
+
+func (ticker) Now() time.Time { return time.Time{} }
+
+func other(t ticker, deadline time.Time) {
+	for t.Now().Before(deadline) {
+		time.Sleep(time.Millisecond)
+	}
+}
+
+func variable(deadline time.Time) {
+	now := time.Now
+	for now().Before(deadline) {
+		time.Sleep(time.Millisecond)
+	}
+}
+
+func body(deadline time.Time) {
+	for ready() {
+		if time.Now().After(deadline) {
+			return
+		}
+	}
+}
+
+func initAndPost(deadline time.Time) {
+	for at := time.Now(); at.Before(deadline); at = time.Now() {
+		time.Sleep(time.Millisecond)
+	}
+}
+
+func ready() bool { return true }
+
+func before(deadline time.Time) bool { return time.Now().Before(deadline) }
+
+func nestedCalls(deadline time.Time) {
+	for time.Now().Add( // want `^time.Now is called in the loop condition$`
+		time.Now().Sub(deadline), // want `^time.Now is called in the loop condition$`
+	).Before(deadline) {
+	}
+}

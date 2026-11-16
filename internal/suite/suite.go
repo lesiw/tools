@@ -285,6 +285,7 @@ import (
 	"lesiw.io/tools/analyzers/timedate"
 	"lesiw.io/tools/analyzers/timeequal"
 	"lesiw.io/tools/analyzers/timelayout"
+	"lesiw.io/tools/analyzers/timenowloop"
 	"lesiw.io/tools/analyzers/timeuntil"
 	"lesiw.io/tools/analyzers/todocomment"
 	"lesiw.io/tools/analyzers/trimprefix"
@@ -623,6 +624,7 @@ var (
 		timeequal.Analyzer,
 		timeformat.Analyzer,
 		timelayout.Analyzer,
+		timenowloop.Analyzer,
 		timeuntil.Analyzer,
 		todocomment.Analyzer,
 		trimprefix.Analyzer,

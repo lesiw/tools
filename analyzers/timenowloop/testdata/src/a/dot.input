@@ -1,0 +1,9 @@
+package a
+
+import . "time"
+
+func dotted(deadline Time) {
+	for Now().Before(deadline) { // want `^time.Now is called in the loop condition$`
+		Sleep(Millisecond)
+	}
+}

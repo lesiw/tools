@@ -1,0 +1,21 @@
+package a
+
+import "time"
+
+func parenIIFE(deadline time.Time) {
+	for (func() bool { return time.Now().Before(deadline) })() { // want `^time.Now is called in the loop condition$`
+	}
+}
+
+func parenGo(deadline time.Time) {
+	for func() bool {
+		go (func() { _ = time.Now() })()
+		return true
+	}() {
+	}
+}
+
+func parenCall(deadline time.Time) {
+	for (time.Now)().Before(deadline) { // want `^time.Now is called in the loop condition$`
+	}
+}
