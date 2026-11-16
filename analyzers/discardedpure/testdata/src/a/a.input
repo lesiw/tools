@@ -1,0 +1,203 @@
+package a
+
+import (
+	"fmt"
+	"strings"
+	"testing"
+	"time"
+)
+
+func upper(name string) {
+	strings.ToUpper(name) // want `result of strings.ToUpper is discarded; the call has no other effect`
+}
+
+func formatted(n int) {
+	fmt.Sprintf("%d", n) // want `result of fmt.Sprintf is discarded; the call has no other effect`
+}
+
+func stamped() {
+	time.Now()          // want `result of time.Now is discarded; the call has no other effect`
+	time.Now().String() // want `result of \(time.Time\).String is discarded; the call has no other effect`
+}
+
+func blank(name string) {
+	_ = strings.ToUpper(name) // want `result of strings.ToUpper is discarded; the call has no other effect`
+}
+
+func parenthesized(name string) {
+	(strings.ToUpper(name)) // want `result of strings.ToUpper is discarded; the call has no other effect`
+}
+
+func add(a, b int) int { return a + b }
+
+func added(n int) {
+	add(n, 1) // want `result of a.add is discarded; the call has no other effect`
+}
+
+func pair(a, b int) (int, int) { return a + b, a - b }
+
+func paired(n int) {
+	pair(n, 2) // want `result of a.pair is discarded; the call has no other effect`
+}
+
+func sign(n int) int {
+	if n < 0 {
+		return -1
+	}
+	return 1
+}
+
+func signed(n int) {
+	sign(n) // want `result of a.sign is discarded; the call has no other effect`
+}
+
+func total(n int) int {
+	sum := 0
+	for i := range n {
+		sum += i
+	}
+	return sum
+}
+
+func summed(n int) {
+	total(n) // want `result of a.total is discarded; the call has no other effect`
+}
+
+func size(s string) int { return len(s) }
+
+func sized(s string) {
+	size(s) // want `result of a.size is discarded; the call has no other effect`
+}
+
+type point struct{ x, y int }
+
+func distance(p point) int { return p.x + p.y }
+
+func measured(p point) {
+	distance(p) // want `result of a.distance is discarded; the call has no other effect`
+}
+
+type count int
+
+func (c count) doubled() count { return c * 2 }
+
+func counted(n count) {
+	n.doubled() // want `result of .*doubled is discarded; the call has no other effect`
+}
+
+func quadruple(n int) int { return add(add(n, n), add(n, n)) }
+
+func quadrupled(n int) {
+	quadruple(n) // want `result of a.quadruple is discarded; the call has no other effect`
+}
+
+var last int
+
+func record(n int) int {
+	last = n
+	return n
+}
+
+func recorded(n int) {
+	record(n)
+}
+
+func noisy(n int) int {
+	println(n)
+	return n
+}
+
+func calledNoisily(n int) {
+	noisy(n)
+}
+
+func indirect(n int) int { return noisy(n) }
+
+func calledIndirectly(n int) {
+	indirect(n)
+}
+
+func read(p *int) int { return *p }
+
+func calledWithPointer(p *int) {
+	read(p)
+}
+
+func store(p *int, n int) int {
+	*p = n
+	return n
+}
+
+func calledWithStore(p *int, n int) {
+	store(p, n)
+}
+
+func fact(n int) int {
+	if n < 2 {
+		return 1
+	}
+	return n * fact(n-1)
+}
+
+func calledRecursively(n int) {
+	fact(n)
+}
+
+func noop() {}
+
+func calledNoop() {
+	noop()
+}
+
+func callLiteral() {
+	func() int { return 1 }()
+}
+
+func callValue(f func() int) {
+	f()
+}
+
+type worker interface {
+	work() int
+}
+
+func callWorker(w worker) {
+	w.work()
+}
+
+func assigned(name string) string {
+	up := strings.ToUpper(name)
+	return up
+}
+
+func passed(name string) {
+	println(strings.ToUpper(name))
+}
+
+func compared(name string) {
+	if strings.ToUpper(name) == "" {
+		println("empty")
+	}
+}
+
+func deferred(name string) {
+	defer strings.ToUpper(name)
+}
+
+func launched(name string) {
+	go strings.ToUpper(name)
+}
+
+const deadBranch = false
+
+func dead() {
+	if deadBranch {
+		strings.ToUpper("x")
+	}
+}
+
+func BenchmarkUpper(b *testing.B) {
+	for range b.N {
+		strings.ToUpper("x")
+	}
+}

@@ -87,6 +87,7 @@ import (
 	"lesiw.io/tools/analyzers/defaultcaseorder"
 	"lesiw.io/tools/analyzers/deferunlambda"
 	"lesiw.io/tools/analyzers/deprecated"
+	"lesiw.io/tools/analyzers/discardedpure"
 	"lesiw.io/tools/analyzers/docstub"
 	"lesiw.io/tools/analyzers/docsyntax"
 	"lesiw.io/tools/analyzers/dubbitshift"
@@ -285,6 +286,7 @@ var (
 		deferunlambda.Analyzer,
 		deprecated.Analyzer,
 		directive.Analyzer,
+		discardedpure.Analyzer,
 		docstub.Analyzer,
 		docsyntax.Analyzer,
 		dubbitshift.Analyzer,

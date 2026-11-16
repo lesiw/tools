@@ -629,6 +629,18 @@ Imported from the x/tools vet suite.
 package p
 ```
 
+## discardedpure
+
+Reports a call whose only effect is its result, written as a statement. The result is discarded, so the statement does nothing.
+
+Adapted from staticcheck's SA4017.
+
+```
+func shout(name string) {
+    strings.ToUpper(name)
+}
+```
+
 ## docstub
 
 Reports a doc comment that only repeats the declaration's name. A doc comment should say what the declaration returns, does, or provides.

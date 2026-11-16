@@ -639,6 +639,17 @@
 //	//go:debug panicnil=1
 //	package p
 //
+// # discardedpure
+//
+// Reports a call whose only effect is its result, written as a statement. The
+// result is discarded, so the statement does nothing.
+//
+// Adapted from staticcheck's SA4017.
+//
+//	func shout(name string) {
+//		strings.ToUpper(name)
+//	}
+//
 // # docstub
 //
 // Reports a doc comment that only repeats the declaration's name. A doc

@@ -1,0 +1,16 @@
+package a
+
+import (
+	"strings"
+	"testing"
+)
+
+func TestUpper(t *testing.T) {
+	strings.ToUpper("x")
+}
+
+func BenchmarkUpperClosure(b *testing.B) {
+	b.RunParallel(func(pb *testing.PB) {
+		strings.ToUpper("x")
+	})
+}
