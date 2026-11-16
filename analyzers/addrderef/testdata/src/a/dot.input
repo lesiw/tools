@@ -1,0 +1,7 @@
+package a
+
+import . "unsafe"
+
+func dotPointer(b []byte) Pointer {
+	return Pointer(&*base(b))
+}

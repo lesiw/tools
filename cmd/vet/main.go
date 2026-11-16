@@ -10,6 +10,18 @@
 // fault: the code vet would flag, with the diagnostic's subject visible in the
 // code rather than in a comment.
 //
+// # addrderef
+//
+// Reports the address of a pointer indirection. The spec says *x denotes the
+// variable x points to, so &*x is x when the two types are identical, but &*x
+// panics on a nil x.
+//
+// Inspired by staticcheck's SA4001.
+//
+//	func f(p *int) *int {
+//		return &*p
+//	}
+//
 // # addrnil
 //
 // Reports a comparison of an address with nil. Taking an address never yields

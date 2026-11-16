@@ -1,0 +1,168 @@
+package a
+
+import "unsafe"
+
+type (
+	alias  = *int
+	number *int
+)
+
+func address(p *int) *int {
+	return &*p // want `&\*x panics on a nil x; x evaluates to nil`
+}
+
+func parenthesized(p *int) *int {
+	return &(*p) // want `&\*x panics on a nil x; x evaluates to nil`
+}
+
+func parenthesizedValue(value int) *int {
+	return &value // want `&\*x is x`
+}
+
+func parenthesizedComment(value int) *int {
+	return &(*&value /* keep */) // want `&\*x is x`
+}
+
+func assigned(p *int) {
+	q := &*p // want `&\*x panics on a nil x; x evaluates to nil`
+	*q = 1
+}
+
+func argument(p *int) {
+	use(&*p) // want `&\*x panics on a nil x; x evaluates to nil`
+}
+
+func use(*int) {}
+
+func call() *int {
+	return nil
+}
+
+func fromCall() *int {
+	return &*call() // want `&\*x panics on a nil x; x evaluates to nil`
+}
+
+func base(b []byte) *byte {
+	return &b[0]
+}
+
+func pointer(b []byte) unsafe.Pointer {
+	return unsafe.Pointer(&*base(b))
+}
+
+func parenthesizedPointer(b []byte) unsafe.Pointer {
+	return (unsafe.Pointer)(&*base(b))
+}
+
+func argumentPointer(b []byte) unsafe.Pointer {
+	return unsafe.Pointer((&*base(b)))
+}
+
+func convertedPointer(b []byte) unsafe.Pointer {
+	return unsafe.Pointer((*byte)(&*base(b)))
+}
+
+func element(ps []*int) *int {
+	return &*ps[0] // want `&\*x panics on a nil x; x evaluates to nil`
+}
+
+func lookup(m map[string]*int, key string) *int {
+	return &*m[key] // want `&\*x panics on a nil x; x evaluates to nil`
+}
+
+func nested(pp **int) *int {
+	return &**pp // want `&\*x panics on a nil x; x evaluates to nil`
+}
+
+func generic[T any](p *T) *T {
+	return &*p // want `&\*x panics on a nil x; x evaluates to nil`
+}
+
+func constrained[P ~*int](p P) *int {
+	return &*p
+}
+
+func aliased(p alias) *int {
+	return &*p // want `&\*x panics on a nil x; x evaluates to nil`
+}
+
+func addressOfValue(value int) *int {
+	return &value // want `&\*x is x`
+}
+
+func argumentOfValue(value int) {
+	use(&value) // want `&\*x is x`
+}
+
+func assignedAddress(value int) {
+	p := &value // want `&\*x is x`
+	_ = p
+}
+
+func fresh() *int {
+	return new(int) // want `&\*x is x`
+}
+
+func unformatted() *int {
+	return new(int) // want `&\*x is x`
+}
+
+func unformattedParen() *int {
+	return(new(int)) // want `&\*x is x`
+}
+
+func nestedFixable(value int) *int {
+	return &*&value // want `&\*x is x` `&\*x is x`
+}
+
+func nestedComment(value int) *int {
+	return &* /* keep */ &value // want `&\*x is x` `&\*x is x`
+}
+
+func parenthesizedAddress(value int) *int {
+	return ((&value)) // want `&\*x is x`
+}
+
+func parenthesizedNew() *int {
+	return (new)(int) // want `&\*x is x`
+}
+
+func freshArgument() {
+	use(new(int)) // want `&\*x is x`
+}
+
+func shadowed(new func(int) *int) *int {
+	return &*new(1) // want `&\*x panics on a nil x; x evaluates to nil`
+}
+
+func defined(n number) *int {
+	return &*n
+}
+
+func reverse(p *int) **int {
+	return &p
+}
+
+func reverseDeref(p *int) *int {
+	return *&p
+}
+
+func dereference(p *int) int {
+	return *p
+}
+
+func indirect(p **int) *int {
+	return *p
+}
+
+func commented(value int) *int {
+	return & /* keep */ value // want `&\*x is x`
+}
+
+func commentedOperator(value int) *int {
+	return & /* keep */ *&value // want `&\*x is x`
+}
+
+func trailingComment(value int) *int {
+	return &value /* keep */ // want `&\*x is x`
+}

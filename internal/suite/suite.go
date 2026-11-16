@@ -53,6 +53,7 @@ import (
 	"golang.org/x/tools/go/analysis/passes/waitgroup"
 
 	"lesiw.io/errcheck/errcheck"
+	"lesiw.io/tools/analyzers/addrderef"
 	"lesiw.io/tools/analyzers/addrnil"
 	"lesiw.io/tools/analyzers/afterhttperror"
 	"lesiw.io/tools/analyzers/appendassign"
@@ -287,6 +288,7 @@ var (
 	// finds a diagnostic there finds it in -help too.
 	analyzers = sorted(list)
 	list      = []*analysis.Analyzer{
+		addrderef.Analyzer,
 		addrnil.Analyzer,
 		afterhttperror.Analyzer,
 		appendassign.Analyzer,

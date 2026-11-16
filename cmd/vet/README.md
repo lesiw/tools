@@ -10,6 +10,18 @@ It reports diagnostics to standard error and exits non-zero when there are any. 
 
 Each analyzer below carries the name it is selected by, one paragraph on what it reports, and an example of the code it reports. The example is the fault: the code vet would flag, with the diagnostic's subject visible in the code rather than in a comment.
 
+## addrderef
+
+Reports the address of a pointer indirection. The spec says \*x denotes the variable x points to, so &\*x is x when the two types are identical, but &\*x panics on a nil x.
+
+Inspired by staticcheck's SA4001.
+
+```
+func f(p *int) *int {
+    return &*p
+}
+```
+
 ## addrnil
 
 Reports a comparison of an address with nil. Taking an address never yields nil, so the comparison has the same answer wherever it is evaluated.
