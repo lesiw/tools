@@ -244,6 +244,7 @@ import (
 	"lesiw.io/tools/analyzers/typedefirst"
 	"lesiw.io/tools/analyzers/typeswitchvar"
 	"lesiw.io/tools/analyzers/typeunparen"
+	"lesiw.io/tools/analyzers/uncatchablesignal"
 	"lesiw.io/tools/analyzers/uncheckedinlineerr"
 	"lesiw.io/tools/analyzers/uncondrecursion"
 	"lesiw.io/tools/analyzers/unconvert"
@@ -528,6 +529,7 @@ var (
 		typedefirst.Analyzer,
 		typeswitchvar.Analyzer,
 		typeunparen.Analyzer,
+		uncatchablesignal.Analyzer,
 		uncheckedinlineerr.Analyzer,
 		uncondrecursion.Analyzer,
 		unconvert.Analyzer,

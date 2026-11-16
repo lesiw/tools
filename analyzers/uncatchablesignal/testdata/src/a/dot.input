@@ -1,0 +1,15 @@
+package a
+
+import (
+	"os"
+	"os/signal"
+	. "syscall"
+)
+
+func notifyDot(ch chan os.Signal) {
+	signal.Notify(ch, SIGKILL) // want `SIGKILL cannot be caught`
+}
+
+func notifyDotMixed(ch chan os.Signal) {
+	signal.Notify(ch, os.Interrupt, SIGKILL) // want `SIGKILL cannot be caught`
+}

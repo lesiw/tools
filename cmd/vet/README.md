@@ -3296,6 +3296,18 @@ Inspired by go-critic's typeUnparen.
 var x (int) = 1
 ```
 
+## uncatchablesignal
+
+Reports a signal.Notify or signal.NotifyContext call that names SIGKILL or SIGSTOP. Neither signal can be caught, so the registration changes nothing.
+
+Adapted from staticcheck's SA1016.
+
+```
+func f(ch chan os.Signal) {
+    signal.Notify(ch, syscall.SIGKILL)
+}
+```
+
 ## uncheckedinlineerr
 
 Reports an empty body in an if that checks an error from its init. A comment on a line of its own in the body is left alone.

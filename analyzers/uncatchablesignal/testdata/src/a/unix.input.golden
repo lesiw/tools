@@ -1,0 +1,25 @@
+//go:build unix
+
+package a
+
+import (
+	"os"
+	"os/signal"
+	"syscall"
+)
+
+func notifyStop(ch chan os.Signal) {
+	signal.Notify(ch, syscall.SIGSTOP) // want `syscall.SIGSTOP cannot be caught`
+}
+
+func notifyBothSignals(ch chan os.Signal) {
+	signal.Notify(ch, syscall.SIGKILL, syscall.SIGSTOP) // want `syscall.SIGKILL and syscall.SIGSTOP cannot be caught`
+}
+
+func notifyThree(ch chan os.Signal) {
+	signal.Notify(ch, os.Interrupt) // want `syscall.SIGKILL, syscall.SIGSTOP, and os.Kill cannot be caught`
+}
+
+func notifyStopMixed(ch chan os.Signal) {
+	signal.Notify(ch, os.Interrupt) // want `syscall.SIGSTOP cannot be caught`
+}

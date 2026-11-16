@@ -1,0 +1,134 @@
+package a
+
+import (
+	"context"
+	"os"
+	"os/signal"
+	sc "syscall"
+)
+
+func notifyKill(ch chan os.Signal) {
+	signal.Notify(ch, sc.SIGKILL) // want `sc.SIGKILL cannot be caught`
+}
+
+func notifyKillOS(ch chan os.Signal) {
+	signal.Notify(ch, os.Kill) // want `os.Kill cannot be caught`
+}
+
+func notifyConverted(ch chan os.Signal) {
+	signal.Notify(ch, os.Signal(sc.SIGKILL)) // want `sc.SIGKILL cannot be caught`
+}
+
+func notifyParenthesized(ch chan os.Signal) {
+	signal.Notify(ch, os.Interrupt) // want `sc.SIGKILL cannot be caught`
+}
+
+func notifyMixed(ch chan os.Signal) {
+	signal.Notify(ch, os.Interrupt) // want `sc.SIGKILL cannot be caught`
+}
+
+func notifyTrailing(ch chan os.Signal) {
+	signal.Notify(ch, os.Interrupt) // want `os.Kill cannot be caught`
+}
+
+func notifyMiddle(ch chan os.Signal) {
+	signal.Notify(ch, os.Interrupt, os.Interrupt) // want `sc.SIGKILL cannot be caught`
+}
+
+func notifyBoth(ch chan os.Signal) {
+	signal.Notify(ch, sc.SIGKILL, os.Kill) // want `sc.SIGKILL and os.Kill cannot be caught`
+}
+
+func notifyLocal(ch chan os.Signal) {
+	sig := os.Kill
+	signal.Notify(ch, sig)
+}
+
+func signalValue() os.Signal { return os.Kill }
+
+func notifyReturned(ch chan os.Signal) {
+	signal.Notify(ch, signalValue())
+}
+
+func Notify(ch chan os.Signal, sigs ...os.Signal) {}
+
+func notifyForeign(ch chan os.Signal) {
+	Notify(ch, os.Kill)
+}
+
+func notifyDuplicate(ch chan os.Signal) {
+	signal.Notify(ch, os.Interrupt) // want `sc.SIGKILL cannot be caught`
+}
+
+func notifyTwoMixed(ch chan os.Signal) {
+	signal.Notify(ch, os.Interrupt) // want `sc.SIGKILL and os.Kill cannot be caught`
+}
+
+func notifySeparated(ch chan os.Signal) {
+	signal.Notify(ch, os.Interrupt) // want `sc.SIGKILL and os.Kill cannot be caught`
+}
+
+func notifyTrailingBoth(ch chan os.Signal) {
+	signal.Notify(ch, os.Interrupt) // want `sc.SIGKILL and os.Kill cannot be caught`
+}
+
+func notifyContext(ctx context.Context) {
+	signal.NotifyContext(ctx, os.Kill) // want `os.Kill cannot be caught`
+}
+
+func notifyContextMixed(ctx context.Context) {
+	signal.NotifyContext(ctx, os.Interrupt) // want `os.Kill cannot be caught`
+}
+
+func notifyWrapped(ch chan os.Signal) {
+	signal.Notify( // want `sc.SIGKILL cannot be caught`
+		ch,
+		os.Interrupt,
+	)
+}
+
+func notifyTrailingWrapped(ch chan os.Signal) {
+	signal.Notify( // want `sc.SIGKILL cannot be caught`
+		ch,
+		os.Interrupt,
+	)
+}
+
+func notifyCommentBefore(ch chan os.Signal) {
+	signal.Notify( // want `sc.SIGKILL cannot be caught`
+		ch,
+		// keep
+		sc.SIGKILL,
+		os.Interrupt,
+	)
+}
+
+func notifyCommented(ch chan os.Signal) {
+	signal.Notify(ch, sc.SIGKILL /* keep */, os.Interrupt) // want `sc.SIGKILL cannot be caught`
+}
+
+func notifyCommentAfter(ch chan os.Signal) {
+	signal.Notify(ch, os.Interrupt, sc.SIGKILL /* keep */) // want `sc.SIGKILL cannot be caught`
+}
+
+func notifySafe(ch chan os.Signal) {
+	signal.Notify(ch, os.Interrupt)
+	signal.Notify(ch, sc.SIGTERM)
+}
+
+func otherCalls(ch chan os.Signal) {
+	signal.Ignore(sc.SIGKILL)
+	signal.Reset(sc.SIGKILL)
+}
+
+func notifyAll(ch chan os.Signal) {
+	signal.Notify(ch)
+}
+
+func notifyDynamic(ch chan os.Signal, sig os.Signal) {
+	signal.Notify(ch, sig)
+}
+
+func notifySlice(ch chan os.Signal, sigs []os.Signal) {
+	signal.Notify(ch, sigs...)
+}

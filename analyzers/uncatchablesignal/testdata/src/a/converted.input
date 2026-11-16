@@ -1,0 +1,13 @@
+//go:build !plan9
+
+package a
+
+import (
+	"os"
+	"os/signal"
+	sc "syscall"
+)
+
+func notifySignalConverted(ch chan os.Signal) {
+	signal.Notify(ch, sc.Signal(sc.SIGKILL), os.Interrupt) // want `sc.SIGKILL cannot be caught`
+}

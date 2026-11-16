@@ -1,0 +1,19 @@
+//go:build !plan9
+
+package a
+
+import (
+	"os"
+	"os/signal"
+	sc "syscall"
+)
+
+type defined int
+
+func (defined) String() string { return "" }
+
+func (defined) Signal() {}
+
+func notifyDefined(ch chan os.Signal) {
+	signal.Notify(ch, defined(sc.SIGKILL))
+}
