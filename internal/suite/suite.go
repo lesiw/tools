@@ -126,6 +126,7 @@ import (
 	"lesiw.io/tools/analyzers/findallzero"
 	"lesiw.io/tools/analyzers/flagderef"
 	"lesiw.io/tools/analyzers/flagname"
+	"lesiw.io/tools/analyzers/fortrue"
 	"lesiw.io/tools/analyzers/gospell"
 	"lesiw.io/tools/analyzers/ifelsechain"
 	"lesiw.io/tools/analyzers/importgroup"
@@ -355,6 +356,7 @@ var (
 		findallzero.Analyzer,
 		flagderef.Analyzer,
 		flagname.Analyzer,
+		fortrue.Analyzer,
 		framepointer.Analyzer,
 		gofix.Analyzer,
 		gospell.Analyzer,

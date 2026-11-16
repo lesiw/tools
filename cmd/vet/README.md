@@ -1206,6 +1206,19 @@ Adapted from go-critic's flagName.
 var level = flag.Int("-level", 0, "")
 ```
 
+## fortrue
+
+Reports a for statement whose condition is the literal true and whose for clause has no init or post statement. An omitted condition means true, so the loop runs the same without the condition.
+
+Adapted from staticcheck's S1006.
+
+```
+func f() {
+    for true {
+    }
+}
+```
+
 ## forvar
 
 Reports a range loop that copies its loop variable into a fresh one with x := x. Since Go 1.22 each iteration has its own variable, so the copy does nothing.

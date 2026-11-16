@@ -1,0 +1,86 @@
+package a
+
+func bare() {
+	for true { // want `loop condition is true; drop it`
+	}
+}
+
+func omitted() {
+	for {
+	}
+}
+
+func notTrue() {
+	for false {
+	}
+}
+
+func clause() {
+	for i := 0; true; i++ {
+		_ = i
+	}
+}
+
+func initialized() {
+	for i := 0; true; {
+		_ = i
+	}
+}
+
+func posted() {
+	i := 0
+	for ; true; i++ {
+		_ = i
+	}
+}
+
+func shadowed() {
+	true := false
+	for true {
+	}
+}
+
+func namedConstant() {
+	const always = true
+	for always {
+	}
+}
+
+func commented() {
+	for /* why */ true {
+	}
+}
+
+func trailingComment() {
+	for true /* why */ {
+	}
+}
+
+func lineComment() {
+	for // why
+	true {
+	}
+}
+
+func commentBefore() {
+	/* why */
+	for true { // want `loop condition is true; drop it`
+	}
+}
+
+func semicolons() {
+	for ; true; { // want `loop condition is true; drop it`
+	}
+}
+
+func labeled() {
+outer:
+	for true { // want `loop condition is true; drop it`
+		break outer
+	}
+}
+
+func parenthesized() {
+	for (true) { // want `loop condition is true; drop it`
+	}
+}
