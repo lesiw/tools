@@ -1,0 +1,8 @@
+package a
+
+import . "os"
+
+func dotted() {
+	use(O_RDONLY)
+	_ = O_RDONLY
+}

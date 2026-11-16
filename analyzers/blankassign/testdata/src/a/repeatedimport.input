@@ -1,0 +1,8 @@
+package a
+
+import "os"
+
+func pairedImport() {
+	_ = os.O_RDONLY
+	_ = os.O_RDONLY
+}

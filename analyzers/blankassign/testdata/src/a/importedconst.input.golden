@@ -1,0 +1,9 @@
+package a
+
+import "os"
+
+func importedConst() {
+	use(os.O_RDONLY)
+	// want +1 `assignment to the blank identifier has no effect`
+	_ = os.O_WRONLY
+}

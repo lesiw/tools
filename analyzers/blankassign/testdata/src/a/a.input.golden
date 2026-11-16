@@ -1,0 +1,378 @@
+package a
+
+func use(...int) {}
+
+func one() int { return 0 }
+
+var total int
+
+var zero int
+
+func parameter(n int) {
+	use(n)
+	// want +1 `assignment to the blank identifier has no effect`
+}
+
+func marker(n int) {
+	_ = n
+}
+
+func repeated(n int) {
+	_ = n
+	_ = n
+}
+
+func later(n int) {
+	// want +1 `assignment to the blank identifier has no effect`
+	use(n)
+}
+
+func literal() {
+	// want +1 `assignment to the blank identifier has no effect`
+}
+
+func predeclared() {
+	// want +1 `assignment to the blank identifier has no effect`
+}
+
+func noted(n int) {
+	use(n)
+	// note
+	// want +1 `assignment to the blank identifier has no effect`
+}
+
+func packageLevel() {
+	use(total)
+	_ = total
+}
+
+func packageMarker() {
+	_ = zero
+}
+
+func local(n int) int {
+	m := n
+	use(m)
+	// want +1 `assignment to the blank identifier has no effect`
+	return n
+}
+
+func onlyRead(n int) int {
+	m := n
+	_ = m
+	return n
+}
+
+func repeatedLocal(n int) int {
+	m := n
+	_ = m
+	_ = m
+	return n
+}
+
+func redeclared(n int) int {
+	m := n
+	_ = m
+	m, ok := n, true
+	if !ok {
+		return 0
+	}
+	return n
+}
+
+func rewritten(n int) int {
+	m := n
+	use(m)
+	m = n
+	_ = m
+	return n
+}
+
+func assigned(n int) int {
+	m := n
+	m = n
+	_ = m
+	return n
+}
+
+func accumulated(n int) {
+	m := n
+	for range n {
+		m += 1
+	}
+	_ = m
+}
+
+func parenthesized(n int) {
+	use(n)
+	// want +1 `assignment to the blank identifier has no effect`
+}
+
+func trailing(n int) {
+	use(n)
+	// want +1 `assignment to the blank identifier has no effect`
+	_ = n // note
+}
+
+func interior(n int) {
+	use(n)
+	// want +1 `assignment to the blank identifier has no effect`
+	_ = /* note */ n
+}
+
+func namedResult(n int) (m int) {
+	m = n
+	use(m)
+	// want +1 `assignment to the blank identifier has no effect`
+	return
+}
+
+type count int
+
+func (c count) receiver() {
+	use(int(c))
+	// want +1 `assignment to the blank identifier has no effect`
+}
+
+func (c count) untouched() {
+	_ = c
+}
+
+func closureUse(n int) {
+	func() {
+		use(n)
+		_ = n
+	}()
+}
+
+func literalParameter(n int) {
+	func(x int) {
+		_ = x
+	}(n)
+}
+
+func localLiteral() {
+	func() {
+		m := 1
+		use(m)
+		// want +1 `assignment to the blank identifier has no effect`
+	}()
+}
+
+func nestedResult() {
+	func() (m int) {
+		m = 1
+		// want +1 `assignment to the blank identifier has no effect`
+		return
+	}()
+}
+
+func heldMarker() {
+	_ = one
+}
+
+func received(ch <-chan int) {
+	_ = <-ch
+}
+
+func called() {
+	_ = one()
+}
+
+func indexed(xs []int) {
+	_ = xs[0]
+}
+
+type item struct{ n int }
+
+func field(it item) {
+	_ = it.n
+}
+
+func referenced(it *item) {
+	use(it.n)
+	_ = it
+}
+
+func indirect(n int, it *item) {
+	q := &n
+	*q = it.n
+	_ = n
+}
+
+func pointed(values []int, i int) {
+	use(i)
+	p := &values[i]
+	use(*p)
+	// want +1 `assignment to the blank identifier has no effect`
+}
+
+type holder struct{ n int }
+
+func composite(n int) {
+	use(n)
+	p := &holder{n: n}
+	use(p.n)
+	// want +1 `assignment to the blank identifier has no effect`
+}
+
+func nakedResult(n int) (m int) {
+	m = n
+	// want +1 `assignment to the blank identifier has no effect`
+	return
+}
+
+func boundary(n int) {
+	_ = n
+	n = 1
+	use(n)
+}
+
+func rangeWrite(values []int) {
+	i := 0
+	for i = range values {
+		_ = i
+	}
+}
+
+func rangeRead(values []int) {
+	i := 0
+	for i = range values {
+		use(i)
+		// want +1 `assignment to the blank identifier has no effect`
+	}
+}
+
+func rangeExpression(n int, values []int) {
+	for n = range values[:n] {
+		_ = n
+	}
+}
+
+func generic[T ~int](x T) {
+	use(int(x))
+	_ = x
+}
+
+const fixed = 1
+
+func constantRead() {
+	use(fixed)
+	// want +1 `assignment to the blank identifier has no effect`
+}
+
+type tally int
+
+func (t *tally) bump() { *t++ }
+
+func receiverAddress() {
+	var t tally
+	use(int(t))
+	_ = t
+	t.bump()
+	use(int(t))
+}
+
+func closureWrite(n int) {
+	bump := func() { n = 1 }
+	use(n)
+	_ = n
+	bump()
+	use(n)
+}
+
+const greeting = "some message"
+
+func greetingUse() {
+	use(len(greeting))
+	_ = greeting
+}
+
+func constant() {
+	// want +1 `assignment to the blank identifier has no effect`
+}
+
+func text() {
+	// want +1 `assignment to the blank identifier has no effect`
+}
+
+func flattened(it item) {
+	use(it.n)
+	_ = it
+}
+
+type coordinates struct{ x, y int }
+
+type node struct{ next *int }
+
+func grouped(c coordinates) {
+	use(c.x)
+	_ = c
+}
+
+func pointered(n node) {
+	use(*n.next)
+	_ = n
+}
+
+func arrayed(values [2]int) {
+	use(values[0])
+	_ = values
+}
+
+func textual(names [2]string) {
+	use(len(names[0]))
+	_ = names
+}
+
+func dereferenced(p *int) {
+	_ = *p
+}
+
+func pair() (int, int) { return 0, 0 }
+
+func multiple() {
+	_, _ = pair()
+}
+
+var _ = 0
+
+func labeled(n int) {
+	use(n)
+	goto end
+end:
+	_ = n
+}
+
+func ifInit(n int, ok bool) bool {
+	use(n)
+	// want +1 `assignment to the blank identifier has no effect`
+	if ok {
+		return true
+	}
+	return false
+}
+
+func forInit(n int) {
+	use(n)
+	// want +1 `assignment to the blank identifier has no effect`
+	for ; n > 0; n-- {
+	}
+}
+
+func switchInit(n int) bool {
+	use(n)
+	// want +1 `assignment to the blank identifier has no effect`
+	switch n {
+	case 0:
+		return true
+	}
+	return false
+}
+
+func ranged(xs []int) {
+	for _, x := range xs {
+		use(x)
+		// want +1 `assignment to the blank identifier has no effect`
+	}
+}

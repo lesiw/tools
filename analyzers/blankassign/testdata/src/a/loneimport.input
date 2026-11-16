@@ -1,0 +1,12 @@
+package a
+
+import (
+	"os"
+
+	other "os"
+)
+
+func loneImport() {
+	use(other.O_RDONLY)
+	_ = os.O_RDONLY
+}

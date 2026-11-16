@@ -1,0 +1,8 @@
+package a
+
+import "strings"
+
+func sharedImport(name string) string {
+	_ = strings.ToUpper
+	return strings.ToUpper(name)
+}

@@ -343,6 +343,23 @@
 //		}
 //	}
 //
+// # blankassign
+//
+// Reports a statement that assigns the value of a name or a basic literal to
+// the blank identifier when the assignment has no effect. A name is reported
+// when the code reads it again with no write in between; a basic literal or
+// predeclared constant is reported without another use. A numeric or boolean
+// variable is reported only inside a function, and a numeric or boolean named
+// constant wherever it is declared, each with another read; a variable of any
+// other type can hold a reference or be written through another name for the
+// same storage.
+//
+// Inspired by staticcheck's S1005.
+//
+//	func f() {
+//		_ = 0
+//	}
+//
 // # blankimports
 //
 // Reports a blank import in a non-main, non-test file with no comment naming

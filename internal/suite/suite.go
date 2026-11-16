@@ -71,6 +71,7 @@ import (
 	"lesiw.io/tools/analyzers/badlock"
 	"lesiw.io/tools/analyzers/badsorting"
 	"lesiw.io/tools/analyzers/badsyncfunc"
+	"lesiw.io/tools/analyzers/blankassign"
 	"lesiw.io/tools/analyzers/blankimports"
 	"lesiw.io/tools/analyzers/bookends"
 	"lesiw.io/tools/analyzers/boolexprsimplify"
@@ -316,6 +317,7 @@ var (
 		badlock.Analyzer,
 		badsorting.Analyzer,
 		badsyncfunc.Analyzer,
+		blankassign.Analyzer,
 		blankimports.Analyzer,
 		bookends.Analyzer,
 		boolexprsimplify.Analyzer,

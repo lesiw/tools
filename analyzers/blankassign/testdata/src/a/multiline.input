@@ -1,0 +1,10 @@
+package a
+
+import "os"
+
+func multiline() {
+	use(os.O_RDONLY)
+	// want +1 `assignment to the blank identifier has no effect`
+	_ = os.
+		O_RDONLY
+}
