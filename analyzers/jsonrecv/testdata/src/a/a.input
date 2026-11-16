@@ -1,0 +1,489 @@
+package a
+
+import (
+	"sync"
+	"sync/atomic"
+)
+
+type item struct{ label string }
+
+func (i *item) MarshalJSON() ([]byte, error) { // want `MarshalJSON has a pointer receiver; a value of the type does not implement json.Marshaler`
+	return []byte(i.label), nil
+}
+
+type value struct{ label string }
+
+func (v value) MarshalJSON() ([]byte, error) {
+	return []byte(v.label), nil
+}
+
+type pair struct{ first, second int }
+
+func (p pair) UnmarshalJSON(b []byte) error {
+	return nil
+}
+
+type holder struct{ first, second int }
+
+func (h *holder) UnmarshalJSON(b []byte) error {
+	return nil
+}
+
+type cached struct{ data []byte }
+
+func (c *cached) MarshalJSON() ([]byte, error) {
+	c.data = nil
+	return nil, nil
+}
+
+type optional struct{ label string }
+
+func (o *optional) MarshalJSON() ([]byte, error) {
+	if o == nil {
+		return []byte("null"), nil
+	}
+	return []byte(o.label), nil
+}
+
+type guarded struct{ mu sync.Mutex }
+
+func (g *guarded) MarshalJSON() ([]byte, error) {
+	g.mu.Lock()
+	defer g.mu.Unlock()
+	return nil, nil
+}
+
+type writable struct{ label string }
+
+func (w writable) UnmarshalJSON(b []byte) error { // want `UnmarshalJSON has a value receiver; its writes land in a copy`
+	w.label = string(b)
+	return nil
+}
+
+type replaceable struct{ label string }
+
+func (r replaceable) UnmarshalJSON(b []byte) error { // want `UnmarshalJSON has a value receiver; its writes land in a copy`
+	r = replaceable{label: string(b)}
+	return nil
+}
+
+type grid struct{ cells [2]byte }
+
+func (g grid) UnmarshalJSON(b []byte) error { // want `UnmarshalJSON has a value receiver; its writes land in a copy`
+	g.cells[0] = b[0]
+	return nil
+}
+
+type shared struct{ data []byte }
+
+func (s shared) UnmarshalJSON(b []byte) error {
+	s.data[0] = b[0]
+	return nil
+}
+
+type pointer struct{ inner *item }
+
+func (p pointer) UnmarshalJSON(b []byte) error {
+	p.inner.label = string(b)
+	return nil
+}
+
+type validator struct{}
+
+func (v validator) UnmarshalJSON(b []byte) error {
+	if len(b) == 0 {
+		return nil
+	}
+	return nil
+}
+
+type helper struct{ label string }
+
+func fill(h *helper, b []byte) { h.label = string(b) }
+
+func (h helper) UnmarshalJSON(b []byte) error {
+	fill(&h, b)
+	return nil
+}
+
+type note struct{}
+
+func (n *note) MarshalJSON(space int) ([]byte, error) {
+	return nil, nil
+}
+
+func (n note) UnmarshalJSON(b []byte) (int, error) {
+	return 0, nil
+}
+
+type variadic struct{}
+
+func (variadic) UnmarshalJSON(b ...byte) error {
+	return nil
+}
+
+type payload []byte
+
+type raw struct{}
+
+func (r *raw) MarshalJSON() (payload, error) {
+	return nil, nil
+}
+
+type text struct{}
+
+func (t *text) MarshalText() ([]byte, error) {
+	return nil, nil
+}
+
+func (t text) UnmarshalText(b []byte) error {
+	return nil
+}
+
+type box[T any] struct{ size int }
+
+func (b *box[T]) MarshalJSON() ([]byte, error) { // want `MarshalJSON has a pointer receiver; a value of the type does not implement json.Marshaler`
+	return nil, nil
+}
+
+func (b box[T]) UnmarshalJSON(data []byte) error { // want `UnmarshalJSON has a value receiver; its writes land in a copy`
+	b.size = len(data)
+	return nil
+}
+
+type guards struct{ mu [2]sync.Mutex }
+
+func (g *guards) MarshalJSON() ([]byte, error) {
+	g.mu[0].Lock()
+	defer g.mu[0].Unlock()
+	return nil, nil
+}
+
+type sharedSlice struct{ data []byte }
+
+func (s *sharedSlice) MarshalJSON() ([]byte, error) { // want `MarshalJSON has a pointer receiver; a value of the type does not implement json.Marshaler`
+	s.data[0] = 0
+	return nil, nil
+}
+
+type sharedMap struct{ items map[string]int }
+
+func (s *sharedMap) MarshalJSON() ([]byte, error) { // want `MarshalJSON has a pointer receiver; a value of the type does not implement json.Marshaler`
+	s.items[""] = 0
+	return nil, nil
+}
+
+type addressable struct{ label string }
+
+func (a addressable) UnmarshalJSON(b []byte) error { // want `UnmarshalJSON has a value receiver; its writes land in a copy`
+	(&a).label = string(b)
+	return nil
+}
+
+type wrongParam struct{ label string }
+
+func (w wrongParam) UnmarshalJSON(b int) error {
+	w.label = "label"
+	return nil
+}
+
+type wrongResult struct{ label string }
+
+func (w wrongResult) UnmarshalJSON(b []byte) (int, error) {
+	w.label = string(b)
+	return 0, nil
+}
+
+type inner struct{ label string }
+
+type wrapped struct{ inner }
+
+func (w *wrapped) MarshalJSON() ([]byte, error) {
+	w.label = "label"
+	return nil, nil
+}
+
+type attached struct{ *inner }
+
+func (a *attached) MarshalJSON() ([]byte, error) { // want `MarshalJSON has a pointer receiver; a value of the type does not implement json.Marshaler`
+	a.label = "label"
+	return nil, nil
+}
+
+type referenced struct{ ptr *inner }
+
+func (r *referenced) MarshalJSON() ([]byte, error) { // want `MarshalJSON has a pointer receiver; a value of the type does not implement json.Marshaler`
+	*r.ptr = inner{}
+	return nil, nil
+}
+
+type referencedField struct{ ptr *inner }
+
+func (r *referencedField) MarshalJSON() ([]byte, error) { // want `MarshalJSON has a pointer receiver; a value of the type does not implement json.Marshaler`
+	(*r.ptr).label = "label"
+	return nil, nil
+}
+
+type cells [2]int
+
+func (c *cells) MarshalJSON() ([]byte, error) {
+	c[0] = 0
+	return nil, nil
+}
+
+type slicedCells [2]int
+
+func (c *slicedCells) MarshalJSON() ([]byte, error) {
+	c[:][0] = 0
+	return nil, nil
+}
+
+type holderArray struct{ cells [2]int }
+
+func (h *holderArray) MarshalJSON() ([]byte, error) {
+	(&h.cells)[0] = 0
+	return nil, nil
+}
+
+type valueCells [2]int
+
+func (v valueCells) UnmarshalJSON(b []byte) error { // want `UnmarshalJSON has a value receiver; its writes land in a copy`
+	(&v)[0] = 0
+	return nil
+}
+
+type valueArray struct{ cells [2]int }
+
+func (v valueArray) UnmarshalJSON(b []byte) error { // want `UnmarshalJSON has a value receiver; its writes land in a copy`
+	(&v.cells)[0] = 0
+	return nil
+}
+
+type node struct {
+	next  *node
+	label string
+}
+
+func (n *node) MarshalJSON() ([]byte, error) { // want `MarshalJSON has a pointer receiver; a value of the type does not implement json.Marshaler`
+	n.next.label = "label"
+	return nil, nil
+}
+
+type pointerHelper struct{ label string }
+
+func fillPointer(h *pointerHelper, b []byte) { h.label = string(b) }
+
+func (h *pointerHelper) MarshalJSON() ([]byte, error) {
+	fillPointer(h, nil)
+	return nil, nil
+}
+
+type copied struct{ cells [2]byte }
+
+func (c *copied) MarshalJSON() ([]byte, error) {
+	copy(c.cells[:], []byte{0})
+	return nil, nil
+}
+
+type copiedValue struct{ cells [2]byte }
+
+func (c copiedValue) UnmarshalJSON(b []byte) error {
+	copy(c.cells[:], b)
+	return nil
+}
+
+type copiedSlice struct{ data []byte }
+
+func (c copiedSlice) UnmarshalJSON(b []byte) error {
+	copy(c.data, b)
+	return nil
+}
+
+type copiedSlicePointer struct{ data []byte }
+
+func (c *copiedSlicePointer) MarshalJSON() ([]byte, error) { // want `MarshalJSON has a pointer receiver; a value of the type does not implement json.Marshaler`
+	copy(c.data, []byte{0})
+	return nil, nil
+}
+
+type sliceCall struct{ cells [2]byte }
+
+func fillSlice(b []byte) {
+	if len(b) > 0 {
+		b[0] = 0
+	}
+}
+
+func (s sliceCall) UnmarshalJSON(b []byte) error {
+	fillSlice(s.cells[:])
+	return nil
+}
+
+type sliceCallPointer struct{ cells [2]byte }
+
+func (s *sliceCallPointer) MarshalJSON() ([]byte, error) {
+	fillSlice(s.cells[:])
+	return nil, nil
+}
+
+type pointerMethod struct{ label string }
+
+func (p *pointerMethod) normalize() { p.label = "label" }
+
+func (p *pointerMethod) MarshalJSON() ([]byte, error) {
+	p.normalize()
+	return nil, nil
+}
+
+type valueMethod struct{ label string }
+
+func (v *valueMethod) load(b []byte) { v.label = string(b) }
+
+func (v valueMethod) UnmarshalJSON(b []byte) error {
+	v.load(b)
+	return nil
+}
+
+type unnamed struct{ label string }
+
+func (*unnamed) MarshalJSON() ([]byte, error) { // want `MarshalJSON has a pointer receiver; a value of the type does not implement json.Marshaler`
+	return nil, nil
+}
+
+type counter struct{ n atomic.Int32 }
+
+func (c *counter) MarshalJSON() ([]byte, error) {
+	_ = c.n.Load()
+	return nil, nil
+}
+
+type delegating struct{ label string }
+
+func (d delegating) check(b []byte) bool { return len(b) == 0 }
+
+func (d delegating) UnmarshalJSON(b []byte) error {
+	_ = d.check(b)
+	return nil
+}
+
+type pointerValueCheck struct{ label string }
+
+func (p pointerValueCheck) check(b []byte) bool { return len(b) == 0 }
+
+func (p *pointerValueCheck) MarshalJSON() ([]byte, error) { // want `MarshalJSON has a pointer receiver; a value of the type does not implement json.Marshaler`
+	_ = p.check(nil)
+	return nil, nil
+}
+
+type syncField struct{ mu sync.Mutex }
+
+func (s *syncField) MarshalJSON() ([]byte, error) {
+	return nil, nil
+}
+
+type atomicField struct{ n atomic.Int32 }
+
+func (a *atomicField) MarshalJSON() ([]byte, error) {
+	return nil, nil
+}
+
+type copyValue struct{ label string }
+
+func (c *copyValue) MarshalJSON() ([]byte, error) { // want `MarshalJSON has a pointer receiver; a value of the type does not implement json.Marshaler`
+	label := c.label
+	label = "label"
+	return []byte(label), nil
+}
+
+type copyValueReceiver struct{ label string }
+
+func (c copyValueReceiver) UnmarshalJSON(b []byte) error {
+	label := c.label
+	label = string(b)
+	_ = label
+	return nil
+}
+
+type attachedMethod struct{ *inner }
+
+func (i *inner) normalize() { i.label = "label" }
+
+func (a attachedMethod) UnmarshalJSON(b []byte) error {
+	a.normalize()
+	return nil
+}
+
+type attachedMethodPointer struct{ *inner }
+
+func (a *attachedMethodPointer) MarshalJSON() ([]byte, error) { // want `MarshalJSON has a pointer receiver; a value of the type does not implement json.Marshaler`
+	a.normalize()
+	return nil, nil
+}
+
+type redeclared struct{ label string }
+
+func decodeRedeclared(b []byte) (redeclared, error) { return redeclared{}, nil }
+
+func (r redeclared) UnmarshalJSON(b []byte) error { // want `UnmarshalJSON has a value receiver; its writes land in a copy`
+	r, err := decodeRedeclared(b)
+	_ = err
+	return nil
+}
+
+type incdec struct{ n int }
+
+func (i incdec) UnmarshalJSON(b []byte) error { // want `UnmarshalJSON has a value receiver; its writes land in a copy`
+	i.n++
+	return nil
+}
+
+type incdecPointer struct{ n int }
+
+func (i *incdecPointer) MarshalJSON() ([]byte, error) {
+	i.n++
+	return nil, nil
+}
+
+type rangeloop struct{ label string }
+
+func (r rangeloop) UnmarshalJSON(b []byte) error { // want `UnmarshalJSON has a value receiver; its writes land in a copy`
+	for _, r.label = range []string{"label"} {
+	}
+	return nil
+}
+
+type rangeloopPointer struct{ label string }
+
+func (r *rangeloopPointer) MarshalJSON() ([]byte, error) {
+	for _, r.label = range []string{"label"} {
+	}
+	return nil, nil
+}
+
+type nilLeft struct{ label string }
+
+func (n *nilLeft) MarshalJSON() ([]byte, error) {
+	if nil != n {
+		return nil, nil
+	}
+	return nil, nil
+}
+
+type part struct{ n int }
+
+func (p *part) touch() { p.n = 1 }
+
+type holderPart struct{ part part }
+
+func (h *holderPart) MarshalJSON() ([]byte, error) {
+	(&h.part).touch()
+	return nil, nil
+}
+
+type scratch struct{ label string }
+
+func (s scratch) UnmarshalJSON(b []byte) error { // want `UnmarshalJSON has a value receiver; its writes land in a copy`
+	s.label = string(b)
+	_ = s.label
+	return nil
+}

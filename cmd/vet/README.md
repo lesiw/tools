@@ -1761,6 +1761,18 @@ func config() string {
 }
 ```
 
+## jsonrecv
+
+Reports MarshalJSON on a pointer receiver that does not need the pointer, and UnmarshalJSON on a value receiver that writes directly to its copy. The first leaves MarshalJSON out of the value's method set, and the second's write never reaches the decoded value.
+
+Adapted from revive's marshal-receiver.
+
+```
+func (i *item) MarshalJSON() ([]byte, error) {
+    return nil, nil
+}
+```
+
 ## lenzero
 
 Reports a comparison of len with zero that is always true or always false. len returns a count, and a count is never negative.

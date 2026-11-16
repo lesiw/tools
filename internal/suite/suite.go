@@ -160,6 +160,7 @@ import (
 	"lesiw.io/tools/analyzers/ipliteral"
 	"lesiw.io/tools/analyzers/isnilbool"
 	"lesiw.io/tools/analyzers/joinseparator"
+	"lesiw.io/tools/analyzers/jsonrecv"
 	"lesiw.io/tools/analyzers/lenzero"
 	"lesiw.io/tools/analyzers/linelen"
 	"lesiw.io/tools/analyzers/linewrap"
@@ -441,6 +442,7 @@ var (
 		ipliteral.Analyzer,
 		isnilbool.Analyzer,
 		joinseparator.Analyzer,
+		jsonrecv.Analyzer,
 		lenzero.Analyzer,
 		linelen.Analyzer,
 		linewrap.Analyzer,
