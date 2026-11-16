@@ -1,0 +1,11 @@
+package a
+
+import (
+	"fmt"
+
+	. "b"
+)
+
+func dotConstant() error {
+	return fmt.Errorf(Message, nil) // want `fmt.Errorf has a nil %w operand`
+}

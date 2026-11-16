@@ -1,0 +1,352 @@
+package a
+
+import (
+	"errors"
+	"fmt"
+)
+
+type item struct{}
+
+func (*item) Error() string { return "item" }
+
+const (
+	message      = "load: %w"
+	valueMessage = "%v: %w"
+)
+
+var (
+	errItem = errors.New("item failed")
+	format  = "load: %w"
+)
+
+func literalNil() error {
+	return fmt.Errorf("fetch: ") // want `fmt.Errorf has a nil %w operand`
+}
+
+func nilAtEnd() error {
+	return fmt.Errorf("fetch: %v: ", "alpha") // want `fmt.Errorf has a nil %w operand`
+}
+
+func nilAtStart() error {
+	return fmt.Errorf(": %v", "alpha") // want `fmt.Errorf has a nil %w operand`
+}
+
+func nilBetweenValues() error {
+	return fmt.Errorf("%v: : %v", "alpha", "beta") // want `fmt.Errorf has a nil %w operand`
+}
+
+func twoNil() error {
+	return fmt.Errorf(": ") // want `fmt.Errorf has a nil %w operand`
+}
+
+func twoNilMiddle() error {
+	return fmt.Errorf("%v: : : %v", "alpha", "beta") // want `fmt.Errorf has a nil %w operand`
+}
+
+func nilAndError() error {
+	return fmt.Errorf("%w: %w", nil, errItem) // want `fmt.Errorf has a nil %w operand`
+}
+
+func errorAndNil() error {
+	return fmt.Errorf("%w: %w", errItem, nil) // want `fmt.Errorf has a nil %w operand`
+}
+
+func threeWrap() error {
+	return fmt.Errorf(": %w: %w", errItem, errItem) // want `fmt.Errorf has a nil %w operand`
+}
+
+func threeWrapMiddle() error {
+	return fmt.Errorf("%w: : %w", errItem, errItem) // want `fmt.Errorf has a nil %w operand`
+}
+
+func threeWrapLast() error {
+	return fmt.Errorf("%w: %w: ", errItem, errItem) // want `fmt.Errorf has a nil %w operand`
+}
+
+func twoNilThenErrors() error {
+	return fmt.Errorf(": %w: : %w", errItem, errItem) // want `fmt.Errorf has a nil %w operand`
+}
+
+func consecutiveNil() error {
+	return fmt.Errorf(": : %w: %w", errItem, errItem) // want `fmt.Errorf has a nil %w operand`
+}
+
+func literalPercent() error {
+	return fmt.Errorf("100%%: ") // want `fmt.Errorf has a nil %w operand`
+}
+
+func percentAfter() error {
+	return fmt.Errorf(": 100%%") // want `fmt.Errorf has a nil %w operand`
+}
+
+func percentWidth() error {
+	return fmt.Errorf("%5%: ") // want `fmt.Errorf has a nil %w operand`
+}
+
+func percentFlag() error {
+	return fmt.Errorf("%+%: ") // want `fmt.Errorf has a nil %w operand`
+}
+
+func percentPrecision() error {
+	return fmt.Errorf("%.2%: ") // want `fmt.Errorf has a nil %w operand`
+}
+
+func widthVerb() error {
+	return fmt.Errorf("fetch: ") // want `fmt.Errorf has a nil %w operand`
+}
+
+func precisionVerb() error {
+	return fmt.Errorf("fetch: ") // want `fmt.Errorf has a nil %w operand`
+}
+
+func flagVerb() error {
+	return fmt.Errorf("fetch: ") // want `fmt.Errorf has a nil %w operand`
+}
+
+func zeroWidthVerb() error {
+	return fmt.Errorf("fetch: ") // want `fmt.Errorf has a nil %w operand`
+}
+
+func parenthesizedNil() error {
+	return fmt.Errorf("fetch: ") // want `fmt.Errorf has a nil %w operand`
+}
+
+func convertedNil() error {
+	return fmt.Errorf("fetch: ") // want `fmt.Errorf has a nil %w operand`
+}
+
+func convertedAny() error {
+	return fmt.Errorf("fetch: ") // want `fmt.Errorf has a nil %w operand`
+}
+
+func rawString() error {
+	return fmt.Errorf(`fetch: `) // want `fmt.Errorf has a nil %w operand`
+}
+
+func escapedFormat() error {
+	return fmt.Errorf("fetch:\t") // want `fmt.Errorf has a nil %w operand`
+}
+
+func constantFormat() error {
+	return fmt.Errorf("load: ") // want `fmt.Errorf has a nil %w operand`
+}
+
+func constantMultiVerb() error {
+	return fmt.Errorf("%v: ", "alpha") // want `fmt.Errorf has a nil %w operand`
+}
+
+func selectorConstant() error {
+	return fmt.Errorf("load: ") // want `fmt.Errorf has a nil %w operand`
+}
+
+func concatenatedFormat() error {
+	return fmt.Errorf("fetch: ") // want `fmt.Errorf has a nil %w operand`
+}
+
+func nilForValue() error {
+	return fmt.Errorf("%v: %w", nil, errItem)
+}
+
+func typedNil() error {
+	var err *item
+	return fmt.Errorf("fetch: %w", err)
+}
+
+func convertedTypedNil() error {
+	return fmt.Errorf("fetch: %w", (*item)(nil))
+}
+
+func convertedNonErrorNil() error {
+	return fmt.Errorf("fetch: %w", (*int)(nil))
+}
+
+func typeParam[T ~*int]() error {
+	return fmt.Errorf("fetch: %w", T(nil))
+}
+
+func nilVariable() error {
+	var err error
+	return fmt.Errorf("fetch: %w", err)
+}
+
+func missingArgument() error {
+	return fmt.Errorf("fetch: %w")
+}
+
+func missingOperand() error {
+	return fmt.Errorf("%w %v", nil) // want `fmt.Errorf has a nil %w operand`
+}
+
+func nonError() error {
+	return fmt.Errorf("fetch: %w", 1)
+}
+
+func nonNil() error {
+	return fmt.Errorf("fetch: %w", errItem)
+}
+
+func dynamicFormat() error {
+	return fmt.Errorf(format, nil)
+}
+
+func indexed() error {
+	return fmt.Errorf("%[1]w", nil) // want `fmt.Errorf has a nil %w operand`
+}
+
+func starred() error {
+	return fmt.Errorf("%*w", 4, nil) // want `fmt.Errorf has a nil %w operand`
+}
+
+func indexedOther() error {
+	return fmt.Errorf("%w %[1]v", nil) // want `fmt.Errorf has a nil %w operand`
+}
+
+func indexedSecondNil() error {
+	return fmt.Errorf("%[2]w %[1]v", "alpha", nil) // want `fmt.Errorf has a nil %w operand`
+}
+
+func indexedFirstNil() error {
+	return fmt.Errorf("%[2]w %[1]v", nil, errItem)
+}
+
+func hugeIndex() error {
+	return fmt.Errorf("%[9223372036854775809]w", nil)
+}
+
+func indexedPercent() error {
+	return fmt.Errorf("%[5]% %w", nil) // want `fmt.Errorf has a nil %w operand`
+}
+
+func indexedPercentFront() error {
+	return fmt.Errorf("%[1]% %w", nil) // want `fmt.Errorf has a nil %w operand`
+}
+
+func trailingIndexedPercent() error {
+	return fmt.Errorf("%w %[1]%", nil) // want `fmt.Errorf has a nil %w operand`
+}
+
+func trailingStarPercent() error {
+	return fmt.Errorf("%w %*%", nil, 4) // want `fmt.Errorf has a nil %w operand`
+}
+
+func badIndexThen() error {
+	return fmt.Errorf("%[2]w %w", nil) // want `fmt.Errorf has a nil %w operand`
+}
+
+func indexedWidth() error {
+	return fmt.Errorf("%[1]2w", nil)
+}
+
+func zeroIndex() error {
+	return fmt.Errorf("%[0]w %w", nil) // want `fmt.Errorf has a nil %w operand`
+}
+
+func zeroPercentStar() error {
+	return fmt.Errorf("%[0]% %*w", nil)
+}
+
+func zeroPercentNil() error {
+	return fmt.Errorf("%[0]% %w", nil) // want `fmt.Errorf has a nil %w operand`
+}
+
+func nilBeforeBad() error {
+	return fmt.Errorf("%w %[0]*w", nil, errItem) // want `fmt.Errorf has a nil %w operand`
+}
+
+func precisionIndex() error {
+	return fmt.Errorf("%.[2]2w %w", "x", nil) // want `fmt.Errorf has a nil %w operand`
+}
+
+func starIndexOutOfRange() error {
+	return fmt.Errorf("%[3]*w %w", errItem, nil)
+}
+
+func indexedPrecision() error {
+	return fmt.Errorf("%[1].2w", nil)
+}
+
+func nilWidth() error {
+	return fmt.Errorf("%*w", nil, errItem)
+}
+
+func starredOther() error {
+	return fmt.Errorf("%w %*d", nil, 2, 3) // want `fmt.Errorf has a nil %w operand`
+}
+
+func starPrecision() error {
+	return fmt.Errorf("%.*w", 2, nil) // want `fmt.Errorf has a nil %w operand`
+}
+
+func trailingDot() error {
+	return fmt.Errorf("%w %5.", nil) // want `fmt.Errorf has a nil %w operand`
+}
+
+func spread(args []any) error {
+	return fmt.Errorf("fetch: %w", args...)
+}
+
+type logger struct{}
+
+func (logger) Errorf(string, ...any) error { return nil }
+
+func method(l logger) error {
+	return l.Errorf("fetch: %w", nil)
+}
+
+func functionValue() error {
+	f := fmt.Errorf
+	return f("fetch: %w", nil)
+}
+
+func multiline() error {
+	return fmt.Errorf(
+		"fetch: ") // want `fmt.Errorf has a nil %w operand`
+}
+
+func shadowed() error {
+	fmt := logger{}
+	return fmt.Errorf("fetch: %w", nil)
+}
+
+func commentedArgument() error {
+	return fmt.Errorf(
+		"fetch: %w", /* keep */
+		nil,         // want `fmt.Errorf has a nil %w operand`
+	)
+}
+
+func commentedFormat() error {
+	return fmt.Errorf("fetch: " + /* keep */ "%w", nil) // want `fmt.Errorf has a nil %w operand`
+}
+
+func extraArgument() error {
+	return fmt.Errorf("fetch: %w", nil, "extra") // want `fmt.Errorf has a nil %w operand`
+}
+
+func commentAfter() error {
+	return fmt.Errorf("%w", nil /* why */) // want `fmt.Errorf has a nil %w operand`
+}
+
+func commentBefore() error {
+	return fmt.Errorf("%v: %w: %v", "alpha", /* why */ nil, "beta") // want `fmt.Errorf has a nil %w operand`
+}
+
+func unknownVerb() error {
+	return fmt.Errorf("%z: ", "x") // want `fmt.Errorf has a nil %w operand`
+}
+
+func incompleteVerb() error {
+	return fmt.Errorf(": 100%") // want `fmt.Errorf has a nil %w operand`
+}
+
+func triplePercent() error {
+	return fmt.Errorf("%%") // want `fmt.Errorf has a nil %w operand`
+}
+
+func parenthesizedCallee() error {
+	return (fmt.Errorf)("fetch: ") // want `fmt.Errorf has a nil %w operand`
+}
+
+func literalPercentW() error {
+	return fmt.Errorf("%%w")
+}

@@ -1,0 +1,7 @@
+package a
+
+import "fmt"
+
+func deliberateNil() error {
+	return fmt.Errorf("fetch: %w", nil) // want `fmt.Errorf has a nil %w operand`
+}

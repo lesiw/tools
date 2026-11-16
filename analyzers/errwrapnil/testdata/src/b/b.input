@@ -1,0 +1,7 @@
+package b
+
+const Message = "load: %w"
+
+type Error interface {
+	error
+}

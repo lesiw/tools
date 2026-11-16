@@ -1,0 +1,7 @@
+package a
+
+import . "fmt"
+
+func dotNil() error {
+	return Errorf("fetch: ") // want `fmt.Errorf has a nil %w operand`
+}

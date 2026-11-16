@@ -1,0 +1,11 @@
+package a
+
+import (
+	"fmt"
+
+	. "b"
+)
+
+func dotComposite() error {
+	return fmt.Errorf(Message+"%w", nil) // want `fmt.Errorf has a nil %w operand`
+}

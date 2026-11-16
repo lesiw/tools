@@ -149,6 +149,7 @@ import (
 	"lesiw.io/tools/analyzers/errshadow"
 	"lesiw.io/tools/analyzers/errstrings"
 	"lesiw.io/tools/analyzers/errwrapdirect"
+	"lesiw.io/tools/analyzers/errwrapnil"
 	"lesiw.io/tools/analyzers/evalorder"
 	"lesiw.io/tools/analyzers/exposedsyncmutex"
 	"lesiw.io/tools/analyzers/fieldcopy"
@@ -451,6 +452,7 @@ var (
 		errshadow.Analyzer,
 		errstrings.Analyzer,
 		errwrapdirect.Analyzer,
+		errwrapnil.Analyzer,
 		evalorder.Analyzer,
 		exposedsyncmutex.Analyzer,
 		fieldcopy.Analyzer,

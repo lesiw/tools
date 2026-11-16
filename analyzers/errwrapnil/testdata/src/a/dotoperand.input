@@ -1,0 +1,11 @@
+package a
+
+import (
+	"fmt"
+
+	. "b"
+)
+
+func dotOperand() error {
+	return fmt.Errorf("fetch: %w", Error(nil)) // want `fmt.Errorf has a nil %w operand`
+}

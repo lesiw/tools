@@ -1569,6 +1569,20 @@
 //		return fmt.Errorf("%w", err)
 //	}
 //
+// # errwrapnil
+//
+// Reports a fmt.Errorf call whose %w verb has a nil error operand. The nil
+// operand does not contribute a cause, and the message contains %!w(<nil>)
+// where the
+// cause would be.
+//
+// Adapted from this suite's nilerrwrap, itself inspired by the x/tools printf
+// analyzer.
+//
+//	func load() error {
+//		return fmt.Errorf("fetch: %w", nil)
+//	}
+//
 // # evalorder
 //
 // Reports a return that reads a value and passes its address to a call in the
