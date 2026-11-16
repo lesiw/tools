@@ -106,23 +106,22 @@ func TestFitsAcrossLines(t *testing.T) {
 }
 
 func across() string {
-	return strings.Join([]string{
-		"package p",
-		"",
-		"type first struct {",
-		"\tKind string",
-		"}",
-		"",
-		"type destination struct {",
-		"\tKind string",
-		"}",
-		"",
-		"func f(v first) destination {",
-		"\treturn destination{",
-		"\t\tKind: v.Kind,",
-		"\t}",
-		"}",
-	}, "\n") + "\n"
+	return `package p
+
+type first struct {
+	Kind string
+}
+
+type destination struct {
+	Kind string
+}
+
+func f(v first) destination {
+	return destination{
+		Kind: v.Kind,
+	}
+}
+`
 }
 
 func explicit(f *ast.File) *ast.CompositeLit {

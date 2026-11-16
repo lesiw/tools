@@ -13,11 +13,14 @@ import (
 )
 
 const (
-	guard = "\tif _, found := rows[name]; found {\n" + "\t\tdelete(rows, name)\n" +
-		"\t}"
-	chain = "\tif first {\n" + "\t\tuse()\n" + "\t} else if ok {\n" +
-		"\t\tuse()\n" +
-		"\t}"
+	guard = `	if _, found := rows[name]; found {
+		delete(rows, name)
+	}`
+	chain = `	if first {
+		use()
+	} else if ok {
+		use()
+	}`
 )
 
 // TestFits checks when a fix may write the delete on one line.
