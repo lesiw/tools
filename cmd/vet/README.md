@@ -969,6 +969,19 @@ func f(n int) int {
 }
 ```
 
+## emptylines
+
+Reports blank lines that separate nothing: one at the start or end of a block, and the second and later lines of a run inside one. gofmt keeps a blank line at an edge and prints at most one between two lines of content.
+
+Adapted from revive's empty-lines.
+
+```
+func f(n int) {
+
+    println(n)
+}
+```
+
 ## emptystring
 
 Reports a comparison of a string's length with zero. len(s) == 0 and s == "" are the same test, and the second is the form a reader expects.

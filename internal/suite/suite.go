@@ -111,6 +111,7 @@ import (
 	"lesiw.io/tools/analyzers/emptybranch"
 	"lesiw.io/tools/analyzers/emptydecl"
 	"lesiw.io/tools/analyzers/emptyfallthrough"
+	"lesiw.io/tools/analyzers/emptylines"
 	"lesiw.io/tools/analyzers/emptystring"
 	"lesiw.io/tools/analyzers/equalfold"
 	"lesiw.io/tools/analyzers/errflow"
@@ -325,6 +326,7 @@ var (
 		emptybranch.Analyzer,
 		emptydecl.Analyzer,
 		emptyfallthrough.Analyzer,
+		emptylines.Analyzer,
 		emptystring.Analyzer,
 		equalfold.Analyzer,
 		errcheck.Analyzer,

@@ -1,0 +1,13 @@
+package linedirective
+
+//line other.go:999999
+func renumbered(n int) { // want `blank line at the start of a block`
+	println(n)
+}
+
+//line other.go:999999
+func counted(n int) {
+	println(n) // want `more than one blank line in a row`
+
+	println(n)
+}

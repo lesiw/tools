@@ -1,0 +1,325 @@
+package a
+
+func leading(n int) { // want `blank line at the start of a block`
+
+	println(n)
+}
+
+func trailing(n int) {
+	println(n)
+
+} // want `blank line at the end of a block`
+
+func both(n int) { // want `blank line at the start of a block`
+
+	println(n)
+
+} // want `blank line at the end of a block`
+
+func run(n int) {
+	println(n)
+	// want `more than one blank line in a row`
+
+
+	println(n)
+}
+
+func longest(n int) { // want `blank lines at the start of a block`
+
+
+
+	println(n)
+}
+
+func closing(n int) {
+	println(n)
+
+
+
+} // want `blank lines at the end of a block`
+
+func nested(n int) {
+	if n > 0 {
+		n--
+		// want `more than one blank line in a row`
+
+
+		println(n)
+	}
+}
+
+func inner(n int) {
+	for n > 0 {
+		n--
+
+	} // want `blank line at the end of a block`
+	println(n)
+}
+
+func empty(n int) {
+	for n > 0 { // want `blank line at the start of a block`
+
+	}
+	println(n)
+}
+
+func braceComment(n int) {
+	// want +1 `blank line at the start of a block`
+	if n > 0 { // note
+
+		println(n)
+	}
+}
+
+func trailNote(n int) {
+	println(n)
+	// note
+
+} // want `blank line at the end of a block`
+
+func clause(n int) {
+	switch n {
+	case 1:
+		println(n)
+		// want `more than one blank line in a row`
+
+
+	case 2:
+		println(n)
+	}
+}
+
+func closure(n int) {
+	f := func() { // want `blank line at the start of a block`
+
+		println(n)
+	}
+	f()
+}
+
+func bare(n int) {
+	{ // want `blank line at the start of a block`
+
+		println(n)
+	}
+}
+
+func switchStart(n int) {
+	switch n { // want `blank line at the start of a block`
+
+	case 1:
+		println(n)
+	}
+}
+
+func switchEmptyClause(n int) {
+	switch n {
+	case 1:
+
+	} // want `blank line at the end of a block`
+}
+
+func switchEnd(n int) {
+	switch n {
+	case 1:
+		println(n)
+
+	} // want `blank line at the end of a block`
+}
+
+func rangeStart(n int, xs []int) {
+	for range xs { // want `blank line at the start of a block`
+
+		n++
+	}
+	println(n)
+}
+
+func typeSwitchStart(v any) {
+	switch v.(type) { // want `blank line at the start of a block`
+
+	case int:
+		println(v)
+	}
+}
+
+func selectStart(ch chan int) {
+	select { // want `blank line at the start of a block`
+
+	case <-ch:
+		println(1)
+	}
+}
+
+func branching(n int) {
+	if n > 0 {
+		println(n)
+
+	} else { // want `blank line at the end of a block`
+		println(-n)
+	}
+}
+
+func braceStmtRun(n int) {
+	if n > 0 { n--
+		// want `more than one blank line in a row`
+
+
+		println(n)
+	}
+}
+
+func structRun(n int) {
+	type pair struct {
+		a int
+		// want `more than one blank line in a row`
+
+
+		b int
+	}
+	println(pair{}.a, n)
+}
+
+type keptTopPair struct {
+	a int
+
+
+	b int
+}
+
+type keptTopFace interface {
+	print(int)
+
+
+	read() int
+}
+
+var keptTopLiteral = []int{
+	1,
+
+
+	2,
+}
+
+func compositeRun(n int) {
+	xs := []int{
+		1,
+		// want `more than one blank line in a row`
+
+
+		2,
+	}
+	println(xs[0], n)
+}
+
+func keptComment(n int) {
+	/*
+		heading
+
+
+		tail
+	*/
+	println(n)
+}
+
+func keptRaw(n int) {
+	s := `one
+
+
+three`
+	println(s, n)
+}
+
+func keptComposite(n int) {
+	xs := []int{
+
+		1,
+
+		2,
+	}
+	println(xs[0], n)
+}
+
+func keptFields(n int) {
+	type pair struct {
+
+		a int
+
+		b int
+	}
+	println(pair{}.a, n)
+}
+
+func keptMethods(n int) {
+	type face interface {
+
+		print(int)
+
+		read() int
+	}
+	var f face
+	println(f, n)
+}
+
+func keptDeclRun(n int) {
+	println(n)
+}
+
+
+func keptBetween(n int) {
+	println(n)
+
+	println(n)
+}
+
+func keptClause(n int) {
+	switch n {
+	case 1:
+
+		println(n)
+
+	case 2:
+		println(n)
+	}
+}
+
+func keptComm(ch chan int) {
+	select {
+	case <-ch:
+
+		println(1)
+	}
+}
+
+func keptTrail(n int) {
+	println(n)
+
+	// trailing note
+}
+
+func keptFirst(n int) {
+	// note
+
+	println(n)
+}
+
+func keptSpan(n int) { /*
+		note
+	*/
+
+	println(n)
+}
+
+func keptBraceStmt(n int) {
+	if n > 0 { n--
+
+		println(n)
+	}
+}
+
+func keptCloserStmt(n int) {
+	if n > 0 {
+		n--
+
+		println(n) }
+}
