@@ -260,6 +260,7 @@ import (
 	"lesiw.io/tools/analyzers/unusedtypeparam"
 	"lesiw.io/tools/analyzers/unusefultag"
 	"lesiw.io/tools/analyzers/unwrap"
+	"lesiw.io/tools/analyzers/urlconst"
 	"lesiw.io/tools/analyzers/uselessbreak"
 	"lesiw.io/tools/analyzers/uselessconcat"
 	"lesiw.io/tools/analyzers/uuid"
@@ -543,6 +544,7 @@ var (
 		unusedwrite.Analyzer,
 		unusefultag.Analyzer,
 		unwrap.Analyzer,
+		urlconst.Analyzer,
 		uselessbreak.Analyzer,
 		uselessconcat.Analyzer,
 		uuid.Analyzer,

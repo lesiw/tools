@@ -3584,6 +3584,17 @@
 //			2)
 //	}
 //
+// # urlconst
+//
+// Reports a call to url.Parse with a constant URL that it rejects. The call
+// returns the same error wherever it runs.
+//
+// Inspired by staticcheck's SA1007.
+//
+//	func f() {
+//		url.Parse("http://[::1")
+//	}
+//
 // # uselessbreak
 //
 // Reports a break at the end of a switch case. The switch ends after the case

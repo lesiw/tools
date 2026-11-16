@@ -1,0 +1,53 @@
+package a
+
+import "net/url"
+
+const (
+	broken   = "http://[::1"
+	escape   = "%zz"
+	valid    = "https://example.test/a"
+	relative = "/a/b"
+)
+
+func literals() {
+	url.Parse("http://x/%zz")   // want `URL does not parse: invalid URL escape "%zz"`
+	url.Parse("http://x:port/") // want `URL does not parse: invalid port ":port" after host`
+	url.Parse("http://[::1")    // want `URL does not parse: missing ']' in host`
+	url.Parse("https://example.test/a")
+	url.Parse("/a/b")
+	url.Parse("")
+	url.Parse("example.test/path")
+}
+
+func constants() {
+	url.Parse(broken)               // want `URL does not parse: missing ']' in host`
+	url.Parse("http://x/" + escape) // want `URL does not parse: invalid URL escape "%zz"`
+	url.Parse(valid)
+	url.Parse(relative)
+}
+
+func raw() {
+	url.Parse(`http://x/%zz`) // want `URL does not parse: invalid URL escape "%zz"`
+}
+
+func dynamic(raw string) {
+	url.Parse(raw)
+}
+
+func variable() {
+	held := "http://[::1"
+	url.Parse(held)
+}
+
+func functionValue() {
+	parse := url.Parse
+	parse("http://[::1")
+}
+
+func requestURI() {
+	url.ParseRequestURI("http://[::1")
+}
+
+func method(u *url.URL) {
+	u.Parse(":foo")
+}

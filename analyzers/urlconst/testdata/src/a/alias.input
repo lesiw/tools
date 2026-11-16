@@ -1,0 +1,7 @@
+package a
+
+import u "net/url"
+
+func aliased() {
+	u.Parse("http://[::1") // want `URL does not parse: missing ']' in host`
+}
