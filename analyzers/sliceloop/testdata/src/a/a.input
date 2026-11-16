@@ -1,0 +1,383 @@
+package a
+
+type item struct {
+	label string
+}
+
+type names []string
+
+type container struct {
+	items []item
+}
+
+func byValue(dst, src []string) {
+	// want +1 `loop copies one element at a time`
+	for i, s := range src {
+		dst[i] = s
+	}
+}
+
+func byIndex(dst, src []string) {
+	// want +1 `loop copies one element at a time`
+	for i := range src {
+		dst[i] = src[i]
+	}
+}
+
+func blankValue(dst, src []int) {
+	// want +1 `loop copies one element at a time`
+	for i, _ := range src {
+		dst[i] = src[i]
+	}
+}
+
+func named(dst, src names) {
+	// want +1 `loop copies one element at a time`
+	for i, s := range src {
+		dst[i] = s
+	}
+}
+
+func fieldTarget(dst *container, src []item) {
+	// want +1 `loop copies one element at a time`
+	for i, it := range src {
+		dst.items[i] = it
+	}
+}
+
+func fieldSource(dst []item, src *container) {
+	// want +1 `loop copies one element at a time`
+	for i := 0; i < len(src.items); i++ {
+		dst[i] = src.items[i]
+	}
+}
+
+func counted(dst, src []int) {
+	// want +1 `loop copies one element at a time`
+	for i := 0; i < len(src); i++ {
+		dst[i] = src[i]
+	}
+}
+
+func generic[T ~[]int](dst, src T) {
+	// want +1 `loop copies one element at a time`
+	for i, n := range src {
+		dst[i] = n
+	}
+}
+
+func twoParams[T ~[]int, U ~[]int](dst T, src U) {
+	// want +1 `loop copies one element at a time`
+	for i := range src {
+		dst[i] = src[i]
+	}
+}
+
+func throughPointer(dst *[]string, src []string) {
+	// want +1 `loop copies one element at a time`
+	for i, s := range src {
+		(*dst)[i] = s
+	}
+}
+
+type ints interface {
+	~[]int
+}
+
+func namedConstraint[T ints](dst, src T) {
+	// want +1 `loop copies one element at a time`
+	for i, n := range src {
+		dst[i] = n
+	}
+}
+
+func parenthesized(dst, src []int) {
+	// want +1 `loop copies one element at a time`
+	for i := 0; (i < len(src)); i++ {
+		dst[i] = src[i]
+	}
+}
+
+func textCounted(dst []byte, s string) {
+	// want +1 `loop copies one element at a time`
+	for i := 0; i < len(s); i++ {
+		dst[i] = s[i]
+	}
+}
+
+type textValue string
+
+func namedText(dst []byte, s textValue) {
+	// want +1 `loop copies one element at a time`
+	for i := 0; i < len(s); i++ {
+		dst[i] = s[i]
+	}
+}
+
+func slicedKey(dst, src []int, n int) {
+	// want +1 `loop copies one element at a time`
+	for i := range src[:n] {
+		dst[i] = src[:n][i]
+	}
+}
+
+func slicedValue(dst, src []int, n int) {
+	// want +1 `loop copies one element at a time`
+	for i, v := range src[:n] {
+		dst[i] = v
+	}
+}
+
+func slicedCounted(dst, src []int, n int) {
+	// want +1 `loop copies one element at a time`
+	for i := 0; i < len(src[:n]); i++ {
+		dst[i] = src[:n][i]
+	}
+}
+
+func hexZero(dst, src []int) {
+	// want +1 `loop copies one element at a time`
+	for i := 0x0; i < len(src); i++ {
+		dst[i] = src[i]
+	}
+}
+
+func stepped(dst, src []int) {
+	// want +1 `loop copies one element at a time`
+	for i := 0; i < len(src); i += 1 {
+		dst[i] = src[i]
+	}
+}
+
+type anyInts interface {
+	~[]int
+	any
+}
+
+func anyConstraint[T anyInts](dst, src T) {
+	// want +1 `loop copies one element at a time`
+	for i, n := range src {
+		dst[i] = n
+	}
+}
+
+type comparableStrings interface {
+	~string
+	comparable
+}
+
+func comparableText[T comparableStrings](dst []byte, src T) {
+	// want +1 `loop copies one element at a time`
+	for i := 0; i < len(src); i++ {
+		dst[i] = src[i]
+	}
+}
+
+type alsoInts interface {
+	~[]int
+}
+
+type moreInts interface {
+	ints
+	alsoInts
+}
+
+func restrictedTwice[T moreInts](dst, src T) {
+	// want +1 `loop copies one element at a time`
+	for i, n := range src {
+		dst[i] = n
+	}
+}
+
+func mirrored(dst, src []int) {
+	// want +1 `loop copies one element at a time`
+	for i := 0; len(src) > i; i++ {
+		dst[i] = src[i]
+	}
+}
+
+func added(dst, src []int) {
+	// want +1 `loop copies one element at a time`
+	for i := 0; i < len(src); i = i + 1 {
+		dst[i] = src[i]
+	}
+}
+
+func addedLeft(dst, src []int) {
+	// want +1 `loop copies one element at a time`
+	for i := 0; i < len(src); i = 1 + i {
+		dst[i] = src[i]
+	}
+}
+
+func fullSliceRange(dst, src []int) {
+	// want +1 `loop copies one element at a time`
+	for i := range src[:] {
+		dst[i] = src[i]
+	}
+}
+
+func fullSliceCounted(dst, src []int) {
+	// want +1 `loop copies one element at a time`
+	for i := 0; i < len(src[0:]); i++ {
+		dst[i] = src[i]
+	}
+}
+
+func unionElement[T ~[]int | ~[]string](dst, src []T) {
+	// want +1 `loop copies one element at a time`
+	for i, v := range src {
+		dst[i] = v
+	}
+}
+
+type textOrBytes interface {
+	~string | ~[]byte
+}
+
+func mixedSource[T textOrBytes](dst []byte, src T) {
+	// want +1 `loop copies one element at a time`
+	for i := 0; i < len(src); i++ {
+		dst[i] = src[i]
+	}
+}
+
+func zeroLow(dst, src []int, n int) {
+	// want +1 `loop copies one element at a time`
+	for i := 0; i < len(src[0:n]); i++ {
+		dst[i] = src[:n][i]
+	}
+}
+
+func convertedRange(dst []byte, s string) {
+	// want +1 `loop copies one element at a time`
+	for i := range []byte(s) {
+		dst[i] = []byte(s)[i]
+	}
+}
+
+func convertedCounted(dst []byte, s string) {
+	// want +1 `loop copies one element at a time`
+	for i := 0; i < len([]byte(s)); i++ {
+		dst[i] = []byte(s)[i]
+	}
+}
+
+type narrowed interface {
+	~[]int | ~[]string
+	~[]int
+}
+
+func narrowedConstraint[T narrowed](dst, src T) {
+	// want +1 `loop copies one element at a time`
+	for i, n := range src {
+		dst[i] = n
+	}
+}
+
+type narrowedText interface {
+	~string | ~[]int
+	~string
+}
+
+func narrowedTextCopy[T narrowedText](dst []byte, src T) {
+	// want +1 `loop copies one element at a time`
+	for i := 0; i < len(src); i++ {
+		dst[i] = src[i]
+	}
+}
+
+func convertedSource(dst []byte, s string) {
+	// want +1 `loop copies one element at a time`
+	for i := range []byte(s) {
+		dst[i] = s[i]
+	}
+}
+
+func convertedSourceCounted(dst []byte, s string) {
+	// want +1 `loop copies one element at a time`
+	for i := 0; i < len([]byte(s)); i++ {
+		dst[i] = s[i]
+	}
+}
+
+func asserted(dst []int, x any) {
+	// want +1 `loop copies one element at a time`
+	for i := range x.([]int) {
+		dst[i] = x.([]int)[i]
+	}
+}
+
+type base interface {
+	any
+}
+
+type baseInts interface {
+	base
+	~[]int
+}
+
+func baseConstraint[T baseInts](dst, src T) {
+	// want +1 `loop copies one element at a time`
+	for i, n := range src {
+		dst[i] = n
+	}
+}
+
+func intoParam[T ~[]int](dst T, src []int) {
+	// want +1 `loop copies one element at a time`
+	for i := range src {
+		[]int(dst)[i] = src[i]
+	}
+}
+
+func rowTarget(dst [][]int, src []int) {
+	// want +1 `loop copies one element at a time`
+	for i, n := range src {
+		dst[0][i] = n
+	}
+}
+
+func runeIndex(dst []rune, s string) {
+	// want +1 `loop copies one element at a time`
+	for i := range []rune(s) {
+		dst[i] = []rune(s)[i]
+	}
+}
+
+func shadowedCopy(dst, src []int) {
+	copy := func([]int, []int) {}
+	// want +1 `loop copies one element at a time`
+	for i, n := range src {
+		dst[i] = n
+	}
+	_ = copy
+}
+
+func lenBound(dst, src []int) {
+	// want +1 `loop copies one element at a time`
+	for i := range src[:len(src)] {
+		dst[i] = src[:len(src)][i]
+	}
+}
+
+func textBound(dst, src []int) {
+	// want +1 `loop copies one element at a time`
+	for i := range src[:len(src)-1] {
+		dst[i] = src[:len(src)-1][i]
+	}
+}
+
+func textIndex(dst []int, rows [][]int) {
+	// want +1 `loop copies one element at a time`
+	for i := range rows[len(rows)-1] {
+		dst[i] = rows[len(rows)-1][i]
+	}
+}
+
+func lastRowTarget(dst [][]int, src []int) {
+	// want +1 `loop copies one element at a time`
+	for i := range src {
+		dst[len(dst)-1][i] = src[i]
+	}
+}

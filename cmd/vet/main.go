@@ -3245,6 +3245,19 @@
 //		}
 //	}
 //
+// # sliceloop
+//
+// Reports a loop that copies a source slice into another slice one element at
+// a time. A counted loop may also copy a string into a byte slice.
+//
+// Adapted from staticcheck's S1001.
+//
+//	func duplicate(dst, src []string) {
+//		for i := range src {
+//			dst[i] = src[i]
+//		}
+//	}
+//
 // # slicesbackward
 //
 // Reports a loop that reads a slice from its last element to its first.

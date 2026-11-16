@@ -1,0 +1,316 @@
+package a
+
+func arrays(dst, src [3]int) {
+	for i := range src {
+		dst[i] = src[i]
+	}
+}
+
+func mapping(dst []string, m map[int]string) {
+	for i := range m {
+		dst[i] = m[i]
+	}
+}
+
+func text(dst []byte, s string) {
+	for i := range s {
+		dst[i] = s[i]
+	}
+}
+
+func extraStatement(dst, src []int) {
+	for i, n := range src {
+		dst[i] = n
+		dst[i]++
+	}
+}
+
+func shifted(dst, src []int) {
+	for i, n := range src {
+		dst[i+1] = n
+	}
+}
+
+func grid(dst [][]int, src []int) {
+	for i, n := range src {
+		dst[i][i] = n
+	}
+}
+
+func varyingSource(dst []int, src [][]int) {
+	for i := 0; i < len(src[i]); i++ {
+		dst[i] = src[i][i]
+	}
+}
+
+func widened(dst []any, src []int) {
+	for i, n := range src {
+		dst[i] = n
+	}
+}
+
+func reassigned(dst, src []int) {
+	i := 0
+	for i = range src {
+		dst[i] = src[i]
+	}
+	_ = i
+}
+
+func reused(dst, src []int) {
+	i := 0
+	for i = 0; i < len(src); i++ {
+		dst[i] = src[i]
+	}
+	_ = i
+}
+
+func short(dst, src []int) {
+	for i := 0; i < len(src)-1; i++ {
+		dst[i] = src[i]
+	}
+}
+
+func reverse(dst, src []int) {
+	for i := range src {
+		src[i] = dst[i]
+	}
+}
+
+func fetchedTarget(src []int) {
+	for i, n := range src {
+		next()[i] = n
+	}
+}
+
+func next() []int { return nil }
+
+func fetchedSource(dst []int) {
+	for i := 0; i < len(fetch()); i++ {
+		dst[i] = fetch()[i]
+	}
+}
+
+func fetch() []int { return nil }
+
+func self(dst []int) {
+	for i := range dst {
+		dst[i] = dst[i]
+	}
+}
+
+func textWidened(dst []any, s string) {
+	for i := 0; i < len(s); i++ {
+		dst[i] = s[i]
+	}
+}
+
+func booleanInit(dst, src []int) {
+	for done := true; done; done = false {
+		dst[0] = src[0]
+	}
+}
+
+func selfSlice(dst []int, n int) {
+	for i := range dst[:n] {
+		dst[:n][i] = dst[:n][i]
+	}
+}
+
+func selfConverted(dst []int) {
+	for i := range []int(dst) {
+		[]int(dst)[i] = []int(dst)[i]
+	}
+}
+
+func mapOfSlices(dst [][]int, m map[int][]int) {
+	for i, v := range m {
+		dst[i] = v
+	}
+}
+
+func selfLow(dst []int, n int) {
+	for i := range dst[0:n] {
+		dst[0:n][i] = dst[:n][i]
+	}
+}
+
+func lenMinusOne(dst, src []int) {
+	for i := 0; i <= len(src)-1; i++ {
+		dst[i] = src[i]
+	}
+}
+
+func targetInSource(dst []int, rows [][]int) {
+	for i := 0; i < len(rows[dst[0]]); i++ {
+		dst[i] = rows[dst[0]][i]
+	}
+}
+
+func sourceInTarget(dst [][]int, src []int) {
+	for i := 0; i < len(src); i++ {
+		dst[src[0]][i] = src[i]
+	}
+}
+
+func stringTarget(src []byte, s string) {
+	for i := 0; i < len(src); i++ {
+		[]byte(s)[i] = src[i]
+	}
+}
+
+func literalTarget(src []int) {
+	for i := 0; i < len(src); i++ {
+		[]int{1, 2, 3}[i] = src[i]
+	}
+}
+
+func fetchedValue(dst []int) {
+	for i, n := range fetch() {
+		dst[i] = n
+	}
+}
+
+func nestedLiteral(src []int) {
+	for i := range src {
+		[]int{1, 2, 3}[0:][i] = src[i]
+	}
+}
+
+func convertedLiteral(src []int) {
+	for i := range src {
+		[]int([]int{1, 2, 3})[i] = src[i]
+	}
+}
+
+func stringSliceTarget(src []byte, s string) {
+	for i := range src {
+		[]byte(s)[0:][i] = src[i]
+	}
+}
+
+func arrayPointer(dst []int, src *[3]int) {
+	for i := range src {
+		dst[i] = src[i]
+	}
+}
+
+func arrayParameter[T ~[3]int](dst []int, src T) {
+	for i := range src {
+		dst[i] = src[i]
+	}
+}
+
+func incrementInBody(dst, src []int) {
+	for i := 0; i < len(src); {
+		dst[i] = src[i]
+		i++
+	}
+}
+
+func destinationRange(dst, src []int) {
+	for i := range dst {
+		dst[i] = src[i]
+	}
+}
+
+func destinationCounted(dst, src []int) {
+	for i := 0; i < len(dst); i++ {
+		dst[i] = src[i]
+	}
+}
+
+func shadowedLen(dst, src []int) {
+	len := func([]int) int { return 0 }
+	for i := 0; i < len(src); i++ {
+		dst[i] = src[i]
+	}
+}
+
+func arrayTarget(dst [3]int, src []int) {
+	for i := range src {
+		dst[i] = src[i]
+	}
+}
+
+func receivedTarget(ch <-chan []int, src []int) {
+	for i, n := range src {
+		(<-ch)[i] = n
+	}
+}
+
+func addressedTarget(src []int) {
+	for i, n := range src {
+		(*(&[]int{0}))[i] = n
+	}
+}
+
+func valueInTarget(dst [][]int, src []int) {
+	for i, n := range src {
+		dst[n][i] = n
+	}
+}
+
+type intlist []int
+
+func convertedRowTarget(dst [][]int, v intlist) {
+	for i := range []int(v) {
+		dst[[]int(v)[0]][i] = []int(v)[i]
+	}
+}
+
+func assertedRowTarget(dst [][]int, x any) {
+	for i := range x.([]int) {
+		dst[x.([]int)[0]][i] = x.([]int)[i]
+	}
+}
+
+func boundedRowTarget(dst [][]int, src []int, n int) {
+	for i := range src[:n+1] {
+		dst[src[:n+1][0]][i] = src[:n+1][i]
+	}
+}
+
+func prefixTarget(dst [][]int, src []int, n int) {
+	for i := range src[:n] {
+		dst[src[0]][i] = src[i]
+	}
+}
+
+func prefixRange(dst, src []int, n int) {
+	for i := range src[:n] {
+		dst[i] = src[i]
+	}
+}
+
+func prefixCounted(dst, src []int, n int) {
+	for i := 0; i < len(src[:n]); i++ {
+		dst[i] = src[i]
+	}
+}
+
+func composite(dst []int) {
+	for i := range []int{1, 2, 3} {
+		dst[i] = []int{1, 2, 3}[i]
+	}
+}
+
+func leftShift(src []int) {
+	for i := range src[1:] {
+		src[i] = src[1:][i]
+	}
+}
+
+func shadowedRange(a [][]int, dst []int) {
+	i := 0
+	for i := range a[i] {
+		dst[i] = a[i][i]
+	}
+}
+
+func shadowedSlice(src, dst []int) {
+	i := 0
+	for i := range src[i:] {
+		dst[i] = src[i:][i]
+	}
+}
