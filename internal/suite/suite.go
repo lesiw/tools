@@ -146,6 +146,7 @@ import (
 	"lesiw.io/tools/analyzers/redundantsprint"
 	"lesiw.io/tools/analyzers/regexpconst"
 	"lesiw.io/tools/analyzers/regexpmust"
+	"lesiw.io/tools/analyzers/runerange"
 	"lesiw.io/tools/analyzers/selfassert"
 	"lesiw.io/tools/analyzers/shellcommand"
 	"lesiw.io/tools/analyzers/singlefield"
@@ -336,6 +337,7 @@ var (
 		reflectvaluecompare.Analyzer,
 		regexpconst.Analyzer,
 		regexpmust.Analyzer,
+		runerange.Analyzer,
 		selfassert.Analyzer,
 		shellcommand.Analyzer,
 		shift.Analyzer,

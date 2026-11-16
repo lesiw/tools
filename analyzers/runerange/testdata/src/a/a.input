@@ -1,0 +1,205 @@
+package a
+
+type text string
+
+type runes []rune
+
+type ints []int32
+
+type score int32
+
+type scores []score
+
+type alias = int32
+
+func use(...any) {}
+
+func plain(s string) {
+	for _, r := range []rune(s) { // want `string converted to a rune slice; range over the string`
+		use(r)
+	}
+}
+
+func omitted(s string) {
+	for range []rune(s) { // want `string converted to a rune slice; range over the string`
+	}
+}
+
+func named(s text) {
+	for _, r := range []rune(s) { // want `string converted to a rune slice; range over the string`
+		use(r)
+	}
+}
+
+func wide(s string) {
+	for _, r := range []int32(s) { // want `string converted to a rune slice; range over the string`
+		use(r)
+	}
+}
+
+func convertedSlice(s string) {
+	for _, r := range runes(s) { // want `string converted to a rune slice; range over the string`
+		use(r)
+	}
+}
+
+func convertedInts(s string) {
+	for _, r := range ints(s) { // want `string converted to a rune slice; range over the string`
+		use(r)
+	}
+}
+
+func aliased(s string) {
+	for _, r := range []alias(s) { // want `string converted to a rune slice; range over the string`
+		use(r)
+	}
+}
+
+func fromBytes(b []byte) {
+	for _, r := range []rune(string(b)) { // want `string converted to a rune slice; range over the string`
+		use(r)
+	}
+}
+
+func fromCall() {
+	for _, r := range []rune(next()) { // want `string converted to a rune slice; range over the string`
+		use(r)
+	}
+}
+
+func next() string { return "next" }
+
+func literal() {
+	for _, r := range []rune("literal") { // want `string converted to a rune slice; range over the string`
+		use(r)
+	}
+}
+
+func parameter[T ~string](s T) {
+	for _, r := range []rune(s) { // want `string converted to a rune slice; range over the string`
+		use(r)
+	}
+}
+
+func parameterTarget[T ~[]rune](s string) {
+	for _, r := range T(s) { // want `string converted to a rune slice; range over the string`
+		use(r)
+	}
+}
+
+func parameterWide[T ~[]int32](s string) {
+	for _, r := range T(s) { // want `string converted to a rune slice; range over the string`
+		use(r)
+	}
+}
+
+func parameterDefined[T ~[]score](s string) {
+	for _, r := range T(s) {
+		use(r)
+	}
+}
+
+func mixedParameter[T ~string | ~[]rune](s T) {
+	for _, r := range []rune(s) {
+		use(r)
+	}
+}
+
+func parenthesized(s string) {
+	for _, r := range ([]rune(s)) { // want `string converted to a rune slice; range over the string`
+		use(r)
+	}
+}
+
+func typedParens(s string) {
+	for _, r := range ([]rune)(s) { // want `string converted to a rune slice; range over the string`
+		use(r)
+	}
+}
+
+func adjacent(s string) {
+	for _, r := range[]rune(s) { // want `string converted to a rune slice; range over the string`
+		use(r)
+	}
+}
+
+func operandParens(s string) {
+	for _, r := range []rune((s)) { // want `string converted to a rune slice; range over the string`
+		use(r)
+	}
+}
+
+func indexed(s string) {
+	for i, r := range []rune(s) {
+		use(i, r)
+	}
+}
+
+func namedIndex(s string) {
+	for i := range []rune(s) {
+		use(i)
+	}
+}
+
+func bytes(b []byte) {
+	for _, x := range b {
+		use(x)
+	}
+}
+
+func byteSlice(s string) {
+	for _, b := range []byte(s) {
+		use(b)
+	}
+}
+
+func definedRune(s string) {
+	for _, r := range []score(s) {
+		use(r)
+	}
+}
+
+func definedSlice(s string) {
+	for _, r := range scores(s) {
+		use(r)
+	}
+}
+
+func stored(s string) {
+	rs := []rune(s)
+	for _, r := range rs {
+		use(r)
+	}
+}
+
+func sliced(s string) {
+	for _, r := range []rune(s)[1:] {
+		use(r)
+	}
+}
+
+func returned(s string) {
+	for _, r := range chars(s) {
+		use(r)
+	}
+}
+
+func chars(s string) runes { return runes(s) }
+
+func noted(s string) {
+	for _, r := range []rune( /* kept */ s) { // want `string converted to a rune slice; range over the string`
+		use(r)
+	}
+}
+
+func trailing(s string) {
+	for _, r := range []rune(s /* kept */) { // want `string converted to a rune slice; range over the string`
+		use(r)
+	}
+}
+
+func direct(s string) {
+	for _, r := range s {
+		use(r)
+	}
+}

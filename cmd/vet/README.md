@@ -1739,6 +1739,20 @@ func must() *regexp.Regexp {
 }
 ```
 
+## runerange
+
+Reports a range over a string converted to a rune slice. Ranging over the string decodes one rune per iteration and allocates nothing, where the conversion builds a slice of every rune. A loop whose key is not \_ is left alone, because a string index is a byte offset and a rune slice index is a position.
+
+Adapted from staticcheck's SA6003.
+
+```
+func f(s string) {
+    for _, r := range []rune(s) {
+        use(r)
+    }
+}
+```
+
 ## selfassert
 
 Reports a type assertion from a type to itself. The assertion yields the value it was given, so it does nothing. A nil value panics in the assertion, so removing it would change behavior, and the rule reports without a fix.
