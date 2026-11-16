@@ -1,0 +1,11 @@
+package methodn
+
+import rand2 "math/rand/v2"
+
+func methods(r *rand2.Rand) {
+	r.N(1)                     // want `the upper bound is 1, so this always returns 0`
+	(r.N[int])(1)              // want `the upper bound is 1, so this always returns 0`
+	(*rand2.Rand).N(r, 1)      // want `the upper bound is 1, so this always returns 0`
+	(*rand2.Rand).N[int](r, 1) // want `the upper bound is 1, so this always returns 0`
+	r.N(2)
+}

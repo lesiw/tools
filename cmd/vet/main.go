@@ -2326,6 +2326,17 @@
 //		return fmt.Sprintf("%d", "one")
 //	}
 //
+// # randzero
+//
+// Reports a call to math/rand or math/rand/v2 whose upper bound is one. A
+// bound of 1 leaves 0 as the only value, so the call always returns 0.
+//
+// Adapted from staticcheck's SA4030, extended to constant expressions.
+//
+//	func f() int {
+//		return rand.Intn(1)
+//	}
+//
 // # rangeappendall
 //
 // Reports a range loop that appends each element of a slice one at a time.

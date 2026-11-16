@@ -1,0 +1,90 @@
+package a
+
+import (
+	"math/rand"
+	rand2 "math/rand/v2"
+)
+
+const (
+	one         = 1
+	one32 int32 = 1
+	zero        = 0
+	two         = 2
+)
+
+func packageCalls(n int) {
+	rand.Intn(1)      // want `the upper bound is 1, so this always returns 0`
+	(rand.Intn)(1)    // want `the upper bound is 1, so this always returns 0`
+	rand.Int31n(1)    // want `the upper bound is 1, so this always returns 0`
+	rand.Int63n(one)  // want `the upper bound is 1, so this always returns 0`
+	rand.Intn(1 << 0) // want `the upper bound is 1, so this always returns 0`
+	rand.Intn(1.0)    // want `the upper bound is 1, so this always returns 0`
+	rand.Intn(int(1)) // want `the upper bound is 1, so this always returns 0`
+	rand.Intn((1))    // want `the upper bound is 1, so this always returns 0`
+	rand.Intn(2)
+	rand.Intn(n)
+	rand.Intn(zero)
+	rand.Intn(-1)
+}
+
+func methods(r *rand.Rand, n int) {
+	r.Intn(1)                 // want `the upper bound is 1, so this always returns 0`
+	r.Int31n(one32)           // want `the upper bound is 1, so this always returns 0`
+	r.Int63n(1)               // want `the upper bound is 1, so this always returns 0`
+	(*rand.Rand).Intn(r, 1)   // want `the upper bound is 1, so this always returns 0`
+	(*rand.Rand).Int63n(r, 1) // want `the upper bound is 1, so this always returns 0`
+	((*rand.Rand).Intn)(r, 1) // want `the upper bound is 1, so this always returns 0`
+	r.Intn(n)
+	r.Intn(two)
+	r.Perm(1)
+	r.Shuffle(1, nil)
+}
+
+func v2Calls(r *rand2.Rand, n uint) {
+	rand2.IntN(1)            // want `the upper bound is 1, so this always returns 0`
+	rand2.Int32N(1)          // want `the upper bound is 1, so this always returns 0`
+	rand2.Int64N(1)          // want `the upper bound is 1, so this always returns 0`
+	rand2.UintN(1)           // want `the upper bound is 1, so this always returns 0`
+	rand2.Uint32N(1)         // want `the upper bound is 1, so this always returns 0`
+	rand2.Uint64N(one)       // want `the upper bound is 1, so this always returns 0`
+	rand2.N(1)               // want `the upper bound is 1, so this always returns 0`
+	rand2.N[int](1)          // want `the upper bound is 1, so this always returns 0`
+	r.IntN(1)                // want `the upper bound is 1, so this always returns 0`
+	r.Uint64N(1)             // want `the upper bound is 1, so this always returns 0`
+	(*rand2.Rand).IntN(r, 1) // want `the upper bound is 1, so this always returns 0`
+	(rand2.N[int])(1)        // want `the upper bound is 1, so this always returns 0`
+	rand2.Perm(1)
+	rand2.Shuffle(1, nil)
+	rand2.IntN(two)
+	rand2.UintN(n)
+	rand2.IntN(zero)
+}
+
+type picker struct{}
+
+func (picker) Intn(int) int { return 0 }
+
+func local(p picker) {
+	p.Intn(1)
+	picker.Intn(p, 1)
+}
+
+type chooser interface {
+	Intn(int) int
+}
+
+func through(c chooser) {
+	c.Intn(1)
+}
+
+func held() {
+	f := rand.Intn
+	f(1)
+	g := rand2.IntN
+	g(1)
+}
+
+func heldMethod(r *rand.Rand) {
+	f := r.Intn
+	f(1)
+}

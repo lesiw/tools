@@ -1,0 +1,8 @@
+package a
+
+import . "math/rand/v2"
+
+func dotted() {
+	IntN(1) // want `the upper bound is 1, so this always returns 0`
+	IntN(2)
+}

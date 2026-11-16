@@ -191,6 +191,7 @@ import (
 	"lesiw.io/tools/analyzers/preferfprint"
 	"lesiw.io/tools/analyzers/preferstringwriter"
 	"lesiw.io/tools/analyzers/preferwritebyte"
+	"lesiw.io/tools/analyzers/randzero"
 	"lesiw.io/tools/analyzers/rangeappendall"
 	"lesiw.io/tools/analyzers/rangelast"
 	"lesiw.io/tools/analyzers/rangestring"
@@ -462,6 +463,7 @@ var (
 		preferstringwriter.Analyzer,
 		preferwritebyte.Analyzer,
 		printf.Analyzer,
+		randzero.Analyzer,
 		rangeappendall.Analyzer,
 		rangelast.Analyzer,
 		rangestring.Analyzer,
