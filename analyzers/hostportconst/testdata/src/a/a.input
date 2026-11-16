@@ -1,0 +1,78 @@
+package a
+
+import (
+	"context"
+	"net"
+	"net/http"
+)
+
+const (
+	badHost  = "alpha-one"
+	badPort  = "alpha-one:99999"
+	good     = "alpha-one:8080"
+	certFile = "alpha-one.pem"
+	keyFile  = "alpha-one.key"
+)
+
+var network = "tcp"
+
+func listen(address string) {
+	net.Listen("tcp", "alpha-one")                       // want `address is not a valid host:port`
+	net.Listen("tcp", badHost)                           // want `address is not a valid host:port`
+	net.Listen("tcp", "alpha"+"-one")                    // want `address is not a valid host:port`
+	net.Listen("tcp", badPort)                           // want `address is not a valid host:port`
+	net.Listen("tcp", "alpha-one:999999999999999999999") // want `address is not a valid host:port`
+	net.Listen("tcp", "alpha-one:-1")                    // want `address is not a valid host:port`
+	net.Listen("tcp", "alpha-one:65536")                 // want `address is not a valid host:port`
+	net.Listen("tcp", "alpha-one:http_alt")
+	net.Listen("tcp", "alpha-one:http--alt")
+	net.Listen("tcp", "::1:8080") // want `address is not a valid host:port`
+	net.Listen("tcp", "[::1]")    // want `address is not a valid host:port`
+	net.Listen("tcp", "alpha-one:8080/")
+	net.Listen("tcp", "alpha-one:z39.50")
+	net.Listen("tcp", good)
+	net.Listen("tcp", "alpha-one:http")
+	net.Listen("tcp", "alpha-one:http-alt")
+	net.Listen("tcp", "alpha-one:+80")
+	net.Listen("tcp", "alpha-one:")
+	net.Listen("tcp", ":8080")
+	net.Listen("tcp", ":")
+	net.Listen("tcp", "")
+	net.Listen("tcp", "[::1]:8080")
+	net.Listen("tcp", "alpha_one:8080")
+	net.Listen("tcp4", "alpha-one") // want `address is not a valid host:port`
+	net.Listen("unix", "alpha-one")
+	net.Listen("ip:1", "alpha-one")
+	net.Listen(network, "alpha-one")
+	net.Listen("tcp", address)
+	(net.Listen)("tcp", "alpha-one") // want `address is not a valid host:port`
+}
+
+func packet() {
+	net.ListenPacket("udp", "alpha-one")       // want `address is not a valid host:port`
+	net.ListenPacket("udp", "alpha-one:99999") // want `address is not a valid host:port`
+	net.ListenPacket("udp4", "alpha-one:8080")
+	net.ListenPacket("unixgram", "alpha-one")
+	net.ListenPacket("ip:1", "alpha-one")
+}
+
+func configured(ctx context.Context) {
+	var lc net.ListenConfig
+	lc.Listen(ctx, "tcp", "alpha-one") // want `address is not a valid host:port`
+	lc.Listen(ctx, "tcp", "alpha-one:8080")
+	lc.ListenPacket(ctx, "udp", "alpha-one") // want `address is not a valid host:port`
+	lc.ListenPacket(ctx, "unixgram", "alpha-one")
+	(*net.ListenConfig).Listen(&lc, ctx, "tcp", "alpha-one") // want `address is not a valid host:port`
+}
+
+func serve() {
+	http.ListenAndServe("alpha-one", nil) // want `address is not a valid host:port`
+	http.ListenAndServe("", nil)
+	http.ListenAndServeTLS("alpha-one", certFile, keyFile, nil) // want `address is not a valid host:port`
+	http.ListenAndServeTLS("alpha-one:443", certFile, keyFile, nil)
+}
+
+func value() {
+	listen := net.Listen
+	listen("tcp", "alpha-one")
+}

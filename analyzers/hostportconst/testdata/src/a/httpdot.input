@@ -1,0 +1,7 @@
+package a
+
+import . "net/http"
+
+func httpDotted() {
+	ListenAndServe("alpha-one", nil) // want `address is not a valid host:port`
+}

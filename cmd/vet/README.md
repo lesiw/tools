@@ -1432,6 +1432,18 @@ func dial(host string) (net.Conn, error) {
 }
 ```
 
+## hostportconst
+
+Reports a constant address that a listen function cannot parse as host:port.
+
+Adapted from staticcheck's SA1020, which checks only the net/http functions.
+
+```
+func listen() (net.Listener, error) {
+    return net.Listen("tcp", "alpha-one")
+}
+```
+
 ## httpmux
 
 Reports a ServeMux pattern that names a method or a wildcard in a module that declares Go 1.21 or earlier. The pattern registers in that release and does not match what it was written for.

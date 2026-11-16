@@ -1,0 +1,7 @@
+package a
+
+import n "net"
+
+func aliased() {
+	n.Listen("tcp", "alpha-one") // want `address is not a valid host:port`
+}

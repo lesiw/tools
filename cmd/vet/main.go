@@ -1471,6 +1471,16 @@
 //		return net.Dial("tcp", fmt.Sprintf("%s:%d", host, 80))
 //	}
 //
+// # hostportconst
+//
+// Reports a constant address that a listen function cannot parse as host:port.
+//
+// Adapted from staticcheck's SA1020, which checks only the net/http functions.
+//
+//	func listen() (net.Listener, error) {
+//		return net.Listen("tcp", "alpha-one")
+//	}
+//
 // # httpmux
 //
 // Reports a ServeMux pattern that names a method or a wildcard in a module

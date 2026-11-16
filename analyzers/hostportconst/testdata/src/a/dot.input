@@ -1,0 +1,7 @@
+package a
+
+import . "net"
+
+func dotted() {
+	Listen("tcp", "alpha-one") // want `address is not a valid host:port`
+}

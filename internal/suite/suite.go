@@ -139,6 +139,7 @@ import (
 	"lesiw.io/tools/analyzers/flagname"
 	"lesiw.io/tools/analyzers/fortrue"
 	"lesiw.io/tools/analyzers/gospell"
+	"lesiw.io/tools/analyzers/hostportconst"
 	"lesiw.io/tools/analyzers/ifelsechain"
 	"lesiw.io/tools/analyzers/ifreturn"
 	"lesiw.io/tools/analyzers/importgroup"
@@ -404,6 +405,7 @@ var (
 		gofix.Analyzer,
 		gospell.Analyzer,
 		hostport.Analyzer,
+		hostportconst.Analyzer,
 		httpmux.Analyzer,
 		httpresponse.Analyzer,
 		ifaceassert.Analyzer,
