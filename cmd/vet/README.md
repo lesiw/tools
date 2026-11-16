@@ -2868,6 +2868,18 @@ func f(rows []item) {
 }
 ```
 
+## unusefultag
+
+Reports a json struct tag that changes nothing: one on an unexported field, or one with no name and no options.
+
+Adapted from x/tools' structtag; inspired by staticcheck's SA9005.
+
+```
+type row struct {
+    name string `json:"name"`
+}
+```
+
 ## unwrap
 
 Reports a construct written across several lines that fits on one: a signature, a call, a binary expression, a header, or a block of one spec. The width is linelen's.

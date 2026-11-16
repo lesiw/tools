@@ -1,0 +1,5 @@
+package json_test
+
+type record struct {
+	name string `json:"name"`
+}

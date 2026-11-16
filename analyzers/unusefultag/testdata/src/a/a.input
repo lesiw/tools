@@ -1,0 +1,71 @@
+package a
+
+type inner struct {
+	Value int `json:"value"`
+}
+
+type unexportedFields struct {
+	name     string `json:"name"`       // want `json tag on unexported field name cannot be used`
+	count    int    `json:",omitempty"` // want `json tag on unexported field count cannot be used`
+	blank    string `json:""`           // want `json tag on unexported field blank cannot be used`
+	_        int    `json:"discard"`    // want `json tag on unexported field _ cannot be used`
+	a, b     int    `json:"pair"`       // want `json tag on unexported fields a, b cannot be used`
+	c, D     int    `json:"mixed"`
+	E, f     int    `json:"reversed"`
+	G, h     int    `json:""` // want `json tag has no name or options`
+	skip     string `json:"-"`
+	dash     string `json:"-,"` // want `json tag on unexported field dash cannot be used`
+	xml      string `xml:"xml"`
+	yaml     string `yaml:"yaml"`
+	untagged int
+	Other    string `json:"other,string"`
+}
+
+type embeddedOptions struct {
+	V int `json:"v"`
+}
+type embeddedEmpty struct {
+	V int `json:"v"`
+}
+type unexportedInt int
+type hiddenInt int
+type ExportedInt int
+
+type aliasToInt = int
+type hiddenAlias = ExportedInt
+type ExportedAlias = hiddenInt
+
+type hiddenStruct struct {
+	V int `json:"v"`
+}
+type ExportedStruct struct {
+	V int `json:"v"`
+}
+type hiddenStructAlias = ExportedStruct
+type ExportedStructAlias = hiddenStruct
+type pointerAlias = *inner
+
+type embedding struct {
+	inner               `json:"inner"`
+	embeddedOptions     `json:",embed"`
+	embeddedEmpty       `json:""`            // want `json tag has no name or options`
+	unexportedInt       `json:"n"`           // want `json tag on unexported embedded non-struct field cannot be used`
+	*hiddenInt          `json:"hidden"`      // want `json tag on unexported embedded non-struct field cannot be used`
+	aliasToInt          `json:"alias"`       // want `json tag on unexported embedded non-struct field cannot be used`
+	hiddenAlias         `json:"hiddenAlias"` // want `json tag on unexported embedded non-struct field cannot be used`
+	ExportedAlias       `json:"exportedAlias"`
+	hiddenStructAlias   `json:"hiddenStruct"`
+	ExportedStructAlias `json:"exportedStruct"`
+	pointerAlias        `json:"pointer"`
+}
+
+type names struct {
+	Empty         int `json:""`  // want `json tag has no name or options`
+	Comma         int `json:","` // want `json tag has no name or options`
+	Option        int `json:",omitempty"`
+	Same          int `json:"Same"`
+	Dash          int `json:"-,"`
+	Skip          int `json:"-"`
+	Plain         int `json:"plain"`
+	UnknownOption int `json:",bogus"`
+}

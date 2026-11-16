@@ -1,0 +1,5 @@
+package fixture
+
+type record struct {
+	name string `json:"name"`
+}
