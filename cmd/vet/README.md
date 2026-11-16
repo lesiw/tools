@@ -85,6 +85,19 @@ func f(xs []string) []string {
 }
 ```
 
+## appendself
+
+Reports an append of one value whose result is assigned to a different slice, where the function reads the destination again and does not read the first argument again. The destination's previous elements are absent from the result, so the append does not extend the destination.
+
+Adapted from staticcheck's SA4021, which reports an append that passes no values.
+
+```
+func grow(dst, src []int, v int) []int {
+    dst = append(src, v)
+    return dst
+}
+```
+
 ## argorder
 
 Reports a call whose arguments name the parameters in the other order. Two adjacent parameters of one type can be swapped without a compile error, so only the names show which value went where.

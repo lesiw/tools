@@ -1,0 +1,190 @@
+package a
+
+func grow(dst, src []int, v int) []int {
+	dst = append(src, v) // want `append to src is assigned to dst; the result does not extend dst`
+	return dst
+}
+
+func tuple(n int, dst, src []int, v int) (int, []int) {
+	n, dst = 0, append(src, v) // want `append to src is assigned to dst; the result does not extend dst`
+	return n, dst
+}
+
+func sameAssignment(dst, src []int, v int) {
+	var n int
+	dst, n = append(src, v), len(dst)
+	_ = n
+}
+
+func readBefore(dst, src []int, v int) []int {
+	_ = src[0]
+	dst = append(src, v) // want `append to src is assigned to dst; the result does not extend dst`
+	return dst
+}
+
+func overwritten(dst, src []int, v int) []int {
+	dst = append(src, v) // want `append to src is assigned to dst; the result does not extend dst`
+	src = nil
+	return dst
+}
+
+func readAfter(dst, src []int, v int) ([]int, []int) {
+	dst = append(src, v)
+	return dst, src
+}
+
+func overwrittenAfter(dst, src []int, v int) []int {
+	dst = append(src, v)
+	dst = nil
+	return dst
+}
+
+func sourceOverwritten(dst, src []int, v int) []int {
+	dst = append(src, v)
+	src = nil
+	_ = src
+	return dst
+}
+
+func parenthesizedSourceWrite(dst, src []int, v int) []int {
+	dst = append(src, v) // want `append to src is assigned to dst; the result does not extend dst`
+	(src) = nil
+	return dst
+}
+
+func destinationSliced(dst, src []int, v int) []int {
+	dst = append(src, v) // want `append to src is assigned to dst; the result does not extend dst`
+	dst = dst[:0]
+	return dst
+}
+
+func conditionalSource(dst, src []int, v int, ok bool) ([]int, []int) {
+	dst = append(src, v)
+	if ok {
+		src = nil
+	}
+	return dst, src
+}
+
+func conditionalDestination(dst, src []int, v int, ok bool) []int {
+	dst = append(src, v)
+	if ok {
+		dst = nil
+	}
+	return dst
+}
+
+func anyDestination(src []int, v int) any {
+	var dst any
+	dst = append(src, v)
+	return dst
+}
+
+func parenthesized(dst, src []int, v int) []int {
+	(dst) = append((src), v) // want `append to src is assigned to dst; the result does not extend dst`
+	return dst
+}
+
+func parenthesizedCall(dst, src []int, v int) []int {
+	dst = (append(src, v)) // want `append to src is assigned to dst; the result does not extend dst`
+	return dst
+}
+
+func growGeneric[T ~[]E, E any](dst, src T, v E) T {
+	dst = append(src, v) // want `append to src is assigned to dst; the result does not extend dst`
+	return dst
+}
+
+func nakedSource(dst []int, v int) (src []int, n int) {
+	dst = append(src, v)
+	n = len(dst)
+	return
+}
+
+func nakedDestination(src []int, v int) (dst []int) {
+	dst = append(src, v) // want `append to src is assigned to dst; the result does not extend dst`
+	return
+}
+
+func unreadDestination(dst, src []int, v int) {
+	dst = append(src, v)
+}
+
+func viewOfDestination(dst []int, v int) []int {
+	src := dst[:1]
+	dst = append(src, v)
+	return dst
+}
+
+func destinationClone(dst, src []int, v int) []int {
+	dst = src
+	dst = append(src, v)
+	return dst
+}
+
+func rangeSource(dst []int, groups [][]int) []int {
+	for _, src := range groups {
+		dst = append(src, 0)
+	}
+	return dst
+}
+
+func rangeBefore(dst []int, groups [][]int) []int {
+	var src []int
+	for _, src = range groups {
+	}
+	dst = append(src, 0) // want `append to src is assigned to dst; the result does not extend dst`
+	return dst
+}
+
+func rangeParenthesized(dst []int, groups [][]int) []int {
+	var src []int
+	for _, (src) = range groups {
+		dst = append(src, 0)
+	}
+	return dst
+}
+
+func viewParenthesized(dst []int, v int) []int {
+	var src []int
+	(src) = dst[:1]
+	dst = append(src, v)
+	return dst
+}
+
+func self(dst []int, v int) []int {
+	dst = append(dst, v)
+	return dst
+}
+
+func twoValues(dst, src []int, v, w int) []int {
+	dst = append(src, v, w)
+	return dst
+}
+
+func spread(dst, src, more []int) []int {
+	dst = append(src, more...)
+	return dst
+}
+
+func prefix(dst, src []int, v int) []int {
+	dst = append(src[:1], v)
+	return dst
+}
+
+func discarded(src []int, v int) {
+	_ = append(src, v)
+}
+
+type pair struct{ items []int }
+
+func (p *pair) grow(src []int, v int) []int {
+	p.items = append(src, v)
+	return p.items
+}
+
+func shadowed(dst, src []int, v int) []int {
+	append := func(s []int, v int) []int { return s }
+	dst = append(src, v)
+	return dst
+}
