@@ -32,56 +32,128 @@ type opener interface {
 
 type fn func() (error, int) // want `error is not the last result`
 
+type fnNamed func() (lookupError, int) // want `lookupError is not the last result`
+
+type fnPointer func() (*retryError, int) // want `\*retryError is not the last result`
+
+type fnAlias func() (errAlias, int) // want `errAlias is not the last result`
+
+type fnPointerAlias func() (*sameAs, int) // want `\*sameAs is not the last result`
+
+type fnTrailing func() (int, error)
+
+type fnForeign func() (failure, int)
+
+type fnUnnamed func() (interface{ Error() string }, int)
+
+type fnTypeParam[E error] func() (E, int)
+
+type fnPair func() (error, error)
+
+type fnMixed func() (error, int, error)
+
+type fnFirstOfTwoErrors func() (error, int, error, string) // want `error is not the last result`
+
+type fnGrouped func() (err error, a, b string) // want `error is not the last result`
+
+type fnFlag func() (err error, handled bool) // want `error is not the last result`
+
+type fnForeignLast func() (error, failure)
+
+type fnUnnamedLast func() (error, interface{ Error() string })
+
+type fnTypeParamLast[E error] func() (error, E)
+
+type fnConcreteLast[E lookupError] func() (error, E)
+
+type fnPointerConstraintLast[E interface{ *lookupError }] func() (error, E)
+
+type pairError interface{ lookupError | *retryError }
+
+type pairErrorSet interface{ pairError }
+
+type fnNamedSetLast[E pairError] func() (error, E)
+
+type fnNestedSetLast[E pairErrorSet] func() (error, E)
+
+type fnPointerValue func() (retryError, int)
+
+type fnPointerValueLast func() (error, retryError) // want `error is not the last result`
+
+type fnNameOnly func() (reasonError, int)
+
+type fnNameOnlyLast func() (error, reasonError) // want `error is not the last result`
+
+type fnPointerLast func() (int, *retryError)
+
+var fnVar func() (error, int) // want `error is not the last result`
+
+var typedLiteral func() (error, int) = func() (error, int) { // want `error is not the last result`
+	return nil, 0
+}
+
+var typedParen func() (error, int) = (func() (error, int) { // want `error is not the last result`
+	return nil, 0
+})
+
+var typedParenType (func() (error, int)) = func() (error, int) { // want `error is not the last result`
+	return nil, 0
+}
+
+func returnsFunc() func() (error, int) { // want `error is not the last result`
+	return nil
+}
+
 type holder struct {
 	build func() (error, int) // want `error is not the last result`
 }
 
-func leading() (error, int) { // want `error is not the last result`
+func leading() (error, int) {
 	return nil, 0
 }
 
-func middle() (int, error, int) { // want `error is not the last result`
+func middle() (int, error, int) {
 	return 0, nil, 0
 }
 
-func aliased() (errAlias, int) { // want `errAlias is not the last result`
+func aliased() (errAlias, int) {
 	return nil, 0
 }
 
-func namedInterface() (readError, int) { // want `readError is not the last result`
+func namedInterface() (readError, int) {
 	return nil, 0
 }
 
-func valueFirst() (lookupError, int) { // want `lookupError is not the last result`
+func valueFirst() (lookupError, int) {
 	return lookupError{}, 0
 }
 
-func imported() (*os.PathError, int) { // want `\*os.PathError is not the last result`
+func imported() (*os.PathError, int) {
 	return nil, 0
 }
 
-func pointerFirst() (*lookupError, int) { // want `\*lookupError is not the last result`
+func pointerFirst() (*lookupError, int) {
 	return nil, 0
 }
 
-func retryFirst() (*retryError, int) { // want `\*retryError is not the last result`
+func retryFirst() (*retryError, int) {
 	return nil, 0
 }
 
-func grouped() (err error, a, b string) { // want `error is not the last result`
+func grouped() (err error, a, b string) {
 	return nil, "", ""
 }
 
-func generic[T any]() (error, T) { // want `error is not the last result`
+func generic[T any]() (error, T) {
 	var zero T
 	return nil, zero
 }
 
-func (s *server) method() (error, int) { // want `error is not the last result`
+func (s *server) method() (error, int) {
 	return nil, 0
 }
 
-var literal = func() (error, int) { // want `error is not the last result`
+var literal = func() (error, int) {
 	return nil, 0
 }
 
@@ -89,7 +161,7 @@ func apply(f func() (error, int)) { // want `error is not the last result`
 	f()
 }
 
-func flagAfter() (error, bool) { // want `error is not the last result`
+func flagAfter() (error, bool) {
 	return nil, false
 }
 
@@ -110,7 +182,7 @@ func constrained[ParseError error]() (ParseError, int) {
 
 func trailingGrouped() (n int, first, second error) { return 0, nil, nil }
 
-func pointerAlias() (*sameAs, int) { // want `\*sameAs is not the last result`
+func pointerAlias() (*sameAs, int) {
 	return nil, 0
 }
 
@@ -127,6 +199,6 @@ func void() {}
 
 func pair() (error, error) { return nil, nil }
 
-func composed() (parse, run error, n int) { // want `error is not the last result`
+func composed() (parse, run error, n int) {
 	return nil, nil, 0
 }

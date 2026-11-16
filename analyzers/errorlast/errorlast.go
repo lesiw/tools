@@ -1,84 +1,65 @@
-// Package errorlast provides an analysis.Analyzer that reports a signature
-// whose error result is not the last one.
+// Package errorlast provides an analysis.Analyzer that reports a function
+// type whose last error result is followed by another result.
 //
-// The Google Go Style Guide states: "By convention, error is the last result
-// parameter." A caller writes the error last: n, err := lookup().
+// The Google Go Style Guide says: "By convention, error is the last result
+// parameter." The error goes last, so a caller writes value, err := fetch().
 //
 // A result is an error result when its type is the predeclared error, or a
 // type that implements error under a name ending in Error. The suffix is how a
-// reader recognizes an error type; errname asks error types to carry it.
+// reader recognizes an error type; errname reports an error type without it.
+// An alias is resolved before the suffix test. For a pointer, the suffix test
+// uses the name of the type it points to, and the pointer is what must
+// implement error. A type parameter is left alone as an earlier result,
+// whatever its constraint. A final result that implements error is accepted,
+// whatever its name.
+//
+// The check covers every function type that is not the signature of a
+// function declaration, a method declaration or a function literal. Those
+// signatures are left to errnotlast. Both analyzers report a declaration that
+// names a function type and contains a function literal.
+//
+// Reordering results changes every call site, so the analyzer reports only.
+// The rule is adapted from revive's error-return, which checks only function
+// declarations and matches only the predeclared error type. That check is
+// split: errnotlast reports the declarations and literals, and this rule
+// reports the function types.
 package errorlast
 
 import (
 	"go/ast"
-	"go/types"
-	"strings"
 
 	"golang.org/x/tools/go/analysis"
+
+	"lesiw.io/tools/internal/errorresult"
 )
 
 var Analyzer = &analysis.Analyzer{
 	Name: "errorlast",
-	Doc:  "reports a signature whose error result is not the last one",
+	Doc:  "reports a function type whose last error result is followed by another result",
 	Run:  run,
 }
 
 func run(pass *analysis.Pass) (any, error) {
 	for _, file := range pass.Files {
+		// errnotlast checks a function's type, so this pass skips it.
+		functions := make(map[*ast.FuncType]struct{})
+		ast.Inspect(file, func(n ast.Node) bool {
+			switch n := n.(type) {
+			case *ast.FuncDecl:
+				functions[n.Type] = struct{}{}
+			case *ast.FuncLit:
+				functions[n.Type] = struct{}{}
+			}
+			return true
+		})
 		ast.Inspect(file, func(n ast.Node) bool {
 			if fn, ok := n.(*ast.FuncType); ok {
-				check(pass, fn)
+				if _, isFunction := functions[fn]; !isFunction {
+					errorresult.Check(pass, fn)
+				}
 			}
 			return true
 		})
 	}
 	return nil, nil
-}
-
-// check reports the first error result of fn when a result follows it.
-func check(pass *analysis.Pass, fn *ast.FuncType) {
-	if fn.Results == nil || len(fn.Results.List) == 0 {
-		return
-	}
-	results := fn.Results.List
-	if isError(pass.TypesInfo.TypeOf(results[len(results)-1].Type)) {
-		return
-	}
-	for _, field := range results {
-		if !isError(pass.TypesInfo.TypeOf(field.Type)) {
-			continue
-		}
-		pass.Reportf(
-			field.Type.Pos(), "%s is not the last result",
-			types.ExprString(field.Type),
-		)
-		return
-	}
-}
-
-// isError reports whether t is the type of an error result.
-func isError(t types.Type) bool {
-	if t == nil {
-		return false
-	}
-	t = types.Unalias(t)
-	// Implements says nothing about an uninstantiated type parameter.
-	if _, ok := t.(*types.TypeParam); ok {
-		return false
-	}
-	errorType := types.Universe.Lookup("error").Type()
-	// The predeclared error is spelled in lowercase, so the name test below
-	// would miss it.
-	if types.Identical(t, errorType) {
-		return true
-	}
-	err, ok := errorType.Underlying().(*types.Interface)
-	if !ok || !types.Implements(t, err) {
-		return false
-	}
-	if pointer, ok := t.(*types.Pointer); ok {
-		t = types.Unalias(pointer.Elem())
-	}
-	n, ok := t.(*types.Named)
-	return ok && strings.HasSuffix(n.Obj().Name(), "Error")
 }

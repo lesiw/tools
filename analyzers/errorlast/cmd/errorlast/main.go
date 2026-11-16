@@ -1,5 +1,5 @@
-// Command errorlast reports a signature whose error result is not the last
-// one.
+// Command errorlast reports a function type whose last error result is
+// followed by another result.
 package main
 
 import (

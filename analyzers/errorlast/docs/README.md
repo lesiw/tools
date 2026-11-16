@@ -7,38 +7,46 @@
 [![Discord](https://img.shields.io/discord/1145827224516300971?logo=discord&logoColor=white&color=5865F2&label=discord)](https://lesiw.dev/discord)
 [![License](https://img.shields.io/github/license/lesiw/tools)](../../../LICENSE)
 
-An `analysis.Analyzer` that reports a signature whose error result is not the
-last one.
+An `analysis.Analyzer` that reports a function type whose last error result is
+followed by another result.
 
 ```go
-func lookup() (error, int) { // error is not the last result
-    return nil, 0
-}
+type load func() (error, string) // error is not the last result
 ```
 
-A caller writes `n, err := lookup()`.
+The error goes last, so a caller writes `value, err := fetch()`.
+
+The Google Go Style Guide says: "By convention, error is the last result
+parameter."
+
+The signature of a function declaration, a method declaration or a function
+literal is left to `errnotlast`. This rule reports every other function type:
+the underlying function type of a type declaration, an interface method, a
+field, a variable, a parameter or a result. Both analyzers report a declaration
+that names a function type and contains a function literal.
 
 A result is an error result when its type is the predeclared `error`, or a
-type that implements `error` under a name ending in `Error`. A pointer is named
-after the type it points to, and the pointer is what must implement `error`. A
+type that implements `error` under a name ending in `Error`. An alias is
+resolved before the suffix test. For a pointer, the suffix test uses the name
+of the type it points to, and the pointer is what must implement `error`. A
 type whose `Error` method has a pointer receiver is therefore an error only as
-a pointer.
+a pointer. A final result that implements `error` is accepted, whatever its
+name.
 
-The check covers every function type in the package. A type named differently
-is left alone: the suffix is how a reader recognizes an error type. A type
-parameter is left alone: the caller chooses the type, so the name in the
-constraint is not the type's name. An unnamed type has no name for the rule to
-read.
+A type named differently is left alone: the suffix is how a reader recognizes
+an error type. A type parameter is left alone as an earlier result, whatever
+its constraint. An unnamed type does not have a name for the suffix test.
 
-The rule asks that nothing follow the last error result. Two errors keep the
-order the author gave them, and a trailing `handled` flag does not exempt the
-signature: the error is still the value a reader looks for last.
+A function type whose final result is an error is not reported, even when
+another error appears before it. A function type whose error is followed by a
+`handled` flag is still reported; the error is still not the last result.
 
-The rule is adapted from revive's error-return, which reads only function
-declarations and matches only a type spelled `error`.
+Report only: reordering results changes every call site.
 
-Report only: reordering results changes every call site, and an interface
-declared elsewhere fixes the order.
+The rule is adapted from revive's error-return, which checks only function
+declarations and matches only the predeclared error type. That check is split:
+`errnotlast` reports the declarations and literals, and this rule reports the
+function types.
 
 ## Usage
 
