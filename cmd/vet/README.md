@@ -281,6 +281,23 @@ func f(k string) bool {
 }
 ```
 
+## breakinselect
+
+Reports a break at the end of a select case in a loop when it leaves only the select. The break leaves the select, and execution continues after the select. A break meant to leave the loop does not leave the loop.
+
+Adapted from staticcheck's SA4011.
+
+```
+func f(ch <-chan int) {
+    for {
+        select {
+        case <-ch:
+            break
+        }
+    }
+}
+```
+
 ## buildtag
 
 Reports a build constraint that is malformed or misplaced, or a //go:build line and a // +build line that disagree about the condition.

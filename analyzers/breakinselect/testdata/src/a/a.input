@@ -1,0 +1,446 @@
+package a
+
+func wait(ch <-chan int) {
+	for {
+		select {
+		case <-ch:
+			break // want `break at the end of a select case has no effect`
+		}
+	}
+}
+
+func poll(ch <-chan int, n int) {
+	for range n {
+		select {
+		case <-ch:
+			break // want `break at the end of a select case has no effect`
+		default:
+			break // want `break at the end of a select case has no effect`
+		}
+	}
+}
+
+func settle(ch <-chan int, ready bool) {
+	for {
+		select {
+		case <-ch:
+			if ready {
+				break // want `break at the end of a select case has no effect`
+			}
+		}
+	}
+}
+
+func choose(ch <-chan int, ready bool, work func()) {
+	for {
+		select {
+		case <-ch:
+			if ready {
+				work()
+			} else {
+				break // want `break at the end of a select case has no effect`
+			}
+		}
+	}
+}
+
+func block(ch <-chan int, work func()) {
+	for {
+		select {
+		case <-ch:
+			work()
+			{
+				break // want `break at the end of a select case has no effect`
+			}
+		}
+	}
+}
+
+func nested(ready bool, ch <-chan int) {
+	for {
+		if ready {
+			select {
+			case <-ch:
+				break // want `break at the end of a select case has no effect`
+			}
+		}
+	}
+}
+
+func relay(ch <-chan int) {
+	for {
+		select {
+		case <-ch:
+			select {
+			case <-ch:
+				break // want `break at the end of a select case has no effect`
+			}
+		}
+	}
+}
+
+func early(ch <-chan int, work func()) {
+	for {
+		select {
+		case <-ch:
+			break
+			work()
+		}
+	}
+}
+
+func named(ch <-chan int) {
+loop:
+	for {
+		select {
+		case <-ch:
+			break loop
+		}
+	}
+}
+
+func once(ch <-chan int) {
+	select {
+	case <-ch:
+		break
+	}
+}
+
+func counted(ch <-chan int, n int) {
+	for {
+		select {
+		case <-ch:
+			for range n {
+				break
+			}
+		}
+	}
+}
+
+func classify(ch <-chan int, n int) {
+	for {
+		select {
+		case <-ch:
+			switch n {
+			default:
+				break
+			}
+		}
+	}
+}
+
+func guarded(ch <-chan int, ready bool, work func()) {
+	for {
+		select {
+		case <-ch:
+			if ready {
+				break
+			}
+			work()
+		}
+	}
+}
+
+func literal(ch <-chan int) {
+	for {
+		func() {
+			select {
+			case <-ch:
+				break
+			}
+		}()
+	}
+}
+
+func scheduled(ch <-chan int) {
+	func() {
+		for {
+			select {
+			case <-ch:
+				break // want `break at the end of a select case has no effect`
+			}
+		}
+	}()
+}
+
+func labeled(ch <-chan int) {
+	for {
+	pick:
+		select {
+		case <-ch:
+			break pick // want `break at the end of a select case has no effect`
+		}
+	}
+}
+
+func both(ch <-chan int, ready bool) {
+	for {
+		select {
+		case <-ch:
+			if ready {
+				break // want `break at the end of a select case has no effect`
+			} else {
+				break // want `break at the end of a select case has no effect`
+			}
+		}
+	}
+}
+
+func chain(ch <-chan int, n int, work func()) {
+	for {
+		select {
+		case <-ch:
+			if n > 0 {
+				work()
+			} else if n < 0 {
+				break // want `break at the end of a select case has no effect`
+			}
+		}
+	}
+}
+
+func stepped(ch <-chan int, n int) {
+	for i := 0; i < n; i++ {
+		select {
+		case <-ch:
+			break // want `break at the end of a select case has no effect`
+		}
+	}
+}
+
+func routed(ch <-chan int, n int) {
+	for {
+		switch n {
+		case 0:
+			select {
+			case <-ch:
+				break // want `break at the end of a select case has no effect`
+			}
+		}
+	}
+}
+
+func typed(ch <-chan int, v any) {
+	for {
+		switch v.(type) {
+		default:
+			select {
+			case <-ch:
+				break // want `break at the end of a select case has no effect`
+			}
+		}
+	}
+}
+
+func exits(ch <-chan int) {
+	for {
+		select {
+		case <-ch:
+			break // want `break at the end of a select case has no effect`
+		}
+		return
+	}
+}
+
+func tagged(ch <-chan int, again bool) {
+	for {
+		select {
+		case <-ch:
+			if again {
+				goto done
+			}
+		done:
+			break // want `break at the end of a select case has no effect`
+		}
+	}
+}
+
+func labeledSwitch(ch <-chan int, n int, again bool) {
+	for {
+		if again {
+			goto hold
+		}
+	hold:
+		switch n {
+		default:
+			select {
+			case <-ch:
+				break hold
+			}
+		}
+	}
+}
+
+func labeledOuter(ch <-chan int, again bool) {
+	for {
+		if again {
+			goto hold
+		}
+	hold:
+		select {
+		case <-ch:
+			select {
+			case <-ch:
+				break hold
+			}
+		}
+	}
+}
+
+func unlabeled(ch <-chan int, again bool) {
+hold:
+	for {
+		select {
+		case <-ch:
+			break // want `break at the end of a select case has no effect`
+		}
+	}
+	if again {
+		goto hold
+	}
+}
+
+func marked(ch <-chan int, again bool) {
+	for {
+	pick:
+		select {
+		case <-ch:
+			break // want `break at the end of a select case has no effect`
+		}
+		if again {
+			goto pick
+		}
+	}
+}
+
+func taggedBlock(ch <-chan int, again bool) {
+	for {
+		select {
+		case <-ch:
+			if again {
+				goto done
+			}
+		done:
+			{
+				break // want `break at the end of a select case has no effect`
+			}
+		}
+	}
+}
+
+func taggedIf(ch <-chan int, again, ready bool) {
+	for {
+		select {
+		case <-ch:
+			if again {
+				goto done
+			}
+		done:
+			if ready {
+				break // want `break at the end of a select case has no effect`
+			}
+		}
+	}
+}
+
+func escaped(ch <-chan int, n int, again bool, work func()) {
+	for {
+		if again {
+			goto hold
+		}
+	hold:
+		switch n {
+		default:
+			select {
+			case <-ch:
+				break hold
+			}
+			work()
+		}
+	}
+}
+
+func escapedOuter(ch <-chan int, again bool, work func()) {
+	for {
+		if again {
+			goto hold
+		}
+	hold:
+		select {
+		case <-ch:
+			select {
+			case <-ch:
+				break hold
+			}
+			work()
+		}
+	}
+}
+
+func chosen(ch <-chan int, ready bool) {
+	for {
+	pick:
+		select {
+		case <-ch:
+			if ready {
+				break pick // want `break at the end of a select case has no effect`
+			}
+		}
+	}
+}
+
+func escapedPath(ch <-chan int, n int, again, ready bool, work func()) {
+	for {
+		if again {
+			goto hold
+		}
+	hold:
+		switch n {
+		default:
+			select {
+			case <-ch:
+				if ready {
+					break hold
+				}
+			}
+			work()
+		}
+	}
+}
+
+func stopped(ch <-chan int, work func()) {
+	for {
+	pick:
+		select {
+		case <-ch:
+			break pick
+			work()
+		}
+	}
+}
+
+func empty(ch <-chan int) {
+	for {
+		select {
+		case <-ch:
+		}
+	}
+}
+
+func idle(ch <-chan int) {
+	for {
+		select {
+		case <-ch:
+		default:
+		}
+	}
+}
+
+func next(ch <-chan int, n int) {
+	for i := 0; i < n; i++ {
+		select {
+		case <-ch:
+			continue
+		}
+	}
+}

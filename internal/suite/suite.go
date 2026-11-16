@@ -66,6 +66,7 @@ import (
 	"lesiw.io/tools/analyzers/boolexprsimplify"
 	"lesiw.io/tools/analyzers/boolreturn"
 	"lesiw.io/tools/analyzers/boolset"
+	"lesiw.io/tools/analyzers/breakinselect"
 	"lesiw.io/tools/analyzers/builtinprint"
 	"lesiw.io/tools/analyzers/caseorder"
 	"lesiw.io/tools/analyzers/commentfmt"
@@ -231,6 +232,7 @@ var (
 		boolreturn.Analyzer,
 		bools.Analyzer,
 		boolset.Analyzer,
+		breakinselect.Analyzer,
 		buildtag.Analyzer,
 		builtinprint.Analyzer,
 		caseorder.Analyzer,
