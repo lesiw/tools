@@ -1331,6 +1331,20 @@
 //		}
 //	}
 //
+// # loopvarcond
+//
+// Reports a for loop whose condition tests a variable the loop never changes.
+// The condition would evaluate to the same value at every test, so a loop
+// cannot end through a change in its condition.
+//
+// Adapted from staticcheck's SA4008.
+//
+//	func f(i, n int) {
+//		for i < n {
+//			use(i)
+//		}
+//	}
+//
 // # lostcancel
 //
 // Reports a context cancel function that is never called. The context and

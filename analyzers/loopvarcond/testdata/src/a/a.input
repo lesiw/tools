@@ -1,0 +1,707 @@
+package a
+
+import (
+	"time"
+
+	. "elsewhere"
+)
+
+func use(...any) {}
+
+func loopNoPost(i, n int) {
+	for i < n { // want `loop condition never changes`
+		use(i)
+	}
+}
+
+func loopWrongPost(n, j int) {
+	for i := 0; i < n; j++ { // want `loop condition never changes`
+		use(i)
+	}
+}
+
+func loopNoInit(n int) {
+	i := 0
+	for i < n { // want `loop condition never changes`
+		use(i)
+	}
+}
+
+func loopTwo(n, m int) {
+	for i, j := 0, 0; i < n && j < m; { // want `loop condition never changes`
+		use(i, j)
+	}
+}
+
+func loopNot(done bool) {
+	for !done { // want `loop condition never changes`
+		use(done)
+	}
+}
+
+func loopConst(n int) {
+	const limit = 10
+	for n < limit { // want `loop condition never changes`
+		use(n)
+	}
+}
+
+func loopUnrelated(n, other int) {
+	for i := 0; i < n; { // want `loop condition never changes`
+		other++
+		use(i)
+	}
+}
+
+func loopOtherClosure(n int) {
+	i, j := 0, 0
+	bump := func() { j++ }
+	for i < n { // want `loop condition never changes`
+		bump()
+		use(i)
+	}
+}
+
+func loopShadow(n, m int) {
+	for i := 0; i < n; { // want `loop condition never changes`
+		for i := 0; i < m; i++ {
+			use(i)
+		}
+	}
+}
+
+func loopBreak(n int) {
+	for i := 0; i < n; { // want `loop condition never changes`
+		if i == 0 {
+			break
+		}
+		use(i)
+	}
+}
+
+func loopIncrement(n int) {
+	for i := 0; i < n; i++ {
+		use(i)
+	}
+}
+
+func loopBodyWrite(n int) {
+	for i := 0; i < n; {
+		i = i + 1
+		use(i)
+	}
+}
+
+func loopBodyCompound(n int) {
+	for i := 0; i < n; {
+		i += 2
+		use(i)
+	}
+}
+
+func loopBodyDecrement(n int) {
+	for i := n; i > 0; {
+		i--
+		use(i)
+	}
+}
+
+func loopOtherWrite(n int) {
+	for i := 0; i < n; {
+		n--
+		use(i)
+	}
+}
+
+func loopRangeWrite(n int, xs []int) {
+	for i := 0; i < n; {
+		for i = range xs {
+			use(i)
+		}
+	}
+}
+
+func loopEscape(n int) {
+	i := 0
+	p := &i
+	for i < n {
+		*p++
+	}
+}
+
+func loopEscapeIdle(n int) {
+	i := 0
+	p := &i
+	_ = p
+	for i < n {
+		use(i)
+	}
+}
+
+func loopClosure(n int) {
+	i := 0
+	inc := func() { i++ }
+	for i < n {
+		inc()
+	}
+}
+
+func loopClosureBody(n int) {
+	for i := 0; i < n; {
+		func() { i++ }()
+	}
+}
+
+func loopCaptured(n int) {
+	done := false
+	go func() { use(done) }()
+	for !done { // want `loop condition never changes`
+		use(done)
+	}
+	go func() { done = true }()
+}
+
+type counter int
+
+func (c *counter) bump() { *c++ }
+
+func (c counter) text() string { return "count" }
+
+func loopMethod(limit counter) {
+	var c counter
+	for c < limit {
+		c.bump()
+	}
+}
+
+func loopPointerMethodBefore(limit counter) {
+	var c counter
+	c.bump()
+	for c < limit {
+		use(c)
+	}
+}
+
+func loopValueMethodBefore(limit counter) {
+	var c counter
+	_ = c.text()
+	for c < limit { // want `loop condition never changes`
+		use(c)
+	}
+}
+
+func loopValueMethodValue(limit counter) {
+	var c counter
+	text := c.text
+	for c < limit { // want `loop condition never changes`
+		use(text())
+	}
+}
+
+func loopPointerVariableMethodValue(n int) {
+	c := counter(0)
+	p := &c
+	bump := p.bump
+	for p != nil { // want `loop condition never changes`
+		bump()
+		use(p)
+	}
+}
+
+func loopMethodPost(limit counter) {
+	var c counter
+	for ; c < limit; c.bump() {
+		use(c)
+	}
+}
+
+func loopPostAssign(n int) {
+	for i := 0; i < n; i = i + 1 {
+		use(i)
+	}
+}
+
+func loopInitFalse() {
+	for i := 10; i < 5; {
+		use(i)
+	}
+}
+
+func loopCompoundInit() {
+	i := -100
+	for i += 10; i < 0; { // want `loop condition never changes`
+		use(i)
+	}
+}
+
+func loopCompoundCondition(n int) {
+	for i := 0; i < 0 && n > 0; {
+		use(i)
+	}
+}
+
+func loopMultiInit() {
+	for i, j := 0, 0; i < 0 && j < 0; {
+		use(i, j)
+	}
+}
+
+func loopNegatedInit() {
+	for i := 0; !(i == 0); {
+		use(i)
+	}
+}
+
+func loopDivision() {
+	for i, n := 0, 0; i < 1/n; { // want `loop condition never changes`
+		use(i, n)
+	}
+}
+
+func loopPanicCond() {
+	for n := 0; 1/n > 0 && false; { // want `loop condition never changes`
+		use(n)
+	}
+}
+
+func loopRemainder() {
+	for i, n := 0, 0; i < 5%n; { // want `loop condition never changes`
+		use(i, n)
+	}
+}
+
+func loopRational() {
+	for n, m := 2, 1; 5/n == 2/m; { // want `loop condition never changes`
+		use(n, m)
+	}
+}
+
+func loopNarrow() {
+	for i := uint8(255); i+1 == 0; { // want `loop condition never changes`
+		use(i)
+	}
+}
+
+func loopMultiAssign(n int) {
+	for i := 0; i < n; {
+		i, n = n, i
+		use(i)
+	}
+}
+
+func loopValueMethodBody(limit counter) {
+	var c counter
+	for c < limit { // want `loop condition never changes`
+		use(c.text())
+	}
+}
+
+type runner int
+
+func (r *runner) run() {
+	for *r < 10 {
+		*r++
+	}
+}
+
+func loopGoMethod(limit runner) {
+	var r runner
+	go r.run()
+	for r < limit {
+		use(r)
+	}
+}
+
+var global int
+
+func loopGlobal(n int) {
+	for global < n {
+		use(global)
+	}
+}
+
+func loopDotGlobal(n int) {
+	for Global < n {
+		use(Global)
+	}
+}
+
+type point struct{ x int }
+
+func loopStructWrite(a, b point) {
+	for a != b {
+		a.x++
+		use(a)
+	}
+}
+
+func loopArrayWrite(a, b [2]int) {
+	for a != b {
+		a[0]++
+		use(a)
+	}
+}
+
+func loopMethodValue(limit counter) {
+	var c counter
+	bump := c.bump
+	for c < limit {
+		bump()
+	}
+}
+
+func loopReadCapture() {
+	done := false
+	read := func() bool { return done }
+	for !done { // want `loop condition never changes`
+		use(read())
+	}
+}
+
+func loopMixed(n int) {
+	done := false
+	go func() { done = true }()
+	for i := 0; i < n || done; {
+		use(i)
+	}
+}
+
+func loopOr(n int, done bool) {
+	for i := 0; i < n || done; { // want `loop condition never changes`
+		use(i)
+	}
+}
+
+func loopUnary(n int) {
+	for i := 0; -i < n; { // want `loop condition never changes`
+		use(i)
+	}
+}
+
+func loopReturn(n int) {
+	for i := 0; i < n; { // want `loop condition never changes`
+		if i == 0 {
+			return
+		}
+		use(i)
+	}
+}
+
+func loopGoto(n int) {
+	for i := 0; i < n; { // want `loop condition never changes`
+		if i == 0 {
+			goto done
+		}
+		use(i)
+	}
+done:
+}
+
+func loopGotoPost(n int) {
+	for i := 0; i < n; i++ {
+		goto end
+		return
+	end:
+		use(i)
+	}
+}
+
+func loopSwitchPost(n, x int) {
+	for i := 0; i < n; i++ {
+		switch x {
+		case 0:
+			return
+		default:
+			return
+		}
+	}
+}
+
+func loopPanic(n int) {
+	for i := 0; i < n; { // want `loop condition never changes`
+		if i == 0 {
+			panic("stop")
+		}
+		use(i)
+	}
+}
+
+func loopPanicPost(n int) {
+	for i := 0; i < n; i++ { // want `loop condition never changes`
+		panic("stop")
+	}
+}
+
+func loopReturnPost(n int) {
+	for i := 0; i < n; i++ { // want `loop condition never changes`
+		return
+	}
+}
+
+func loopBreakPost(n int) {
+	for i := 0; i < n; i++ { // want `loop condition never changes`
+		break
+	}
+}
+
+func loopIfElsePost(n int) {
+	for i := 0; i < n; i++ { // want `loop condition never changes`
+		if n > 0 {
+			panic("stop")
+		} else {
+			return
+		}
+	}
+}
+
+func loopBlockPost(n int) {
+	for i := 0; i < n; i++ { // want `loop condition never changes`
+		{
+			panic("stop")
+		}
+	}
+}
+
+func loopContinueReturn(n int) {
+	for i := 0; i < n; i++ {
+		if i > 0 {
+			continue
+		}
+		return
+	}
+}
+
+func loopLabeledContinue(n int, xs []int) {
+outer:
+	for i := 0; i < n; i++ {
+		for range xs {
+			continue outer
+		}
+		return
+	}
+}
+
+func loopNestedContinue(n int, xs []int) {
+	for i := 0; i < n; i++ { // want `loop condition never changes`
+		for range xs {
+			continue
+		}
+		return
+	}
+}
+
+func loopLiteralAfter() {
+	done := false
+	use(func() {
+		for !done { // want `loop condition never changes`
+			use(done)
+		}
+		done = true
+	})
+}
+
+func loopDuration(d time.Duration) {
+	for d < time.Minute { // want `loop condition never changes`
+		use(d)
+	}
+}
+
+func loopConversion(i int64, n int) {
+	for i < int64(n) { // want `loop condition never changes`
+		use(i)
+	}
+}
+
+func loopNil(p *int) {
+	for p == nil { // want `loop condition never changes`
+		use(p)
+	}
+}
+
+func loopStringConversion(buf []byte) {
+	for string(buf) != "done" {
+		buf[0] = 'x'
+	}
+}
+
+func loopTypeParam[T ~int](a, b T) {
+	for a < b {
+		use(a)
+	}
+}
+
+func loopTypeParamConversion[T ~int](a, b T) {
+	for T(a) != b {
+		use(a)
+	}
+}
+
+func loopTypeParamAlias[T ~[2]int](a, b T) {
+	type A = T
+	var x, y A
+	_ = a
+	_ = b
+	for x == y {
+		x[0]++
+		use(x)
+	}
+}
+
+func loopAddressAfter(n int) {
+	i := 0
+	for i < n { // want `loop condition never changes`
+		use(i)
+	}
+	p := &i
+	_ = p
+}
+
+func loopIndex(xs []int, n int) {
+	for xs[0] < n {
+		use(xs)
+	}
+}
+
+func loopDeref(p *int, n int) {
+	for *p < n {
+		use(p)
+	}
+}
+
+func loopReceive(ch <-chan int) {
+	for <-ch != 0 {
+		use(ch)
+	}
+}
+
+func loopSliceNil(xs []int) {
+	for xs != nil { // want `loop condition never changes`
+		use(xs)
+	}
+}
+
+func loopMapNil(m map[string]int) {
+	for m != nil { // want `loop condition never changes`
+		use(m)
+	}
+}
+
+func loopChanNil(ch chan int) {
+	for ch != nil { // want `loop condition never changes`
+		use(ch)
+	}
+}
+
+func loopFuncNil(fn func()) {
+	for fn != nil { // want `loop condition never changes`
+		use(fn)
+	}
+}
+
+func loopInterfaceNil(v any) {
+	for v != nil { // want `loop condition never changes`
+		use(v)
+	}
+}
+
+func loopArrayConversion(a, b [2]int) {
+	for [2]int(a) != b {
+		use(a)
+	}
+}
+
+func loopMapConversion(m map[string]int) {
+	for map[string]int(m) != nil {
+		use(m)
+	}
+}
+
+func loopInterfaceConversion(v any) {
+	for any(v) != nil {
+		use(v)
+	}
+}
+
+func loopPointerConversion(p, q *int) {
+	for (*int)(p) != q { // want `loop condition never changes`
+		use(p)
+	}
+}
+
+func loopChanConversion(ch, other chan int) {
+	for (chan int)(ch) != other { // want `loop condition never changes`
+		use(ch)
+	}
+}
+
+func loopFuncConversion(fn func()) {
+	for (func())(fn) != nil { // want `loop condition never changes`
+		use(fn)
+	}
+}
+
+type pair struct{ n int }
+
+func loopStructConversion(a, b pair) {
+	for pair(a) != b {
+		use(a)
+	}
+}
+
+func loopQualifiedVar(n int) {
+	for time.Local != nil && n > 0 {
+		use(n)
+	}
+}
+
+func loopShortShadow(n int) {
+	for i := 0; i < n; { // want `loop condition never changes`
+		i := i
+		use(i)
+	}
+}
+
+func loopParen(n int) {
+	i := 0
+	for (i) < n { // want `loop condition never changes`
+		use(i)
+	}
+}
+
+func loopLone(done bool) {
+	for done { // want `loop condition never changes`
+		use(done)
+	}
+}
+
+type box struct{ n int }
+
+func loopField(b *box, n int) {
+	for b.n < n {
+		use(b.n)
+	}
+}
+
+func loopCall(i int, n func() int) {
+	for i < n() {
+		use(i)
+	}
+}
+
+func loopLen(xs []int) {
+	for 0 < len(xs) {
+		use(xs)
+	}
+}
+
+func loopFalse() {
+	for false {
+		use()
+	}
+}
+
+func loopNoCondition(n int) {
+	for {
+		use(n)
+	}
+}
