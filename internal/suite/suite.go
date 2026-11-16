@@ -286,6 +286,7 @@ import (
 	"lesiw.io/tools/analyzers/valuereceiver"
 	"lesiw.io/tools/analyzers/vargrouptype"
 	"lesiw.io/tools/analyzers/weakrandom"
+	"lesiw.io/tools/analyzers/wgbody"
 	"lesiw.io/tools/analyzers/wgogoroutine"
 	"lesiw.io/tools/analyzers/whitespace"
 	"lesiw.io/tools/analyzers/wrapperfunc"
@@ -589,6 +590,7 @@ var (
 		vargrouptype.Analyzer,
 		waitgroup.Analyzer,
 		weakrandom.Analyzer,
+		wgbody.Analyzer,
 		wgogoroutine.Analyzer,
 		whitespace.Analyzer,
 		wrapperfunc.Analyzer,

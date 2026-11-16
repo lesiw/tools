@@ -3941,6 +3941,20 @@ func newToken() int {
 }
 ```
 
+## wgbody
+
+Reports a Done call on the group a sync.WaitGroup.Go call starts, unless an earlier Add that is neither deferred nor started with go can raise the count. Reports an unrecovered panic in the function passed to Go. The Done call removes the task Go added, and the sync documentation says that function must not panic.
+
+Inspired by revive's forbidden-call-in-wg-go.
+
+```
+func start(wg *sync.WaitGroup) {
+    wg.Go(func() {
+        wg.Done()
+    })
+}
+```
+
 ## wgogoroutine
 
 Reports an Add or a Go call that raises a sync.WaitGroup's count from inside a goroutine instead of before it starts. A Wait can return before the count is raised.

@@ -1,0 +1,16 @@
+//ignore:wgbody
+package ignored
+
+import "sync"
+
+func ignored(wg *sync.WaitGroup) {
+	wg.Go(func() {
+		panic("some message")
+	})
+}
+
+func ignoredDone(wg *sync.WaitGroup) {
+	wg.Go(func() {
+		wg.Done()
+	})
+}

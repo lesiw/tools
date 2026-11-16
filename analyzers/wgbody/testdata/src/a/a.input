@@ -1,0 +1,654 @@
+package a
+
+import (
+	"log"
+	"sync"
+)
+
+func deferred(wg *sync.WaitGroup) {
+	wg.Go(func() {
+		defer wg.Done() // want `Done inside a WaitGroup\.Go body removes the task Go added`
+		work()
+	})
+}
+
+func called(wg *sync.WaitGroup) {
+	wg.Go(func() {
+		wg.Done() // want `Done inside a WaitGroup\.Go body removes the task Go added`
+		work()
+	})
+}
+
+func underBranch(wg *sync.WaitGroup, ready bool) {
+	wg.Go(func() {
+		if ready {
+			wg.Done() // want `Done inside a WaitGroup\.Go body removes the task Go added`
+		}
+		work()
+	})
+}
+
+func nested(wg *sync.WaitGroup) {
+	wg.Go(func() {
+		go func() {
+			wg.Done()
+			work()
+		}()
+	})
+}
+
+func inlineDone(wg *sync.WaitGroup) {
+	wg.Go(func() {
+		func() {
+			wg.Done() // want `Done inside a WaitGroup\.Go body removes the task Go added`
+		}()
+	})
+}
+
+func parenthesizedDone(wg *sync.WaitGroup) {
+	wg.Go(func() {
+		(func() {
+			wg.Done() // want `Done inside a WaitGroup\.Go body removes the task Go added`
+		})()
+	})
+}
+
+func deferredDone(wg *sync.WaitGroup) {
+	wg.Go(func() {
+		defer func() {
+			wg.Done() // want `Done inside a WaitGroup\.Go body removes the task Go added`
+		}()
+	})
+}
+
+func nestedOther(wg, other *sync.WaitGroup) {
+	wg.Go(func() {
+		other.Go(func() {
+			other.Done() // want `Done inside a WaitGroup\.Go body removes the task Go added`
+		})
+	})
+}
+
+func nestedGo(wg, other *sync.WaitGroup) {
+	wg.Go(func() {
+		other.Go(func() {
+			wg.Done()
+		})
+	})
+}
+
+func variableTask(wg *sync.WaitGroup) {
+	wg.Go(func() {
+		task := func() {
+			wg.Done()
+		}
+		task()
+	})
+}
+
+func handedDone(wg *sync.WaitGroup) {
+	wg.Go(func() {
+		each(func() {
+			wg.Done()
+		})
+	})
+}
+
+func panics(wg *sync.WaitGroup) {
+	wg.Go(func() {
+		panic("some message") // want `panic inside a WaitGroup\.Go body, which must not panic`
+	})
+}
+
+func nestedPanic(wg *sync.WaitGroup) {
+	wg.Go(func() {
+		go func() {
+			panic("some message")
+		}()
+	})
+}
+
+func startedPanic(wg *sync.WaitGroup) {
+	wg.Go(func() {
+		go panic("some message") // want `panic inside a WaitGroup\.Go body, which must not panic`
+	})
+}
+
+func logsPanic(wg *sync.WaitGroup) {
+	wg.Go(func() {
+		log.Panic("some message") // want `panic inside a WaitGroup\.Go body, which must not panic`
+	})
+}
+
+func logsPanicf(wg *sync.WaitGroup) {
+	wg.Go(func() {
+		log.Panicf("some %s", "message") // want `panic inside a WaitGroup\.Go body, which must not panic`
+	})
+}
+
+func logsPanicln(wg *sync.WaitGroup) {
+	wg.Go(func() {
+		log.Panicln("some message") // want `panic inside a WaitGroup\.Go body, which must not panic`
+	})
+}
+
+func panicsUnderBranch(wg *sync.WaitGroup, ready bool) {
+	wg.Go(func() {
+		if ready {
+			panic("some message") // want `panic inside a WaitGroup\.Go body, which must not panic`
+		}
+	})
+}
+
+func inlinePanic(wg *sync.WaitGroup) {
+	wg.Go(func() {
+		func() {
+			panic("some message") // want `panic inside a WaitGroup\.Go body, which must not panic`
+		}()
+	})
+}
+
+func deferredPanic(wg *sync.WaitGroup) {
+	wg.Go(func() {
+		defer func() {
+			panic("some message") // want `panic inside a WaitGroup\.Go body, which must not panic`
+		}()
+	})
+}
+
+func recoveredPanic(wg *sync.WaitGroup) {
+	wg.Go(func() {
+		defer func() { _ = recover() }()
+		panic("some message")
+	})
+}
+
+func parenthesizedPanic(wg *sync.WaitGroup) {
+	wg.Go(func() {
+		(func() {
+			panic("some message") // want `panic inside a WaitGroup\.Go body, which must not panic`
+		})()
+	})
+}
+
+func nestedRecover(wg *sync.WaitGroup) {
+	wg.Go(func() {
+		cleanup := func() {
+			defer func() { _ = recover() }()
+		}
+		cleanup()
+		panic("some message") // want `panic inside a WaitGroup\.Go body, which must not panic`
+	})
+}
+
+func fakeRecover(wg *sync.WaitGroup) {
+	wg.Go(func() {
+		defer func() {
+			go func() { _ = recover() }()
+			nested := func() { _ = recover() }
+			_ = nested
+		}()
+		panic("some message") // want `panic inside a WaitGroup\.Go body, which must not panic`
+	})
+}
+
+func innerRecover(wg *sync.WaitGroup) {
+	wg.Go(func() {
+		func() {
+			defer func() { _ = recover() }()
+			panic("some message")
+		}()
+	})
+}
+
+func recoverAfterPanic(wg *sync.WaitGroup) {
+	wg.Go(func() {
+		panic("some message") // want `panic inside a WaitGroup\.Go body, which must not panic`
+		defer func() { _ = recover() }()
+	})
+}
+
+func recoverUnderBranch(wg *sync.WaitGroup, ready bool) {
+	wg.Go(func() {
+		if ready {
+			defer func() { _ = recover() }()
+		}
+		panic("some message") // want `panic inside a WaitGroup\.Go body, which must not panic`
+	})
+}
+
+func recoverConditional(wg *sync.WaitGroup) {
+	wg.Go(func() {
+		defer func() {
+			if false {
+				_ = recover()
+			}
+		}()
+		panic("some message") // want `panic inside a WaitGroup\.Go body, which must not panic`
+	})
+}
+
+func recoverIf(wg *sync.WaitGroup) {
+	wg.Go(func() {
+		defer func() {
+			if err := recover(); err != nil {
+				_ = err
+			}
+		}()
+		panic("some message")
+	})
+}
+
+func recoverSwitch(wg *sync.WaitGroup) {
+	wg.Go(func() {
+		defer func() {
+			switch x := recover(); x {
+			case nil:
+			}
+		}()
+		panic("some message")
+	})
+}
+
+func recoverNewPanic(wg *sync.WaitGroup) {
+	wg.Go(func() {
+		defer func() {
+			_ = recover()
+			panic("some message") // want `panic inside a WaitGroup\.Go body, which must not panic`
+		}()
+		panic("original")
+	})
+}
+
+func handedPanic(wg *sync.WaitGroup) {
+	wg.Go(func() {
+		each(func() {
+			panic("some message")
+		})
+	})
+}
+
+func variablePanic(wg *sync.WaitGroup) {
+	wg.Go(func() {
+		task := func() {
+			panic("some message")
+		}
+		task()
+	})
+}
+
+func parenthesizedTask(wg *sync.WaitGroup) {
+	wg.Go((func() {
+		wg.Done() // want `Done inside a WaitGroup\.Go body removes the task Go added`
+	}))
+}
+
+func methodExpression(wg *sync.WaitGroup) {
+	(*sync.WaitGroup).Go(wg, func() {
+		defer wg.Done() // want `Done inside a WaitGroup\.Go body removes the task Go added`
+	})
+}
+
+func methodExpressionDone(wg *sync.WaitGroup) {
+	wg.Go(func() {
+		(*sync.WaitGroup).Done(wg) // want `Done inside a WaitGroup\.Go body removes the task Go added`
+	})
+}
+
+func throughAddress(wg *sync.WaitGroup) {
+	wg.Go(func() {
+		(&*wg).Done() // want `Done inside a WaitGroup\.Go body removes the task Go added`
+	})
+}
+
+func throughStar(wg *sync.WaitGroup) {
+	wg.Go(func() {
+		(*wg).Done() // want `Done inside a WaitGroup\.Go body removes the task Go added`
+	})
+}
+
+func localGroup() {
+	var wg sync.WaitGroup
+	wg.Go(func() {
+		wg.Done() // want `Done inside a WaitGroup\.Go body removes the task Go added`
+	})
+}
+
+func embedded(g *group) {
+	g.Go(func() {
+		g.Done() // want `Done inside a WaitGroup\.Go body removes the task Go added`
+	})
+}
+
+type alias = sync.WaitGroup
+
+func typeAlias(wg *alias) {
+	wg.Go(func() {
+		wg.Done() // want `Done inside a WaitGroup\.Go body removes the task Go added`
+	})
+}
+
+func secondNameAdd(wg *sync.WaitGroup) {
+	other := wg
+	other.Add(1)
+	wg.Go(func() {
+		wg.Done() // want `Done inside a WaitGroup\.Go body removes the task Go added`
+	})
+}
+
+func callerAdd(wg *sync.WaitGroup) {
+	helper(wg)
+	wg.Go(func() {
+		wg.Done() // want `Done inside a WaitGroup\.Go body removes the task Go added`
+	})
+}
+
+func helper(wg *sync.WaitGroup) { wg.Add(1) }
+
+func calledLiteralAdd(wg *sync.WaitGroup) {
+	func() {
+		wg.Add(1)
+		wg.Go(func() {
+			wg.Done()
+		})
+	}()
+}
+
+func addInNested(wg *sync.WaitGroup) {
+	wg.Add(1)
+	func() {
+		wg.Go(func() {
+			wg.Done()
+		})
+	}()
+}
+
+func addInDeadBranch(wg *sync.WaitGroup) {
+	if false {
+		wg.Add(1)
+	}
+	wg.Go(func() {
+		wg.Done() // want `Done inside a WaitGroup\.Go body removes the task Go added`
+	})
+}
+
+func addInUncalled(wg *sync.WaitGroup) {
+	task := func() {
+		wg.Add(1)
+	}
+	_ = task
+	wg.Go(func() {
+		wg.Done() // want `Done inside a WaitGroup\.Go body removes the task Go added`
+	})
+}
+
+func commentInside(wg *sync.WaitGroup) {
+	wg.Go(func() {
+		defer /* note */ wg.Done() // want `Done inside a WaitGroup\.Go body removes the task Go added`
+	})
+}
+
+func started(wg *sync.WaitGroup) {
+	wg.Go(func() {
+		go wg.Done() // want `Done inside a WaitGroup\.Go body removes the task Go added`
+	})
+}
+
+func labeled(wg *sync.WaitGroup, again bool) {
+	wg.Go(func() {
+	L:
+		wg.Done() // want `Done inside a WaitGroup\.Go body removes the task Go added`
+		if again {
+			goto L
+		}
+	})
+}
+
+func secondNameDone(wg *sync.WaitGroup) {
+	wg.Go(func() {
+		other := wg
+		other.Done()
+	})
+}
+
+func otherGroup(wg, other *sync.WaitGroup) {
+	wg.Go(func() {
+		other.Done()
+	})
+}
+
+func addOutside(wg *sync.WaitGroup) {
+	wg.Add(1)
+	wg.Go(func() {
+		wg.Done()
+	})
+}
+
+func panicWithAdd(wg *sync.WaitGroup) {
+	wg.Add(1)
+	wg.Go(func() {
+		panic("some message") // want `panic inside a WaitGroup\.Go body, which must not panic`
+	})
+}
+
+func twoDones(wg *sync.WaitGroup) {
+	wg.Go(func() {
+		wg.Add(1)
+		wg.Done()
+		wg.Done() // want `Done inside a WaitGroup\.Go body removes the task Go added`
+	})
+}
+
+func throughStarAdd(wg *sync.WaitGroup) {
+	(*wg).Add(1)
+	wg.Go(func() {
+		wg.Done()
+	})
+}
+
+func embeddedAdd(g *group) {
+	g.Add(1)
+	g.Go(func() {
+		g.Done()
+	})
+}
+
+func methodExpressionAdd(wg *sync.WaitGroup) {
+	(*sync.WaitGroup).Add(wg, 1)
+	wg.Go(func() {
+		wg.Done()
+	})
+}
+
+func selectorAdd(p *pair) {
+	p.wg.Add(1)
+	p.wg.Go(func() {
+		p.wg.Done()
+	})
+}
+
+func balances(wg *sync.WaitGroup) {
+	wg.Go(func() {
+		wg.Add(1)
+		wg.Done()
+	})
+}
+
+func sharedAdd(wg *sync.WaitGroup) {
+	wg.Add(1)
+	wg.Go(func() {
+		wg.Done()
+	})
+	wg.Go(func() {
+		wg.Done() // want `Done inside a WaitGroup\.Go body removes the task Go added`
+	})
+}
+
+func goAdd(wg *sync.WaitGroup) {
+	go wg.Add(1)
+	wg.Go(func() {
+		wg.Done() // want `Done inside a WaitGroup\.Go body removes the task Go added`
+	})
+}
+
+func loopDone(wg *sync.WaitGroup) {
+	wg.Go(func() {
+		wg.Add(1)
+		for range 2 {
+			wg.Done()
+		}
+	})
+}
+
+func addTwo(wg *sync.WaitGroup) {
+	wg.Go(func() {
+		wg.Add(2)
+		wg.Done()
+		wg.Done()
+		wg.Done() // want `Done inside a WaitGroup\.Go body removes the task Go added`
+	})
+}
+
+func unknownAddTwo(wg *sync.WaitGroup, n int) {
+	wg.Go(func() {
+		wg.Add(n)
+		wg.Done()
+		wg.Done()
+	})
+}
+
+func addAfterGo(wg *sync.WaitGroup) {
+	wg.Go(func() {
+		wg.Done() // want `Done inside a WaitGroup\.Go body removes the task Go added`
+	})
+	wg.Add(1)
+}
+
+func switchSame(wg *sync.WaitGroup, n int) {
+	wg.Go(func() {
+		switch n {
+		case 0:
+			wg.Add(1)
+			wg.Done()
+		}
+	})
+}
+
+func switchSibling(wg *sync.WaitGroup, n int) {
+	wg.Go(func() {
+		switch n {
+		case 0:
+			wg.Add(1)
+		case 1:
+			wg.Done() // want `Done inside a WaitGroup\.Go body removes the task Go added`
+		}
+	})
+}
+
+func selectSibling(wg *sync.WaitGroup, ch chan int) {
+	wg.Go(func() {
+		select {
+		case <-ch:
+			wg.Add(1)
+		default:
+			wg.Done() // want `Done inside a WaitGroup\.Go body removes the task Go added`
+		}
+	})
+}
+
+func addUnderBranch(wg *sync.WaitGroup, ready bool) {
+	wg.Go(func() {
+		if ready {
+			wg.Add(1)
+		}
+		wg.Done() // want `Done inside a WaitGroup\.Go body removes the task Go added`
+	})
+}
+
+func deferredAdd(wg *sync.WaitGroup) {
+	wg.Go(func() {
+		defer wg.Add(1)
+		wg.Done() // want `Done inside a WaitGroup\.Go body removes the task Go added`
+	})
+}
+
+func addInLiteral(wg *sync.WaitGroup) {
+	wg.Go(func() {
+		go func() {
+			wg.Add(1)
+		}()
+		wg.Done() // want `Done inside a WaitGroup\.Go body removes the task Go added`
+	})
+}
+
+func doneBeforeAdd(wg *sync.WaitGroup) {
+	wg.Go(func() {
+		wg.Done() // want `Done inside a WaitGroup\.Go body removes the task Go added`
+		wg.Add(1)
+	})
+}
+
+func zeroAdd(wg *sync.WaitGroup) {
+	wg.Go(func() {
+		wg.Add(0)
+		wg.Done() // want `Done inside a WaitGroup\.Go body removes the task Go added`
+	})
+}
+
+func negativeAdd(wg *sync.WaitGroup) {
+	wg.Go(func() {
+		wg.Add(-1)
+		wg.Done() // want `Done inside a WaitGroup\.Go body removes the task Go added`
+	})
+}
+
+func otherAdd(wg, other *sync.WaitGroup) {
+	wg.Go(func() {
+		other.Add(1)
+		wg.Done() // want `Done inside a WaitGroup\.Go body removes the task Go added`
+	})
+}
+
+func unknownAdd(wg *sync.WaitGroup, n int) {
+	wg.Go(func() {
+		wg.Add(n)
+		wg.Done()
+	})
+}
+
+func notWaitGroup(r runner) {
+	r.Go(func() {
+		panic("some message")
+	})
+}
+
+func namedTask(wg *sync.WaitGroup) {
+	wg.Go(work)
+}
+
+func functionValue(wg *sync.WaitGroup) {
+	task := func() {
+		wg.Done()
+	}
+	wg.Go(task)
+}
+
+func methodValue(wg *sync.WaitGroup) {
+	wg.Go(wg.Done)
+}
+
+type group struct {
+	sync.WaitGroup
+}
+
+type pair struct {
+	wg sync.WaitGroup
+}
+
+type runner struct{}
+
+func (runner) Go(f func()) { f() }
+
+func each(f func()) { f() }
+
+func work() {}
