@@ -192,6 +192,7 @@ import (
 	"lesiw.io/tools/analyzers/typeunparen"
 	"lesiw.io/tools/analyzers/uncheckedinlineerr"
 	"lesiw.io/tools/analyzers/uncondrecursion"
+	"lesiw.io/tools/analyzers/unconvert"
 	"lesiw.io/tools/analyzers/underef"
 	"lesiw.io/tools/analyzers/unexportedreturn"
 	"lesiw.io/tools/analyzers/unlabelstmt"
@@ -411,6 +412,7 @@ var (
 		typeunparen.Analyzer,
 		uncheckedinlineerr.Analyzer,
 		uncondrecursion.Analyzer,
+		unconvert.Analyzer,
 		underef.Analyzer,
 		unexportedreturn.Analyzer,
 		unlabelstmt.Analyzer,

@@ -1,0 +1,5 @@
+package a
+
+func generatedCgo(n int) int {
+	return int(n)
+}

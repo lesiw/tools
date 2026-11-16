@@ -1,0 +1,19 @@
+package a
+
+func blockBefore(n int) int {
+	return int(/* keep */ n) // want `unnecessary conversion`
+}
+
+func lineBefore(n int) int {
+	return int( // want `unnecessary conversion`
+		n)
+}
+
+func blockAfter(n int) int {
+	return int(n /* keep */) // want `unnecessary conversion`
+}
+
+func lineAfter(n int) int {
+	return int(n, // want `unnecessary conversion`
+	)
+}

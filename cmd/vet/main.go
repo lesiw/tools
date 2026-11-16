@@ -2603,6 +2603,21 @@
 //		f()
 //	}
 //
+// # unconvert
+//
+// Reports a conversion to a type its operand already has, as int(n) for an
+// int n or []byte(b) for a []byte b. A conversion to a floating-point or
+// complex type is left alone, since an explicit one rounds and prevents a
+// fused operation. The fix drops the conversion, adding parentheses where
+// regrouping, a control clause, or an adjacent operator would change the value
+// or the parse.
+//
+// Adapted from mdempsky's unconvert.
+//
+//	func f(n int) int {
+//		return int(n)
+//	}
+//
 // # underef
 //
 // Reports a dereference in front of a selector. The spec makes x.f shorthand

@@ -1,0 +1,19 @@
+package a
+
+func nested(n int) int {
+	return int(n) // want `unnecessary conversion` `unnecessary conversion`
+}
+
+func nestedProduct(a, b, c int) int {
+	return int(a+b) * c // want `unnecessary conversion` `unnecessary conversion`
+}
+
+func nestedSelector() {
+	switch item(item{}).N { // want `unnecessary conversion` `unnecessary conversion`
+	}
+}
+
+func nestedIndex() {
+	switch bytesAlias(bytesAlias{})[0] { // want `unnecessary conversion` `unnecessary conversion`
+	}
+}

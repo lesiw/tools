@@ -1,0 +1,61 @@
+package a
+
+func minus(n int) int {
+	return 1 - (-n) // want `unnecessary conversion`
+}
+
+func divide(p *int) int {
+	return 1 / (*p) // want `unnecessary conversion`
+}
+
+func less(n int) bool {
+	return 1 < (-n) // want `unnecessary conversion`
+}
+
+func and(n int) int {
+	return 1 & (^n) // want `unnecessary conversion`
+}
+
+func plus(n int) int {
+	return 1 + (+n) // want `unnecessary conversion`
+}
+
+func shiftUnary(c, n int) int {
+	return c << -n // want `unnecessary conversion`
+}
+
+func spacedUnary(n int) int {
+	return - -n // want `unnecessary conversion`
+}
+
+func leftProduct(a, b, n int) int {
+	return a + (+n)*b // want `unnecessary conversion`
+}
+
+func leftDifference(a, b, n int) int {
+	return a - (-n)*b // want `unnecessary conversion`
+}
+
+func leftLess(a, b, n int) bool {
+	return a < (-n)*b // want `unnecessary conversion`
+}
+
+func receive(c int, ch <-chan int) bool {
+	return c < (<-ch) // want `unnecessary conversion`
+}
+
+func leftBinaryProduct(a, n int) int {
+	return a + (+n * n) // want `unnecessary conversion`
+}
+
+func leftBinaryDifference(a, n int) int {
+	return a - (-n * n) // want `unnecessary conversion`
+}
+
+func leftBinaryLess(a, n int) bool {
+	return a < (-n * n) // want `unnecessary conversion`
+}
+
+func leftReceiveSum(c int, ch <-chan int) bool {
+	return c < (<-ch + 1) // want `unnecessary conversion`
+}

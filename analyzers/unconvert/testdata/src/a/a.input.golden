@@ -1,0 +1,325 @@
+package a
+
+type count int
+
+type number = int
+
+type bytesAlias = []byte
+
+type item struct{ N int }
+
+func (i item) copy() item { return i }
+
+type meters float64
+
+func sameInt(n int) int {
+	return n // want `unnecessary conversion`
+}
+
+func sameBytes(b []byte) []byte {
+	return b // want `unnecessary conversion`
+}
+
+func sameBytesAlias(b []byte) []byte {
+	return b // want `unnecessary conversion`
+}
+
+func sameString(s string) string {
+	return s // want `unnecessary conversion`
+}
+
+func sameNamed(c count) count {
+	return c // want `unnecessary conversion`
+}
+
+func alias(n number) number {
+	return n // want `unnecessary conversion`
+}
+
+func pointer(p *int) *int {
+	return p // want `unnecessary conversion`
+}
+
+func sliceOfInt(s []int) []int {
+	return s // want `unnecessary conversion`
+}
+
+func arrayOfInt(a [3]int) [3]int {
+	return a // want `unnecessary conversion`
+}
+
+func mapOfInt(m map[string]int) map[string]int {
+	return m // want `unnecessary conversion`
+}
+
+func channel(ch chan int) chan int {
+	return ch // want `unnecessary conversion`
+}
+
+func function(f func()) func() {
+	return f // want `unnecessary conversion`
+}
+
+func structValue(v struct{ N int }) struct{ N int } {
+	return v // want `unnecessary conversion`
+}
+
+func compositeValue() item {
+	return item{} // want `unnecessary conversion`
+}
+
+func switchTag() {
+	switch (item{}) { // want `unnecessary conversion`
+	}
+}
+
+func switchComparison(v item) {
+	switch v == (item{}) { // want `unnecessary conversion`
+	}
+}
+
+func rangeHeader() {
+	for range (bytesAlias{}) { // want `unnecessary conversion`
+	}
+}
+
+func ifInit(v item) {
+	if w := (item{}); w.N == v.N { // want `unnecessary conversion`
+	}
+}
+
+func switchPointer() {
+	switch (&item{}) { // want `unnecessary conversion`
+	}
+}
+
+func switchMethod() {
+	switch (item{}.copy()) { // want `unnecessary conversion`
+	}
+}
+
+func rangeSlice() {
+	for range (bytesAlias{}[0:]) { // want `unnecessary conversion`
+	}
+}
+
+func product(a, b, c int) int {
+	return (a + b) * c // want `unnecessary conversion`
+}
+
+func difference(a, b, c int) int {
+	return c - (a + b) // want `unnecessary conversion`
+}
+
+func quotient(a, b, c int) int {
+	return c * (a / b) // want `unnecessary conversion`
+}
+
+func sumRight(a, b, c int) int {
+	return c + a + b // want `unnecessary conversion`
+}
+
+func unary(n int) int {
+	return -(-n) // want `unnecessary conversion`
+}
+
+func index(xs []int, a, b int) int {
+	return xs[a+b] // want `unnecessary conversion`
+}
+
+func stringIndex(s, t string) byte {
+	return (s + t)[0] // want `unnecessary conversion`
+}
+
+func selector(v item) int {
+	return v.N // want `unnecessary conversion`
+}
+
+func callResult(f func(int) int, n int) int {
+	return f(n) // want `unnecessary conversion`
+}
+
+func useItem(item) bool { return true }
+
+func callHeader() {
+	if useItem(item{}) { // want `unnecessary conversion`
+	}
+}
+
+func assignment(n int) {
+	var m int
+	m = n // want `unnecessary conversion`
+	_ = m
+}
+
+func argument(use func(int), n int) {
+	use(n) // want `unnecessary conversion`
+}
+
+func composite(n int) []int {
+	return []int{n} // want `unnecessary conversion`
+}
+
+func keyed(n int) map[int]int {
+	return map[int]int{n: 1} // want `unnecessary conversion`
+}
+
+const (
+	untypedNumber = 1
+	typedNumber   = int(1)
+)
+
+func genericInt[T ~int](v T) T {
+	return v // want `unnecessary conversion`
+}
+
+func shift(u uint) int {
+	return int(1 << u)
+}
+
+func shiftAssign(u uint) int64 {
+	x := int64(1 << u)
+	return x
+}
+
+func constantShift() int {
+	return int(1 << 2)
+}
+
+func intShiftSum(u uint) int {
+	return int((1 << u) + 1)
+}
+
+func runeShift(u uint) rune {
+	return rune('a' << u)
+}
+
+func wideShift(u uint) uint64 {
+	return uint64(1 << u)
+}
+
+func wideShiftSum(u uint) uint64 {
+	return uint64((1 << u) + 1)
+}
+
+func intRuneShift(u uint) int {
+	return int('a' << u)
+}
+
+func shiftTyped(u uint, n int64) int64 {
+	return (1 << u) + n // want `unnecessary conversion`
+}
+
+func runeTyped(u uint, n int) rune {
+	return rune((1 << u) + n + 'a')
+}
+
+func runeTypedLeft(u uint, n int) rune {
+	return rune(('a' << u) + n)
+}
+
+func comparison(n int) bool {
+	return bool(n == 0)
+}
+
+func realImag() int {
+	return int(real(complex(1, 2)))
+}
+
+func maxUntyped() int {
+	return int(max(1, 2))
+}
+
+func maxMixed(n int) int {
+	return max(n, 1) // want `unnecessary conversion`
+}
+
+func lenValue(xs []int) int {
+	return len(xs) // want `unnecessary conversion`
+}
+
+type intOnly interface {
+	~int
+	comparable
+}
+
+func genericIntersection[T intOnly](v T) T {
+	return v // want `unnecessary conversion`
+}
+
+type floatIntersection interface {
+	~int | ~float32
+	~int | ~float64
+}
+
+func genericFloatIntersection[T floatIntersection](v T) T {
+	return T(v)
+}
+
+func typedShift(n int, u uint) int {
+	return n << u // want `unnecessary conversion`
+}
+
+func wider(n int64) int {
+	return int(n)
+}
+
+func widen(n int) int64 {
+	return int64(n)
+}
+
+func toNamed(c count) int {
+	return int(c)
+}
+
+func fromNamed(n int) count {
+	return count(n)
+}
+
+func untyped() int {
+	return int(1)
+}
+
+func untypedString() string {
+	return string("x")
+}
+
+func untypedConst() int {
+	return int(untypedNumber)
+}
+
+func typedConst() int {
+	return typedNumber // want `unnecessary conversion`
+}
+
+func nilPointer() *int {
+	return (*int)(nil)
+}
+
+func nilInterface() any {
+	return any(nil)
+}
+
+func floatSame(f float32) float32 {
+	return float32(f)
+}
+
+func complexSame(c complex64) complex64 {
+	return complex64(c)
+}
+
+func namedFloat(m meters) meters {
+	return meters(m)
+}
+
+func genericFloat[T ~float32](v T) T {
+	return T(v)
+}
+
+func genericMixed[T ~int | ~float64](v T) T {
+	return T(v)
+}
+
+func genericAny[T any](v T) T {
+	return T(v)
+}

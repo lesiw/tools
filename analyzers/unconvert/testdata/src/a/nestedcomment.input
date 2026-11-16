@@ -1,0 +1,5 @@
+package a
+
+func nestedComment(n int) int {
+	return int( /* keep */ int(n)) // want `unnecessary conversion` `unnecessary conversion`
+}
