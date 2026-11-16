@@ -102,6 +102,7 @@ import (
 	"lesiw.io/tools/analyzers/deferunlambda"
 	"lesiw.io/tools/analyzers/deprecated"
 	"lesiw.io/tools/analyzers/discardedpure"
+	"lesiw.io/tools/analyzers/divzero"
 	"lesiw.io/tools/analyzers/docstub"
 	"lesiw.io/tools/analyzers/docsyntax"
 	"lesiw.io/tools/analyzers/dubbitshift"
@@ -353,6 +354,7 @@ var (
 		deprecated.Analyzer,
 		directive.Analyzer,
 		discardedpure.Analyzer,
+		divzero.Analyzer,
 		docstub.Analyzer,
 		docsyntax.Analyzer,
 		dubbitshift.Analyzer,

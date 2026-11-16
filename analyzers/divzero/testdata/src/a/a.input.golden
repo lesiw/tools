@@ -1,0 +1,65 @@
+package a
+
+func half() int {
+	return 0 // want `integer division 1 / 2 results in zero`
+}
+
+func fifth() float64 {
+	return 0 // want `integer division 1 / 5 results in zero`
+}
+
+func discard() {
+	_ = 0 // want `integer division 3 / 4 results in zero`
+	_ = 0 // want `integer division 0 / 5 results in zero`
+}
+
+func cast() float64 {
+	return float64(0) // want `integer division 5 / 9 results in zero`
+}
+
+const ratio float64 = 0 // want `integer division 7 / 11 results in zero`
+
+func parenthesized() int {
+	return 0 // want `integer division \(1\) / 2 results in zero`
+}
+
+func signed() int {
+	return 0 // want `integer division -1 / 2 results in zero`
+}
+
+func signedDivisor() int {
+	return 0 // want `integer division 1 / -2 results in zero`
+}
+
+func signedBoth() int {
+	return 0 // want `integer division \+1 / -2 results in zero`
+}
+
+func comment() int {
+	return 1 /* keep */ / 2 // want `integer division 1 / 2 results in zero`
+}
+
+func exact() int {
+	return 6 / 2
+}
+
+func rounds() int {
+	return 7 / 3
+}
+
+func named() int {
+	const one = 1
+	return one / 2
+}
+
+func converted() int64 {
+	return int64(1) / 2
+}
+
+func variable(n int) int {
+	return n / 2
+}
+
+func floating() float64 {
+	return 5.0 / 3
+}

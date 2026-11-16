@@ -839,6 +839,18 @@ func shout(name string) {
 }
 ```
 
+## divzero
+
+Reports integer division of two integer literals whose quotient is zero. The spec's Arithmetic operators section defines integer division with x / y truncated towards zero.
+
+Adapted from staticcheck's SA4025.
+
+```
+func f() int {
+    return 1 / 2
+}
+```
+
 ## docstub
 
 Reports a doc comment that only repeats the declaration's name. A doc comment should say what the declaration returns, does, or provides.
