@@ -2862,6 +2862,21 @@ func f(s string) string {
 }
 ```
 
+## structconvert
+
+Reports a struct literal that copies every field of another struct whose fields have the same names, order, types, tags, and embedded status. A named type or alias from another package is not reported.
+
+Adapted from staticcheck's S1016, which ignores tags.
+
+```
+type first struct{ Kind string }
+type second struct{ Kind string }
+
+func convert(v first) second {
+    return second{Kind: v.Kind}
+}
+```
+
 ## structtag
 
 Reports a struct field tag that reflect.StructTag.Get cannot read, as one that is not a quoted key-value pair, and an unexported field tagged for encoding/json or encoding/xml, which those packages skip.

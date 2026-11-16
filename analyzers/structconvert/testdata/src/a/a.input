@@ -1,0 +1,454 @@
+package a
+
+import (
+	"foreign"
+	"time"
+)
+
+type first struct {
+	Kind string
+	Note string
+}
+
+type second struct {
+	Kind string
+	Note string
+}
+
+type alias = second
+
+type reordered struct {
+	Note string
+	Kind string
+}
+
+type renamed struct {
+	Kind string
+	Text string
+}
+
+type tagged struct {
+	Kind string `json:"kind"`
+	Note string `json:"note"`
+}
+
+type sameTag struct {
+	Kind string `json:"kind"`
+	Note string `json:"note"`
+}
+
+type taggedOther struct {
+	Kind string `json:"kind"`
+	Note string `json:"message"`
+}
+
+type untagged struct {
+	Kind string
+	Note string
+}
+
+type boxed struct {
+	Kind  string
+	Value any
+}
+
+type plain struct {
+	Kind  string
+	Value int
+}
+
+type wrapper struct {
+	Body first
+}
+
+type box[T any] struct {
+	Value T
+}
+
+type cell[T any] struct {
+	Value T
+}
+
+type local struct {
+	Kind string
+	Note string
+}
+
+type localRemote = foreign.Remote
+
+type pairList []second
+
+type hiddenSource struct {
+	X foreign.Hidden
+}
+
+type innerSource struct {
+	kind string
+}
+
+type innerList []struct {
+	kind string
+}
+
+type localLoose = foreign.Loose
+
+func keyed(v first) second {
+	return second{Kind: v.Kind, Note: v.Note} // want `struct literal copies every field of v; write second\(v\)$`
+}
+
+func reverseKeyed(v first) second {
+	return second{Note: v.Note, Kind: v.Kind} // want `struct literal copies every field of v; write second\(v\)$`
+}
+
+func unkeyed(v first) second {
+	return second{v.Kind, v.Note} // want `struct literal copies every field of v; write second\(v\)$`
+}
+
+func aliasDest(v first) alias {
+	return alias{Kind: v.Kind, Note: v.Note} // want `struct literal copies every field of v; write alias\(v\)$`
+}
+
+func sameAlias(v alias) second {
+	return second{Kind: v.Kind, Note: v.Note}
+}
+
+func sameType(v first) first {
+	return first{Kind: v.Kind, Note: v.Note}
+}
+
+func sameTags(v tagged) sameTag {
+	return sameTag{Kind: v.Kind, Note: v.Note} // want `struct literal copies every field of v; write sameTag\(v\)$`
+}
+
+func differentTags(v tagged) untagged {
+	return untagged{Kind: v.Kind, Note: v.Note}
+}
+
+func differentNoteTag(v tagged) taggedOther {
+	return taggedOther{Kind: v.Kind, Note: v.Note}
+}
+
+func reorderedFields(v first) reordered {
+	return reordered{Note: v.Note, Kind: v.Kind}
+}
+
+func renamedField(v first) renamed {
+	return renamed{Kind: v.Kind, Text: v.Note}
+}
+
+func assignableField(v plain) boxed {
+	return boxed{Kind: v.Kind, Value: v.Value}
+}
+
+func mixedVariables(a, b first) second {
+	return second{Kind: a.Kind, Note: b.Note}
+}
+
+type aDestinationStructTypeNameThatIsLong struct {
+	Kind string
+	Note string
+}
+
+type aSourceStructTypeNameThatIsLong struct {
+	Kind string
+	Note string
+}
+
+func longDestination(v aSourceStructTypeNameThatIsLong) []aDestinationStructTypeNameThatIsLong {
+	// want +1 `struct literal copies every field of v; write aDestinationStructTypeNameThatIsLong\(v\)$`
+	return []aDestinationStructTypeNameThatIsLong{{Kind: v.Kind, Note: v.Note}}
+}
+
+func multilineDest(v single) struct {
+	Kind string
+} {
+	// want +1 `struct literal copies every field of v; write struct\{Kind string\}\(v\)$`
+	return struct {
+		Kind string
+	}{
+		Kind: v.Kind,
+	}
+}
+
+func partial(v first) second {
+	return second{Kind: v.Kind}
+}
+
+func empty() second {
+	return second{}
+}
+
+func unnamed(v struct {
+	Kind string
+	Note string
+}) second {
+	return second{Kind: v.Kind, Note: v.Note} // want `struct literal copies every field of v; write second\(v\)$`
+}
+
+type loose = struct {
+	Kind string
+	Note string
+}
+
+func aliasUnnamedDest(v first) loose {
+	return loose{Kind: v.Kind, Note: v.Note} // want `struct literal copies every field of v; write loose\(v\)$`
+}
+
+type single struct {
+	Kind string
+}
+
+type singleDst struct {
+	Kind string
+}
+
+func unnamedDest(v single) struct{ Kind string } {
+	return struct{ Kind string }{Kind: v.Kind} // want `struct literal copies every field of v; write struct\{Kind string\}\(v\)$`
+}
+
+func crossedKeyed(v first) second {
+	return second{Kind: v.Note, Note: v.Kind}
+}
+
+func crossedUnkeyed(v first) second {
+	return second{v.Note, v.Kind}
+}
+
+type element struct {
+	Kind string
+}
+
+type embedded struct {
+	element
+}
+
+type explicit struct {
+	element element
+}
+
+type embeddedDst struct {
+	element
+}
+
+type anonList []struct {
+	Kind string
+	Note string
+}
+
+type boxes [][]box[int]
+
+type clock struct {
+	When time.Time
+}
+
+type clocks [][]struct {
+	When time.Time
+}
+
+type genericAlias[T any] = struct {
+	Value T
+}
+
+type genericAliases []genericAlias[int]
+
+type genericNamedAlias[T any] = box[T]
+
+type genericNamedAliases []genericNamedAlias[int]
+
+func embeddedField(v embedded) explicit {
+	return explicit{element: v.element}
+}
+
+func embeddedBoth(v embedded) embeddedDst {
+	return embeddedDst{element: v.element} // want `struct literal copies every field of v; write embeddedDst\(v\)$`
+}
+
+func anonymousContainer(v first) anonList {
+	// want +1 `struct literal copies every field of v; write struct\{Kind string; Note string\}\(v\)$`
+	return anonList{{Kind: v.Kind, Note: v.Note}}
+}
+
+func genericAliasElided(v cell[int]) genericAliases {
+	return genericAliases{{Value: v.Value}} // want `struct literal copies every field of v; write struct\{Value int\}\(v\)$`
+}
+
+func genericNamedAliasElided(v cell[int]) genericNamedAliases {
+	return genericNamedAliases{{Value: v.Value}} // want `struct literal copies every field of v; write box\[int\]\(v\)$`
+}
+
+func nestedGeneric(v cell[int]) boxes {
+	// want +1 `struct literal copies every field of v; write box\[int\]\(v\)$`
+	return boxes{{{Value: v.Value}}}
+}
+
+func effectful(f func() first) second {
+	return second{Kind: f().Kind, Note: f().Note}
+}
+
+func singleEffectful(f func() single) singleDst {
+	return singleDst{Kind: f().Kind} // want `struct literal copies every field of f\(\); write singleDst\(f\(\)\)$`
+}
+
+func overWidth(variableWithAnExcessivelyLongNameThatPushesBothTheOriginalAndTheRewrittenLinePastTheLimit first) second {
+	// want +1 `struct literal copies every field of variableWithAnExcessivelyLongNameThatPushesBothTheOriginalAndTheRewrittenLinePastTheLimit; write second\(variableWithAnExcessivelyLongNameThatPushesBothTheOriginalAndTheRewrittenLinePastTheLimit\)$`
+	return second{Kind: variableWithAnExcessivelyLongNameThatPushesBothTheOriginalAndTheRewrittenLinePastTheLimit.Kind, Note: variableWithAnExcessivelyLongNameThatPushesBothTheOriginalAndTheRewrittenLinePastTheLimit.Note}
+}
+
+func nestedHeader(v headerSource) headers {
+	// want +1 `struct literal copies every field of v; write a conversion of v$`
+	return headers{{Header: v.Header}}
+}
+
+func nestedTime(v clock) clocks {
+	// want +1 `struct literal copies every field of v; write struct\{When time.Time\}\(v\)$`
+	return clocks{{{When: v.When}}}
+}
+
+func computed(v first) second {
+	return second{Kind: "kind", Note: v.Note}
+}
+
+func parenthesizedField(v first) second {
+	return second{Kind: (v.Kind), Note: v.Note} // want `struct literal copies every field of v; write second\(v\)$`
+}
+
+func parenthesizedSource(v first) second {
+	return second{Kind: (v).Kind, Note: v.Note} // want `struct literal copies every field of v; write second\(v\)$`
+}
+
+func nestedField(w wrapper) second {
+	return second{Kind: w.Body.Kind, Note: w.Body.Note} // want `struct literal copies every field of w.Body; write second\(w.Body\)$`
+}
+
+func pointer(v *first) second {
+	return second{Kind: v.Kind, Note: v.Note}
+}
+
+func address(v first) *second {
+	return &second{Kind: v.Kind, Note: v.Note}
+}
+
+func parenthesizedAddress(v first) *second {
+	return &(second{Kind: v.Kind, Note: v.Note})
+}
+
+func elidedPointer(v first) []*second {
+	return []*second{{Kind: v.Kind, Note: v.Note}}
+}
+
+func elidedValue(v first) []second {
+	return []second{{Kind: v.Kind, Note: v.Note}} // want `struct literal copies every field of v; write second\(v\)$`
+}
+
+func elidedAlias(v first) []loose {
+	return []loose{{Kind: v.Kind, Note: v.Note}} // want `struct literal copies every field of v; write loose\(v\)$`
+}
+
+func elidedKeyValue(v first) map[second]string {
+	return map[second]string{{Kind: v.Kind, Note: v.Note}: "some-key"} // want `struct literal copies every field of v; write second\(v\)$`
+}
+
+func elidedValueValue(v first) map[string]second {
+	return map[string]second{"some-key": {Kind: v.Kind, Note: v.Note}} // want `struct literal copies every field of v; write second\(v\)$`
+}
+
+func elidedKey(v first) map[*second]string {
+	return map[*second]string{{Kind: v.Kind, Note: v.Note}: "some-key"}
+}
+
+func elidedValuePointer(v first) map[string]*second {
+	return map[string]*second{"some-key": {Kind: v.Kind, Note: v.Note}}
+}
+
+func elidedForeign(v remoteClock) []remoteLoose {
+	// want +1 `struct literal copies every field of v; write remoteLoose\(v\)$`
+	return []remoteLoose{{When: v.When}}
+}
+
+func instantiated(v cell[int]) box[int] {
+	return box[int]{Value: v.Value} // want `struct literal copies every field of v; write box\[int\]\(v\)$`
+}
+
+func differentArguments(v cell[int]) box[any] {
+	return box[any]{Value: v.Value}
+}
+
+func crossLocalLooseSource(v localLoose) local {
+	return local{Kind: v.Kind, Note: v.Note}
+}
+
+func crossLocalLooseDest(v local) localLoose {
+	return localLoose{Kind: v.Kind, Note: v.Note}
+}
+
+func crossLocalAliasSource(v localRemote) local {
+	return local{Kind: v.Kind, Note: v.Note}
+}
+
+func crossLocalAliasDest(v local) localRemote {
+	return localRemote{Kind: v.Kind, Note: v.Note}
+}
+
+func crossAliasSource(v foreign.Loose) local {
+	return local{Kind: v.Kind, Note: v.Note}
+}
+
+func crossAliasDest(v local) foreign.Loose {
+	return foreign.Loose{Kind: v.Kind, Note: v.Note}
+}
+
+func nestedElided(v remoteClock) remoteLists {
+	return remoteLists{{{When: v.When}}} // want `struct literal copies every field of v; write remoteLoose\(v\)$`
+}
+
+func unexportedLocal(v innerSource) innerList {
+	return innerList{{kind: v.kind}} // want `struct literal copies every field of v; write struct\{kind string\}\(v\)$`
+}
+
+func hiddenField(v hiddenSource) foreign.List {
+	// want +1 `struct literal copies every field of v; write a conversion of v$`
+	return foreign.List{{X: v.X}}
+}
+
+func shadowedName(v first) pairList {
+	second := 0
+	_ = second
+	// want +1 `struct literal copies every field of v; write a conversion of v$`
+	return pairList{{Kind: v.Kind, Note: v.Note}}
+}
+
+func shadowed(v remoteClock) remoteLists {
+	remoteLoose := 0
+	_ = remoteLoose
+	// want +1 `struct literal copies every field of v; write struct\{When time.Time\}\(v\)$`
+	return remoteLists{{{When: v.When}}}
+}
+
+func crossSource(v foreign.Remote) local {
+	return local{Kind: v.Kind, Note: v.Note}
+}
+
+func crossDest(v local) foreign.Remote {
+	return foreign.Remote{Kind: v.Kind, Note: v.Note}
+}
+
+func commented(v first) second {
+	// want +1 `struct literal copies every field of v; write second\(v\)$`
+	return second{
+		Kind: v.Kind, // c
+		Note: v.Note,
+	}
+}
+
+func trailing(v first) second {
+	// want +1 `struct literal copies every field of v; write second\(v\)$`
+	return second{Kind: v.Kind, Note: v.Note} // note
+}
+
+func multiline(v first) second {
+	// want +1 `struct literal copies every field of v; write second\(v\)$`
+	return second{
+		Kind: v.Kind,
+		Note: v.Note,
+	}
+}

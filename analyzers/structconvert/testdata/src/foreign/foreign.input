@@ -1,0 +1,33 @@
+package foreign
+
+type Remote struct {
+	Kind string
+	Note string
+}
+
+type Loose = struct {
+	Kind string
+	Note string
+}
+
+type hidden struct {
+	Y int
+}
+
+type Hidden = hidden
+
+type HiddenStruct = struct {
+	X hidden
+}
+
+type secretive interface {
+	secret()
+}
+
+type Secretive = struct {
+	X interface{ secret() }
+}
+
+type List []struct {
+	X hidden
+}

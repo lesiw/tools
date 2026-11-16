@@ -1,0 +1,24 @@
+package a
+
+import (
+	"net/http"
+	"time"
+)
+
+type remoteClock struct {
+	When time.Time
+}
+
+type remoteLoose = struct {
+	When time.Time
+}
+
+type remoteLists [][]remoteLoose
+
+type headerSource struct {
+	Header http.Header
+}
+
+type headers []struct {
+	Header http.Header
+}
