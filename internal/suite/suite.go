@@ -57,6 +57,7 @@ import (
 	"lesiw.io/tools/analyzers/afterhttperror"
 	"lesiw.io/tools/analyzers/appendassign"
 	"lesiw.io/tools/analyzers/appendcombine"
+	"lesiw.io/tools/analyzers/appendloop"
 	"lesiw.io/tools/analyzers/appendself"
 	"lesiw.io/tools/analyzers/appendunused"
 	"lesiw.io/tools/analyzers/argorder"
@@ -282,6 +283,7 @@ var (
 		afterhttperror.Analyzer,
 		appendassign.Analyzer,
 		appendcombine.Analyzer,
+		appendloop.Analyzer,
 		appends.Analyzer,
 		appendself.Analyzer,
 		appendunused.Analyzer,

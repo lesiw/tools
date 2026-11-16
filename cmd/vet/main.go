@@ -70,6 +70,21 @@
 //		return xs
 //	}
 //
+// # appendloop
+//
+// Reports a range loop that appends each element of a slice by index, one at
+// a time. append(dst, src...) appends every element in one call, and may grow
+// the slice once instead of once per element.
+//
+// Adapted from staticcheck's S1011; rangeappendall covers the value form.
+//
+//	func merge(dst, src []string) []string {
+//		for i := range src {
+//			dst = append(dst, src[i])
+//		}
+//		return dst
+//	}
+//
 // # appends
 //
 // Reports a call to append that passes no values after the slice. The call

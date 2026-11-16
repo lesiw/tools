@@ -1,0 +1,166 @@
+package a
+
+type box struct {
+	items []string
+}
+
+type row []int
+
+type otherRow []int
+
+func from(dst, src []int) []int {
+	// want +1 `loop appends one element at a time`
+	for i := range src {
+		dst = append(dst, src[i])
+	}
+	return dst
+}
+
+func throughCopy(dst, src []byte) []byte {
+	// want +1 `loop appends one element at a time`
+	for i := range src {
+		b := src[i]
+		dst = append(dst, b)
+	}
+	return dst
+}
+
+func namedCopy(dst, src row) row {
+	// want +1 `loop appends one element at a time`
+	for i := range src {
+		dst = append(dst, src[i])
+	}
+	return dst
+}
+
+func intoField(bx box, src []string) {
+	// want +1 `loop appends one element at a time`
+	for i := range src {
+		bx.items = append(bx.items, src[i])
+	}
+}
+
+func sliced(dst, src []int) []int {
+	// want +1 `loop appends one element at a time`
+	for i := range src[1:] {
+		dst = append(dst, src[1:][i])
+	}
+	return dst
+}
+
+func bounded(dst, src []int, n int) []int {
+	// want +1 `loop appends one element at a time`
+	for i := range src[:n] {
+		dst = append(dst, src[:n][i])
+	}
+	return dst
+}
+
+func namedOther(dst row, src otherRow) row {
+	// want +1 `loop appends one element at a time`
+	for i := range src {
+		dst = append(dst, src[i])
+	}
+	return dst
+}
+
+func genericOther[S ~[]int](dst S, src otherRow) S {
+	// want +1 `loop appends one element at a time`
+	for i := range src {
+		dst = append(dst, src[i])
+	}
+	return dst
+}
+
+func sourceParam[T ~[]int](dst row, src T) row {
+	// want +1 `loop appends one element at a time`
+	for i := range src {
+		dst = append(dst, src[i])
+	}
+	return dst
+}
+
+func fullSlice(dst, src []int) []int {
+	// want +1 `loop appends one element at a time`
+	for i := range src[1:2:3] {
+		dst = append(dst, src[1:2:3][i])
+	}
+	return dst
+}
+
+func parenTarget(bx box, src []string) {
+	// want +1 `loop appends one element at a time`
+	for i := range src {
+		(bx).items = append((bx).items, src[i])
+	}
+}
+
+func selfIndex(dst []int) []int {
+	// want +1 `loop appends one element at a time`
+	for i := range dst {
+		dst = append(dst, dst[i])
+	}
+	return dst
+}
+
+func selfField(bx *box) {
+	// want +1 `loop appends one element at a time`
+	for i := range bx.items {
+		bx.items = append(bx.items, bx.items[i])
+	}
+}
+
+func selfGeneric[S ~[]int](dst S) S {
+	// want +1 `loop appends one element at a time`
+	for i := range dst {
+		dst = append(dst, dst[i])
+	}
+	return dst
+}
+
+func pointed(dst *[]int, src []int) *[]int {
+	// want +1 `loop appends one element at a time`
+	for i := range src {
+		*dst = append(*dst, src[i])
+	}
+	return dst
+}
+
+func pointerField(bx *box, src []string) {
+	// want +1 `loop appends one element at a time`
+	for i := range src {
+		bx.items = append(bx.items, src[i])
+	}
+}
+
+func promoted(o outer, src []string) {
+	// want +1 `loop appends one element at a time`
+	for i := range src {
+		o.items = append(o.items, src[i])
+	}
+}
+
+func parenthesizedPointer(o *outer, src []string) {
+	// want +1 `loop appends one element at a time`
+	for i := range src {
+		(o.box).items = append((o.box).items, src[i])
+	}
+}
+
+func selfThroughLocal(dst []byte) []byte {
+	// want +1 `loop appends one element at a time`
+	for i := range dst {
+		b := dst[i]
+		dst = append(dst, b)
+	}
+	return dst
+}
+
+func selfComment(dst []int) []int {
+	// want +1 `loop appends one element at a time`
+	for i := range dst {
+		// alpha first, then beta.
+		dst = append(dst, dst[i])
+	}
+	return dst
+}

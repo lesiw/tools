@@ -1,0 +1,235 @@
+package a
+
+func value(dst, src []string) []string {
+	for _, s := range src {
+		dst = append(dst, s)
+	}
+	return dst
+}
+
+func conditional(dst, src []int, keep func(int) bool) []int {
+	for i := range src {
+		if keep(src[i]) {
+			dst = append(dst, src[i])
+		}
+	}
+	return dst
+}
+
+func doubled(dst, src []int) []int {
+	for i := range src {
+		dst = append(dst, src[i], src[i])
+	}
+	return dst
+}
+
+func flattened(dst []byte, src [][]byte) []byte {
+	for i := range src {
+		dst = append(dst, src[i]...)
+	}
+	return dst
+}
+
+func counted(dst, src []int) ([]int, int) {
+	var n int
+	for i := range src {
+		dst = append(dst, src[i])
+		n++
+	}
+	return dst, n
+}
+
+func elsewhere(dst, other, src []int) []int {
+	for i := range src {
+		other = append(dst, src[i])
+	}
+	return other
+}
+
+func widened(dst []any, src []int) []any {
+	for i := range src {
+		dst = append(dst, src[i])
+	}
+	return dst
+}
+
+func bytesOf(dst []byte, s string) []byte {
+	for i := range s {
+		dst = append(dst, s[i])
+	}
+	return dst
+}
+
+func arrayElements(dst []int, src [3]int) []int {
+	for i := range src {
+		dst = append(dst, src[i])
+	}
+	return dst
+}
+
+func mapping(dst []string, m map[string]int) []string {
+	for k := range m {
+		dst = append(dst, k)
+	}
+	return dst
+}
+
+func resliced(dst, src []int) []int {
+	for i := range src {
+		dst = append(dst[:0], src[i])
+	}
+	return dst
+}
+
+func indexed(dst [][]int, src []int) [][]int {
+	for i := range src {
+		dst[0] = append(dst[0], src[i])
+	}
+	return dst
+}
+
+func called(src []string) {
+	for i := range src {
+		newBox().items = append(newBox().items, src[i])
+	}
+}
+
+func newBox() *box { return &box{} }
+
+func shadowed(src []int) []int {
+	var dst []int
+	append := func([]int, ...int) []int { return nil }
+	for i := range src {
+		dst = append(dst, src[i])
+	}
+	return dst
+}
+
+func declared(dst, src []int) []int {
+	for i := range src {
+		dst := append(dst, src[i])
+		_ = dst
+	}
+	return dst
+}
+
+func zeroes(src []int) []int {
+	var dst []int
+	for range src {
+		dst = append(dst, 0)
+	}
+	return dst
+}
+
+func keptValue(dst, src []int) []int {
+	var n int
+	for _, n = range src {
+		dst = append(dst, n)
+	}
+	return dst
+}
+
+func assignedIndex(dst, src []int) []int {
+	var i int
+	for i = range src {
+		dst = append(dst, src[i])
+	}
+	return dst
+}
+
+func effectfulIndex(dst []int) []int {
+	for i := range fetchInts() {
+		dst = append(dst, fetchInts()[i])
+	}
+	return dst
+}
+
+func fetchInts() []int { return nil }
+
+func assignedLocal(dst, src []int) []int {
+	var v int
+	for i := range src {
+		v = src[i]
+		dst = append(dst, v)
+	}
+	return dst
+}
+
+func mappingIndex(dst []string, m map[string]string) []string {
+	for k := range m {
+		dst = append(dst, m[k])
+	}
+	return dst
+}
+
+func diagonal(dst []int, a [][]int) []int {
+	i := 0
+	for i := range a[i] {
+		dst = append(dst, a[i][i])
+	}
+	return dst
+}
+
+func derived(dst []int) []int {
+	for i := range dst[1:] {
+		dst = append(dst, dst[1:][i])
+	}
+	return dst
+}
+
+func mismatchedBounds(dst, src []int) []int {
+	for i := range src[1:] {
+		dst = append(dst, src[2:][i])
+	}
+	return dst
+}
+
+func callBound(dst, src []int) []int {
+	for i := range src[:len(src)] {
+		dst = append(dst, src[:len(src)][i])
+	}
+	return dst
+}
+
+func arithmeticBound(dst, src []int, n int) []int {
+	for i := range src[:n+1] {
+		dst = append(dst, src[:n+1][i])
+	}
+	return dst
+}
+
+func asserted(dst []int, v any) []int {
+	for i := range v.([]int) {
+		dst = append(dst, v.([]int)[i])
+	}
+	return dst
+}
+
+func converted(dst, src []int) []int {
+	for i := range []int(src) {
+		dst = append(dst, []int(src)[i])
+	}
+	return dst
+}
+
+func composite(dst []int) []int {
+	for i := range []int{1, 2} {
+		dst = append(dst, []int{1, 2}[i])
+	}
+	return dst
+}
+
+type outer struct {
+	*box
+}
+
+type node struct {
+	kids []node
+}
+
+func bodyTarget(src []node) {
+	for i := range src {
+		v := src[i]
+		v.kids = append(v.kids, v)
+	}
+}
