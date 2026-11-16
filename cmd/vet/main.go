@@ -2171,6 +2171,19 @@
 //		return last
 //	}
 //
+// # rangestring
+//
+// Reports a range over a string that only counts runes.
+// utf8.RuneCountInString returns that count.
+//
+//	func count(s string) int {
+//		n := 0
+//		for range s {
+//			n++
+//		}
+//		return n
+//	}
+//
 // # rangevaladdress
 //
 // Reports an address taken from a range loop's variable and kept past the

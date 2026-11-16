@@ -2147,6 +2147,20 @@ func f(xs [3]int) (last int) {
 }
 ```
 
+## rangestring
+
+Reports a range over a string that only counts runes. utf8.RuneCountInString returns that count.
+
+```
+func count(s string) int {
+    n := 0
+    for range s {
+        n++
+    }
+    return n
+}
+```
+
 ## rangevaladdress
 
 Reports an address taken from a range loop's variable and kept past the iteration. In a file that declares a Go version before 1.22 every iteration shares the variable, so a pointer kept past the iteration reads the value the loop wrote last, and a range clause that assigns its variables with = shares them at every version.

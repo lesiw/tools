@@ -1,0 +1,12 @@
+package a
+
+import . "unicode/utf8"
+
+func dotted(s string) int {
+	// want +2 `range counts runes`
+	n := 0
+	for range s {
+		n++
+	}
+	return n + RuneCountInString(s)
+}

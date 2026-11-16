@@ -1,0 +1,66 @@
+package a
+
+type word string
+
+func count(s string) int {
+	// want +2 `range counts runes; use utf8\.RuneCountInString`
+	n := 0
+	for range s {
+		n++
+	}
+	return n
+}
+
+func defined(w word) int {
+	// want +2 `range counts runes; use utf8\.RuneCountInString`
+	n := 0
+	for range w {
+		n++
+	}
+	return n
+}
+
+func blank(s string) int {
+	// want +2 `range counts runes; use utf8\.RuneCountInString`
+	n := 0
+	for _, _ = range s {
+		n++
+	}
+	return n
+}
+
+func keyBlank(s string) int {
+	// want +2 `range counts runes; use utf8\.RuneCountInString`
+	n := 0
+	for _ = range s {
+		n++
+	}
+	return n
+}
+
+func literal() int {
+	// want +2 `range counts runes; use utf8\.RuneCountInString`
+	n := 0
+	for range "aaaa" {
+		n++
+	}
+	return n
+}
+
+func counterNamed(s string) int {
+	// want +2 `range counts runes; use utf8\.RuneCountInString`
+	utf8 := 0
+	for range s {
+		utf8++
+	}
+	return utf8
+}
+
+func counterString(w word) int {
+	// want +2 `range counts runes; use utf8\.RuneCountInString`
+	string := 0
+	for range w {
+		string++
+	}
+	return string
+}

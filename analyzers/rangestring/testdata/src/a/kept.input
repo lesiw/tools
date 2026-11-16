@@ -1,0 +1,136 @@
+package a
+
+func use(int) {}
+
+func keyed(s string) int {
+	var i int
+	n := 0
+	for i = range s {
+		n++
+	}
+	return n + i
+}
+
+func valued(s string) int {
+	var r rune
+	n := 0
+	for _, r = range s {
+		n++
+	}
+	return n + int(r)
+}
+
+func multiple(s string) int {
+	n := 0
+	for range s {
+		n++
+		n++
+	}
+	return n
+}
+
+func parenZero(s string) int {
+	n := (0)
+	for range s {
+		n++
+	}
+	return n
+}
+
+func varZero(s string) int {
+	var n int
+	for range s {
+		n++
+	}
+	return n
+}
+
+func varAssigned(s string) int {
+	var n = 0
+	for range s {
+		n++
+	}
+	return n
+}
+
+func hexZero(s string) int {
+	n := 0x0
+	for range s {
+		n++
+	}
+	return n
+}
+
+func added(s string) int {
+	n := 0
+	for range s {
+		n += 1
+	}
+	return n
+}
+
+func nonZero(s string) int {
+	n := 1
+	for range s {
+		n++
+	}
+	return n
+}
+
+func apart(s string) int {
+	n := 0
+	use(n)
+	for range s {
+		n++
+	}
+	return n
+}
+
+func array(a [2]string) int {
+	n := 0
+	for range a {
+		n++
+	}
+	return n
+}
+
+func runes(s string) int {
+	n := 0
+	for range []rune(s) {
+		n++
+	}
+	return n
+}
+
+func decrement(s string) int {
+	n := 0
+	for range s {
+		n--
+	}
+	return n
+}
+
+func other(s string) int {
+	n := 0
+	m := 0
+	for range s {
+		n++
+	}
+	return n + m
+}
+
+func readCounter(s string) int {
+	n := 0
+	for range s[n:] {
+		n++
+	}
+	return n
+}
+
+func writesCounter(s string) int {
+	n := 0
+	for range func() string { n = 2; return s }() {
+		n++
+	}
+	return n
+}

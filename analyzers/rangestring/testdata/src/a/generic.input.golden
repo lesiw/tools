@@ -1,0 +1,9 @@
+package a
+
+import "unicode/utf8"
+
+func generic[T ~string](s T) int {
+	// want +2 `range counts runes; use utf8\.RuneCountInString`
+	n := utf8.RuneCountInString(string(s))
+	return n
+}

@@ -1,0 +1,12 @@
+package a
+
+import u "unicode/utf8"
+
+func aliased(s string) int {
+	// want +2 `range counts runes; use u\.RuneCountInString`
+	n := 0
+	for range s {
+		n++
+	}
+	return n + u.RuneCountInString(s)
+}

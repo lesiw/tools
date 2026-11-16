@@ -1,0 +1,10 @@
+package a
+
+func inner(s string) int {
+	// want +2 `range counts runes; use utf8\.RuneCountInString`
+	n := 0
+	for range s[/* start */0:] {
+		n++
+	}
+	return n
+}

@@ -1,0 +1,20 @@
+package a
+
+func commented(s string) int {
+	// want +3 `range counts runes`
+	n := 0
+	// one per code point
+	for range s {
+		n++
+	}
+	return n
+}
+
+func inline(s string) int {
+	// want +2 `range counts runes`
+	n := 0
+	for range s {
+		n++ // one per code point
+	}
+	return n
+}

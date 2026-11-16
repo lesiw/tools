@@ -1,0 +1,11 @@
+package a
+
+func shadowedString(w word) int {
+	string := 0
+	// want +2 `range counts runes`
+	n := 0
+	for range w {
+		n++
+	}
+	return n + string
+}

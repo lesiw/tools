@@ -1,0 +1,12 @@
+package a
+
+import "unicode/utf8"
+
+func present(s string) int {
+	// want +2 `range counts runes; use utf8\.RuneCountInString`
+	n := 0
+	for range s {
+		n++
+	}
+	return n + utf8.RuneCountInString(s)
+}

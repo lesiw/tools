@@ -1,0 +1,39 @@
+package a
+
+func unused(s string) {
+	// want +2 `range counts runes`
+	n := 0
+	for range s {
+		n++
+	}
+}
+
+func assigned(s string) int {
+	// want +2 `range counts runes`
+	n := 0
+	for range s {
+		n++
+	}
+	n = 0
+	return 0
+}
+
+func redeclared(s string) int {
+	// want +2 `range counts runes`
+	n := 0
+	for range s {
+		n++
+	}
+	n, m := 1, 2
+	return m
+}
+
+func parenthesized(s string, xs []string) {
+	// want +2 `range counts runes`
+	n := 0
+	for range s {
+		n++
+	}
+	for (n) = range xs {
+	}
+}
