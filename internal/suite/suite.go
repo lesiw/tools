@@ -157,6 +157,7 @@ import (
 	"lesiw.io/tools/analyzers/lenzero"
 	"lesiw.io/tools/analyzers/linelen"
 	"lesiw.io/tools/analyzers/linewrap"
+	"lesiw.io/tools/analyzers/looponce"
 	"lesiw.io/tools/analyzers/loopvarcond"
 	"lesiw.io/tools/analyzers/lowerfold"
 	"lesiw.io/tools/analyzers/makezero"
@@ -430,6 +431,7 @@ var (
 		linelen.Analyzer,
 		linewrap.Analyzer,
 		loopclosure.Analyzer,
+		looponce.Analyzer,
 		loopvarcond.Analyzer,
 		lostcancel.Analyzer,
 		lowerfold.Analyzer,

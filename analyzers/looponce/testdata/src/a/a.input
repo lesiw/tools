@@ -1,0 +1,552 @@
+package a
+
+func use(...any) {}
+
+func choose(xs []int) int {
+	// want +1 `loop runs at most once`
+	for _, x := range xs {
+		if x > 0 {
+			return x
+		}
+		return 0
+	}
+	return -1
+}
+
+func countdown(n int) int {
+	// want +1 `loop runs at most once`
+	for i := 0; i < n; i++ {
+		if i == n-1 {
+			return i
+		}
+		return n
+	}
+	return 0
+}
+
+func stop(n int) {
+	// want +1 `loop runs at most once`
+	for i := 0; i < n; i++ {
+		if i > 0 {
+			use(i)
+		}
+		break
+	}
+}
+
+func endless(xs []int) int {
+	// want +1 `loop runs at most once`
+	for {
+		if len(xs) == 0 {
+			return 0
+		}
+		return xs[0]
+	}
+}
+
+func stringFirst(s string) rune {
+	// want +1 `loop runs at most once`
+	for _, r := range s {
+		if r == 'a' {
+			return r
+		}
+		return 'b'
+	}
+	return 0
+}
+
+func arrayFirst(a [2]int) int {
+	// want +1 `loop runs at most once`
+	for _, x := range a {
+		if x > 0 {
+			return x
+		}
+		return 0
+	}
+	return -1
+}
+
+func nestedContinue(xs []int) int {
+	// want +1 `loop runs at most once`
+	for _, x := range xs {
+		for _, y := range xs {
+			if y == 0 {
+				continue
+			}
+		}
+		return x
+	}
+	return 0
+}
+
+func labeledOuter(xs []int) int {
+outer:
+	for _, x := range xs {
+		// want +1 `loop runs at most once`
+		for _, y := range xs {
+			if y != x {
+				continue outer
+			}
+			return y
+		}
+	}
+	return 0
+}
+
+func typed(v any) int {
+	// want +1 `loop runs at most once`
+	for {
+		switch v.(type) {
+		case int:
+			use(v)
+		}
+		return 0
+	}
+}
+
+func selected(ch chan int) int {
+	// want +1 `loop runs at most once`
+	for {
+		select {
+		case v := <-ch:
+			use(v)
+		default:
+			use(0)
+		}
+		return 0
+	}
+}
+
+func nestedLoop(xs []int) int {
+	// want +1 `loop runs at most once`
+	for {
+		for _, x := range xs {
+			use(x)
+		}
+		return 0
+	}
+}
+
+func waiting(n int) int {
+	// want +1 `loop runs at most once`
+	for n > 0 {
+		if n == 1 {
+			return 1
+		}
+		return 0
+	}
+	return -1
+}
+
+func commentedLoop(n int) int {
+	// want +1 `loop runs at most once`
+	for {
+		if n > 0 {
+			return n // keep
+		}
+		return 0
+	}
+}
+
+func breaking(xs []int) int {
+	// want +1 `loop runs at most once`
+	for {
+		if len(xs) == 0 {
+			break
+		}
+		return xs[0]
+	}
+	return 0
+}
+
+func initOnly(n int) int {
+	// want +1 `loop runs at most once`
+	for i := 0; ; {
+		if i == n {
+			return i
+		}
+		return 0
+	}
+}
+
+func literal(n int) int {
+	// want +1 `loop runs at most once`
+	for {
+		f := func() {
+			for {
+				if n > 0 {
+					continue
+				}
+				break
+			}
+			goto done
+		done:
+			return
+		}
+		f() // keep
+		if n > 0 {
+			return n
+		}
+		return 0
+	}
+}
+
+func nestedBreak(xs []int) int {
+	// want +1 `loop runs at most once`
+	for {
+		for _, x := range xs {
+			if x == 0 {
+				break
+			}
+		}
+		if len(xs) == 0 {
+			return 0
+		}
+		return xs[0]
+	}
+}
+
+func postOnly(n int) int {
+	// want +1 `loop runs at most once`
+	for i := 0; ; i++ {
+		if n > 0 {
+			return n
+		}
+		return 0
+	}
+}
+
+func insideLiteral(n int) func() int {
+	return func() int {
+		// want +1 `loop runs at most once`
+		for {
+			if n > 0 {
+				return n
+			}
+			return 0
+		}
+	}
+}
+
+func leaveFor(n int) {
+outer:
+	// want +1 `loop runs at most once`
+	for i := 0; i < n; i++ {
+		if i > 0 {
+			use(i)
+		}
+		break outer
+	}
+}
+
+func channel(ch chan int) int {
+	// want +1 `loop runs at most once`
+	for v := range ch {
+		if v > 0 {
+			return v
+		}
+		return 0
+	}
+	return -1
+}
+
+func shadow(n int) int {
+	// want +1 `loop runs at most once`
+	for i := 0; ; {
+		use(i)
+		i := 1
+		if n > 0 {
+			use(i)
+		}
+		return n
+	}
+}
+
+func outsideGoto(n int) int {
+	goto start
+start:
+	// want +1 `loop runs at most once`
+	for {
+		if n > 0 {
+			return n
+		}
+		return 0
+	}
+}
+
+func switchBreak(n int) int {
+	// want +1 `loop runs at most once`
+	for {
+		switch n {
+		case 0:
+			break
+		}
+		if n > 0 {
+			return n
+		}
+		return 0
+	}
+}
+
+func commentedInit(n int) int {
+	// want +1 `loop runs at most once`
+	for i := 0; ; {
+		if i > 0 {
+			use(i) // keep
+		}
+		return n
+	}
+}
+
+func paramPost(p int) int {
+	// want +1 `loop runs at most once`
+	for i := 0; ; p++ {
+		if i > 0 {
+			return i
+		}
+		return 0
+	}
+}
+
+func packagePost(n int) int {
+	// want +1 `loop runs at most once`
+	for i := 0; ; counter++ {
+		if i == 0 {
+			return n
+		}
+		return 0
+	}
+}
+
+func condPost(n int) int {
+	// want +1 `loop runs at most once`
+	for ; n > 0; n-- {
+		if n == 1 {
+			return n
+		}
+		return 0
+	}
+	return -1
+}
+
+func barePost(n int) int {
+	// want +1 `loop runs at most once`
+	for ; ; n-- {
+		if n > 0 {
+			return n
+		}
+		return 0
+	}
+}
+
+var counter int
+
+func condBreak(n int) int {
+	// want +1 `loop runs at most once`
+	for ; n > 0; n-- {
+		if n == 1 {
+			return n
+		}
+		break
+	}
+	return 0
+}
+
+func condTail(n int) int {
+	// want +1 `loop runs at most once`
+	for n > 0 {
+		if n == 1 {
+			return n
+		}
+		break
+	}
+	return 0
+}
+
+func outerBreak(xs []int) {
+outer:
+	for _, x := range xs {
+		// want +1 `loop runs at most once`
+		for {
+			if x > 0 {
+				break outer
+			}
+			return
+		}
+	}
+}
+
+func labeledSwitch(n int) int {
+	// want +1 `loop runs at most once`
+	for {
+	inner:
+		switch n {
+		case 0:
+			break inner
+		}
+		return n
+	}
+}
+
+func selectBreak(ch chan int) int {
+	// want +1 `loop runs at most once`
+	for {
+		select {
+		case v := <-ch:
+			use(v)
+			break
+		default:
+			use(0)
+			break
+		}
+		if n := len(ch); n > 0 {
+			return n
+		}
+		return 0
+	}
+}
+
+func commentHeader(n int) int {
+	// want +1 `loop runs at most once`
+	for /* keep */ {
+		if n > 0 {
+			return n
+		}
+		return 0
+	}
+}
+
+func commentCond(n int) int {
+	// want +1 `loop runs at most once`
+	for /* keep */ n > 0 {
+		if n == 1 {
+			return n
+		}
+		return 0
+	}
+	return -1
+}
+
+func blankPost(n int) int {
+	// want +1 `loop runs at most once`
+	for ; ; _ = n {
+		if n > 0 {
+			return n
+		}
+		return 0
+	}
+}
+
+func localPost(n int) int {
+	x := 0
+	// want +1 `loop runs at most once`
+	for ; ; x++ {
+		if n > 0 {
+			return n
+		}
+		return 0
+	}
+}
+
+func twoPosts(n int) int {
+	x := 0
+	// want +1 `loop runs at most once`
+	for ; ; x++ {
+		if n > 0 {
+			use(n)
+		}
+		break
+	}
+	// want +1 `loop runs at most once`
+	for ; ; x++ {
+		if n > 0 {
+			return n
+		}
+		return 0
+	}
+	return 0
+}
+
+func otherLabel(n int) {
+outer:
+	switch n {
+	case 0:
+		// want +1 `loop runs at most once`
+		for i := 0; i < n; i++ {
+			if i > 0 {
+				use(i)
+			}
+			break outer
+		}
+	}
+}
+
+func breakOuter(n int) {
+outer:
+	for i := 0; i < n; i++ {
+		// want +1 `loop runs at most once`
+		for j := 0; j < n; j++ {
+			if j > i {
+				use(j)
+			}
+			break outer
+		}
+	}
+}
+
+func writeOnlyPost(n int) int {
+	var x int
+	x = 1
+	// want +1 `loop runs at most once`
+	for ; ; x++ {
+		if n > 0 {
+			return n
+		}
+		return 0
+	}
+}
+
+func commentBreak(n int) int {
+	// want +1 `loop runs at most once`
+	for n > 0 {
+		if n == 1 {
+			return n
+		}
+		break // keep
+	}
+	return 0
+}
+
+func redeclarePost(n int) int {
+	x := 0
+	x, y := 1, 2
+	// want +1 `loop runs at most once`
+	for ; ; x++ {
+		if y > 0 {
+			return y
+		}
+		return 0
+	}
+}
+
+func simpleBreak(n int) int {
+	// want +1 `loop runs at most once`
+	for {
+		if n > 0 {
+			return n
+		}
+		break
+	}
+	return 0
+}
+
+func simpleBreakComment(n int) int {
+	// want +1 `loop runs at most once`
+	for {
+		if n > 0 {
+			return n
+		}
+		break // keep
+	}
+	return 0
+}

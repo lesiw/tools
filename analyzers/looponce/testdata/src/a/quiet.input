@@ -1,0 +1,200 @@
+package a
+
+func first(xs []int) int {
+	for _, x := range xs {
+		return x
+	}
+	return 0
+}
+
+func repeated(xs []int) int {
+	for _, x := range xs {
+		if x > 0 {
+			continue
+		}
+		return x
+	}
+	return 0
+}
+
+func labeledContinue(xs []int) int {
+outer:
+	for _, x := range xs {
+		for _, y := range xs {
+			if y == x {
+				continue outer
+			}
+		}
+		return x
+	}
+	return 0
+}
+
+func jump(xs []int) int {
+	for _, x := range xs {
+		if x > 0 {
+			goto done
+		}
+		return x
+	}
+done:
+	return 0
+}
+
+func mapping(m map[string]int) int {
+	for k, v := range m {
+		if v > 0 {
+			return v
+		}
+		return len(k)
+	}
+	return 0
+}
+
+func sequence(seq func(yield func(int) bool)) {
+	for x := range seq {
+		if x > 0 {
+			use(x)
+		}
+		return
+	}
+}
+
+func generic[T ~[]int](xs T) int {
+	for _, x := range xs {
+		if x > 0 {
+			return x
+		}
+		return 0
+	}
+	return -1
+}
+
+func flat(xs []int) int {
+	for _, x := range xs {
+		use(x)
+		return x
+	}
+	return 0
+}
+
+func endingSwitch(n int) int {
+	for {
+		if n > 0 {
+			use(n)
+		}
+		switch n {
+		case 0:
+			return 0
+		default:
+			return 1
+		}
+	}
+}
+
+func genericMap[T ~map[string]int](m T) int {
+	for k, v := range m {
+		if v > 0 {
+			return v
+		}
+		return len(k)
+	}
+	return 0
+}
+
+func genericFunc[T ~func(func(int) bool)](seq T) int {
+	for x := range seq {
+		if x > 0 {
+			return x
+		}
+		return 0
+	}
+	return -1
+}
+
+type counts map[string]int
+
+func namedMap(m counts) int {
+	for k, v := range m {
+		if v > 0 {
+			return v
+		}
+		return len(k)
+	}
+	return 0
+}
+
+func switchContinue(xs []int) int {
+	for _, x := range xs {
+		switch x {
+		case 0:
+			continue
+		}
+		return x
+	}
+	return 0
+}
+
+func switchOnly(n int) int {
+	for {
+		switch n {
+		case 0:
+			return 0
+		default:
+			return 1
+		}
+	}
+}
+
+func ifElseOnly(n int) int {
+	for {
+		if n > 0 {
+			return n
+		} else {
+			return 0
+		}
+	}
+}
+
+func selectOnly(ch chan int) int {
+	for {
+		select {
+		case v := <-ch:
+			return v
+		default:
+			return 0
+		}
+	}
+}
+
+func nestedExit(n int) int {
+	for {
+		use(n)
+		if n > 0 {
+			return n
+		} else {
+			return 0
+		}
+	}
+}
+
+func selectExit(ch chan int) int {
+	for {
+		use(ch)
+		select {
+		case v := <-ch:
+			return v
+		default:
+			return 0
+		}
+	}
+}
+
+func nestedLoopExit(xs []int) int {
+	for {
+		use(xs)
+		for _, x := range xs {
+			return x
+		}
+	}
+}

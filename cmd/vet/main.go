@@ -1775,6 +1775,22 @@
 //		}
 //	}
 //
+// # looponce
+//
+// Reports a loop that runs at most once: its body has a top-level control
+// statement and ends in a return or a break.
+//
+// Adapted from staticcheck's SA4004.
+//
+//	func f(x int) int {
+//		for {
+//			if x > 0 {
+//				return x
+//			}
+//			return 0
+//		}
+//	}
+//
 // # loopvarcond
 //
 // Reports a for loop whose condition tests a variable the loop never changes.

@@ -1,0 +1,13 @@
+package a
+
+import . "strings"
+
+func dotPost(n int) int {
+	// want +1 `loop runs at most once`
+	for ; ; TrimSpace("") {
+		if n > 0 {
+			return n
+		}
+		return 0
+	}
+}
