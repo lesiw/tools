@@ -1,0 +1,11 @@
+package collision
+
+import "regexp"
+
+var re, re2 int
+
+func collision(ss []string) {
+	for _, s := range ss {
+		regexp.MatchString("a", s) // want `regexp\.MatchString compiles the pattern on each call; compile it once before the loop`
+	}
+}

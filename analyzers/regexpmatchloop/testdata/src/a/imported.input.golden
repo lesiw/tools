@@ -1,0 +1,14 @@
+package a
+
+import (
+	"regexp"
+
+	"patterns"
+)
+
+func imported(ss []string) {
+	re := regexp.MustCompile(patterns.Imported)
+	for _, s := range ss {
+		re.MatchString(s) // want `regexp\.MatchString compiles the pattern on each call; compile it once before the loop`
+	}
+}

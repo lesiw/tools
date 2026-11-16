@@ -1,0 +1,127 @@
+package a
+
+import (
+	"io"
+	"regexp"
+)
+
+const pattern = "a+"
+
+func matchString(ss []string) {
+	for _, s := range ss {
+		regexp.MatchString(pattern, s) // want `regexp\.MatchString compiles the pattern on each call; compile it once before the loop`
+	}
+}
+
+func matchBytes(bs [][]byte) {
+	for range bs {
+		regexp.Match("a+", []byte("x")) // want `regexp\.Match compiles the pattern on each call; compile it once before the loop`
+	}
+}
+
+func matchReader(rs []io.RuneReader) {
+	for _, r := range rs {
+		regexp.MatchReader(pattern, r) // want `regexp\.MatchReader compiles the pattern on each call; compile it once before the loop`
+	}
+}
+
+func nested(ss []string) {
+	for _, s := range ss {
+		if len(s) > 0 {
+			regexp.MatchString("^a", s) // want `regexp\.MatchString compiles the pattern on each call; compile it once before the loop`
+		}
+	}
+}
+
+func multiple(ss []string) {
+	for _, s := range ss {
+		regexp.MatchString("a", s) // want `regexp\.MatchString compiles the pattern on each call; compile it once before the loop`
+		regexp.MatchString("b", s) // want `regexp\.MatchString compiles the pattern on each call; compile it once before the loop`
+	}
+}
+
+func expression(ss []string) {
+	for _, s := range ss {
+		regexp.MatchString("a"+"+", s) // want `regexp\.MatchString compiles the pattern on each call; compile it once before the loop`
+	}
+}
+
+func outerConstant(ss []string) {
+	const outer = "a+"
+	for _, s := range ss {
+		regexp.MatchString(outer, s) // want `regexp\.MatchString compiles the pattern on each call; compile it once before the loop`
+	}
+}
+
+func labeled(ss []string) {
+label:
+	for _, s := range ss {
+		regexp.MatchString("a", s) // want `regexp\.MatchString compiles the pattern on each call; compile it once before the loop`
+		break label
+	}
+}
+
+func nestedLiteral(ss []string) {
+	func() {
+		for _, s := range ss {
+			regexp.MatchString("a", s) // want `regexp\.MatchString compiles the pattern on each call; compile it once before the loop`
+		}
+	}()
+}
+
+func innerPost(ss []string) {
+	for range ss {
+		for ; ; regexp.MatchString("a", "x") { // want `regexp\.MatchString compiles the pattern on each call; compile it once before the loop`
+			break
+		}
+	}
+}
+
+func mixed(ss []string) {
+	for _, s := range ss {
+		regexp.MatchString("a", s) // want `regexp\.MatchString compiles the pattern on each call; compile it once before the loop`
+		matched, err := regexp.MatchString("b", s) // want `regexp\.MatchString compiles the pattern on each call; compile it once before the loop`
+		_, _ = matched, err
+	}
+}
+
+func goCall(ss []string) {
+	for _, s := range ss {
+		go regexp.MatchString("a", s) // want `regexp\.MatchString compiles the pattern on each call; compile it once before the loop`
+	}
+}
+
+func deferCall(ss []string) {
+	for _, s := range ss {
+		defer regexp.MatchString("a", s) // want `regexp\.MatchString compiles the pattern on each call; compile it once before the loop`
+	}
+}
+
+func sharedConstant(ss []string) {
+	for _, s := range ss {
+		regexp.MatchString(shared, s) // want `regexp\.MatchString compiles the pattern on each call; compile it once before the loop`
+	}
+}
+
+func trailing(ss []string) {
+	for _, s := range ss { // loop over the strings
+		regexp.MatchString("a", s) // want `regexp\.MatchString compiles the pattern on each call; compile it once before the loop`
+	}
+}
+
+func gotoInside(ss []string) {
+	for _, s := range ss {
+		regexp.MatchString("a", s) // want `regexp\.MatchString compiles the pattern on each call; compile it once before the loop`
+		goto done
+	done:
+	}
+}
+
+func switchCase(ss []string) {
+	switch len(ss) {
+	case 0:
+		for _, s := range ss {
+			regexp.MatchString("a", s) // want `regexp\.MatchString compiles the pattern on each call; compile it once before the loop`
+		}
+	}
+}

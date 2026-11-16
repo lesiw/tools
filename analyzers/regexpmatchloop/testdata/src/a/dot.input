@@ -1,0 +1,9 @@
+package a
+
+import . "regexp"
+
+func dotted(ss []string) {
+	for _, s := range ss {
+		MatchString("a+", s)
+	}
+}

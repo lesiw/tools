@@ -1,0 +1,145 @@
+package a
+
+import (
+	"io"
+	"regexp"
+)
+
+const pattern = "a+"
+
+func matchString(ss []string) {
+	re := regexp.MustCompile(pattern)
+	for _, s := range ss {
+		re.MatchString(s) // want `regexp\.MatchString compiles the pattern on each call; compile it once before the loop`
+	}
+}
+
+func matchBytes(bs [][]byte) {
+	re2 := regexp.MustCompile("a+")
+	for range bs {
+		re2.Match([]byte("x")) // want `regexp\.Match compiles the pattern on each call; compile it once before the loop`
+	}
+}
+
+func matchReader(rs []io.RuneReader) {
+	re3 := regexp.MustCompile(pattern)
+	for _, r := range rs {
+		re3.MatchReader(r) // want `regexp\.MatchReader compiles the pattern on each call; compile it once before the loop`
+	}
+}
+
+func nested(ss []string) {
+	re4 := regexp.MustCompile("^a")
+	for _, s := range ss {
+		if len(s) > 0 {
+			re4.MatchString(s) // want `regexp\.MatchString compiles the pattern on each call; compile it once before the loop`
+		}
+	}
+}
+
+func multiple(ss []string) {
+	re5 := regexp.MustCompile("a")
+	re6 := regexp.MustCompile("b")
+	for _, s := range ss {
+		re5.MatchString(s) // want `regexp\.MatchString compiles the pattern on each call; compile it once before the loop`
+		re6.MatchString(s) // want `regexp\.MatchString compiles the pattern on each call; compile it once before the loop`
+	}
+}
+
+func expression(ss []string) {
+	re7 := regexp.MustCompile("a" + "+")
+	for _, s := range ss {
+		re7.MatchString(s) // want `regexp\.MatchString compiles the pattern on each call; compile it once before the loop`
+	}
+}
+
+func outerConstant(ss []string) {
+	const outer = "a+"
+	re8 := regexp.MustCompile(outer)
+	for _, s := range ss {
+		re8.MatchString(s) // want `regexp\.MatchString compiles the pattern on each call; compile it once before the loop`
+	}
+}
+
+func labeled(ss []string) {
+	re9 := regexp.MustCompile("a")
+label:
+	for _, s := range ss {
+		re9.MatchString(s) // want `regexp\.MatchString compiles the pattern on each call; compile it once before the loop`
+		break label
+	}
+}
+
+func nestedLiteral(ss []string) {
+	func() {
+		re10 := regexp.MustCompile("a")
+		for _, s := range ss {
+			re10.MatchString(s) // want `regexp\.MatchString compiles the pattern on each call; compile it once before the loop`
+		}
+	}()
+}
+
+func innerPost(ss []string) {
+	re11 := regexp.MustCompile("a")
+	for range ss {
+		for ; ; re11.MatchString("x") { // want `regexp\.MatchString compiles the pattern on each call; compile it once before the loop`
+			break
+		}
+	}
+}
+
+func mixed(ss []string) {
+	re12 := regexp.MustCompile("a")
+	for _, s := range ss {
+		re12.MatchString(s)                        // want `regexp\.MatchString compiles the pattern on each call; compile it once before the loop`
+		matched, err := regexp.MatchString("b", s) // want `regexp\.MatchString compiles the pattern on each call; compile it once before the loop`
+		_, _ = matched, err
+	}
+}
+
+func goCall(ss []string) {
+	re13 := regexp.MustCompile("a")
+	for _, s := range ss {
+		go re13.MatchString(s) // want `regexp\.MatchString compiles the pattern on each call; compile it once before the loop`
+	}
+}
+
+func deferCall(ss []string) {
+	re14 := regexp.MustCompile("a")
+	for _, s := range ss {
+		defer re14.MatchString(s) // want `regexp\.MatchString compiles the pattern on each call; compile it once before the loop`
+	}
+}
+
+func sharedConstant(ss []string) {
+	re15 := regexp.MustCompile(shared)
+	for _, s := range ss {
+		re15.MatchString(s) // want `regexp\.MatchString compiles the pattern on each call; compile it once before the loop`
+	}
+}
+
+func trailing(ss []string) {
+	re16 := regexp.MustCompile("a")
+	for _, s := range ss { // loop over the strings
+		re16.MatchString(s) // want `regexp\.MatchString compiles the pattern on each call; compile it once before the loop`
+	}
+}
+
+func gotoInside(ss []string) {
+	re17 := regexp.MustCompile("a")
+	for _, s := range ss {
+		re17.MatchString(s) // want `regexp\.MatchString compiles the pattern on each call; compile it once before the loop`
+		goto done
+	done:
+	}
+}
+
+func switchCase(ss []string) {
+	switch len(ss) {
+	case 0:
+		re18 := regexp.MustCompile("a")
+		for _, s := range ss {
+			re18.MatchString(s) // want `regexp\.MatchString compiles the pattern on each call; compile it once before the loop`
+		}
+	}
+}

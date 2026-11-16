@@ -1,0 +1,55 @@
+package a
+
+import "regexp"
+
+var held = "a+"
+
+func outside(ss []string) {
+	regexp.MatchString("a+", "x")
+}
+
+func variable(ss []string) {
+	for _, s := range ss {
+		regexp.MatchString(held, s)
+	}
+}
+
+func parameter(pattern string, ss []string) {
+	for _, s := range ss {
+		regexp.MatchString(pattern, s)
+	}
+}
+
+func method(re *regexp.Regexp, ss []string) {
+	for _, s := range ss {
+		re.MatchString(s)
+	}
+}
+
+func functionValue(ss []string) {
+	match := regexp.MatchString
+	for _, s := range ss {
+		match("a+", s)
+	}
+}
+
+func functionLiteral(ss []string) {
+	for _, s := range ss {
+		f := func() {
+			regexp.MatchString("a+", s)
+		}
+		f()
+	}
+}
+
+func initClause() {
+	for ok, _ := regexp.MatchString("a+", "x"); ok; {
+		break
+	}
+}
+
+func postClause() {
+	for ; ; regexp.MatchString("a+", "x") {
+		break
+	}
+}

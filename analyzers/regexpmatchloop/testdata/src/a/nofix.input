@@ -1,0 +1,105 @@
+package a
+
+import "regexp"
+
+func innerConstant(ss []string) {
+	for _, s := range ss {
+		const inner = "a+"
+		regexp.MatchString(inner, s) // want `regexp\.MatchString compiles the pattern on each call; compile it once before the loop`
+	}
+}
+
+func broken(ss []string) {
+	for _, s := range ss {
+		regexp.MatchString("a(", s) // want `regexp\.MatchString compiles the pattern on each call; compile it once before the loop`
+	}
+}
+
+func commented(ss []string) {
+	for _, s := range ss {
+		regexp.MatchString("a+", /* the input */ s) // want `regexp\.MatchString compiles the pattern on each call; compile it once before the loop`
+	}
+}
+
+func gotoLoop(ss []string) {
+	if len(ss) == 0 {
+		goto loop
+	}
+loop:
+	for _, s := range ss {
+		regexp.MatchString("a", s) // want `regexp\.MatchString compiles the pattern on each call; compile it once before the loop`
+	}
+}
+
+func results(ss []string) {
+	for _, s := range ss {
+		matched, err := regexp.MatchString("a", s) // want `regexp\.MatchString compiles the pattern on each call; compile it once before the loop`
+		_, _ = matched, err
+	}
+}
+
+func innerHeader(ss []string) {
+	for range ss {
+		for ok, _ := regexp.MatchString("a", "x"); ok; { // want `regexp\.MatchString compiles the pattern on each call; compile it once before the loop`
+			break
+		}
+	}
+}
+
+func gotoOver(ss []string) {
+	if len(ss) == 0 {
+		goto done
+	}
+	for _, s := range ss {
+		regexp.MatchString("a", s) // want `regexp\.MatchString compiles the pattern on each call; compile it once before the loop`
+	}
+done:
+}
+
+func leadingComment(ss []string) {
+	for _, s := range ss {
+		regexp.MatchString(/* pattern */ "a+", s) // want `regexp\.MatchString compiles the pattern on each call; compile it once before the loop`
+	}
+}
+
+func loopComment(ss []string) {
+	// The loop comment.
+	for _, s := range ss {
+		regexp.MatchString("a", s) // want `regexp\.MatchString compiles the pattern on each call; compile it once before the loop`
+	}
+}
+
+func blank(ss []string) {
+	for _, s := range ss {
+		_, _ = regexp.MatchString("a", s) // want `regexp\.MatchString compiles the pattern on each call; compile it once before the loop`
+	}
+}
+
+func conditionHeader(ss []string) {
+	for range ss {
+		for truth(regexp.MatchString("a", "x")) { // want `regexp\.MatchString compiles the pattern on each call; compile it once before the loop`
+			break
+		}
+	}
+}
+
+func rangeHeader(ss []string) {
+	for range ss {
+		for range pairs(regexp.MatchString("a", "x")) { // want `regexp\.MatchString compiles the pattern on each call; compile it once before the loop`
+			break
+		}
+	}
+}
+
+func truth(bool, error) bool { return false }
+
+func pairs(bool, error) []int { return nil }
+
+const shadowed = "a+"
+
+func shadow(ss []string) {
+	for _, s := range ss {
+		const shadowed = "b+"
+		regexp.MatchString(shadowed, s) // want `regexp\.MatchString compiles the pattern on each call; compile it once before the loop`
+	}
+}

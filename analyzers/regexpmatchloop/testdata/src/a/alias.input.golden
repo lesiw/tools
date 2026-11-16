@@ -1,0 +1,10 @@
+package a
+
+import std "regexp"
+
+func aliased(ss []string) {
+	re := std.MustCompile("a+")
+	for _, s := range ss {
+		re.MatchString(s) // want `regexp\.MatchString compiles the pattern on each call; compile it once before the loop`
+	}
+}

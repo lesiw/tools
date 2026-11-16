@@ -1928,6 +1928,21 @@
 //
 //	var re = regexp.MustCompile("a(")
 //
+// # regexpmatchloop
+//
+// Reports a call to regexp.Match, regexp.MatchString or regexp.MatchReader in
+// a loop body, where the pattern is a constant. Each call compiles the
+// pattern, and the pattern does not change between calls, so one compile
+// before the loop suffices.
+//
+// Adapted from staticcheck's SA6000.
+//
+//	func f(ss []string) {
+//		for _, s := range ss {
+//			regexp.MatchString("a+", s)
+//		}
+//	}
+//
 // # regexpmust
 //
 // Reports a regexp.Compile of a constant pattern whose error the caller reads.

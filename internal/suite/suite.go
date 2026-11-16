@@ -160,6 +160,7 @@ import (
 	"lesiw.io/tools/analyzers/redundantbuildtag"
 	"lesiw.io/tools/analyzers/redundantsprint"
 	"lesiw.io/tools/analyzers/regexpconst"
+	"lesiw.io/tools/analyzers/regexpmatchloop"
 	"lesiw.io/tools/analyzers/regexpmust"
 	"lesiw.io/tools/analyzers/runerange"
 	"lesiw.io/tools/analyzers/selfassert"
@@ -367,6 +368,7 @@ var (
 		redundantsprint.Analyzer,
 		reflectvaluecompare.Analyzer,
 		regexpconst.Analyzer,
+		regexpmatchloop.Analyzer,
 		regexpmust.Analyzer,
 		runerange.Analyzer,
 		selfassert.Analyzer,
