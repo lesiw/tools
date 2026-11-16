@@ -2891,6 +2891,21 @@ func f() {
 }
 ```
 
+## uselessbreak
+
+Reports a break at the end of a switch case. The switch ends after the case either way, so the break has no effect; a break at the end of a loop body ends the loop, so it is not reported.
+
+Adapted from revive's useless-break, which also checks select clauses.
+
+```
+func f(n int) {
+    switch n {
+    case 0:
+        break
+    }
+}
+```
+
 ## uselessconcat
 
 Reports string literals joined with + where the joined literal fits on the line.

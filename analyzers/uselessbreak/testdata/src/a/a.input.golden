@@ -1,0 +1,194 @@
+package a
+
+func use(...int) {}
+
+func expression(n int) {
+	switch n {
+	case 0:
+		// want +1 `break at the end of a switch case has no effect`
+	case 1:
+		use(n)
+		// want `break at the end of a switch case has no effect`
+	case 2:
+		// want +1 `break at the end of a switch case has no effect`
+		// note
+	default:
+		// want +1 `break at the end of a switch case has no effect`
+	}
+}
+
+func typed(v any) {
+	switch v.(type) {
+	case int:
+		// want +1 `break at the end of a switch case has no effect`
+	case string:
+		use()
+		// want +1 `break at the end of a switch case has no effect`
+	default:
+		// want +1 `break at the end of a switch case has no effect`
+	}
+}
+
+func inline(n int) {
+	switch n {
+	case 0: // want `break at the end of a switch case has no effect`
+	case 1:
+		use()
+	}
+}
+
+func nested(n, m int) {
+	switch n {
+	case 0:
+		switch m {
+		case 0:
+			// want +1 `break at the end of a switch case has no effect`
+		}
+	}
+}
+
+func looping(n int) {
+	for {
+		switch n {
+		case 0:
+			// want +1 `break at the end of a switch case has no effect`
+		}
+		break
+	}
+}
+
+func followed(n int) {
+	switch n {
+	case 0:
+		if n > 0 {
+			break
+		}
+		use(n)
+	}
+}
+
+func named(n int) {
+inner:
+	switch n {
+	case 0:
+		break inner
+	}
+}
+
+func labeledSwitch(n int) {
+inner:
+	switch n {
+	case 0:
+		// want +1 `break at the end of a switch case has no effect`
+	case 1:
+		break inner
+	}
+}
+
+func escape(n int) {
+loop:
+	for {
+		switch n {
+		case 0:
+			break loop
+		}
+	}
+}
+
+func choice(ch <-chan int) {
+	select {
+	case <-ch:
+		break
+	}
+}
+
+func selectLoop(ch <-chan int) {
+	for {
+		select {
+		case <-ch:
+			break
+		}
+		break
+	}
+}
+
+func repeat(n int) {
+	for {
+		use(n)
+		break
+	}
+}
+
+func counted(n int) {
+	for i := 0; i < n; i++ {
+		use(i)
+		break
+	}
+}
+
+func ranged(xs []int) {
+	for _, x := range xs {
+		use(x)
+		break
+	}
+}
+
+func later(n int) {
+	switch n {
+	case 0:
+		break
+		use(n)
+	}
+}
+
+func blocked(n int) {
+	switch n {
+	case 0:
+		{
+			break
+		}
+	}
+}
+
+func wrapped(n int) {
+	switch n {
+	case 0:
+		if n < 0 {
+			goto here
+		}
+	here:
+		break
+	}
+}
+
+func fall(n int) {
+	switch n {
+	case 0:
+		fallthrough
+	case 1:
+		use(n)
+	}
+}
+
+func empty(n int) {
+	switch n {
+	case 0:
+	}
+}
+
+func done(n int) int {
+	switch n {
+	case 0:
+		return 0
+	}
+	return 1
+}
+
+func tailIf(n int) {
+	switch n {
+	case 0:
+		if n > 0 {
+			break
+		}
+	}
+}

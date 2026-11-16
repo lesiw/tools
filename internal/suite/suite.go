@@ -208,6 +208,7 @@ import (
 	"lesiw.io/tools/analyzers/unusedrecv"
 	"lesiw.io/tools/analyzers/unusefultag"
 	"lesiw.io/tools/analyzers/unwrap"
+	"lesiw.io/tools/analyzers/uselessbreak"
 	"lesiw.io/tools/analyzers/uselessconcat"
 	"lesiw.io/tools/analyzers/uuid"
 	"lesiw.io/tools/analyzers/valswap"
@@ -435,6 +436,7 @@ var (
 		unusedwrite.Analyzer,
 		unusefultag.Analyzer,
 		unwrap.Analyzer,
+		uselessbreak.Analyzer,
 		uselessconcat.Analyzer,
 		uuid.Analyzer,
 		valswap.Analyzer,
