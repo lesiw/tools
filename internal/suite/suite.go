@@ -175,6 +175,7 @@ import (
 	"lesiw.io/tools/analyzers/nilchansend"
 	"lesiw.io/tools/analyzers/nilchecklen"
 	"lesiw.io/tools/analyzers/nilerrwrap"
+	"lesiw.io/tools/analyzers/nilfuncall"
 	"lesiw.io/tools/analyzers/nilinterfacecmp"
 	"lesiw.io/tools/analyzers/nilmapassign"
 	"lesiw.io/tools/analyzers/nilrange"
@@ -449,6 +450,7 @@ var (
 		nilchecklen.Analyzer,
 		nilerrwrap.Analyzer,
 		nilfunc.Analyzer,
+		nilfuncall.Analyzer,
 		nilinterfacecmp.Analyzer,
 		nilmapassign.Analyzer,
 		nilness.Analyzer,

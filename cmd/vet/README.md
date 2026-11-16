@@ -2035,6 +2035,18 @@ func g() bool {
 }
 ```
 
+## nilfuncall
+
+Reports a call of a function value that the same block set to nil, which panics. The suite's nilness pass reports most of the same calls from SSA; it misses a package-level literal and a literal that captures the variable.
+
+```
+func f() {
+    h := func() {}
+    h = nil
+    h()
+}
+```
+
 ## nilinterfacecmp
 
 Reports a comparison of an interface value that holds a typed nil with nil. Assigning a nil value of a concrete type to an interface stores that type, so the interface is not nil.

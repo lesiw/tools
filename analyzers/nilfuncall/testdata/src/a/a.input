@@ -1,0 +1,385 @@
+package a
+
+import . "b"
+
+type hook func()
+
+type box struct {
+	run hook
+}
+
+func (h hook) run() {
+	h = nil
+	h()
+}
+
+var held hook
+
+var started = func() {
+	h := func() {}
+	h = nil
+	h() // want `function value is nil; the call panics`
+}
+
+func use(...any) {}
+
+func assignedShort() {
+	h := func() {}
+	h = nil
+	h() // want `function value is nil; the call panics`
+}
+
+func assignedVar() {
+	var h hook
+	h = nil
+	h() // want `function value is nil; the call panics`
+}
+
+func deferred() {
+	h := func() {}
+	h = nil
+	defer h() // want `function value is nil; the call panics`
+}
+
+func goroutine() {
+	h := func() {}
+	h = nil
+	go h() // want `function value is nil; the call panics`
+}
+
+func argument() {
+	h := func() bool { return false }
+	h = nil
+	use(h()) // want `function value is nil; the call panics`
+}
+
+func paired() {
+	h, g := func() {}, func() {}
+	h, g = nil, nil
+	_ = h
+	g() // want `function value is nil; the call panics`
+}
+
+func parenthesized() {
+	h := func() {}
+	h = nil
+	(h)() // want `function value is nil; the call panics`
+}
+
+func nestedBlock() {
+	h := func() {}
+	if len("a") > 0 {
+		h = nil
+		h() // want `function value is nil; the call panics`
+	}
+}
+
+func bareBlock() {
+	h := func() {}
+	{
+		h = nil
+		h() // want `function value is nil; the call panics`
+	}
+}
+
+func switchCase(n int) {
+	h := func() {}
+	switch n {
+	case 1:
+		h = nil
+		h() // want `function value is nil; the call panics`
+	}
+}
+
+func switchInit() {
+	h := func() bool { return false }
+	switch h = nil; true {
+	case true:
+	}
+	h()
+}
+
+func conditionCall() {
+	h := func() bool { return false }
+	h = nil
+	if h() {
+	}
+}
+
+func selectClause(ch chan int) {
+	h := func() {}
+	select {
+	case <-ch:
+		h = nil
+		h() // want `function value is nil; the call panics`
+	}
+}
+
+func loopBody(n int) {
+	h := func() {}
+	for i := 0; i < n; i++ {
+		h = nil
+		h() // want `function value is nil; the call panics`
+	}
+}
+
+func labeled(n int) {
+	h := func() {}
+loop:
+	for i := 0; i < n; i++ {
+		h = nil
+		h() // want `function value is nil; the call panics`
+		break loop
+	}
+}
+
+func rangeClause(values func([]int) []int) {
+	h := func() []int { return nil }
+	h = nil
+	for range values(h()) {
+	}
+}
+
+func typeSwitch(v any) {
+	var run func()
+	switch run = nil; v.(type) {
+	case int:
+		run()
+	}
+	run()
+}
+
+func elseBranch(ok bool) {
+	h := func() {}
+	if ok {
+	} else {
+		h = nil
+		h() // want `function value is nil; the call panics`
+	}
+}
+
+func elseCall(ok bool) {
+	h := func() bool { return false }
+	h = nil
+	if ok {
+	} else if h() {
+	}
+}
+
+func pair() (hook, hook) { return nil, nil }
+
+func multiValue() {
+	h, g := func() {}, func() {}
+	h, g = pair()
+	h()
+	g()
+}
+
+func repeatedTarget() {
+	h := func() {}
+	h, h = nil, func() {}
+	h()
+}
+
+func postCall(n int) {
+	h := func() {}
+	h = nil
+	for i := 0; i < n; h() {
+		i++
+	}
+}
+
+func ifInit() {
+	var ok func() bool
+	if ok = nil; ok() {
+	}
+}
+
+func dotImported() {
+	Held = nil
+	Held()
+}
+
+func literal() {
+	func() {
+		h := func() {}
+		h = nil
+		h() // want `function value is nil; the call panics`
+	}()
+}
+
+func capturedLiteral() {
+	h := func() {}
+	set := func() {
+		h = nil
+		h() // want `function value is nil; the call panics`
+	}
+	set()
+	_ = h
+}
+
+func siblingLiteral() {
+	h := func() {}
+	other := func() { h = func() {} }
+	_ = other
+	set := func() {
+		h = nil
+		h()
+	}
+	set()
+}
+
+func generic[T ~func()]() {
+	var z T
+	z = nil
+	z() // want `function value is nil; the call panics`
+}
+
+func declared() {
+	var h hook = nil
+	h()
+}
+
+func typedNil() {
+	h := func() {}
+	h = hook(nil)
+	h()
+}
+
+func parameter(h hook) {
+	h = nil
+	h()
+}
+
+func result() (h hook) {
+	h = nil
+	h()
+	return
+}
+
+func field(b box) {
+	b.run = nil
+	b.run()
+}
+
+func packageLevel() {
+	held = nil
+	held()
+}
+
+func unassigned() {
+	var h hook
+	h()
+}
+
+func writtenAgain() {
+	h := func() {}
+	h = nil
+	h = func() {}
+	h()
+}
+
+func guarded(ok bool) {
+	h := func() {}
+	h = nil
+	if ok {
+		h()
+	}
+}
+
+func assignedInNestedBlock(ok bool) {
+	h := func() {}
+	{
+		h = nil
+	}
+	h()
+}
+
+func writtenOnBranch(ok bool) {
+	h := func() {}
+	h = nil
+	if ok {
+		h = func() {}
+	}
+	h()
+}
+
+func writtenInBody(ok bool) {
+	h := func() {}
+	if h = nil; ok {
+		h = func() {}
+	}
+	h()
+}
+
+func writtenInCase(n int) {
+	h := func() {}
+	h = nil
+	switch n {
+	case 1:
+		h = func() {}
+	}
+	h()
+}
+
+func addressTaken() {
+	h := func() {}
+	h = nil
+	_ = &h
+	h()
+}
+
+func writtenByLiteral() {
+	h := func() {}
+	h = nil
+	save := func() { h = func() {} }
+	save()
+	h()
+}
+
+func writtenByDeferred() {
+	h := func() {}
+	h = nil
+	defer func() { h = func() {} }()
+	h()
+}
+
+func jumped(ok bool) {
+	h := func() {}
+	if ok {
+		goto end
+	}
+	h = nil
+end:
+	h()
+}
+
+func earlier() {
+	h := func() {}
+	h()
+	h = nil
+	h() // want `function value is nil; the call panics`
+}
+
+func copied() {
+	h := func() {}
+	h = nil
+	g := h
+	g()
+}
+
+func shadowed() {
+	h := func() {}
+	h = nil
+	{
+		h := func() {}
+		h()
+	}
+	_ = h
+}
+
+func nonNil() {
+	h := func() {}
+	h = func() {}
+	h()
+}
