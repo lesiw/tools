@@ -1,0 +1,8 @@
+package a
+
+import "sync"
+
+func measured(mu *sync.Mutex) {
+	mu.Lock()
+	mu.Unlock()
+}

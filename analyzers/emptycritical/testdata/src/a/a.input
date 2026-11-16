@@ -1,0 +1,194 @@
+package a
+
+import "sync"
+
+func exclusive(mu *sync.Mutex) {
+	mu.Lock()
+	mu.Unlock() // want `empty critical section`
+}
+
+func shared(mu *sync.RWMutex) {
+	mu.Lock()
+	mu.Unlock() // want `empty critical section`
+}
+
+func readOnly(mu *sync.RWMutex) {
+	mu.RLock()
+	mu.RUnlock() // want `empty critical section`
+}
+
+func field(h *holder) {
+	h.mu.Lock()
+	h.mu.Unlock() // want `empty critical section`
+}
+
+func parenthesized(mu *sync.Mutex) {
+	(mu).Lock()
+	(mu).Unlock() // want `empty critical section`
+}
+
+func indexed(mu []*sync.Mutex) {
+	mu[0].Lock()
+	mu[0].Unlock() // want `empty critical section`
+}
+
+func repeated(mu *sync.Mutex) {
+	mu.Lock()
+	mu.Unlock() // want `empty critical section`
+	mu.Lock()
+	mu.Unlock() // want `empty critical section`
+}
+
+func clause(n int, mu *sync.Mutex) {
+	switch n {
+	case 1:
+		mu.Lock()
+		mu.Unlock() // want `empty critical section`
+	}
+}
+
+func comm(ch <-chan int, mu *sync.Mutex) {
+	select {
+	case <-ch:
+		mu.Lock()
+		mu.Unlock() // want `empty critical section`
+	}
+}
+
+func closure(mu *sync.Mutex) func() {
+	return func() {
+		mu.Lock()
+		mu.Unlock() // want `empty critical section`
+	}
+}
+
+func custom(g gate) {
+	g.Lock()
+	g.Unlock() // want `empty critical section`
+}
+
+func work(mu *sync.Mutex, n *int) {
+	mu.Lock()
+	*n = *n + 1
+	mu.Unlock()
+}
+
+func different(left, right *sync.Mutex) {
+	left.Lock()
+	right.Unlock()
+}
+
+func alias(mu *sync.Mutex) {
+	other := mu
+	mu.Lock()
+	other.Unlock()
+}
+
+func deferred(mu *sync.Mutex) {
+	mu.Lock()
+	defer mu.Unlock()
+}
+
+func called(get func() *sync.Mutex) {
+	get().Lock()
+	get().Unlock()
+}
+
+func mismatched(mu *sync.RWMutex) {
+	mu.Lock()
+	mu.RUnlock()
+	mu.RLock()
+	mu.Unlock()
+}
+
+func functions(f *funcs) {
+	f.Lock()
+	f.Unlock()
+}
+
+func argument(c *counted) {
+	c.Lock(0)
+	c.Unlock()
+}
+
+func result(r *reported) {
+	r.Lock()
+	r.Unlock()
+}
+
+func releaseArgument(r *releases) {
+	r.Lock()
+	r.Unlock(0)
+}
+
+func releaseResult(a *answers) {
+	a.Lock()
+	a.Unlock()
+}
+
+func commented(mu *sync.Mutex) {
+	mu.Lock()
+	/* marker */
+	mu.Unlock() // want `empty critical section`
+}
+
+func attempted(mu *sync.Mutex) {
+	mu.TryLock()
+	mu.Unlock()
+}
+
+func attemptedLocal(a *attempting) {
+	a.TryLock()
+	a.Unlock()
+	a.TryRLock()
+	a.RUnlock()
+}
+
+func Lock()   {}
+func Unlock() {}
+
+func plain() {
+	Lock()
+	Unlock()
+}
+
+type holder struct {
+	mu sync.Mutex
+}
+
+type gate struct{}
+
+func (gate) Lock()   {}
+func (gate) Unlock() {}
+
+type funcs struct {
+	Lock   func()
+	Unlock func()
+}
+
+type counted struct{}
+
+func (*counted) Lock(int) {}
+func (*counted) Unlock()  {}
+
+type reported struct{}
+
+func (*reported) Lock() bool { return true }
+func (*reported) Unlock()    {}
+
+type releases struct{}
+
+func (*releases) Lock()      {}
+func (*releases) Unlock(int) {}
+
+type answers struct{}
+
+func (*answers) Lock()        {}
+func (*answers) Unlock() bool { return true }
+
+type attempting struct{}
+
+func (*attempting) TryLock()  {}
+func (*attempting) Unlock()   {}
+func (*attempting) TryRLock() {}
+func (*attempting) RUnlock()  {}

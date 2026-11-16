@@ -1068,6 +1068,19 @@ func f(ready bool) {
 }
 ```
 
+## emptycritical
+
+Reports a lock taken and released with no statement between the two calls. The author often meant the Lock to cover the work below it, or wrote an Unlock without the defer they meant.
+
+Adapted from staticcheck's SA2001.
+
+```
+func f(mu *sync.Mutex) {
+    mu.Lock()
+    mu.Unlock()
+}
+```
+
 ## emptydecl
 
 Reports a var, const, type, or import block that declares nothing. The block was emptied and left behind.
