@@ -141,6 +141,7 @@ import (
 	"lesiw.io/tools/analyzers/nilmapassign"
 	"lesiw.io/tools/analyzers/nilreturn"
 	"lesiw.io/tools/analyzers/niltimer"
+	"lesiw.io/tools/analyzers/noopbits"
 	"lesiw.io/tools/analyzers/nowsub"
 	"lesiw.io/tools/analyzers/octal"
 	"lesiw.io/tools/analyzers/offby1"
@@ -344,6 +345,7 @@ var (
 		nilness.Analyzer,
 		nilreturn.Analyzer,
 		niltimer.Analyzer,
+		noopbits.Analyzer,
 		nowsub.Analyzer,
 		octal.Analyzer,
 		offby1.Analyzer,

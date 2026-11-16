@@ -1,0 +1,149 @@
+package a
+
+const zero = 0
+
+const (
+	none = iota
+	first
+)
+
+const (
+	offset = iota - 1
+	origin
+)
+
+const (
+	zeroA, zeroB = iota, iota
+	oneA, oneB   = iota, iota
+)
+
+const parenZero = (iota)
+
+type flag int
+
+const (
+	noneFlag flag = iota
+	readFlag
+)
+
+const bothZero = 0 | 0
+
+func use(int) {}
+
+func andLiteral(n int) int {
+	return n & 0 // want `always equals 0`
+}
+
+func orLiteral(n int) int {
+	return n | 0 // want `always equals n`
+}
+
+func xorLiteral(n int) int {
+	return n ^ 0 // want `always equals n`
+}
+
+func otherLiteral(n int) int {
+	return n ^ 0x0 // want `always equals n`
+}
+
+func signedZero(n int) int {
+	return n | -0 // want `always equals n`
+}
+
+func parenthesizedZero(n int) int {
+	return n ^ (0) // want `always equals n`
+}
+
+func generic[T ~int](n T) T {
+	return n | 0 // want `always equals n`
+}
+
+func iotaZero(n int) int {
+	return n | none // want `always equals n; the constant is defined with iota and may be meant as 1 << iota$`
+}
+
+func andIota(n int) int {
+	return n & none // want `always equals 0; the constant is defined with iota and may be meant as 1 << iota$`
+}
+
+func crossFile(n int) int {
+	return n | crossZero // want `always equals n; the constant is defined with iota and may be meant as 1 << iota$`
+}
+
+func inheritedIota(n int) int {
+	return n ^ origin // want `always equals n$`
+}
+
+func localIota(n int) int {
+	const local = iota
+	return n | local // want `always equals n; the constant is defined with iota and may be meant as 1 << iota$`
+}
+
+func typedIota() flag {
+	return 1<<10 | noneFlag
+}
+
+func typedIotaRight(n flag) flag {
+	return n | noneFlag // want `always equals n; the constant is defined with iota and may be meant as 1 << iota$`
+}
+
+func chained(n int) int {
+	return n | 0 | 0 // want `always equals n$` `always equals n \| 0$`
+}
+
+func trailingComment(n int) int {
+	return n | 0 // want `always equals n`
+}
+
+func commentInside(n int) int {
+	return n | /* keep */ 0 // want `always equals n`
+}
+
+func commentBeforeOperator(n int) int {
+	return n /* keep */ | 0 // want `always equals n`
+}
+
+func constantLeft() int {
+	return 5 | 0
+}
+
+func plusZero(n int) int {
+	return n | +0 // want `always equals n`
+}
+
+func multiIota(n int) int {
+	return n | zeroA // want `always equals n; the constant is defined with iota and may be meant as 1 << iota$`
+}
+
+func parenIota(n int) int {
+	return n | parenZero // want `always equals n; the constant is defined with iota and may be meant as 1 << iota$`
+}
+
+func others(n, m int) {
+	use(0 & n)
+	use(0 | n)
+	use(0 ^ n)
+	use(n & 1)
+	use(n | 2)
+	use(n ^ 3)
+	use(n << 0)
+	use(n &^ 0)
+	use(n | m)
+	use(n | zero)
+	use(n | first)
+	use(n | offset)
+	use(n | (2 - 2))
+	use(n | 0.0)
+	use(n | '\x00')
+}
+
+func shadowedIota(n int) int {
+	const iota = 0
+	const shadowZero = iota
+	return n | shadowZero
+}
+
+func variableZero(n int) int {
+	z := 0
+	return n | z
+}

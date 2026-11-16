@@ -1,0 +1,4 @@
+package a
+
+const crossZero = iota
+const boolConstant = iota == 0

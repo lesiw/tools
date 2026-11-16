@@ -1596,6 +1596,18 @@ func f() {
 }
 ```
 
+## noopbits
+
+Reports a bitwise AND, OR, or XOR whose right operand is a zero integer literal or an iota zero constant. The zero operand leaves the bits of the other operand unchanged under OR and XOR; an AND with zero clears every bit.
+
+Adapted from staticcheck's SA4016.
+
+```
+func f(n int) int {
+    return n | 0
+}
+```
+
 ## nowsub
 
 Reports time.Now().Sub(t) or t.Sub(time.Now()). time.Since and time.Until are shorthand for these two calls. In the Since direction a call is reported only when the argument does no work, because the rewrite moves the clock read past the argument.
