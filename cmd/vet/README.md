@@ -206,6 +206,19 @@ func f(n int) {
 }
 ```
 
+## badlock
+
+Reports a deferred call that does not release the lock taken in the statement before it. A deferred release that names the other method is a run-time error, and a deferred call that takes a lock deadlocks or leaves a read lock that nothing releases.
+
+Adapted from go-critic's badLock.
+
+```
+func f(mu *sync.RWMutex) {
+    mu.Lock()
+    defer mu.RUnlock()
+}
+```
+
 ## badsorting
 
 Reports a sort.Slice call whose less function does not order the elements by the indexes it was given. A comparison that reads a single element cannot order the pair, and one at a constant index reads the same slot every time, so the sort leaves the slice as it found it. A fix would guess which pair was meant, so none is offered.

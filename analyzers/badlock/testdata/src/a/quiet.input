@@ -1,0 +1,97 @@
+package a
+
+import "sync"
+
+func correct(mu *sync.RWMutex) {
+	mu.Lock()
+	defer mu.Unlock()
+}
+
+func correctRead(mu *sync.RWMutex) {
+	mu.RLock()
+	defer mu.RUnlock()
+}
+
+func separate(one, two *sync.RWMutex) {
+	one.Lock()
+	defer two.RUnlock()
+}
+
+func apart(mu *sync.RWMutex) {
+	mu.Lock()
+	n := 1
+	defer mu.RUnlock()
+	_ = n
+}
+
+func otherMethod(mu *sync.Mutex) {
+	mu.Lock()
+	defer mu.TryLock()
+}
+
+func nested(mu *sync.RWMutex, c bool) {
+	if c {
+		mu.Lock()
+	}
+	defer mu.RUnlock()
+}
+
+type hooks struct {
+	Lock    func()
+	RUnlock func()
+}
+
+func (h *hooks) run() {
+	h.Lock()
+	defer h.RUnlock()
+}
+
+type queue struct{}
+
+func (queue) Lock()             {}
+func (queue) RUnlock(count int) {}
+
+func (q queue) drain() {
+	q.Lock()
+	defer q.RUnlock(1)
+}
+
+type keyed struct{}
+
+func (keyed) Lock(key string) {}
+func (keyed) Unlock()         {}
+
+func (k keyed) twice() {
+	k.Lock("alpha")
+	defer k.Lock("beta")
+}
+
+func indirect(mu *sync.RWMutex) {
+	get := func() *sync.RWMutex { return mu }
+	get().Lock()
+	defer get().RUnlock()
+}
+
+func renamed(mu, alias *sync.RWMutex) {
+	alias = mu
+	alias.Lock()
+	defer mu.RUnlock()
+}
+
+func relocked(mu *sync.RWMutex, yield func()) {
+	mu.RLock()
+	defer mu.RUnlock()
+	mu.RUnlock()
+	defer mu.RLock()
+	yield()
+}
+
+func releasedAtOnce(mu *sync.Mutex) {
+	mu.Lock()
+	mu.Unlock()
+}
+
+func wrapped(mu *sync.RWMutex) {
+	mu.Lock()
+	defer func() { mu.RUnlock() }()
+}

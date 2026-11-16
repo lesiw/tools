@@ -204,6 +204,20 @@
 //		}
 //	}
 //
+// # badlock
+//
+// Reports a deferred call that does not release the lock taken in the
+// statement before it. A deferred release that names the other method is a
+// run-time error, and a deferred call that takes a lock deadlocks or leaves a
+// read lock that nothing releases.
+//
+// Adapted from go-critic's badLock.
+//
+//	func f(mu *sync.RWMutex) {
+//		mu.Lock()
+//		defer mu.RUnlock()
+//	}
+//
 // # badsorting
 //
 // Reports a sort.Slice call whose less function does not order the elements by

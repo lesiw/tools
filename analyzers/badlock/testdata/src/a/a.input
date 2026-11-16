@@ -1,0 +1,104 @@
+package a
+
+import "sync"
+
+func writeThenRUnlock(mu *sync.RWMutex) {
+	mu.Lock()
+	defer mu.RUnlock() // want `the deferred RUnlock does not release the lock taken by Lock`
+}
+
+func readThenUnlock(mu *sync.RWMutex) {
+	mu.RLock()
+	defer mu.Unlock() // want `the deferred Unlock does not release the lock taken by RLock`
+}
+
+func writeTwice(mu *sync.Mutex) {
+	mu.Lock()
+	defer mu.Lock() // want `the deferred Lock does not release the lock taken by Lock`
+}
+
+func readTwice(mu *sync.RWMutex) {
+	mu.RLock()
+	defer mu.RLock() // want `the deferred RLock does not release the lock taken by RLock`
+}
+
+func writeThenRLock(mu *sync.RWMutex) {
+	mu.Lock()
+	defer mu.RLock() // want `the deferred RLock does not release the lock taken by Lock`
+}
+
+func readThenWriteLock(mu *sync.RWMutex) {
+	mu.RLock()
+	defer mu.Lock() // want `the deferred Lock does not release the lock taken by RLock`
+}
+
+func parenthesized(mu *sync.RWMutex) {
+	(mu).Lock()
+	defer (mu).RUnlock() // want `the deferred RUnlock does not release the lock taken by Lock`
+}
+
+type Store struct {
+	mu sync.RWMutex
+}
+
+func (s *Store) read() {
+	s.mu.Lock()
+	defer s.mu.RUnlock() // want `the deferred RUnlock does not release the lock taken by Lock`
+}
+
+type Held struct {
+	sync.RWMutex
+}
+
+func (h *Held) peek() {
+	h.Lock()
+	defer h.RUnlock() // want `the deferred RUnlock does not release the lock taken by Lock`
+}
+
+func branch(mu *sync.RWMutex, which int) {
+	switch which {
+	case 0:
+		mu.Lock()
+		defer mu.RUnlock() // want `the deferred RUnlock does not release the lock taken by Lock`
+	}
+}
+
+func comm(mu *sync.RWMutex, ch chan int) {
+	select {
+	case <-ch:
+		mu.Lock()
+		defer mu.RUnlock() // want `the deferred RUnlock does not release the lock taken by Lock`
+	}
+}
+
+type latch struct{}
+
+func (latch) Lock()   {}
+func (latch) Unlock() {}
+
+func (l latch) held() {
+	l.Lock()
+	defer l.Lock() // want `the deferred Lock does not release the lock taken by Lock`
+}
+
+type gate struct{}
+
+func (gate) Lock()   {}
+func (gate) RLock()  {}
+func (gate) Unlock() {}
+
+func (g gate) upgrade() {
+	g.RLock()
+	defer g.Lock() // want `the deferred Lock does not release the lock taken by RLock`
+}
+
+type counting struct{}
+
+func (counting) Lock()       {}
+func (counting) RLock()      {}
+func (counting) RUnlock(int) {}
+
+func (c counting) widen() {
+	c.RLock()
+	defer c.Lock() // want `the deferred Lock does not release the lock taken by RLock`
+}

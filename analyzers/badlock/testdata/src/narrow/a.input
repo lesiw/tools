@@ -1,0 +1,12 @@
+package narrow
+
+import "sync"
+
+type store struct {
+	mu sync.RWMutex
+}
+
+func (s *store) read() {
+	s.mu.RLock() // want+1 `the deferred Lock does not release the lock taken by RLock`
+	defer s.mu.Lock()
+}
