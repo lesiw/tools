@@ -273,6 +273,7 @@ import (
 	"lesiw.io/tools/analyzers/stringxbytes"
 	"lesiw.io/tools/analyzers/strreplaceall"
 	"lesiw.io/tools/analyzers/structconvert"
+	"lesiw.io/tools/analyzers/structtagdup"
 	"lesiw.io/tools/analyzers/switchtrue"
 	"lesiw.io/tools/analyzers/syncmaploaddelete"
 	"lesiw.io/tools/analyzers/testcmp"
@@ -607,6 +608,7 @@ var (
 		strreplaceall.Analyzer,
 		structconvert.Analyzer,
 		structtag.Analyzer,
+		structtagdup.Analyzer,
 		switchtrue.Analyzer,
 		syncmaploaddelete.Analyzer,
 		testcmp.Analyzer,

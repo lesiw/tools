@@ -1,0 +1,125 @@
+package a
+
+type basic struct {
+	Name string `json:"name" json:"label"` // want `struct tag key "json" is repeated`
+}
+
+type interleaved struct {
+	Value string `json:"a" yaml:"x" json:"b" yaml:"y"` // want `struct tag key "json" is repeated` `struct tag key "yaml" is repeated`
+}
+
+type triple struct {
+	Value string `json:"a" json:"b" json:"c"` // want `struct tag key "json" is repeated` `struct tag key "json" is repeated`
+}
+
+type spaces struct {
+	Value string `json:"first value" json:"second value"` // want `struct tag key "json" is repeated`
+}
+
+type escaped struct {
+	Value string `json:"a\"b" json:"c\"d"` // want `struct tag key "json" is repeated`
+}
+
+type unicode struct {
+	Value string `json:"café" json:"two"` // want `struct tag key "json" is repeated`
+}
+
+type interpreted struct {
+	Value string "json:\"a\" json:\"b\"" // want `struct tag key "json" is repeated`
+}
+
+type leading struct {
+	Value string ` json:"a" json:"b"` // want `struct tag key "json" is repeated`
+}
+
+type adjacent struct {
+	Value string `json:"a"json:"b"` // want `struct tag key "json" is repeated`
+}
+
+type gaps struct {
+	Value string `json:"a"   json:"b"` // want `struct tag key "json" is repeated`
+}
+
+type following struct {
+	Value string `json:"a" json:"b" yaml:"c"` // want `struct tag key "json" is repeated`
+}
+
+type same struct {
+	Value string `json:"a" json:"a"` // want `struct tag key "json" is repeated`
+}
+
+type empty struct {
+	Value string `json:"" json:"b"` // want `struct tag key "json" is repeated`
+}
+
+type unknown struct {
+	Value string `foo:"a" foo:"b"` // want `struct tag key "foo" is repeated`
+}
+
+type choice struct {
+	Value string `choice:"a" choice:"b"` // want `struct tag key "choice" is repeated`
+}
+
+type byteKeys struct {
+	Value string "\xff:\"a\" \u00ff:\"b\""
+}
+
+type byteDuplicate struct {
+	Value string "\xc3\xbf:\"a\" \u00ff:\"b\"" // want `struct tag key "ÿ" is repeated`
+}
+
+type carriage struct {
+	Value string `json:"a" json:"bc"` // want `struct tag key "json" is repeated`
+}
+
+type carriageBetween struct {
+	Value string `json:"a" json:"b"` // want `struct tag key "json" is repeated`
+}
+
+type carriageFirst struct {
+	Value string `json:"ab" json:"c"` // want `struct tag key "json" is repeated`
+}
+
+type malformedEscape struct {
+	Value string `json:"a" json:"b\x"`
+}
+
+type malformedFirst struct {
+	Value string `json:"\x" json:"b"`
+}
+
+type names struct {
+	First, Second string `json:"a" json:"b"` // want `struct tag key "json" is repeated`
+}
+
+type embedded struct {
+	Inner `json:"a" json:"b"` // want `struct tag key "json" is repeated`
+}
+
+type Inner struct{}
+
+type nested struct {
+	Inner struct {
+		Value string `json:"a" json:"b"` // want `struct tag key "json" is repeated`
+	}
+}
+
+type malformedLater struct {
+	Value string `json:"a" json:"b" bad` // want `struct tag key "json" is repeated`
+}
+
+type malformedBefore struct {
+	Value string `json:"a" bad json:"b"`
+}
+
+type malformedValue struct {
+	Value string `json:"a" json:"b`
+}
+
+type single struct {
+	Value string `json:"a"`
+}
+
+type pairs struct {
+	Value string `json:"a" yaml:"b"`
+}

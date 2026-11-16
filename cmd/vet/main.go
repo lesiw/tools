@@ -3667,6 +3667,17 @@
 //		name string `json:"name"`
 //	}
 //
+// # structtagdup
+//
+// Reports a struct tag that names the same key twice. reflect.StructTag.Lookup
+// returns the first value for a key, so it does not read the later pair.
+//
+// Adapted from staticcheck's SA5008.
+//
+//	type item struct {
+//		Name string `json:"name" json:"label"`
+//	}
+//
 // # switchtrue
 //
 // Reports a switch whose tag is the literal true. A switch with no tag

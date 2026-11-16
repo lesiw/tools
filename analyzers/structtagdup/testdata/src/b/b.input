@@ -1,0 +1,8 @@
+package b
+
+type options struct {
+	Choice   string `choice:"one" choice:"two"`
+	Default  string `default:"one" default:"two"`
+	Optional string `optional-value:"one" optional-value:"two"`
+	Name     string `json:"a" json:"b"` // want `struct tag key "json" is repeated`
+}
