@@ -1,0 +1,5 @@
+package b
+
+const KeySize = 1024
+
+var KeyArray [1024]byte

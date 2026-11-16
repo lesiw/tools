@@ -1,0 +1,12 @@
+package a
+
+import (
+	"crypto/rand"
+	"crypto/rsa"
+
+	. "b"
+)
+
+func dotConstant() {
+	rsa.GenerateKey(rand.Reader, KeySize) // want `RSA key size 1024 is below the recommended 2048 bits`
+}

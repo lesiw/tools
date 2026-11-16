@@ -4043,6 +4043,18 @@ func newToken() int {
 }
 ```
 
+## weakrsa
+
+Reports a call to rsa.GenerateKey with a constant key size below 2048 bits, the minimum NIST SP 800-57 recommends through 2030. By default, rsa.GenerateKey returns an error for a key below 1024 bits.
+
+Adapted from gosec's G403.
+
+```
+func generate() {
+    rsa.GenerateKey(rand.Reader, 1024)
+}
+```
+
 ## weaktls
 
 Reports a tls.Config literal with InsecureSkipVerify set to the constant true, or with a nonzero MinVersion constant below TLS 1.2. When InsecureSkipVerify is true, crypto/tls accepts any certificate presented by the server and any host name in that certificate. The zero MinVersion selects the TLS 1.2 default.

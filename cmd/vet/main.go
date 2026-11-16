@@ -4053,6 +4053,18 @@
 //		return rand.Intn(1000000)
 //	}
 //
+// # weakrsa
+//
+// Reports a call to rsa.GenerateKey with a constant key size below 2048 bits,
+// the minimum NIST SP 800-57 recommends through 2030. By default,
+// rsa.GenerateKey returns an error for a key below 1024 bits.
+//
+// Adapted from gosec's G403.
+//
+//	func generate() {
+//		rsa.GenerateKey(rand.Reader, 1024)
+//	}
+//
 // # weaktls
 //
 // Reports a tls.Config literal with InsecureSkipVerify set to the constant

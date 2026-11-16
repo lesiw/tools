@@ -1,0 +1,10 @@
+package a
+
+import (
+	"crypto/rand"
+	"crypto/rsa"
+)
+
+func testKey() {
+	rsa.GenerateKey(rand.Reader, 512)
+}

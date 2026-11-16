@@ -1,0 +1,119 @@
+package a
+
+import (
+	"crypto/rand"
+	"crypto/rsa"
+)
+
+const keySize = 1024
+
+func weak512() {
+	rsa.GenerateKey(rand.Reader, 512) // want `RSA key size 512 is below the recommended 2048 bits`
+}
+
+func weak1024() {
+	rsa.GenerateKey(rand.Reader, 1024) // want `RSA key size 1024 is below the recommended 2048 bits`
+}
+
+func weak2047() {
+	rsa.GenerateKey(rand.Reader, 2047) // want `RSA key size 2047 is below the recommended 2048 bits`
+}
+
+func zero() {
+	rsa.GenerateKey(rand.Reader, 0) // want `RSA key size 0 is below the recommended 2048 bits`
+}
+
+func strong2048() {
+	rsa.GenerateKey(rand.Reader, 2048)
+}
+
+func strong4096() {
+	rsa.GenerateKey(rand.Reader, 4096)
+}
+
+func hex() {
+	rsa.GenerateKey(rand.Reader, 0x400) // want `RSA key size 1024 is below the recommended 2048 bits`
+}
+
+func separated() {
+	rsa.GenerateKey(rand.Reader, 1_024) // want `RSA key size 1024 is below the recommended 2048 bits`
+}
+
+func fractional() {
+	rsa.GenerateKey(rand.Reader, 1024.0) // want `RSA key size 1024 is below the recommended 2048 bits`
+}
+
+func parenthesizedLiteral() {
+	rsa.GenerateKey(rand.Reader, (1024)) // want `RSA key size 1024 is below the recommended 2048 bits`
+}
+
+func parenthesizedCallee() {
+	(rsa.GenerateKey)(rand.Reader, 1024) // want `RSA key size 1024 is below the recommended 2048 bits`
+}
+
+func namedConstant() {
+	rsa.GenerateKey(rand.Reader, keySize) // want `RSA key size 1024 is below the recommended 2048 bits`
+}
+
+func converted() {
+	rsa.GenerateKey(rand.Reader, int(1024)) // want `RSA key size 1024 is below the recommended 2048 bits`
+}
+
+func quotient() {
+	rsa.GenerateKey(rand.Reader, 1024/2) // want `RSA key size 512 is below the recommended 2048 bits`
+}
+
+func negative() {
+	rsa.GenerateKey(rand.Reader, -1024) // want `RSA key size -1024 is below the recommended 2048 bits`
+}
+
+func shifted() {
+	rsa.GenerateKey(rand.Reader, 1<<10) // want `RSA key size 1024 is below the recommended 2048 bits`
+}
+
+func commentedArgument() {
+	rsa.GenerateKey(rand.Reader, 1024 /* bits */ +1) // want `RSA key size 1025 is below the recommended 2048 bits`
+}
+
+func multilineArgument() {
+	// want +1 `RSA key size 1026 is below the recommended 2048 bits`
+	rsa.GenerateKey(rand.Reader, 1024+
+		2)
+}
+
+func localVariable() {
+	buf := [1024]byte{}
+	rsa.GenerateKey(rand.Reader, len(buf)) // want `RSA key size 1024 is below the recommended 2048 bits`
+}
+
+func localConstant() {
+	const size = 1024
+	rsa.GenerateKey(rand.Reader, size) // want `RSA key size 1024 is below the recommended 2048 bits`
+}
+
+func strongExpression() {
+	rsa.GenerateKey(rand.Reader, 2*1024)
+}
+
+func variable(size int) {
+	rsa.GenerateKey(rand.Reader, size)
+}
+
+func computed(size int) {
+	rsa.GenerateKey(rand.Reader, int(size))
+}
+
+func next() int { return 1024 }
+
+func called() {
+	rsa.GenerateKey(rand.Reader, next())
+}
+
+func indirect() {
+	generate := rsa.GenerateKey
+	generate(rand.Reader, 1024)
+}
+
+func multiPrime() {
+	rsa.GenerateMultiPrimeKey(rand.Reader, 2, 1024)
+}
