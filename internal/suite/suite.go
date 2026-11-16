@@ -228,6 +228,7 @@ import (
 	"lesiw.io/tools/analyzers/regexpconst"
 	"lesiw.io/tools/analyzers/regexpmatchloop"
 	"lesiw.io/tools/analyzers/regexpmust"
+	"lesiw.io/tools/analyzers/regexpraw"
 	"lesiw.io/tools/analyzers/regexpsimplify"
 	"lesiw.io/tools/analyzers/resetvalue"
 	"lesiw.io/tools/analyzers/runerange"
@@ -531,6 +532,7 @@ var (
 		regexpconst.Analyzer,
 		regexpmatchloop.Analyzer,
 		regexpmust.Analyzer,
+		regexpraw.Analyzer,
 		regexpsimplify.Analyzer,
 		resetvalue.Analyzer,
 		runerange.Analyzer,

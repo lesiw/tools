@@ -1,0 +1,59 @@
+package a
+
+import "regexp"
+
+var (
+	digits = regexp.MustCompile("\\d+")      // want `pattern literal has doubled backslashes; use a raw string literal`
+	posix  = regexp.MustCompilePOSIX("\\d+") // want `pattern literal has doubled backslashes; use a raw string literal`
+	word   = regexp.MustCompile("[a-z]+")
+	raw    = regexp.MustCompile(`\d+`)
+	quoted = regexp.MustCompile(`\\.`)
+)
+
+func compile() (*regexp.Regexp, error) {
+	return regexp.Compile("\\w+") // want `pattern literal has doubled backslashes; use a raw string literal`
+}
+
+func compilePOSIX() (*regexp.Regexp, error) {
+	return regexp.CompilePOSIX("\\w+") // want `pattern literal has doubled backslashes; use a raw string literal`
+}
+
+func match(s string) {
+	regexp.MatchString("\\d+", s)   // want `pattern literal has doubled backslashes; use a raw string literal`
+	regexp.Match("\\d+", []byte(s)) // want `pattern literal has doubled backslashes; use a raw string literal`
+	regexp.MatchReader("\\d+", nil) // want `pattern literal has doubled backslashes; use a raw string literal`
+	regexp.MustCompile("\\d\\t")    // want `pattern literal has doubled backslashes; use a raw string literal`
+}
+
+func parenthesized() *regexp.Regexp {
+	regexp.MustCompile(("\\d+")) // want `pattern literal has doubled backslashes; use a raw string literal`
+	return (regexp.MustCompile)("\\d+") // want `pattern literal has doubled backslashes; use a raw string literal`
+}
+
+func pattern(pattern string) *regexp.Regexp {
+	return regexp.MustCompile(pattern)
+}
+
+func functionValue() {
+	compile := regexp.Compile
+	compile("\\d+")
+}
+
+func matched(re *regexp.Regexp, s string) bool {
+	return re.MatchString("\\d+")
+}
+
+const held = "\\d+"
+
+func kept() {
+	regexp.MustCompile(held)
+	local := "\\d+"
+	regexp.MustCompile(local)
+	regexp.MustCompile("\\d\n")
+	regexp.QuoteMeta("\\d+")
+	regexp.MustCompile("\\d\x41")
+	regexp.MustCompile("\\d`")
+	regexp.MustCompile("\\d\"")
+	regexp.MustCompile("a+")
+	regexp.MustCompile("")
+}

@@ -1,0 +1,7 @@
+package a
+
+import re "regexp"
+
+func aliased() *re.Regexp {
+	return re.MustCompile("\\d+") // want `pattern literal has doubled backslashes; use a raw string literal`
+}

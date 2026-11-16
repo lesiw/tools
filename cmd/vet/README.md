@@ -2832,6 +2832,16 @@ func must() *regexp.Regexp {
 }
 ```
 
+## regexpraw
+
+Reports a regexp pattern written as an interpreted string that doubles every backslash and holds at least one. A raw string literal keeps a backslash as written, so the rewrite drops one backslash from each pair.
+
+Inspired by staticcheck's S1007.
+
+```
+var re = regexp.MustCompile("\\d+")
+```
+
 ## regexpsimplify
 
 Reports a regexp character class that has a shorter spelling. Both spellings are correct, so this is a house rule.

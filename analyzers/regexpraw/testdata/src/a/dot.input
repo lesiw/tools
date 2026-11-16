@@ -1,0 +1,7 @@
+package a
+
+import . "regexp"
+
+func dotted() *Regexp {
+	return MustCompile("\\d+") // want `pattern literal has doubled backslashes; use a raw string literal`
+}
