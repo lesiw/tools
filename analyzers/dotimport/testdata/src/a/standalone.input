@@ -1,0 +1,10 @@
+package a
+
+import . "strings" // want `dot import of "strings"`
+
+import "strings"
+
+var (
+	_ = Contains
+	_ = strings.TrimSpace
+)

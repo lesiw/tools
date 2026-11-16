@@ -895,6 +895,22 @@ Reports Markdown that Go doc comments do not implement: a code span, a fenced bl
 func F() {}
 ```
 
+## dotimport
+
+Reports a dot import in a file that is not a test. The dot form declares every exported identifier in the imported package's package block in the file block, so the file does not show where a name is defined. A dot import of internal/types/errors is not reported.
+
+Inspired by revive's dot-imports.
+
+```
+package a
+
+import . "strings"
+
+func f(s string) bool {
+    return Contains(s, "x")
+}
+```
+
 ## dubbitshift
 
 Reports a shift of a fixed-size typed constant by a count at least as large as the type's width, or a shift of an unsigned typed constant whose result is zero below that width. A shift of a non-constant operand is left alone, and so is a shift with a platform-dependent type anywhere in its expression.

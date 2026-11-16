@@ -1,0 +1,5 @@
+package a
+
+import . "strings" // want `dot import of "strings"`
+
+var _ = Contains("a", "b") || Contains("c", "d") || Contains("e", "f")

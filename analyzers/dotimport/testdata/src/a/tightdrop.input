@@ -1,0 +1,12 @@
+package a
+
+import (
+	. "strings" // want `dot import of "strings"`
+	"strings"; "fmt"
+)
+
+var (
+	_ = Contains
+	_ = strings.TrimSpace
+	_ = fmt.Sprint
+)

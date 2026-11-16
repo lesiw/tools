@@ -1,0 +1,5 @@
+package a_test
+
+import . "strings"
+
+var _ = Contains

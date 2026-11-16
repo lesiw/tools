@@ -924,6 +924,23 @@
 //	// F returns a `value`.
 //	func F() {}
 //
+// # dotimport
+//
+// Reports a dot import in a file that is not a test. The dot form declares
+// every exported identifier in the imported package's package block in the
+// file block, so the file does not show where a name is defined. A dot import
+// of internal/types/errors is not reported.
+//
+// Inspired by revive's dot-imports.
+//
+//	package a
+//
+//	import . "strings"
+//
+//	func f(s string) bool {
+//		return Contains(s, "x")
+//	}
+//
 // # dubbitshift
 //
 // Reports a shift of a fixed-size typed constant by a count at least as large

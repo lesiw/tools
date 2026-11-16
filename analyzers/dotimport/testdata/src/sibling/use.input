@@ -1,0 +1,5 @@
+package sibling
+
+import . "strings" // want `dot import of "strings"`
+
+var _ = Contains

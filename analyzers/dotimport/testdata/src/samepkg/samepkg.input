@@ -1,0 +1,11 @@
+package samepkg
+
+import (
+	. "example.com/a/same" // want `dot import of "example.com/a/same"`
+	. "example.com/b/same"  // want `dot import of "example.com/b/same"`
+)
+
+var (
+	_ = Alpha
+	_ = Beta
+)

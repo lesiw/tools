@@ -1,0 +1,6 @@
+//line changed.go:1
+package a
+
+import . "strings"
+
+var _ = Contains

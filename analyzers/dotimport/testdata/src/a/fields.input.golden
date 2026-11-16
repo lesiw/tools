@@ -1,0 +1,12 @@
+package a
+
+import "image" // want `dot import of "image"`
+
+var (
+	_ = image.Point{X: 1, Y: 2}
+	_ = image.Rectangle{Min: image.Point{}, Max: image.Point{}}
+)
+
+func add(p image.Point) image.Point {
+	return p.Add(image.Point{})
+}

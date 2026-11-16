@@ -1,0 +1,4 @@
+package same
+
+const Alpha = 1
+const Gamma = 3

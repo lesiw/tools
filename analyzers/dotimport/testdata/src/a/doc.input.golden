@@ -1,0 +1,8 @@
+package a
+
+import (
+	// the string package
+	"strings" // want `dot import of "strings"`
+)
+
+var _ = strings.Contains

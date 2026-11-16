@@ -1,0 +1,9 @@
+package a
+
+import . "strings" // want `dot import of "strings"`
+
+func local() bool {
+	strings := 1
+	_ = strings
+	return Contains("a", "b")
+}

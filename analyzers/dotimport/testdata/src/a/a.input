@@ -1,0 +1,12 @@
+package a
+
+import (
+	. "strconv" // want `dot import of "strconv"`
+
+	"strings"
+)
+
+var (
+	_ = Itoa
+	_ = strings.Contains
+)

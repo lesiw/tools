@@ -1,0 +1,11 @@
+package a
+
+import (
+	. "example.com/averylongpackagename/constants" // want `dot import of "example.com/averylongpackagename/constants"`
+	constantsfromtheexample "example.com/averylongpackagename/constants"
+)
+
+var (
+	_ = Good
+	_ = constantsfromtheexample.Good
+)

@@ -1,0 +1,5 @@
+package allowed
+
+import . "example.com/constants"
+
+var _ = Good

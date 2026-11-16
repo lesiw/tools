@@ -1,0 +1,11 @@
+package a
+
+import (
+	. "math"    // want `dot import of "math"`
+	. "strings" // want `dot import of "strings"`
+)
+
+var (
+	_ = Abs
+	_ = Contains
+)

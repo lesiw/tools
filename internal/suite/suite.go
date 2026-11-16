@@ -107,6 +107,7 @@ import (
 	"lesiw.io/tools/analyzers/divzero"
 	"lesiw.io/tools/analyzers/docstub"
 	"lesiw.io/tools/analyzers/docsyntax"
+	"lesiw.io/tools/analyzers/dotimport"
 	"lesiw.io/tools/analyzers/dubbitshift"
 	"lesiw.io/tools/analyzers/dupbranch"
 	"lesiw.io/tools/analyzers/dupbuildtag"
@@ -377,6 +378,7 @@ var (
 		divzero.Analyzer,
 		docstub.Analyzer,
 		docsyntax.Analyzer,
+		dotimport.Analyzer,
 		dubbitshift.Analyzer,
 		dupbranch.Analyzer,
 		dupbuildtag.Analyzer,
