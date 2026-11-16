@@ -1,0 +1,230 @@
+package a
+
+import "foreign"
+
+type first struct {
+	Alpha string `json:"alpha"`
+	Beta  int    `json:"beta"`
+}
+
+type second struct {
+	Alpha string `json:"one"`
+	Beta  int    `json:"two"`
+}
+
+type alias = second
+
+type wide struct {
+	Alpha string `json:"one"`
+	Beta  any    `json:"two"`
+}
+
+type pairSource struct {
+	Alpha string `json:"alpha"`
+	Beta  string `json:"beta"`
+}
+
+type pair struct {
+	Alpha string `json:"one"`
+	Beta  string `json:"two"`
+}
+
+type reordered struct {
+	Beta  int    `json:"two"`
+	Alpha string `json:"one"`
+}
+
+type plainFirst struct {
+	Alpha string
+	Beta  int
+}
+
+type plainSecond struct {
+	Alpha string
+	Beta  int
+}
+
+type oneTag struct {
+	Alpha string `json:"alpha"`
+	Beta  int
+}
+
+type otherTag struct {
+	Alpha string `json:"one"`
+	Beta  int
+}
+
+type wrapper struct {
+	Body first
+}
+
+type box[T any] struct {
+	Value T `json:"box"`
+}
+
+type cell[T any] struct {
+	Value T `json:"cell"`
+}
+
+type list []second
+
+type loneSource struct {
+	Alpha string `json:"alpha"`
+}
+
+type loneDest struct {
+	Alpha string `json:"one"`
+}
+
+type longDestinationNameThatCrossesTheLimit struct {
+	Alpha string `json:"one"`
+	Beta  int    `json:"two"`
+}
+
+type longSourceNameThatCrossesTheLimit struct {
+	Alpha string `json:"alpha"`
+	Beta  int    `json:"beta"`
+}
+
+func keyed(v first) second {
+	return second{Alpha: v.Alpha, Beta: v.Beta} // want `struct literal copies every field of v; write second\(v\)$`
+}
+
+func reversed(v first) second {
+	return second{Beta: v.Beta, Alpha: v.Alpha} // want `struct literal copies every field of v; write second\(v\)$`
+}
+
+func unkeyed(v first) second {
+	return second{v.Alpha, v.Beta} // want `struct literal copies every field of v; write second\(v\)$`
+}
+
+func aliasDest(v first) alias {
+	return alias{Alpha: v.Alpha, Beta: v.Beta} // want `struct literal copies every field of v; write alias\(v\)$`
+}
+
+func oneTagged(v oneTag) otherTag {
+	return otherTag{Alpha: v.Alpha, Beta: v.Beta} // want `struct literal copies every field of v; write otherTag\(v\)$`
+}
+
+func destTagged(v plainFirst) second {
+	return second{Alpha: v.Alpha, Beta: v.Beta} // want `struct literal copies every field of v; write second\(v\)$`
+}
+
+func sourceTagged(v second) plainFirst {
+	return plainFirst{Alpha: v.Alpha, Beta: v.Beta} // want `struct literal copies every field of v; write plainFirst\(v\)$`
+}
+
+func unnamedSource(v struct {
+	Alpha string `json:"alpha"`
+	Beta  int    `json:"beta"`
+}) second {
+	return second{Alpha: v.Alpha, Beta: v.Beta} // want `struct literal copies every field of v; write second\(v\)$`
+}
+
+func elided(v first) list {
+	return list{{Alpha: v.Alpha, Beta: v.Beta}} // want `struct literal copies every field of v; write second\(v\)$`
+}
+
+func parenthesized(v first) second {
+	return second{Alpha: (v.Alpha), Beta: v.Beta} // want `struct literal copies every field of v; write second\(v\)$`
+}
+
+func nestedField(w wrapper) second {
+	return second{Alpha: w.Body.Alpha, Beta: w.Body.Beta} // want `struct literal copies every field of w.Body; write second\(w.Body\)$`
+}
+
+func instantiated(v cell[int]) box[int] {
+	return box[int]{Value: v.Value} // want `struct literal copies every field of v; write box\[int\]\(v\)$`
+}
+
+func lone(v loneSource) loneDest {
+	return loneDest{Alpha: v.Alpha} // want `struct literal copies every field of v; write loneDest\(v\)$`
+}
+
+func singleEffectful(f func() loneSource) loneDest {
+	return loneDest{Alpha: f().Alpha} // want `struct literal copies every field of f\(\); write loneDest\(f\(\)\)$`
+}
+
+func overWidth(v longSourceNameThatCrossesTheLimit) longDestinationNameThatCrossesTheLimit {
+	// want +1 `struct literal copies every field of v; write longDestinationNameThatCrossesTheLimit\(v\)$`
+	return longDestinationNameThatCrossesTheLimit{Alpha: v.Alpha, Beta: v.Beta}
+}
+
+func sameType(v first) first {
+	return first{Alpha: v.Alpha, Beta: v.Beta}
+}
+
+func sameTags(v plainFirst) plainSecond {
+	return plainSecond{Alpha: v.Alpha, Beta: v.Beta}
+}
+
+func differentTypes(v first) wide {
+	return wide{Alpha: v.Alpha, Beta: v.Beta}
+}
+
+func reorderedFields(v first) reordered {
+	return reordered{Beta: v.Beta, Alpha: v.Alpha}
+}
+
+func computed(v first) second {
+	return second{Alpha: "alpha", Beta: v.Beta}
+}
+
+func crossed(v pairSource) pair {
+	return pair{Alpha: v.Beta, Beta: v.Alpha}
+}
+
+func partial(v first) second {
+	return second{Alpha: v.Alpha}
+}
+
+func empty() second {
+	return second{}
+}
+
+func pointer(v *first) second {
+	return second{Alpha: v.Alpha, Beta: v.Beta}
+}
+
+func address(v first) *second {
+	return &second{Alpha: v.Alpha, Beta: v.Beta}
+}
+
+func parenthesizedAddress(v first) *second {
+	return &(second{Alpha: v.Alpha, Beta: v.Beta})
+}
+
+func elidedPointer(v first) []*second {
+	return []*second{{Alpha: v.Alpha, Beta: v.Beta}}
+}
+
+func mixedVariables(a, b first) second {
+	return second{Alpha: a.Alpha, Beta: b.Beta}
+}
+
+func effectful(f func() first) second {
+	return second{Alpha: f().Alpha, Beta: f().Beta}
+}
+
+func foreignSource(v foreign.Remote) second {
+	return second{Alpha: v.Alpha, Beta: v.Beta}
+}
+
+func foreignDest(v first) foreign.Remote {
+	return foreign.Remote{Alpha: v.Alpha, Beta: v.Beta}
+}
+
+func commented(v first) second {
+	// want +1 `struct literal copies every field of v; write second\(v\)$`
+	return second{
+		Alpha: v.Alpha, // keep
+		Beta:  v.Beta,
+	}
+}
+
+func shadowed(v first) list {
+	second := 0
+	_ = second
+	// want +1 `struct literal copies every field of v; write a conversion of v$`
+	return list{{Alpha: v.Alpha, Beta: v.Beta}}
+}

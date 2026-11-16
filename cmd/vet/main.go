@@ -1332,6 +1332,25 @@
 //		sync.Mutex
 //	}
 //
+// # fieldcopy
+//
+// Reports a struct literal that copies every field of a same-shaped struct
+// whose tags differ. The spec ignores tags when it allows the conversion.
+//
+// Adapted from staticcheck's S1016, which ignores tags.
+//
+//	type first struct {
+//		Kind string `json:"kind"`
+//	}
+//
+//	type second struct {
+//		Kind string `json:"type"`
+//	}
+//
+//	func f(v first) second {
+//		return second{Kind: v.Kind}
+//	}
+//
 // # filepathjoin
 //
 // Reports a path concatenated with a literal separator, in a file that imports

@@ -1,0 +1,6 @@
+package foreign
+
+type Remote struct {
+	Alpha string `json:"remote-alpha"`
+	Beta  int    `json:"remote-beta"`
+}

@@ -132,6 +132,7 @@ import (
 	"lesiw.io/tools/analyzers/errwrapdirect"
 	"lesiw.io/tools/analyzers/evalorder"
 	"lesiw.io/tools/analyzers/exposedsyncmutex"
+	"lesiw.io/tools/analyzers/fieldcopy"
 	"lesiw.io/tools/analyzers/filepathjoin"
 	"lesiw.io/tools/analyzers/findallzero"
 	"lesiw.io/tools/analyzers/flagderef"
@@ -391,6 +392,7 @@ var (
 		errwrapdirect.Analyzer,
 		evalorder.Analyzer,
 		exposedsyncmutex.Analyzer,
+		fieldcopy.Analyzer,
 		filepathjoin.Analyzer,
 		findallzero.Analyzer,
 		flagderef.Analyzer,
