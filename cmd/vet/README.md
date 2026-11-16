@@ -2456,6 +2456,18 @@ func f(m map[string]int) {
 }
 ```
 
+## sortstrings
+
+Reports sort.Strings, sort.Ints, sort.Float64s, or a sort.Slice whose less function compares the two elements at the indexes it was given, where the element type is ordered. A sort.Slice over an element type that can hold a NaN is left alone. slices.Sort, available since Go 1.21, orders the same slice.
+
+Adapted from staticcheck's S1032, which stops at the element-typed call, and x/tools' modernize slicessort; it replaces the latter in the suite.
+
+```
+func f(names []string) {
+    sort.Strings(names)
+}
+```
+
 ## sprintfquotedstring
 
 Reports a format string that writes quotes around a %s by hand. A quote or a backslash in the value ends the quoted text early, where %q escapes the value and supplies the quotes.

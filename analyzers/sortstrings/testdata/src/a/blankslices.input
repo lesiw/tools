@@ -1,0 +1,10 @@
+package a
+
+import (
+	_ "slices"
+	"sort"
+)
+
+func blankSlices(names []string) {
+	sort.Strings(names) // want `sort\.Strings can be replaced by slices\.Sort`
+}

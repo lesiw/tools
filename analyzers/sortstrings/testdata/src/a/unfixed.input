@@ -1,0 +1,17 @@
+package a
+
+import "sort"
+
+func shadowed(names []string) {
+	slices := 0
+	_ = slices
+	sort.Strings(names) // want `sort\.Strings can be replaced by slices\.Sort`
+}
+
+func commented(names []string) {
+	sort.Strings(names /* keep */) // want `sort\.Strings can be replaced by slices\.Sort`
+}
+
+func commentedSlice(ranks []rank) {
+	sort.Slice(ranks, func(i, j int) bool { return ranks[i] < ranks[j] /* keep */ }) // want `sort\.Slice can be replaced by slices\.Sort`
+}

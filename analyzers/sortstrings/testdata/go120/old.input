@@ -1,0 +1,15 @@
+package old
+
+import "sort"
+
+func names(names []string) {
+	sort.Strings(names)
+}
+
+func ranks(ranks []int) {
+	sort.Slice(ranks, func(i, j int) bool { return ranks[i] < ranks[j] })
+}
+
+func rates(rates []float64) {
+	sort.Float64s(rates)
+}

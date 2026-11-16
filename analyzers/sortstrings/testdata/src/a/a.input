@@ -1,0 +1,132 @@
+package a
+
+import "sort"
+
+type rank int
+
+type item struct {
+	rank int
+}
+
+type box struct {
+	ranks []rank
+}
+
+type rate float64
+
+func stringSlice(names []string) {
+	sort.Strings(names) // want `sort\.Strings can be replaced by slices\.Sort`
+}
+
+func intSlice(counts []int) {
+	sort.Ints(counts) // want `sort\.Ints can be replaced by slices\.Sort`
+}
+
+func namedRanks(ranks []rank) {
+	sort.Slice(ranks, func(i, j int) bool { return ranks[i] < ranks[j] }) // want `sort\.Slice can be replaced by slices\.Sort`
+}
+
+func fieldRanks(b *box) {
+	sort.Slice(b.ranks, func(left, right int) bool { return b.ranks[left] < b.ranks[right] }) // want `sort\.Slice can be replaced by slices\.Sort`
+}
+
+func indexedRanks(rows [][]rank) {
+	sort.Slice(rows[0], func(i, j int) bool { return rows[0][i] < rows[0][j] }) // want `sort\.Slice can be replaced by slices\.Sort`
+}
+
+func pointedRanks(ps *[]rank) {
+	sort.Slice(*ps, func(i, j int) bool { return (*ps)[i] < (*ps)[j] }) // want `sort\.Slice can be replaced by slices\.Sort`
+}
+
+func typeParameter[T int](values []T) {
+	sort.Slice(values, func(i, j int) bool { return values[i] < values[j] }) // want `sort\.Slice can be replaced by slices\.Sort`
+}
+
+func genericSlice[S ~[]rank](ranks S) {
+	sort.Slice(ranks, func(i, j int) bool { return ranks[i] < ranks[j] }) // want `sort\.Slice can be replaced by slices\.Sort`
+}
+
+func itemRanks(items []item) {
+	sort.Slice(items, func(i, j int) bool { return items[i].rank < items[j].rank })
+}
+
+func descending(ranks []rank) {
+	sort.Slice(ranks, func(i, j int) bool { return ranks[i] > ranks[j] })
+}
+
+func reversed(ranks []rank) {
+	sort.Slice(ranks, func(i, j int) bool { return ranks[j] < ranks[i] })
+}
+
+func loose(ranks []rank) {
+	sort.Slice(ranks, func(i, j int) bool { return ranks[i] <= ranks[j] })
+}
+
+func extra(ranks []rank) {
+	sort.Slice(ranks, func(i, j int) bool {
+		return i < j && ranks[i] < ranks[j]
+	})
+}
+
+func held(ranks []rank, less func(int, int) bool) {
+	sort.Slice(ranks, less)
+}
+
+func stable(ranks []rank) {
+	sort.SliceStable(ranks, func(i, j int) bool { return ranks[i] < ranks[j] })
+}
+
+func floats(rates []float64) {
+	sort.Float64s(rates) // want `sort\.Float64s can be replaced by slices\.Sort`
+}
+
+func floatOrder(rates []float64) {
+	sort.Slice(rates, func(i, j int) bool { return rates[i] < rates[j] })
+}
+
+func namedFloatOrder(rates []rate) {
+	sort.Slice(rates, func(i, j int) bool { return rates[i] < rates[j] })
+}
+
+func genericFloatSlice[S ~[]float64](rates S) {
+	sort.Slice(rates, func(i, j int) bool { return rates[i] < rates[j] })
+}
+
+func genericFloatOrder[T ~float64](rates []T) {
+	sort.Slice(rates, func(i, j int) bool { return rates[i] < rates[j] })
+}
+
+func notSlices(m map[int]int, a [3]int, s string) {
+	sort.Slice(m, func(i, j int) bool { return m[i] < m[j] })
+	sort.Slice(a, func(i, j int) bool { return a[i] < a[j] })
+	sort.Slice(s, func(i, j int) bool { return s[i] < s[j] })
+}
+
+func otherArguments(names []string, v any) {
+	sort.Slice(names[:], func(i, j int) bool { return names[:][i] < names[:][j] })
+	sort.Slice([]string(names), func(i, j int) bool { return []string(names)[i] < []string(names)[j] })
+	sort.Slice(v.([]string), func(i, j int) bool { return v.([]string)[i] < v.([]string)[j] })
+	sort.Slice([]string{"aaaa", "bbbb"}, func(i, j int) bool { return []string{"aaaa", "bbbb"}[i] < []string{"aaaa", "bbbb"}[j] })
+}
+
+func pair() ([]rank, func(int, int) bool) {
+	return nil, func(i, j int) bool { return false }
+}
+
+func multivalue() {
+	sort.Slice(pair())
+}
+
+func tree(names []string) {
+	sort.Sort(sort.StringSlice(names))
+}
+
+func next() []rank { return nil }
+
+func effectful() {
+	sort.Slice(next(), func(i, j int) bool { return next()[i] < next()[j] })
+}
+
+func received(ranks <-chan []rank) {
+	sort.Slice(<-ranks, func(i, j int) bool { return (<-ranks)[i] < (<-ranks)[j] })
+}

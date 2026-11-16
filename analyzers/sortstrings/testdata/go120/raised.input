@@ -1,0 +1,9 @@
+//go:build go1.21
+
+package old
+
+import "sort"
+
+func raised(names []string) {
+	sort.Strings(names) // want `sort\.Strings can be replaced by slices\.Sort`
+}

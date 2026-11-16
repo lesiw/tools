@@ -1,0 +1,11 @@
+package a
+
+import (
+	sl "slices"
+	"sort"
+)
+
+func aliased(names []string) {
+	sl.Sort(names)
+	sort.Strings(names) // want `sort\.Strings can be replaced by slices\.Sort`
+}

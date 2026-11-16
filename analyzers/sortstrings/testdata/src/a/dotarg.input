@@ -1,0 +1,7 @@
+package a
+
+import . "sort"
+
+func dotArg(names []string) {
+	Strings(StringSlice(names)) // want `sort\.Strings can be replaced by slices\.Sort`
+}

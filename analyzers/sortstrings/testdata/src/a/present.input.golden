@@ -1,0 +1,10 @@
+package a
+
+import (
+	"slices"
+)
+
+func present(names []string) {
+	slices.Sort(names)
+	slices.Sort(names) // want `sort\.Strings can be replaced by slices\.Sort`
+}

@@ -1,0 +1,11 @@
+package a
+
+import "slices"
+
+import . "sort"
+
+func dotUsed(names []string, counts []int) {
+	Sort(StringSlice(names))
+	slices.Sort(names) // want `sort\.Strings can be replaced by slices\.Sort`
+	slices.Sort(counts) // want `sort\.Ints can be replaced by slices\.Sort`
+}

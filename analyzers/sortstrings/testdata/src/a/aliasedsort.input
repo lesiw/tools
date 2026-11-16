@@ -1,0 +1,7 @@
+package a
+
+import std "sort"
+
+func aliasedSort(names []string) {
+	std.Strings(names) // want `sort\.Strings can be replaced by slices\.Sort`
+}
