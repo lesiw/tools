@@ -1,0 +1,194 @@
+package a
+
+import (
+	"math"
+	"other"
+)
+
+type temperature float64
+
+type narrowFloat float32
+
+type reading = float64
+
+func equal(v float64) bool {
+	return math.IsNaN(v) // want `no value equals NaN; this is always false; write math\.IsNaN\(v\)`
+}
+
+func equalLeft(v float64) bool {
+	return math.IsNaN(v) // want `always false; write math\.IsNaN\(v\)`
+}
+
+func unequal(v float64) bool {
+	return !math.IsNaN(v) // want `always true; write !math\.IsNaN\(v\)`
+}
+
+func unequalLeft(v float64) bool {
+	return !math.IsNaN(v) // want `always true; write !math\.IsNaN\(v\)`
+}
+
+func less(v float64) bool {
+	return v < math.NaN() // want `always false`
+}
+
+func lessOrEqual(v float64) bool {
+	return v <= math.NaN() // want `always false`
+}
+
+func greater(v float64) bool {
+	return v > math.NaN() // want `always false`
+}
+
+func greaterOrEqual(v float64) bool {
+	return v >= math.NaN() // want `always false`
+}
+
+func named(v temperature) bool {
+	return math.IsNaN(float64(v)) // want `always false; write math\.IsNaN\(float64\(v\)\)`
+}
+
+func aliasedType(v reading) bool {
+	return math.IsNaN(v) // want `always false; write math\.IsNaN\(v\)`
+}
+
+func shadow(v float32, float64 float64) bool {
+	return v == float32(math.NaN()) // want `always false`
+}
+
+func untyped() bool {
+	return math.IsNaN(1) // want `always false; write math\.IsNaN\(1\)`
+}
+
+func untypedFloat() bool {
+	return math.IsNaN(1.5) // want `always false; write math\.IsNaN\(1\.5\)`
+}
+
+func definedNarrow(v narrowFloat) bool {
+	return math.IsNaN(float64(v)) // want `always false; write math\.IsNaN\(float64\(v\)\)`
+}
+
+func narrow(v float32) bool {
+	return math.IsNaN(float64(v)) // want `always false; write math\.IsNaN\(float64\(v\)\)`
+}
+
+func widened(v float64) bool {
+	return math.IsNaN(v) // want `always false; write math\.IsNaN\(v\)`
+}
+
+func chained(v float64) bool {
+	return math.IsNaN(v) // want `always false; write math\.IsNaN\(v\)`
+}
+
+func both() bool {
+	return math.NaN() == math.NaN() // want `always false`
+}
+
+func bothUnequal() bool {
+	return math.NaN() != math.NaN() // want `always true`
+}
+
+func boxed(v any) bool {
+	return v == math.NaN() // want `always false`
+}
+
+func commented(v float64) bool {
+	return v == /* not-a-number */ math.NaN() // want `always false`
+}
+
+func narrowLess(v float32) bool {
+	return v < float32(math.NaN()) // want `always false`
+}
+
+func narrowUnequal(v float32) bool {
+	return !math.IsNaN(float64(v)) // want `always true; write !math\.IsNaN\(float64\(v\)\)`
+}
+
+func nested(v float64) bool {
+	return !math.IsNaN(v) && v > 0 // want `always true; write !math\.IsNaN\(v\)`
+}
+
+func integer() bool {
+	return 1 == int(math.NaN())
+}
+
+func generic[T ~float64](v T) bool {
+	return v == T(math.NaN())
+}
+
+func negated() bool {
+	return 1 == -math.NaN()
+}
+
+func heldVariable(v float64) bool {
+	nan := math.NaN()
+	return v == nan
+}
+
+func complexNaN(z complex128) bool {
+	return z == complex(math.NaN(), 0)
+}
+
+func switched(v float64) bool {
+	switch v {
+	case math.NaN(): // want `no value equals NaN; this case never matches`
+		return true
+	}
+	return false
+}
+
+func switchedTag() bool {
+	switch math.NaN() { // want `no value equals NaN; no case can match`
+	case 1:
+		return true
+	}
+	return false
+}
+
+func switchedTagAndCase() bool {
+	switch math.NaN() { // want `no value equals NaN; no case can match`
+	case math.NaN():
+		return true
+	}
+	return false
+}
+
+func switchedList(v float64) bool {
+	switch v {
+	case 0, math.NaN(): // want `no value equals NaN; this case never matches`
+		return true
+	}
+	return false
+}
+
+func switchedConversion(v float32) bool {
+	switch v {
+	case float32(math.NaN()): // want `this case never matches`
+		return true
+	}
+	return false
+}
+
+func literal() bool {
+	return func() float64 { return 1 }() == math.NaN() // want `always false`
+}
+
+func multiline(v float64) bool {
+	return v == // want `no value equals NaN; this is always false`
+		math.NaN()
+}
+
+func zero(v float64) bool {
+	return v == 0
+}
+
+func infinity(v float64) bool {
+	return v == math.Inf(1)
+}
+
+func held(v, nan float64) bool {
+	return v == nan
+}
+
+func local() bool {
+	return 1 == other.NaN()
+}

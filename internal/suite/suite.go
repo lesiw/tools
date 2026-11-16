@@ -123,6 +123,7 @@ import (
 	"lesiw.io/tools/analyzers/marshalrecv"
 	"lesiw.io/tools/analyzers/methodexprcall"
 	"lesiw.io/tools/analyzers/modifiesparam"
+	"lesiw.io/tools/analyzers/nancompare"
 	"lesiw.io/tools/analyzers/newderef"
 	"lesiw.io/tools/analyzers/nilchecklen"
 	"lesiw.io/tools/analyzers/nilmapassign"
@@ -308,6 +309,7 @@ var (
 		marshalrecv.Analyzer,
 		methodexprcall.Analyzer,
 		modifiesparam.Analyzer,
+		nancompare.Analyzer,
 		newderef.Analyzer,
 		nilchecklen.Analyzer,
 		nilfunc.Analyzer,

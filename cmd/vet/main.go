@@ -1325,6 +1325,20 @@
 //		name = strings.TrimSpace(name)
 //	}
 //
+// # nancompare
+//
+// Reports a comparison with math.NaN(). Under IEEE 754 a NaN is unequal to
+// every value, including itself, and every ordering comparison with one is
+// false, so the comparison has a constant answer. A case in an expression
+// switch that compares the tag with NaN is reported, and so is a switch whose
+// tag is NaN; no case can match.
+//
+// Adapted from staticcheck's SA4012.
+//
+//	func stopped(v float64) bool {
+//		return v == math.NaN()
+//	}
+//
 // # newderef
 //
 // Reports a dereference of a fresh allocation. new(T) zeroes a T and the

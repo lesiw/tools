@@ -1,0 +1,7 @@
+package a
+
+import m "math"
+
+func aliased(v float64) bool {
+	return m.IsNaN(v) // want `always false; write m\.IsNaN\(v\)`
+}
