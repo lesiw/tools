@@ -1,0 +1,10 @@
+package a
+
+import . "strings"
+
+func dotted(s, prefix string) string {
+	if HasPrefix(s, prefix) { // want `HasPrefix guard around TrimPrefix`
+		s = TrimPrefix(s, prefix)
+	}
+	return s
+}

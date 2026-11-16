@@ -1,0 +1,271 @@
+package a
+
+import (
+	"bytes"
+	"strings"
+)
+
+type item struct{ name string }
+
+func trim(s, prefix string) string {
+	// want `HasPrefix guard around TrimPrefix`
+	s = strings.TrimPrefix(s, prefix)
+	return s
+}
+
+func literal(s string) string {
+	// want `HasPrefix guard around TrimPrefix`
+	s = strings.TrimPrefix(s, "some-prefix")
+	return s
+}
+
+func parenthesized(s, prefix string) string {
+	// want `HasPrefix guard around TrimPrefix`
+	s = strings.TrimPrefix((s), (prefix))
+	return s
+}
+
+func trimField(it *item, prefix string) {
+	// want `HasPrefix guard around TrimPrefix`
+	it.name = strings.TrimPrefix(it.name, prefix)
+}
+
+func indexed(xs []string, prefix string) []string {
+	// want `HasPrefix guard around TrimPrefix`
+	xs[0] = strings.TrimPrefix(xs[0], prefix)
+	return xs
+}
+
+func sliceValue(m map[string][]string, key, prefix string) map[string][]string {
+	// want `HasPrefix guard around TrimPrefix`
+	m[key][0] = strings.TrimPrefix(m[key][0], prefix)
+	return m
+}
+
+func arrayed(xs [1]string, prefix string) [1]string {
+	// want `HasPrefix guard around TrimPrefix`
+	xs[0] = strings.TrimPrefix(xs[0], prefix)
+	return xs
+}
+
+func pointed(xs *[1]string, prefix string) {
+	// want `HasPrefix guard around TrimPrefix`
+	xs[0] = strings.TrimPrefix(xs[0], prefix)
+}
+
+func deref(s *string, prefix string) {
+	// want `HasPrefix guard around TrimPrefix`
+	*s = strings.TrimPrefix(*s, prefix)
+}
+
+func spread(s, prefix string) string {
+	// want +1 `HasPrefix guard around TrimPrefix`
+	s = strings.TrimPrefix(s, prefix)
+	return s
+}
+
+func trimBytes(b, prefix []byte) []byte {
+	// want `HasPrefix guard around TrimPrefix`
+	b = bytes.TrimPrefix(b, prefix)
+	return b
+}
+
+func wrapped(s, prefix string) string {
+	// want `HasPrefix guard around TrimPrefix`
+	s = (strings.TrimPrefix)(s, prefix)
+	return s
+}
+
+func commented(s, prefix string) string {
+	if strings.HasPrefix( // want `HasPrefix guard around TrimPrefix`
+		s, prefix,
+	) {
+		s = strings.TrimPrefix(s, prefix)
+	}
+	return s
+}
+
+func alone(s, prefix string) string {
+	// want +1 `HasPrefix guard around TrimPrefix`
+	s = strings.TrimPrefix(s, prefix)
+	return s
+}
+
+func chained(s, prefix string, done bool) string {
+	if done {
+		return s
+	} else { // want `HasPrefix guard around TrimPrefix`
+		s = strings.TrimPrefix(s, prefix)
+	}
+	return s
+}
+
+func chainedSpread(s, prefix string, done bool) string {
+	if done {
+		return s
+	} else if strings.HasPrefix( // want `HasPrefix guard around TrimPrefix`
+		s,
+		prefix,
+	) {
+		s = strings.TrimPrefix(s, prefix)
+	}
+	return s
+}
+
+func chainedWrapped(s, prefix string, done bool) string {
+	if done { // want +2 `HasPrefix guard around TrimPrefix`
+		return s
+	} else {
+		s = strings.TrimPrefix(s, prefix)
+	}
+	return s
+}
+
+func chainedElse(s, prefix string, done bool) string {
+	if done {
+		return s
+	} else if strings.HasPrefix(s, prefix) {
+		s = strings.TrimPrefix(s, prefix)
+	} else {
+		s += "some-suffix"
+	}
+	return s
+}
+
+func inline(s, prefix string) string {
+	s = strings.TrimPrefix(s, prefix) // want `HasPrefix guard around TrimPrefix`
+	return s
+}
+
+func reassign(s, other, prefix string) string {
+	if strings.HasPrefix(s, prefix) {
+		other = strings.TrimPrefix(s, prefix)
+	}
+	return other
+}
+
+func otherTrim(s, other, prefix string) string {
+	if strings.HasPrefix(s, prefix) {
+		s = strings.TrimPrefix(other, prefix)
+	}
+	return s
+}
+
+func shadowed(s, prefix string) string {
+	if strings.HasPrefix(s, prefix) {
+		s = func(s string) string { return strings.TrimPrefix(s, prefix) }(s)
+	}
+	return s
+}
+
+func initialized(s, prefix string) string {
+	if s = strings.TrimPrefix(s, "some-prefix"); strings.HasPrefix(s, prefix) {
+		s = strings.TrimPrefix(s, prefix)
+	}
+	return s
+}
+
+func mapped(m map[string]string, prefix string) string {
+	if strings.HasPrefix(m["some-key"], prefix) {
+		m["some-key"] = strings.TrimPrefix(m["some-key"], prefix)
+	}
+	return m["some-key"]
+}
+
+func labeled(s, prefix string) string {
+again:
+	// want `HasPrefix guard around TrimPrefix`
+	s = strings.TrimPrefix(s, prefix)
+	if s == "some-value" {
+		goto again
+	}
+	return s
+}
+
+func otherPrefix(s, prefix string) string {
+	if strings.HasPrefix(s, prefix) {
+		s = strings.TrimPrefix(s, "some-prefix")
+	}
+	return s
+}
+
+func manual(s, prefix string) string {
+	if strings.HasPrefix(s, prefix) {
+		s = s[len(prefix):]
+	}
+	return s
+}
+
+func suffix(s, ending string) string {
+	if strings.HasSuffix(s, ending) {
+		s = strings.TrimSuffix(s, ending)
+	}
+	return s
+}
+
+func contained(s, sep string) string {
+	if strings.Contains(s, sep) {
+		s = strings.Replace(s, sep, "", 1)
+	}
+	return s
+}
+
+func called(next func() string, s, prefix string) string {
+	if strings.HasPrefix(s, prefix) {
+		s = strings.TrimPrefix(next(), prefix)
+	}
+	return s
+}
+
+func generic[T ~[]string](xs T, prefix string) T {
+	// want `HasPrefix guard around TrimPrefix`
+	xs[0] = strings.TrimPrefix(xs[0], prefix)
+	return xs
+}
+
+func genericUnion[T ~[]string | ~[1]string](xs T, prefix string) T {
+	// want `HasPrefix guard around TrimPrefix`
+	xs[0] = strings.TrimPrefix(xs[0], prefix)
+	return xs
+}
+
+func pointedValue(m map[string]*[1]string, key, prefix string) {
+	// want `HasPrefix guard around TrimPrefix`
+	m[key][0] = strings.TrimPrefix(m[key][0], prefix)
+}
+
+func mappedParam[T ~map[string]string](m T, key, prefix string) T {
+	if strings.HasPrefix(m[key], prefix) {
+		m[key] = strings.TrimPrefix(m[key], prefix)
+	}
+	return m
+}
+
+func withElse(s, prefix string) string {
+	if strings.HasPrefix(s, prefix) {
+		s = strings.TrimPrefix(s, prefix)
+	} else {
+		s += "some-suffix"
+	}
+	return s
+}
+
+func logged(s, prefix string) string {
+	if strings.HasPrefix(s, prefix) {
+		s = strings.TrimPrefix(s, prefix)
+		println(s)
+	}
+	return s
+}
+
+type cutter string
+
+func (c cutter) HasPrefix(prefix string) bool    { return true }
+func (c cutter) TrimPrefix(prefix string) cutter { return c }
+
+func method(c cutter, prefix string) cutter {
+	if c.HasPrefix(prefix) {
+		c = c.TrimPrefix(prefix)
+	}
+	return c
+}

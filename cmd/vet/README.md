@@ -3794,6 +3794,18 @@ Inspired by go-critic's todoCommentWithoutDetail.
 func f() {}
 ```
 
+## trimprefix
+
+Reports a HasPrefix guard around a TrimPrefix whose result is assigned back to the same operand with the same prefix, in a file before Go 1.20. TrimPrefix returns its input unchanged when the prefix is absent, so the guard changes nothing. At Go 1.20 and later, stringscutprefix reports the pair.
+
+Adapted from staticcheck's S1017, which rewrites a manual slice.
+
+```
+if strings.HasPrefix(s, prefix) {
+    s = strings.TrimPrefix(s, prefix)
+}
+```
+
 ## truncatecmp
 
 Reports a comparison through a conversion to a narrower integer type. The conversion keeps the low bits, so the comparison reads a truncated value.

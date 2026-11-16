@@ -283,6 +283,7 @@ import (
 	"lesiw.io/tools/analyzers/timelayout"
 	"lesiw.io/tools/analyzers/timeuntil"
 	"lesiw.io/tools/analyzers/todocomment"
+	"lesiw.io/tools/analyzers/trimprefix"
 	"lesiw.io/tools/analyzers/truncatecmp"
 	"lesiw.io/tools/analyzers/typeassertchain"
 	"lesiw.io/tools/analyzers/typedefirst"
@@ -616,6 +617,7 @@ var (
 		timelayout.Analyzer,
 		timeuntil.Analyzer,
 		todocomment.Analyzer,
+		trimprefix.Analyzer,
 		truncatecmp.Analyzer,
 		typeassertchain.Analyzer,
 		typedefirst.Analyzer,
