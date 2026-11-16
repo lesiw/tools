@@ -1,0 +1,220 @@
+package a
+
+import "strings"
+
+func joined() string {
+	return strings.Join([]string{ // want `text block built a line at a time; use a raw string literal`
+		"alpha",
+		"",
+		"beta",
+		"gamma",
+	}, "\n") + "\n"
+}
+
+func concatenated() string {
+	return "alpha\n" + // want `text block built a line at a time; use a raw string literal`
+		"\n" +
+		"beta\n" +
+		"gamma\n"
+}
+
+const gamma = "gamma\n"
+
+func namedConcatenated() string {
+	return gamma + "delta\n" + "epsilon\n" + "zeta\n"
+}
+
+func leadingBlank() string {
+	return "\n" + // want `text block built a line at a time; use a raw string literal`
+		"alpha\n" +
+		"beta\n" +
+		"gamma\n"
+}
+
+func threeLineConcat() string {
+	return "alpha\n" +
+		"beta\n" +
+		"gamma\n"
+}
+
+func joinedWithValue(line string) string {
+	return strings.Join([]string{
+		"alpha",
+		"beta",
+		"gamma",
+		line,
+	}, "\n")
+}
+
+func twoPartJoin() string {
+	return strings.Join([]string{"alpha", "beta"}, "\n") // want `text block built a line at a time; use a raw string literal`
+}
+
+func smallJoin() string {
+	return strings.Join([]string{"alpha", "beta", "gamma"}, "\n") // want `text block built a line at a time; use a raw string literal`
+}
+
+func oneJoin() string {
+	return strings.Join([]string{"alpha"}, "\n")
+}
+
+func doubleSeparator() string {
+	return strings.Join([]string{"alpha", "beta", "gamma", "delta"}, "\n\n")
+}
+
+func spaceSeparator() string {
+	return strings.Join([]string{"alpha", "beta", "gamma", "delta"}, " ")
+}
+
+func keyedJoin() string {
+	return strings.Join([]string{
+		0: "alpha",
+		1: "beta",
+		2: "gamma",
+		3: "delta",
+	}, "\n")
+}
+
+const alphaLine = "alpha\n"
+
+func namedJoin() string {
+	return strings.Join([]string{
+		alphaLine,
+		"beta\n",
+		"gamma\n",
+		"delta\n",
+	}, "\n")
+}
+
+func localJoin() string {
+	return Join([]string{"alpha", "beta", "gamma", "delta"}, "\n")
+}
+
+func Join(parts []string, sep string) string {
+	return strings.Join(parts, sep)
+}
+
+type joiner struct{}
+
+func (joiner) Join(parts []string, sep string) string {
+	return strings.Join(parts, sep)
+}
+
+func methodJoin() string {
+	return joiner{}.Join([]string{"alpha", "beta", "gamma", "delta"}, "\n")
+}
+
+func variableJoin(join func([]string, string) string) string {
+	return join([]string{"alpha", "beta", "gamma", "delta"}, "\n")
+}
+
+func joinedBackquote() string {
+	return strings.Join([]string{
+		"alpha`",
+		"beta",
+		"gamma",
+		"delta",
+	}, "\n")
+}
+
+func joinedCarriageReturn() string {
+	return strings.Join([]string{
+		"alpha\r",
+		"beta",
+		"gamma",
+		"delta",
+	}, "\n")
+}
+
+func joinedNUL() string {
+	return strings.Join([]string{
+		"alpha\x00",
+		"beta",
+		"gamma",
+		"delta",
+	}, "\n")
+}
+
+func joinedInvalidUTF8() string {
+	return strings.Join([]string{
+		"alpha\xff",
+		"beta",
+		"gamma",
+		"delta",
+	}, "\n")
+}
+
+func concatenatedBackquote() string {
+	return "alpha\n" +
+		"beta`\n" +
+		"gamma\n" +
+		"delta\n"
+}
+
+func concatenatedCarriageReturn() string {
+	return "alpha\n" +
+		"beta\r\n" +
+		"gamma\n" +
+		"delta\n"
+}
+
+func concatenatedNUL() string {
+	return "alpha\n" +
+		"beta\x00\n" +
+		"gamma\n" +
+		"delta\n"
+}
+
+func concatenatedInvalidUTF8() string {
+	return "alpha\n" +
+		"beta\xff\n" +
+		"gamma\n" +
+		"delta\n"
+}
+
+func concatenatedNoTrailingNewline() string {
+	return "alpha\n" + // want `text block built a line at a time; use a raw string literal`
+		"beta\n" +
+		"gamma\n" +
+		"delta"
+}
+
+func concatenatedFragment() string {
+	return "\n" +
+		"alpha\n" +
+		"beta\n" +
+		"gamma"
+}
+
+func concatenatedWithValue(line string) string {
+	return "alpha\n" + "beta\n" + "gamma\n" + line
+}
+
+func concatenatedPrefix(line string) string {
+	return line + "alpha\n" + "beta\n" + "gamma\n"
+}
+
+func parenthesizedPrefix(line string) string {
+	return ("alpha\n" + "beta\n" + "gamma\n" + "delta\n") + line
+}
+
+func commentedConcat() string {
+	return "alpha\n" + // want `text block built a line at a time; use a raw string literal`
+		// a note
+		"beta\n" +
+		"gamma\n" +
+		"delta\n"
+}
+
+func commentedJoin() string {
+	return strings.Join([]string{ // want `text block built a line at a time; use a raw string literal`
+		"alpha", // a note
+		"beta",
+		"gamma",
+		"delta",
+	}, "\n")
+}
+
+func concatenatedInline() string {
+	return "alpha" + "beta\n"
+}

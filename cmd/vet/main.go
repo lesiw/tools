@@ -3611,6 +3611,19 @@
 //
 //	func TestBad(n int) {}
 //
+// # textblock
+//
+// Reports a text block built a line at a time from string constants, where a
+// raw string literal would hold the same text. The forms are a strings.Join
+// of two or more string literals with a newline separator and a + chain of
+// four or more string literals where every operand but the last ends with a
+// newline. A block with a back quote in a line is left alone, because a raw
+// literal cannot hold one.
+//
+//	func text() string {
+//		return strings.Join([]string{"alpha", "beta"}, "\n")
+//	}
+//
 // # tidytypes
 //
 // Reports a parameter or result that writes a type the name before it already
