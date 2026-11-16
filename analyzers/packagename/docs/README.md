@@ -7,11 +7,21 @@
 [![Discord](https://img.shields.io/discord/1145827224516300971?logo=discord&logoColor=white&color=5865F2&label=discord)](https://lesiw.dev/discord)
 [![License](https://img.shields.io/github/license/lesiw/tools)](../../../LICENSE)
 
-An `analysis.Analyzer` that reports a meaningless package name, a name with an
-underscore, or a name with a capital letter.
+An `analysis.Analyzer` that reports a meaningless package name, a name that
+collides with a common standard library package, a package named `pkg` whose
+directory has another base name, a name with an underscore, or a name with a
+capital letter.
 
 ```go
 package util // package name "util" gives no sense of its contents; name the package for what it holds
+```
+
+```go
+package http // package name "http" collides with standard library package path "net/http"; choose a name that distinguishes this package
+```
+
+```go
+package pkg // package name "pkg" does not match its directory "config"; the directory already names the package
 ```
 
 ```go
@@ -31,13 +41,29 @@ contains". It also gives the form: lower case, with no `under_scores` or
 
 The rule reports `common`, `commons`, `helper`, `helpers`, `misc`,
 `miscellaneous`, `util`, `utilities`, `utility`, and `utils`, and it reports a
-name with an underscore or a capital letter. The whole name is compared, so the
-rule does not report `httputil` or `ioutil`.
+name with an underscore or a capital letter. For the meaningless names, the
+whole name is compared, so the rule does not report `httputil`.
+
+The article also says to avoid using the same name as a popular standard
+package, such as `io` or `http`. The rule reports a package name that equals one
+of `bufio`, `bytes`, `context`, `errors`, `filepath`, `flag`, `fmt`, `http`,
+`io`, `ioutil`, `json`, `log`, `math`, `net`, `os`, `reflect`, `regexp`,
+`runtime`, `sort`, `strconv`, `strings`, `sync`, `time`, or `url`, and the
+report names the import path it shadows. The collision check leaves alone the
+standard library package itself, as well as a package under an `internal` or
+`vendor` directory, which clients outside its module cannot import.
+
+A package named `pkg` is reported when its directory has another base name. By
+convention the last element of the package path is the package name, and the
+directory already names the package.
 
 The article also names `api`, `types`, and `interfaces`, and the rule does not
 report them: those words name a subject a package holds, as `go/types` holds
 the type system and `httputil` holds HTTP helpers, so a check on the name
 cannot tell such a package from one that collects everything.
+
+Leaves alone `interface` and `type`: both are Go keywords, so the parser
+rejects them as package names.
 
 The report lands on the package name of the first non-generated, non-test file
 in the package. A package with no eligible file is not reported. A test file is

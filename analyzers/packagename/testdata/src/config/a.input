@@ -1,0 +1,1 @@
+package pkg // want `package name "pkg" does not match its directory "config"`

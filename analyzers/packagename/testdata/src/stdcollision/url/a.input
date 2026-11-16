@@ -1,0 +1,1 @@
+package url // want `package name "url" collides with standard library package path "net/url"`
