@@ -1,0 +1,5 @@
+package a
+
+import "len" // want `declaration shadows the predeclared identifier "len"`
+
+var _ = len.X

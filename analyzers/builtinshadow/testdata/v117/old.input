@@ -1,0 +1,13 @@
+package v117
+
+type any interface{} // want `declaration shadows the predeclared identifier "any"`
+
+func local() {
+	len := 1 // want `declaration shadows the predeclared identifier "len"`
+	any := 1
+	comparable := 2
+	clear := 3
+	max := 4
+	min := 5
+	_, _, _, _, _, _ = len, any, comparable, clear, max, min
+}

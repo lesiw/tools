@@ -1,0 +1,7 @@
+package v117
+
+//line fake.go:1
+func lined() {
+	min := 1
+	_ = min
+}

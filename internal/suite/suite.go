@@ -68,6 +68,7 @@ import (
 	"lesiw.io/tools/analyzers/boolset"
 	"lesiw.io/tools/analyzers/breakinselect"
 	"lesiw.io/tools/analyzers/builtinprint"
+	"lesiw.io/tools/analyzers/builtinshadow"
 	"lesiw.io/tools/analyzers/caseorder"
 	"lesiw.io/tools/analyzers/commentfmt"
 	"lesiw.io/tools/analyzers/containscut"
@@ -235,6 +236,7 @@ var (
 		breakinselect.Analyzer,
 		buildtag.Analyzer,
 		builtinprint.Analyzer,
+		builtinshadow.Analyzer,
 		caseorder.Analyzer,
 		cgocall.Analyzer,
 		commentfmt.Analyzer,

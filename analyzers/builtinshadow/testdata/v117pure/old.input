@@ -1,0 +1,3 @@
+package v117pure
+
+type any interface{}

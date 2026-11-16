@@ -1,0 +1,10 @@
+package v118
+
+func local() {
+	any := 1 // want `declaration shadows the predeclared identifier "any"`
+	comparable := 2 // want `declaration shadows the predeclared identifier "comparable"`
+	clear := 3
+	max := 4
+	min := 5
+	_, _, _, _, _ = any, comparable, clear, max, min
+}

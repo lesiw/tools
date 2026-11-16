@@ -1,0 +1,16 @@
+package v121
+
+func clear() {} // want `declaration shadows the predeclared identifier "clear"`
+
+func max() {} // want `declaration shadows the predeclared identifier "max"`
+
+func min() {} // want `declaration shadows the predeclared identifier "min"`
+
+func local() {
+	any := 1 // want `declaration shadows the predeclared identifier "any"`
+	comparable := 2 // want `declaration shadows the predeclared identifier "comparable"`
+	clear := 3 // want `declaration shadows the predeclared identifier "clear"`
+	max := 4 // want `declaration shadows the predeclared identifier "max"`
+	min := 5 // want `declaration shadows the predeclared identifier "min"`
+	_, _, _, _, _ = any, comparable, clear, max, min
+}

@@ -1,0 +1,32 @@
+package a
+
+type shape struct {
+	len int
+}
+
+func (shape) cap() {}
+
+type reader interface {
+	len() int
+}
+
+func labels() {
+copy:
+	for {
+		break copy
+	}
+}
+
+func blank(_ int) {}
+
+type callback func(len int) (copy int)
+
+type caller interface {
+	call(error int) (cap int)
+}
+
+func signature(cb func(append int)) {}
+
+func external(append int) (copy int)
+
+func (len point) externalMethod(cap int) (make int)

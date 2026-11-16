@@ -1,0 +1,77 @@
+package a
+
+var append = 3 // want `declaration shadows the predeclared identifier "append"`
+
+const cap = 4 // want `declaration shadows the predeclared identifier "cap"`
+
+type error string // want `declaration shadows the predeclared identifier "error"`
+
+type point struct{}
+
+func new(x int) int { // want `declaration shadows the predeclared identifier "new"`
+	return x
+}
+
+func make() {} // want `declaration shadows the predeclared identifier "make"`
+
+func params(append int, _ bool) (copy int) { // want `declaration shadows the predeclared identifier "append"` `declaration shadows the predeclared identifier "copy"`
+	return append
+}
+
+func (len point) reset() {} // want `declaration shadows the predeclared identifier "len"`
+
+func genericAny[any comparable](v any) any { // want `declaration shadows the predeclared identifier "any"`
+	return v
+}
+
+func genericMin[min any](v min) min { // want `declaration shadows the predeclared identifier "min"`
+	return v
+}
+
+func short() {
+	nil := 1 // want `declaration shadows the predeclared identifier "nil"`
+	true := false // want `declaration shadows the predeclared identifier "true"`
+	uintptr := 2 // want `declaration shadows the predeclared identifier "uintptr"`
+	_, _, _ = nil, true, uintptr
+}
+
+func constants() {
+	const iota = 1 // want `declaration shadows the predeclared identifier "iota"`
+	_ = iota
+}
+
+func localType() {
+	type uintptr struct{} // want `declaration shadows the predeclared identifier "uintptr"`
+	_ = uintptr{}
+}
+
+func versions() {
+	any := 1 // want `declaration shadows the predeclared identifier "any"`
+	comparable := 2 // want `declaration shadows the predeclared identifier "comparable"`
+	clear := 3 // want `declaration shadows the predeclared identifier "clear"`
+	max := 4 // want `declaration shadows the predeclared identifier "max"`
+	min := 5 // want `declaration shadows the predeclared identifier "min"`
+	_, _, _, _, _ = any, comparable, clear, max, min
+}
+
+func ranges(xs []int) {
+	for copy := range xs { // want `declaration shadows the predeclared identifier "copy"`
+		_ = copy
+	}
+}
+
+func switchType(v any) {
+	switch real := v.(type) { // want `declaration shadows the predeclared identifier "real"`
+	case int:
+		_ = real
+	}
+}
+
+var literal = func(len int) (copy int) { // want `declaration shadows the predeclared identifier "len"` `declaration shadows the predeclared identifier "copy"`
+	return len
+}
+
+func localVar() {
+	var len = 1 // want `declaration shadows the predeclared identifier "len"`
+	_ = len
+}

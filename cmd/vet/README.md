@@ -323,6 +323,16 @@ func f(n int) {
 }
 ```
 
+## builtinshadow
+
+Reports a declaration that shadows a predeclared identifier. The declared name denotes that declaration in its scope.
+
+Adapted from revive's redefines-builtin-id.
+
+```
+var len = 3
+```
+
 ## caseorder
 
 Reports a switch whose literal case values form a contiguous run in neither ascending nor descending order. Literal cases with no fallthrough behave the same in any order, so the order costs nothing to change.

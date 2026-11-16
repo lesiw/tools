@@ -1,0 +1,5 @@
+package a
+
+import copy "strings" // want `declaration shadows the predeclared identifier "copy"`
+
+var _ = copy.Compare

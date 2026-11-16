@@ -1,0 +1,5 @@
+package v117import
+
+import "example.com/m/any"
+
+var _ = any.X
