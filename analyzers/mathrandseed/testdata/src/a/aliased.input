@@ -1,0 +1,8 @@
+package main
+
+import r "math/rand"
+
+func aliased() {
+	// want +1 `math/rand.Seed is deprecated; use New\(NewSource\(seed\)\) for a fixed sequence`
+	r.Seed(1)
+}

@@ -1,0 +1,5 @@
+package main
+
+func aliased() {
+	// want +1 `math/rand.Seed is deprecated; use New\(NewSource\(seed\)\) for a fixed sequence`
+}

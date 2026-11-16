@@ -1,0 +1,9 @@
+//go:build go1.24
+
+package main
+
+func raised() {
+	// want +1 `math/rand.Seed is deprecated; use New\(NewSource\(seed\)\) for a fixed sequence`
+}
+
+func main() {}

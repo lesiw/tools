@@ -1,0 +1,25 @@
+package main
+
+import (
+	"math/rand"
+	localrand "example.com/m/src/rand"
+)
+
+func localGenerator() {
+	r := rand.New(rand.NewSource(1))
+	r.Seed(2)
+}
+
+func shadowed() {
+	var rand struct{ Seed func(int64) }
+	rand.Seed(1)
+}
+
+func otherPackage() {
+	localrand.Seed(1)
+}
+
+func value() {
+	seed := rand.Seed
+	seed(1)
+}

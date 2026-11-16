@@ -1,0 +1,84 @@
+package main
+
+import (
+	"math/rand"
+)
+
+func seeded() {
+	// want +1 `math/rand.Seed is deprecated; use New\(NewSource\(seed\)\) for a fixed sequence`
+	rand.Seed(1)
+	use()
+}
+
+func seededWith(n int64) {
+	// want +1 `math/rand.Seed is deprecated; use New\(NewSource\(seed\)\) for a fixed sequence`
+	rand.Seed(n)
+	use()
+}
+
+func parenthesized() {
+	// want +1 `math/rand.Seed is deprecated; use New\(NewSource\(seed\)\) for a fixed sequence`
+	(rand.Seed)(1)
+}
+
+func deferred() {
+	// want +1 `math/rand.Seed is deprecated; use New\(NewSource\(seed\)\) for a fixed sequence`
+	defer rand.Seed(1)
+}
+
+func goroutine() {
+	// want +1 `math/rand.Seed is deprecated; use New\(NewSource\(seed\)\) for a fixed sequence`
+	go rand.Seed(1)
+}
+
+func inline(ready bool) {
+	if ready {
+		rand.Seed(1) // want `math/rand.Seed is deprecated; use New\(NewSource\(seed\)\) for a fixed sequence`
+	}
+}
+
+func header(ready bool) {
+	if rand.Seed(1); ready { // want `math/rand.Seed is deprecated; use New\(NewSource\(seed\)\) for a fixed sequence`
+		use()
+	}
+}
+
+func labeled(ready bool) {
+	if ready {
+		goto here
+	}
+here:
+	rand.Seed(1) // want `math/rand.Seed is deprecated; use New\(NewSource\(seed\)\) for a fixed sequence`
+}
+
+func use() {}
+
+func loop() {
+	i := 0
+	// want +1 `math/rand.Seed is deprecated; use New\(NewSource\(seed\)\) for a fixed sequence`
+	for rand.Seed(1); i < 10; i++ {
+	}
+}
+
+func unary() {
+	// want +1 `math/rand.Seed is deprecated; use New\(NewSource\(seed\)\) for a fixed sequence`
+	rand.Seed(-1)
+}
+
+func constantExpr() {
+	// want +1 `math/rand.Seed is deprecated; use New\(NewSource\(seed\)\) for a fixed sequence`
+	rand.Seed(1 + 2)
+	// want +1 `math/rand.Seed is deprecated; use New\(NewSource\(seed\)\) for a fixed sequence`
+	rand.Seed(int64(1))
+}
+
+func reused() {
+	n := int64(1)
+	// want +1 `math/rand.Seed is deprecated; use New\(NewSource\(seed\)\) for a fixed sequence`
+	rand.Seed(n)
+	useInt(n)
+}
+
+func useInt(int64) {}
+
+func main() {}

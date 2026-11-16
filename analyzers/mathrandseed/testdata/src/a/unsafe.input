@@ -1,0 +1,18 @@
+package main
+
+import "math/rand"
+
+func dereferenced(p *int64) {
+	// want +1 `math/rand.Seed is deprecated; use New\(NewSource\(seed\)\) for a fixed sequence`
+	rand.Seed(*p)
+}
+
+func received(ch chan int64) {
+	// want +1 `math/rand.Seed is deprecated; use New\(NewSource\(seed\)\) for a fixed sequence`
+	rand.Seed(<-ch)
+}
+
+func effectful(next func() int64) {
+	// want +1 `math/rand.Seed is deprecated; use New\(NewSource\(seed\)\) for a fixed sequence`
+	rand.Seed(next())
+}

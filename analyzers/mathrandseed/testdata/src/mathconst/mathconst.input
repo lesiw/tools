@@ -1,0 +1,3 @@
+package mathconst
+
+const MaxInt64 = 1<<63 - 1

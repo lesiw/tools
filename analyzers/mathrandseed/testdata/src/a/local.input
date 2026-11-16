@@ -1,0 +1,24 @@
+package main
+
+import "math/rand"
+
+func local() {
+	n := int64(1)
+	// want +1 `math/rand.Seed is deprecated; use New\(NewSource\(seed\)\) for a fixed sequence`
+	rand.Seed(n)
+}
+
+func shared() {
+	n := int64(1)
+	// want +1 `math/rand.Seed is deprecated; use New\(NewSource\(seed\)\) for a fixed sequence`
+	rand.Seed(n)
+	// want +1 `math/rand.Seed is deprecated; use New\(NewSource\(seed\)\) for a fixed sequence`
+	rand.Seed(n)
+}
+
+func assigned() {
+	n := int64(1)
+	n = 2
+	// want +1 `math/rand.Seed is deprecated; use New\(NewSource\(seed\)\) for a fixed sequence`
+	rand.Seed(n)
+}

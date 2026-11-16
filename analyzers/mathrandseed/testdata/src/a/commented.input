@@ -1,0 +1,8 @@
+package main
+
+import "math/rand"
+
+func commented() {
+	// want +1 `math/rand.Seed is deprecated; use New\(NewSource\(seed\)\) for a fixed sequence`
+	rand.Seed( /* a note */ 1)
+}

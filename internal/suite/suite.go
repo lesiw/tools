@@ -195,6 +195,7 @@ import (
 	"lesiw.io/tools/analyzers/marshalfunc"
 	"lesiw.io/tools/analyzers/marshalrecv"
 	"lesiw.io/tools/analyzers/mathintconv"
+	"lesiw.io/tools/analyzers/mathrandseed"
 	"lesiw.io/tools/analyzers/methodexprcall"
 	"lesiw.io/tools/analyzers/modifiesparam"
 	"lesiw.io/tools/analyzers/modone"
@@ -515,6 +516,7 @@ var (
 		marshalfunc.Analyzer,
 		marshalrecv.Analyzer,
 		mathintconv.Analyzer,
+		mathrandseed.Analyzer,
 		methodexprcall.Analyzer,
 		modifiesparam.Analyzer,
 		modone.Analyzer,

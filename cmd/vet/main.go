@@ -2320,6 +2320,17 @@
 //		return math.Ceil(float64(n))
 //	}
 //
+// # mathrandseed
+//
+// Reports a call to the package-level math/rand.Seed, deprecated as of Go 1.20
+// because the global generator is seeded automatically.
+//
+// Adapted from staticcheck's SA1019.
+//
+//	func seeded() {
+//		rand.Seed(1)
+//	}
+//
 // # methodexprcall
 //
 // Reports a method expression called with its receiver. The method call names
