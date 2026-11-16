@@ -1,0 +1,10 @@
+package a
+
+func commented(xs []int) int {
+	n := 0
+	// want+1 `loop can be replaced by len\(xs\)`
+	for range xs {
+		n++ // keep this note
+	}
+	return n
+}

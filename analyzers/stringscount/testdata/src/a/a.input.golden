@@ -1,0 +1,106 @@
+package a
+
+const zero = 0
+
+type list struct {
+	items []int
+}
+
+type ints []int
+
+func rangeCount(xs []int) int {
+	n := len(xs) // want `loop can be replaced by len\(xs\)`
+	return n
+}
+
+func countedCount(xs []int) int {
+	n := len(xs) // want `loop can be replaced by len\(xs\)`
+	return n
+}
+
+func declaredCount(xs []int) int {
+	n := len(xs) // want `loop can be replaced by len\(xs\)`
+	return n
+}
+
+func assignedCount(xs []int) int {
+	n := 5
+	n = 0
+	n = len(xs) // want `loop can be replaced by len\(xs\)`
+	return n
+}
+
+func sharedCount(xs []int) (int, int) {
+	n, m := 0, 0
+	n = len(xs) // want `loop can be replaced by len\(xs\)`
+	return n, m
+}
+
+func constantCount(xs []int) int {
+	n := len(xs) // want `loop can be replaced by len\(xs\)`
+	return n
+}
+
+func fieldCount(l *list) int {
+	n := len(l.items) // want `loop can be replaced by len\(l\.items\)`
+	return n
+}
+
+func slicedCount(xs []int) int {
+	n := len(xs[:2]) // want `loop can be replaced by len\(xs\[:2\]\)`
+	return n
+}
+
+func ownCount(xs []int) int {
+	n := 0
+	n = len(xs[n:]) // want `loop can be replaced by len\(xs\[n:\]\)`
+	return n
+}
+
+func blankCount(xs []int) int {
+	n := len(xs) // want `loop can be replaced by len\(xs\)`
+	return n
+}
+
+func varZeroCount(xs []int) int {
+	n := len(xs) // want `loop can be replaced by len\(xs\)`
+	return n
+}
+
+func lenCount(xs []int) int {
+	n := len(xs[:len(xs)]) // want `loop can be replaced by len\(xs\[:len\(xs\)\]\)`
+	return n
+}
+
+func pointerRange(xs []int) int {
+	n := 5
+	p := &n
+	n = 0
+	n = len(xs[*p:]) // want `loop can be replaced by len\(xs\[\*p:\]\)`
+	return n
+}
+
+func pointerDeclCount(xs []int) int {
+	var m int
+	q := &m
+	var n int
+	n = len(xs[*q:]) // want `loop can be replaced by len\(xs\[\*q:\]\)`
+	return n
+}
+
+func convertedCount(xs []int) int {
+	n := len(ints(xs)) // want `loop can be replaced by len\(ints\(xs\)\)`
+	return n
+}
+
+func pointerTypeCount() int {
+	n := len([]*int{}) // want `loop can be replaced by len\(\[\]\*int\{\}\)`
+	return n
+}
+
+func commentedBefore(xs []int) int {
+	n := 0
+	// keep this note
+	n = len(xs) // want `loop can be replaced by len\(xs\)`
+	return n
+}

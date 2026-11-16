@@ -1,0 +1,117 @@
+package a
+
+const zero = 0
+
+type list struct {
+	items []int
+}
+
+type ints []int
+
+func rangeCount(xs []int) int {
+	n := 0
+	for range xs { n++ } // want `loop can be replaced by len\(xs\)`
+	return n
+}
+
+func countedCount(xs []int) int {
+	n := 0
+	for i := 0; i < len(xs); i++ { n++ } // want `loop can be replaced by len\(xs\)`
+	return n
+}
+
+func declaredCount(xs []int) int {
+	var n int
+	for range xs { n++ } // want `loop can be replaced by len\(xs\)`
+	return n
+}
+
+func assignedCount(xs []int) int {
+	n := 5
+	n = 0
+	for range xs { n++ } // want `loop can be replaced by len\(xs\)`
+	return n
+}
+
+func sharedCount(xs []int) (int, int) {
+	n, m := 0, 0
+	for range xs { n++ } // want `loop can be replaced by len\(xs\)`
+	return n, m
+}
+
+func constantCount(xs []int) int {
+	n := zero
+	for range xs { n++ } // want `loop can be replaced by len\(xs\)`
+	return n
+}
+
+func fieldCount(l *list) int {
+	n := 0
+	for range l.items { n++ } // want `loop can be replaced by len\(l\.items\)`
+	return n
+}
+
+func slicedCount(xs []int) int {
+	n := 0
+	for range xs[:2] { n++ } // want `loop can be replaced by len\(xs\[:2\]\)`
+	return n
+}
+
+func ownCount(xs []int) int {
+	n := 0
+	for range xs[n:] { n++ } // want `loop can be replaced by len\(xs\[n:\]\)`
+	return n
+}
+
+func blankCount(xs []int) int {
+	n := 0
+	for _, _ = range xs { n++ } // want `loop can be replaced by len\(xs\)`
+	return n
+}
+
+func varZeroCount(xs []int) int {
+	var n = 0
+	for range xs { n++ } // want `loop can be replaced by len\(xs\)`
+	return n
+}
+
+func lenCount(xs []int) int {
+	n := 0
+	for range xs[:len(xs)] { n++ } // want `loop can be replaced by len\(xs\[:len\(xs\)\]\)`
+	return n
+}
+
+func pointerRange(xs []int) int {
+	n := 5
+	p := &n
+	n = 0
+	for range xs[*p:] { n++ } // want `loop can be replaced by len\(xs\[\*p:\]\)`
+	return n
+}
+
+func pointerDeclCount(xs []int) int {
+	var m int
+	q := &m
+	var n int
+	for range xs[*q:] { n++ } // want `loop can be replaced by len\(xs\[\*q:\]\)`
+	return n
+}
+
+func convertedCount(xs []int) int {
+	n := 0
+	for range ints(xs) { n++ } // want `loop can be replaced by len\(ints\(xs\)\)`
+	return n
+}
+
+func pointerTypeCount() int {
+	n := 0
+	for range []*int{} { n++ } // want `loop can be replaced by len\(\[\]\*int\{\}\)`
+	return n
+}
+
+func commentedBefore(xs []int) int {
+	n := 0
+	// keep this note
+	for range xs { n++ } // want `loop can be replaced by len\(xs\)`
+	return n
+}

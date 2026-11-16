@@ -2606,6 +2606,22 @@
 //		return s
 //	}
 //
+// # stringscount
+//
+// Reports a loop that counts the elements of a slice with a counter. Each pass
+// adds one, so the counter equals len(slice) after the loop.
+//
+// Adapted from the loop-to-call shape of staticcheck's S1011, with len as the
+// call.
+//
+//	func count(xs []string) int {
+//		n := 0
+//		for range xs {
+//			n++
+//		}
+//		return n
+//	}
+//
 // # stringscut
 //
 // Reports a search with strings.Index or strings.LastIndex and a slice at the

@@ -198,6 +198,7 @@ import (
 	"lesiw.io/tools/analyzers/strconcat"
 	"lesiw.io/tools/analyzers/strictvar"
 	"lesiw.io/tools/analyzers/stringofint"
+	"lesiw.io/tools/analyzers/stringscount"
 	"lesiw.io/tools/analyzers/stringxbytes"
 	"lesiw.io/tools/analyzers/strreplaceall"
 	"lesiw.io/tools/analyzers/switchtrue"
@@ -448,6 +449,7 @@ var (
 		strictvar.Analyzer,
 		stringintconv.Analyzer,
 		stringofint.Analyzer,
+		stringscount.Analyzer,
 		stringxbytes.Analyzer,
 		strreplaceall.Analyzer,
 		structtag.Analyzer,
