@@ -108,6 +108,7 @@ import (
 	"lesiw.io/tools/analyzers/deferinloop"
 	"lesiw.io/tools/analyzers/defermisuse"
 	"lesiw.io/tools/analyzers/deferunlambda"
+	"lesiw.io/tools/analyzers/deferunlock"
 	"lesiw.io/tools/analyzers/deprecated"
 	"lesiw.io/tools/analyzers/deviatingelse"
 	"lesiw.io/tools/analyzers/discardedpure"
@@ -400,6 +401,7 @@ var (
 		defermisuse.Analyzer,
 		defers.Analyzer,
 		deferunlambda.Analyzer,
+		deferunlock.Analyzer,
 		deprecated.Analyzer,
 		deviatingelse.Analyzer,
 		directive.Analyzer,

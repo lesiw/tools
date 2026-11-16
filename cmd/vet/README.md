@@ -907,6 +907,19 @@ func f() {
 }
 ```
 
+## deferunlock
+
+Reports a deferred Unlock without Lock, or a deferred RUnlock without RLock, in the same function. The release runs when the function returns, and a sync.Mutex or sync.RWMutex release without a lock is a run-time error.
+
+Adapted from staticcheck's SA5001 family.
+
+```
+func release() {
+    var mu sync.Mutex
+    defer mu.Unlock()
+}
+```
+
 ## deprecated
 
 Reports a doc comment that marks something deprecated without the paragraph godoc reads. godoc and the editors that render it warn a caller only for a paragraph beginning with Deprecated: .

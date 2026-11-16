@@ -1,0 +1,607 @@
+package a
+
+type mutex struct{}
+
+func (mutex) Lock()          {}
+func (mutex) TryLock() bool  { return true }
+func (mutex) Unlock()        {}
+func (mutex) RLock()         {}
+func (mutex) TryRLock() bool { return true }
+func (mutex) RUnlock()       {}
+
+func bareUnlock(m mutex) {
+	defer m.Unlock() // want `deferred Unlock has no matching Lock in this function`
+}
+
+func bareRUnlock(m mutex) {
+	defer m.RUnlock() // want `deferred RUnlock has no matching RLock in this function`
+}
+
+func locked(m mutex) {
+	m.Lock()
+	defer m.Unlock()
+}
+
+func readLocked(m mutex) {
+	m.RLock()
+	defer m.RUnlock()
+}
+
+func lockAfter(m mutex) {
+	defer m.Unlock()
+	m.Lock()
+}
+
+func branchLock(m mutex, ok bool) {
+	if ok {
+		m.Lock()
+	}
+	defer m.Unlock()
+}
+
+func tryLock(m mutex) {
+	m.TryLock()
+	defer m.Unlock() // want `deferred Unlock has no matching Lock in this function`
+}
+
+func tryLockBlank(m mutex) {
+	_ = m.TryLock()
+	defer m.Unlock() // want `deferred Unlock has no matching Lock in this function`
+}
+
+func tryLockVar(m mutex) {
+	var _ = m.TryLock()
+	defer m.Unlock() // want `deferred Unlock has no matching Lock in this function`
+}
+
+func tryLockNegated(m mutex) {
+	_ = !m.TryLock()
+	defer m.Unlock() // want `deferred Unlock has no matching Lock in this function`
+}
+
+func tryLockConverted(m mutex) {
+	_ = bool(m.TryLock())
+	defer m.Unlock() // want `deferred Unlock has no matching Lock in this function`
+}
+
+func tryLockOr(m mutex) {
+	_ = m.TryLock() || true
+	defer m.Unlock() // want `deferred Unlock has no matching Lock in this function`
+}
+
+func tryLockSlice(m mutex) {
+	_ = []bool{m.TryLock()}[0]
+	defer m.Unlock() // want `deferred Unlock has no matching Lock in this function`
+}
+
+func tryLockMapKey(m mutex) {
+	_ = map[bool]bool{m.TryLock(): true}
+	defer m.Unlock() // want `deferred Unlock has no matching Lock in this function`
+}
+
+func tryReadLock(m mutex) {
+	m.TryRLock()
+	defer m.RUnlock() // want `deferred RUnlock has no matching RLock in this function`
+}
+
+func tryLockGuard(m mutex) {
+	if !m.TryLock() {
+		return
+	}
+	defer m.Unlock()
+}
+
+func tryLockChecked(m mutex) {
+	ok := m.TryLock()
+	if !ok {
+		return
+	}
+	defer m.Unlock()
+}
+
+func tryLockUnchecked(m mutex) {
+	ok := m.TryLock()
+	_ = ok
+	defer m.Unlock()
+}
+
+func consume(any) {}
+
+func fromDeferArg(m mutex) {
+	defer consume(m.TryLock())
+	defer m.Unlock()
+}
+
+func fromGoArg(m mutex) {
+	go consume(m.TryLock())
+	defer m.Unlock()
+}
+
+func tryReadLockGuard(m mutex) {
+	if !m.TryRLock() {
+		return
+	}
+	defer m.RUnlock()
+}
+
+func lockThenRUnlock(m mutex) {
+	m.Lock()
+	defer m.RUnlock() // want `deferred RUnlock has no matching RLock in this function`
+}
+
+func readLockThenUnlock(m mutex) {
+	m.RLock()
+	defer m.Unlock() // want `deferred Unlock has no matching Lock in this function`
+}
+
+func otherReceiver(first, second mutex) {
+	first.Lock()
+	defer second.Unlock() // want `deferred Unlock has no matching Lock in this function`
+}
+
+func tryOtherReceiver(first, second mutex) {
+	first.TryLock()
+	defer second.Unlock() // want `deferred Unlock has no matching Lock in this function`
+}
+
+func deferredLockSafe(m mutex) {
+	defer m.Unlock()
+	defer m.Lock()
+}
+
+func deferredLockUnsafe(m mutex) {
+	defer m.Lock()
+	defer m.Unlock() // want `deferred Unlock has no matching Lock in this function`
+}
+
+func threeDefers(m mutex) {
+	defer m.Unlock()
+	defer m.Lock()
+	defer m.Unlock() // want `deferred Unlock has no matching Lock in this function`
+}
+
+func startedLock(m mutex) {
+	go m.Lock()
+	defer m.Unlock() // want `deferred Unlock has no matching Lock in this function`
+}
+
+func bareInLiteral(m mutex) {
+	func() {
+		defer m.Unlock() // want `deferred Unlock has no matching Lock in this function`
+	}()
+}
+
+func lockedInLiteral(m mutex) {
+	func() {
+		m.Lock()
+	}()
+	defer m.Unlock() // want `deferred Unlock has no matching Lock in this function`
+}
+
+func lockedInSameLiteral(m mutex) {
+	func() {
+		m.Lock()
+		defer m.Unlock()
+	}()
+}
+
+func parenthesized(m mutex) {
+	(m).Lock()
+	defer (m).Unlock()
+}
+
+func addressOf(m mutex) {
+	(&m).Lock()
+	defer m.Unlock()
+}
+
+func dereferenced(m *mutex) {
+	m.Lock()
+	defer (*m).Unlock()
+}
+
+func repeatedIndex(xs []mutex, i int) {
+	xs[i+1].Lock()
+	defer xs[i+1].Unlock()
+}
+
+func repeatedAssert(v any) {
+	v.(*mutex).Lock()
+	defer v.(*mutex).Unlock()
+}
+
+func received(ch chan mutex) {
+	(<-ch).Lock()
+	defer (<-ch).Unlock() // want `deferred Unlock has no matching Lock in this function`
+}
+
+type store struct {
+	mu    mutex
+	other mutex
+}
+
+func (s *store) lockedField() {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+}
+
+func (s *store) bareField() {
+	defer s.mu.Unlock() // want `deferred Unlock has no matching Lock in this function`
+}
+
+func (s *store) otherField() {
+	s.mu.Lock()
+	defer s.other.Unlock() // want `deferred Unlock has no matching Lock in this function`
+}
+
+func (s *store) nestedDereferenced() {
+	s.mu.Lock()
+	defer (*s).mu.Unlock()
+}
+
+func nestedAddressOf(s store) {
+	(&s).mu.Lock()
+	defer s.mu.Unlock()
+}
+
+func aliasLock(m *mutex) {
+	n := m
+	n.Lock()
+	defer m.Unlock()
+}
+
+func aliasCopy(m mutex) {
+	n := m
+	n.Lock()
+	defer m.Unlock() // want `deferred Unlock has no matching Lock in this function`
+}
+
+func aliasReassignedAfter(m, other *mutex) {
+	n := m
+	n.Lock()
+	defer m.Unlock()
+	n = other
+}
+
+func aliasCreatedAfter(m, other *mutex) {
+	n := other
+	n.Lock()
+	defer m.Unlock() // want `deferred Unlock has no matching Lock in this function`
+	n = m
+}
+
+func aliasLockAfterAssignment(m, other *mutex) {
+	n := m
+	n.Lock()
+	n = other
+	defer m.Unlock()
+}
+
+func aliasReset(m, other *mutex) {
+	n := m
+	n = other
+	n.Lock()
+	defer m.Unlock() // want `deferred Unlock has no matching Lock in this function`
+}
+
+func aliasTargetAfter(m, other *mutex) {
+	n := m
+	n.Lock()
+	m = other
+	defer n.Unlock()
+}
+
+func aliasTargetBetween(m, other *mutex) {
+	n := m
+	m = other
+	n.Lock()
+	defer m.Unlock() // want `deferred Unlock has no matching Lock in this function`
+}
+
+func aliasAddressOf(m mutex) {
+	n := &m
+	n.Lock()
+	defer m.Unlock()
+}
+
+func aliasForPost(n, m *mutex) {
+	for i := 0; i < 1; n = m {
+		n.Lock()
+		defer m.Unlock() // want `deferred Unlock has no matching Lock in this function`
+		i++
+	}
+}
+
+func aliasFieldNotFollowed(s *store) {
+	m := &s.mu
+	m.Lock()
+	defer s.mu.Unlock() // want `deferred Unlock has no matching Lock in this function`
+}
+
+func aliasAddressValue1(m, other mutex) {
+	n := &m
+	n.Lock()
+	m = other
+	defer m.Unlock() // want `deferred Unlock has no matching Lock in this function`
+}
+
+func aliasAddressValue2(m, other mutex) {
+	n := &m
+	n.Lock()
+	m = other
+	defer n.Unlock() // want `deferred Unlock has no matching Lock in this function`
+}
+
+func aliasCallOrigin1() {
+	m := getMutex()
+	n := &m
+	m = mutex{}
+	defer n.Unlock() // want `deferred Unlock has no matching Lock in this function`
+}
+
+func aliasCallOrigin2() {
+	m := mutex{}
+	n := &m
+	m = getMutex()
+	defer n.Unlock()
+}
+
+func aliasIndexReceiver(xs *[1]mutex) {
+	ys := xs
+	ys[0].Lock()
+	defer xs[0].Unlock()
+}
+
+func aliasAssertReceiver(v any) {
+	m := v.(*mutex)
+	m.Lock()
+	defer v.(*mutex).Unlock() // want `deferred Unlock has no matching Lock in this function`
+}
+
+func aliasAddressChain(m, other mutex) {
+	p := &m
+	q := p
+	q.Lock()
+	m = other
+	defer m.Unlock() // want `deferred Unlock has no matching Lock in this function`
+}
+
+func aliasAddressChainCall() {
+	m := mutex{}
+	p := &m
+	q := p
+	m = getMutex()
+	defer q.Unlock()
+}
+
+func aliasPointerReset(mu *mutex) {
+	alias := mu
+	alias.Lock()
+	mu = new(mutex)
+	defer mu.Unlock() // want `deferred Unlock has no matching Lock in this function`
+}
+
+func conditionalDeferredLock(m mutex, ok bool) {
+	defer m.Unlock()
+	if ok {
+		defer m.Lock()
+	}
+}
+
+func literalDeferredLock(m mutex) {
+	defer m.Unlock()
+	defer func() { m.Lock() }()
+}
+
+func literalDeferredLockUnsafe(m mutex) {
+	defer func() { m.Lock() }()
+	defer m.Unlock() // want `deferred Unlock has no matching Lock in this function`
+}
+
+func reassignedBetween(m, other mutex) {
+	m.Lock()
+	m = other
+	defer m.Unlock() // want `deferred Unlock has no matching Lock in this function`
+}
+
+func reassignedAfter(m, other mutex) {
+	m.Lock()
+	defer m.Unlock() // want `deferred Unlock has no matching Lock in this function`
+	m = other
+}
+
+func reassignedPointerBetween(m, other *mutex) {
+	m.Lock()
+	m = other
+	defer m.Unlock() // want `deferred Unlock has no matching Lock in this function`
+}
+
+func reassignedPointerAfter(m, other *mutex) {
+	m.Lock()
+	defer m.Unlock()
+	m = other
+}
+
+func reassignedIndex(xs, other []mutex) {
+	xs[0].Lock()
+	xs = other
+	defer xs[0].Unlock() // want `deferred Unlock has no matching Lock in this function`
+}
+
+func reassignedAssert(v, other any) {
+	v.(*mutex).Lock()
+	v = other
+	defer v.(*mutex).Unlock() // want `deferred Unlock has no matching Lock in this function`
+}
+
+func twoReceivers(a, b mutex) {
+	a.Lock()
+	b.Lock()
+	defer a.Unlock()
+	defer b.Unlock()
+}
+
+func conditionalUnlock(m mutex, ok bool) {
+	if ok {
+		defer m.Unlock() // want `deferred Unlock has no matching Lock in this function`
+	}
+}
+
+type wider struct{}
+
+func (wider) Unlock(int) {}
+
+func unlockWithArgument(w wider) {
+	defer w.Unlock(1)
+}
+
+type releaseOnly struct{}
+
+func (releaseOnly) Unlock() {}
+
+func lackingLock(r releaseOnly) {
+	defer r.Unlock() // want `deferred Unlock has no matching Lock in this function`
+}
+
+func lockHelper(m mutex) {}
+
+func helperLock(m mutex) {
+	lockHelper(m)
+	defer m.Unlock() // want `deferred Unlock has no matching Lock in this function`
+}
+
+func getMutex() mutex { return mutex{} }
+
+func findMutex() (*mutex, int) { return &mutex{}, 0 }
+
+func getStore() store { return store{} }
+
+func getStorePtr() *store { return &store{} }
+
+func getStores() []store { return nil }
+
+func getAny() any { return mutex{} }
+
+func fromCall() {
+	m := getMutex()
+	defer m.Unlock()
+}
+
+func fromMultiValue() {
+	m, _ := findMutex()
+	defer m.Unlock()
+}
+
+func fromCallField() {
+	s := getStore()
+	defer s.mu.Unlock()
+}
+
+func fromCallDirect() {
+	defer getMutex().Unlock()
+}
+
+func fromCallFieldDirect() {
+	defer getStore().mu.Unlock()
+}
+
+func fromCallIndexDirect() {
+	defer getStores()[0].mu.Unlock()
+}
+
+func fromCallDeref() {
+	defer (*getStorePtr()).mu.Unlock()
+}
+
+func fromCallTypeAssert() {
+	defer getAny().(interface{ Unlock() }).Unlock()
+}
+
+func fromConversion() {
+	defer mutex(getMutex()).Unlock() // want `deferred Unlock has no matching Lock in this function`
+}
+
+func fromFieldAssignment() {
+	var s store
+	s.mu = getMutex()
+	defer s.mu.Unlock() // want `deferred Unlock has no matching Lock in this function`
+}
+
+func fromIndexAssignment() {
+	xs := make([]mutex, 1)
+	xs[0] = getMutex()
+	defer xs[0].Unlock() // want `deferred Unlock has no matching Lock in this function`
+}
+
+func fromAppend(xs []mutex) {
+	xs = append(xs, mutex{})
+	defer xs[0].Unlock() // want `deferred Unlock has no matching Lock in this function`
+}
+
+func postAssignment() {
+	m := mutex{}
+	for i := 0; i < 1; m = getMutex() {
+		m = mutex{}
+		i++
+	}
+	defer m.Unlock()
+}
+
+func fromAlias() {
+	m := getMutex()
+	n := m
+	defer n.Unlock()
+}
+
+func fromRange() {
+	for _, s := range getStores() {
+		defer s.mu.Unlock()
+	}
+}
+
+func fromRangeParam(stores []store) {
+	for _, s := range stores {
+		defer s.mu.Unlock() // want `deferred Unlock has no matching Lock in this function`
+	}
+}
+
+func fromCallAfter() {
+	var m mutex
+	defer m.Unlock() // want `deferred Unlock has no matching Lock in this function`
+	m = getMutex()
+}
+
+func fromReassigned() {
+	m := getMutex()
+	m = mutex{}
+	defer m.Unlock() // want `deferred Unlock has no matching Lock in this function`
+}
+
+func fromNew() {
+	m := new(mutex)
+	defer m.Unlock() // want `deferred Unlock has no matching Lock in this function`
+}
+
+func fromMake() {
+	xs := make([]mutex, 1)
+	defer xs[0].Unlock() // want `deferred Unlock has no matching Lock in this function`
+}
+
+func fromTypeAssert() {
+	v := getAny()
+	defer v.(interface{ Unlock() }).Unlock()
+}
+
+func fromLiteral() {
+	m := mutex{}
+	defer m.Unlock() // want `deferred Unlock has no matching Lock in this function`
+}
+
+func fromZero() {
+	var m mutex
+	defer m.Unlock() // want `deferred Unlock has no matching Lock in this function`
+}
+
+func plainUnlock(m mutex) {
+	m.Unlock()
+}
