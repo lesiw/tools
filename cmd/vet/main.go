@@ -1164,6 +1164,16 @@
 //		os.WriteFile(path, nil, 0o644)
 //	}
 //
+// # errdiscard
+//
+// Reports a call whose only result is an error, written as a statement.
+//
+// Inspired by gosec's G104. errcheck reports most of these statements too.
+//
+//	func remove(path string) {
+//		os.Remove(path)
+//	}
+//
 // # errflow
 //
 // Reports an else block whose if block ends in a return, a break, a continue,

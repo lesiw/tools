@@ -1130,6 +1130,18 @@ func save(path string) {
 }
 ```
 
+## errdiscard
+
+Reports a call whose only result is an error, written as a statement.
+
+Inspired by gosec's G104. errcheck reports most of these statements too.
+
+```
+func remove(path string) {
+    os.Remove(path)
+}
+```
+
 ## errflow
 
 Reports an else block whose if block ends in a return, a break, a continue, a goto, or a panic. The else runs only when the block did not take that exit, so its code reads at the function's level. An else if chain, and an else under an if with an init statement, are left alone.
