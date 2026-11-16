@@ -1,0 +1,9 @@
+package a
+
+import "time"
+
+func testDrain(t *time.Timer) {
+	if !t.Reset(time.Second) {
+		<-t.C
+	}
+}

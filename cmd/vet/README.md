@@ -2651,6 +2651,20 @@ Inspired by go-critic's regexpSimplify.
 var digits = regexp.MustCompile(`[0-9]`)
 ```
 
+## resetvalue
+
+Reports a read of the value returned by (\*time.Timer).Reset that decides whether to drain the timer's channel. A receive after Reset can take the new timer's value.
+
+Adapted from staticcheck's SA1025.
+
+```
+func restart(t *time.Timer) {
+    if !t.Reset(time.Second) {
+        <-t.C
+    }
+}
+```
+
 ## runerange
 
 Reports a range over a string converted to a rune slice. Ranging over the string decodes one rune per iteration and allocates nothing, where the conversion builds a slice of every rune. A loop whose key is not \_ is left alone, because a string index is a byte offset and a rune slice index is a position.

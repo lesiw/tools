@@ -1,0 +1,573 @@
+package a
+
+import "time"
+
+func drainStopped(t *time.Timer) {
+	// want +1 `a receive after Reset can take the new timer's value`
+	if !t.Reset(time.Second) {
+		<-t.C
+	}
+}
+
+func waitRunning(t *time.Timer) {
+	if t.Reset(time.Second) {
+		<-t.C
+	}
+}
+
+func drainParenthesized(t *time.Timer) {
+	// want +1 `a receive after Reset can take the new timer's value`
+	if !(t.Reset(time.Second)) {
+		<-t.C
+	}
+}
+
+func drainElse(t *time.Timer) {
+	// want +1 `a receive after Reset can take the new timer's value`
+	if t.Reset(time.Second) {
+		use("active")
+	} else {
+		<-t.C
+	}
+}
+
+func waitElse(t *time.Timer) {
+	if !t.Reset(time.Second) {
+		use("stopped")
+	} else {
+		<-t.C
+	}
+}
+
+func drainBodyMore(t *time.Timer) {
+	// want +1 `a receive after Reset can take the new timer's value`
+	if !t.Reset(time.Second) {
+		<-t.C
+		use("drained")
+	}
+}
+
+func drainInit(t *time.Timer) {
+	if active := t.Reset(time.Second); !active { // want `a receive after Reset can take the new timer's value`
+		<-t.C
+	}
+}
+
+func waitInit(t *time.Timer) {
+	if active := t.Reset(time.Second); active {
+		<-t.C
+	}
+}
+
+func drainLocal(t *time.Timer) {
+	active := t.Reset(time.Second) // want `a receive after Reset can take the new timer's value`
+	if !active {
+		<-t.C
+	}
+}
+
+func waitLocal(t *time.Timer) {
+	active := t.Reset(time.Second)
+	if active {
+		<-t.C
+	}
+}
+
+func swappedLocal(t, u *time.Timer) {
+	var active bool
+	active, t = t.Reset(time.Second), u
+	if !active {
+		<-t.C
+	}
+}
+
+func localUsed(t *time.Timer) {
+	active := t.Reset(time.Second)
+	use(active)
+}
+
+func localReassigned(t *time.Timer) {
+	active := t.Reset(time.Second)
+	active = false
+	if !active {
+		<-t.C
+	}
+}
+
+func otherChannel(t *time.Timer, ch chan time.Time) {
+	if !t.Reset(time.Second) {
+		<-ch
+	}
+}
+
+func otherTimer(t, u *time.Timer) {
+	if !t.Reset(time.Second) {
+		<-u.C
+	}
+}
+
+func combined(t *time.Timer, x bool) {
+	if !t.Reset(time.Second) || x {
+		<-t.C
+	}
+}
+
+func loop(t *time.Timer) {
+	for t.Reset(time.Second) {
+		<-t.C
+	}
+}
+
+func switchOn(t *time.Timer) {
+	switch t.Reset(time.Second) {
+	case true:
+		<-t.C
+	}
+}
+
+func discard(t *time.Timer) {
+	_ = t.Reset(time.Second)
+}
+
+func bare(t *time.Timer) {
+	t.Reset(time.Second)
+}
+
+func readForOther(t *time.Timer) {
+	if t.Reset(time.Second) {
+		use("active")
+	}
+}
+
+func commented(t *time.Timer) {
+	// want +1 `a receive after Reset can take the new timer's value`
+	if !t.Reset(time.Second) {
+		// why
+		<-t.C
+	}
+}
+
+func funcLiteral(t *time.Timer) {
+	if !t.Reset(time.Second) {
+		f := func() { <-t.C }
+		f()
+	}
+}
+
+func methodValue(t *time.Timer) {
+	f := t.Reset
+	if !f(time.Second) {
+		<-t.C
+	}
+}
+
+func stop(t *time.Timer) {
+	if !t.Stop() {
+		<-t.C
+	}
+}
+
+func elseIf(t *time.Timer, x bool) {
+	if x {
+		use("x")
+	} else if !t.Reset(time.Second) { // want `a receive after Reset can take the new timer's value`
+		<-t.C
+	}
+}
+
+func localElse(t *time.Timer) {
+	active := t.Reset(time.Second) // want `a receive after Reset can take the new timer's value`
+	if active {
+		use("active")
+	} else {
+		<-t.C
+	}
+}
+
+func initElse(t *time.Timer) {
+	if active := t.Reset(time.Second); active { // want `a receive after Reset can take the new timer's value`
+		use("active")
+	} else {
+		<-t.C
+	}
+}
+
+func swappedInit(t, u *time.Timer) {
+	if t, active := u, t.Reset(time.Second); !active {
+		<-t.C
+	}
+}
+
+func selectDrain(t *time.Timer) {
+	// want +1 `a receive after Reset can take the new timer's value`
+	if !t.Reset(time.Second) {
+		select {
+		case <-t.C:
+		default:
+		}
+	}
+}
+
+func valueDrain(t time.Timer) {
+	// want +1 `a receive after Reset can take the new timer's value`
+	if !t.Reset(time.Second) {
+		<-t.C
+	}
+}
+
+type holder struct {
+	timer *time.Timer
+	other bool
+}
+
+func fieldDrain(h *holder) {
+	// want +1 `a receive after Reset can take the new timer's value`
+	if !h.timer.Reset(time.Second) {
+		<-h.timer.C
+	}
+}
+
+type wrapper struct {
+	*time.Timer
+	C <-chan time.Time
+}
+
+func wrapperDrain(w *wrapper) {
+	if !w.Reset(time.Second) {
+		<-w.C
+	}
+}
+
+func stopInit(t *time.Timer) {
+	active := t.Reset(time.Second)
+	if active = t.Stop(); !active {
+		<-t.C
+	}
+}
+
+func tickerChannel(t *time.Timer, ticker *time.Ticker) {
+	if !t.Reset(time.Second) {
+		<-ticker.C
+	}
+}
+
+func unrelatedInit(t *time.Timer) {
+	active := t.Reset(time.Second) // want `a receive after Reset can take the new timer's value`
+	if x := 1; !active {
+		use(x)
+		<-t.C
+	}
+}
+
+func elseIfLocal(t *time.Timer, x bool) {
+	active := t.Reset(time.Second)
+	if x {
+		use("x")
+	} else if !active {
+		<-t.C
+	}
+}
+
+func duplicateAssign(t *time.Timer) {
+	var active bool
+	active, active = t.Reset(time.Second), false
+	if !active {
+		<-t.C
+	}
+}
+
+func labeled(t *time.Timer) {
+	goto drain
+drain: // want +1 `a receive after Reset can take the new timer's value`
+	if !t.Reset(time.Second) {
+		<-t.C
+	}
+}
+
+func labeledLocal(t *time.Timer) {
+	active := t.Reset(time.Second) // want `a receive after Reset can take the new timer's value`
+drain:
+	if !active {
+		<-t.C
+	}
+	goto drain
+}
+
+func assignedField(h, other *holder) {
+	var active bool
+	active, h = h.timer.Reset(time.Second), other
+	if !active {
+		<-h.timer.C
+	}
+}
+
+func methodExpr(t *time.Timer) {
+	if !(*time.Timer).Reset(t, time.Second) {
+		<-t.C
+	}
+}
+
+type embedded struct {
+	*time.Timer
+}
+
+func embeddedDrain(w *embedded) {
+	// want +1 `a receive after Reset can take the new timer's value`
+	if !w.Reset(time.Second) {
+		<-w.Timer.C
+	}
+}
+
+type box struct {
+	*time.Timer
+}
+
+func boxDrain(b *box) {
+	// want +1 `a receive after Reset can take the new timer's value`
+	if !b.Timer.Reset(time.Second) {
+		<-b.C
+	}
+}
+
+func varLocal(t *time.Timer) {
+	var active = t.Reset(time.Second) // want `a receive after Reset can take the new timer's value`
+	if !active {
+		<-t.C
+	}
+}
+
+func reassignedBranch(t, u *time.Timer) {
+	if !t.Reset(time.Second) {
+		t = u
+		<-t.C
+	}
+}
+
+func reassignedField(h, other *holder) {
+	if !h.timer.Reset(time.Second) {
+		h = other
+		<-h.timer.C
+	}
+}
+
+func assignedAfter(t, u *time.Timer) {
+	// want +1 `a receive after Reset can take the new timer's value`
+	if !t.Reset(time.Second) {
+		<-t.C
+		t = u
+	}
+}
+
+func elseIfGate(t *time.Timer, x bool) {
+	if t.Reset(time.Second) {
+		use("active")
+	} else if x {
+		<-t.C
+	}
+}
+
+func elseIfBoth(t *time.Timer) {
+	if t.Reset(time.Second) {
+		use("active")
+	} else if !t.Reset(time.Second) { // want `a receive after Reset can take the new timer's value`
+		<-t.C
+	}
+}
+
+func reassignedIndex(timers []*time.Timer, i, j int) {
+	if !timers[i].Reset(time.Second) {
+		i = j
+		<-timers[i].C
+	}
+}
+
+func reassignedRange(timers []*time.Timer) {
+	t := timers[0]
+	if !t.Reset(time.Second) {
+		for _, t = range timers {
+		}
+		<-t.C
+	}
+}
+
+func initWritesTimer(t, u *time.Timer) {
+	active := t.Reset(time.Second)
+	if t = u; active {
+		use("active")
+	} else {
+		<-t.C
+	}
+}
+
+func initWritesTimerBody(t, u *time.Timer) {
+	active := t.Reset(time.Second)
+	if t = u; !active {
+		<-t.C
+	}
+}
+
+func duplicateAssignReset(t *time.Timer) {
+	var active bool
+	active, active = false, t.Reset(time.Second) // want `a receive after Reset can take the new timer's value`
+	if !active {
+		<-t.C
+	}
+}
+
+type inner struct {
+	*time.Timer
+}
+
+type outer struct {
+	*inner
+}
+
+func outerDrain(o *outer) {
+	// want +1 `a receive after Reset can take the new timer's value`
+	if !o.Reset(time.Second) {
+		<-o.inner.Timer.C
+	}
+}
+
+func drainWithElse(t *time.Timer) {
+	// want +1 `a receive after Reset can take the new timer's value`
+	if !t.Reset(time.Second) {
+		<-t.C
+	} else {
+		use("active")
+	}
+}
+
+func promotedDrain(w *embedded) {
+	// want +1 `a receive after Reset can take the new timer's value`
+	if !w.Reset(time.Second) {
+		<-w.C
+	}
+}
+
+func assignedPointer(t, u *time.Timer) {
+	var active bool
+	active, *t = t.Reset(time.Second), *u
+	if !active {
+		<-t.C
+	}
+}
+
+func siblingField(h *holder) {
+	// want +1 `a receive after Reset can take the new timer's value`
+	if !h.timer.Reset(time.Second) {
+		h.other = true
+		<-h.timer.C
+	}
+}
+
+func stopBefore(t *time.Timer) {
+	if !t.Reset(time.Second) {
+		t.Stop()
+		<-t.C
+	}
+}
+
+func resetBefore(t *time.Timer) {
+	if !t.Reset(time.Second) {
+		t.Reset(time.Hour)
+		<-t.C
+	}
+}
+
+func pairedStop(t *time.Timer) {
+	active, stopped := t.Reset(time.Second), t.Stop()
+	if !active {
+		use(stopped)
+		<-t.C
+	}
+}
+
+func pairedStopInit(t *time.Timer) {
+	if active, stopped := t.Reset(time.Second), t.Stop(); !active {
+		use(stopped)
+		<-t.C
+	}
+}
+
+func embeddedWrite(w *embedded, u *time.Timer) {
+	if !w.Reset(time.Second) {
+		w.Timer = u
+		<-w.Timer.C
+	}
+}
+
+func compoundIndex(timers []*time.Timer, i, j int) {
+	if !timers[i+1].Reset(time.Second) {
+		i = j
+		<-timers[i+1].C
+	}
+}
+
+func promotedFieldWrite(o *outer, u *inner) {
+	if !o.Timer.Reset(time.Second) {
+		o.inner = u
+		<-o.Timer.C
+	}
+}
+
+func unrelatedEmbedded(o, p *outer) {
+	// want +1 `a receive after Reset can take the new timer's value`
+	if !o.Reset(time.Second) {
+		p.Timer = nil
+		<-o.C
+	}
+}
+
+func initMentions(t *time.Timer) {
+	active := t.Reset(time.Second)
+	if use(active); !active {
+		<-t.C
+	}
+}
+
+func promotedFieldDeep(o *outer, u *time.Timer) {
+	if !o.Reset(time.Second) {
+		o.inner.Timer = u
+		<-o.C
+	}
+}
+
+func channelWrite(w *embedded, ch <-chan time.Time) {
+	if !w.Reset(time.Second) {
+		w.Timer.C = ch
+		<-w.C
+	}
+}
+
+func deepChannelWrite(o *outer, ch <-chan time.Time) {
+	if !o.Reset(time.Second) {
+		o.inner.Timer.C = ch
+		<-o.C
+	}
+}
+
+type indexer struct {
+	i int
+}
+
+func selectorIndex(timers []*time.Timer, h *indexer, j int) {
+	if !timers[h.i].Reset(time.Second) {
+		h.i = j
+		<-timers[h.i].C
+	}
+}
+
+func use(any) {}
+
+type custom struct {
+	C <-chan time.Time
+}
+
+func (c *custom) Reset(time.Duration) bool { return false }
+
+func otherType(c *custom) {
+	if !c.Reset(time.Second) {
+		<-c.C
+	}
+}

@@ -1,0 +1,10 @@
+package a
+
+import "time"
+
+func drain(t *time.Timer) {
+	// want +1 `a receive after Reset can take the new timer's value`
+	if !t.Reset(time.Second) {
+		<-t.C
+	}
+}

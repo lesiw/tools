@@ -215,6 +215,7 @@ import (
 	"lesiw.io/tools/analyzers/regexpmatchloop"
 	"lesiw.io/tools/analyzers/regexpmust"
 	"lesiw.io/tools/analyzers/regexpsimplify"
+	"lesiw.io/tools/analyzers/resetvalue"
 	"lesiw.io/tools/analyzers/runerange"
 	"lesiw.io/tools/analyzers/seekwhence"
 	"lesiw.io/tools/analyzers/selectone"
@@ -498,6 +499,7 @@ var (
 		regexpmatchloop.Analyzer,
 		regexpmust.Analyzer,
 		regexpsimplify.Analyzer,
+		resetvalue.Analyzer,
 		runerange.Analyzer,
 		seekwhence.Analyzer,
 		selectone.Analyzer,

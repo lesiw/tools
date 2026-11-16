@@ -2676,6 +2676,20 @@
 //
 //	var digits = regexp.MustCompile(`[0-9]`)
 //
+// # resetvalue
+//
+// Reports a read of the value returned by (*time.Timer).Reset that decides
+// whether to drain the timer's channel. A receive after Reset can take the
+// new timer's value.
+//
+// Adapted from staticcheck's SA1025.
+//
+//	func restart(t *time.Timer) {
+//		if !t.Reset(time.Second) {
+//			<-t.C
+//		}
+//	}
+//
 // # runerange
 //
 // Reports a range over a string converted to a rune slice. Ranging over the
