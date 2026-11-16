@@ -1,0 +1,7 @@
+package a
+
+import t "time"
+
+func pauseAliased() {
+	t.Sleep(1) // want `time\.Sleep\(1\) reads the argument as 1 nanosecond; write 1 \* t\.Nanosecond`
+}

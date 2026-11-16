@@ -1,0 +1,94 @@
+package a
+
+import "time"
+
+func pauseOne() {
+	time.Sleep(1) // want `time\.Sleep\(1\) reads the argument as 1 nanosecond; write 1 \* time\.Nanosecond`
+}
+
+func pauseFortyTwo() {
+	time.Sleep(42) // want `time\.Sleep\(42\) reads the argument as 42 nanoseconds; write 42 \* time\.Nanosecond`
+}
+
+func pauseAtLimit() {
+	time.Sleep(120) // want `time\.Sleep\(120\) reads the argument as 120 nanoseconds; write 120 \* time\.Nanosecond`
+}
+
+func pauseAboveLimit() {
+	time.Sleep(121)
+}
+
+func pauseZero() {
+	time.Sleep(0)
+}
+
+func pauseUnit() {
+	time.Sleep(time.Second)
+}
+
+func pauseExplicit() {
+	time.Sleep(2 * time.Nanosecond)
+}
+
+func pauseConverted() {
+	time.Sleep(time.Duration(1))
+}
+
+func pauseVariable(n time.Duration) {
+	time.Sleep(n)
+}
+
+func pauseNamed() {
+	const small = 1
+	time.Sleep(small)
+}
+
+func pauseHex() {
+	time.Sleep(0x10) // want `time\.Sleep\(0x10\) reads the argument as 16 nanoseconds; write 0x10 \* time\.Nanosecond`
+}
+
+func pauseSeparated() {
+	time.Sleep(1_0) // want `time\.Sleep\(1_0\) reads the argument as 10 nanoseconds; write 1_0 \* time\.Nanosecond`
+}
+
+func pauseParenthesized() {
+	time.Sleep((1)) // want `time\.Sleep\(1\) reads the argument as 1 nanosecond; write 1 \* time\.Nanosecond`
+}
+
+func pauseNegative() {
+	time.Sleep(-1)
+}
+
+func pauseSum() {
+	time.Sleep(1 + 1)
+}
+
+func pauseFraction() {
+	time.Sleep(1.0)
+}
+
+func pauseFunctionValue() {
+	sleep := time.Sleep
+	sleep(1)
+}
+
+type napper struct{}
+
+func (napper) Sleep(time.Duration) {}
+
+func pauseMethod(n napper) {
+	n.Sleep(1)
+}
+
+func pauseShadowed() {
+	time := struct{ Sleep func(time.Duration) }{}
+	time.Sleep(1)
+}
+
+func pauseDeferred() {
+	defer time.Sleep(1) // want `time\.Sleep\(1\) reads the argument as 1 nanosecond; write 1 \* time\.Nanosecond`
+}
+
+func pauseGoroutine() {
+	go time.Sleep(1) // want `time\.Sleep\(1\) reads the argument as 1 nanosecond; write 1 \* time\.Nanosecond`
+}

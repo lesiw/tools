@@ -1,0 +1,7 @@
+package a
+
+import . "time"
+
+func pauseDotted() {
+	Sleep(1) // want `time\.Sleep\(1\) reads the argument as 1 nanosecond`
+}

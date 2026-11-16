@@ -1854,6 +1854,17 @@
 //		return v == math.NaN()
 //	}
 //
+// # nanosleep
+//
+// Reports a bare small integer passed to time.Sleep as a number of
+// nanoseconds.
+//
+// Inspired by staticcheck's SA1004.
+//
+//	func pause() {
+//		time.Sleep(1)
+//	}
+//
 // # negatedbool
 //
 // Reports a boolean expression that a negation makes constant or redundant: a

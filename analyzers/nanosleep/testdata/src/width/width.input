@@ -1,0 +1,8 @@
+package a
+
+import "time"
+
+func wait(theDeadlineHasAlreadyPassedAndTheWorkerShouldWait bool) {
+	// want +1 `time\.Sleep\(1\) reads the argument as 1 nanosecond; write 1 \* time\.Nanosecond`
+	if theDeadlineHasAlreadyPassedAndTheWorkerShouldWait { time.Sleep(1) }
+}
