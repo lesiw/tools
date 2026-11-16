@@ -83,6 +83,7 @@ import (
 	"lesiw.io/tools/analyzers/ctxguard"
 	"lesiw.io/tools/analyzers/ctxkey"
 	"lesiw.io/tools/analyzers/ctxname"
+	"lesiw.io/tools/analyzers/ctxvaluetype"
 	"lesiw.io/tools/analyzers/cyclo"
 	"lesiw.io/tools/analyzers/deepexit"
 	"lesiw.io/tools/analyzers/defaultcaseorder"
@@ -281,6 +282,7 @@ var (
 		ctxguard.Analyzer,
 		ctxkey.Analyzer,
 		ctxname.Analyzer,
+		ctxvaluetype.Analyzer,
 		cyclo.Analyzer,
 		deepequalerrors.Analyzer,
 		deepexit.Analyzer,

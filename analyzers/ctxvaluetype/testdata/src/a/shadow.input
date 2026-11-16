@@ -1,0 +1,13 @@
+package a
+
+import "context"
+
+type local struct{}
+
+func (local) WithValue(ctx context.Context, key, value any) context.Context {
+	return ctx
+}
+
+func shadowed(ctx context.Context) context.Context {
+	return local{}.WithValue(ctx, key{}, nil)
+}

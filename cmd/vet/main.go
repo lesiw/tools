@@ -556,6 +556,16 @@
 //		<-c.Done()
 //	}
 //
+// # ctxvaluetype
+//
+// Reports a context.WithValue call whose value argument is the nil literal.
+// If the parent lacks the key, Value still returns nil; if the parent holds a
+// non-nil value under it, Value returns nil instead.
+//
+//	func store(ctx context.Context, key any) context.Context {
+//		return context.WithValue(ctx, key, nil)
+//	}
+//
 // # cyclo
 //
 // Reports a function whose cyclomatic complexity is over 15, counted as one

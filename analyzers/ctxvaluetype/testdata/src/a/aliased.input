@@ -1,0 +1,9 @@
+package a
+
+import ctx "context"
+
+type aliasedKey struct{}
+
+func aliased(c ctx.Context) ctx.Context {
+	return ctx.WithValue(c, aliasedKey{}, nil) // want `context.WithValue is called with the nil literal as its value`
+}

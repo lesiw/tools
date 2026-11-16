@@ -1,0 +1,13 @@
+package local
+
+import "context"
+
+type key struct{}
+
+func WithValue(ctx context.Context, key, value any) context.Context {
+	return ctx
+}
+
+func call(ctx context.Context) context.Context {
+	return WithValue(ctx, key{}, nil)
+}

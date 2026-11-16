@@ -1,0 +1,9 @@
+package a
+
+import . "context"
+
+type dottedKey struct{}
+
+func dotted(c Context) Context {
+	return WithValue(c, dottedKey{}, nil) // want `context.WithValue is called with the nil literal as its value`
+}

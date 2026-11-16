@@ -1,0 +1,75 @@
+package a
+
+import "context"
+
+type key struct{}
+
+func store(ctx context.Context) context.Context {
+	return context.WithValue(ctx, key{}, nil) // want `context.WithValue is called with the nil literal as its value`
+}
+
+func parenthesized(ctx context.Context) context.Context {
+	return context.WithValue(ctx, key{}, (nil)) // want `context.WithValue is called with the nil literal as its value`
+}
+
+func shadowedNil(ctx context.Context) context.Context {
+	nil := "alpha"
+	return context.WithValue(ctx, key{}, nil)
+}
+
+func typed(ctx context.Context) context.Context {
+	return context.WithValue(ctx, key{}, (*int)(nil))
+}
+
+func converted(ctx context.Context) context.Context {
+	return context.WithValue(ctx, key{}, error(nil))
+}
+
+func variable(ctx context.Context) context.Context {
+	var v any
+	return context.WithValue(ctx, key{}, v)
+}
+
+func present(ctx context.Context) context.Context {
+	return context.WithValue(ctx, key{}, "alpha")
+}
+
+func nilKey(ctx context.Context) context.Context {
+	return context.WithValue(
+		ctx,
+		nil,
+		nil, // want `context.WithValue is called with the nil literal as its value`
+	)
+}
+
+func nonComparableKey(ctx context.Context) context.Context {
+	return context.WithValue(
+		ctx,
+		[]string{},
+		nil, // want `context.WithValue is called with the nil literal as its value`
+	)
+}
+
+func parenthesizedCallee(ctx context.Context) context.Context {
+	return (context.WithValue)(
+		ctx,
+		key{},
+		nil, // want `context.WithValue is called with the nil literal as its value`
+	)
+}
+
+func nilKeyValue(ctx context.Context) context.Context {
+	return context.WithValue(ctx, nil, "alpha")
+}
+
+func nonComparableKeyValue(ctx context.Context) context.Context {
+	return context.WithValue(ctx, []string{}, "alpha")
+}
+
+func nilParent() context.Context {
+	return context.WithValue(
+		nil,
+		key{},
+		nil, // want `context.WithValue is called with the nil literal as its value`
+	)
+}

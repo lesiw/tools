@@ -548,6 +548,16 @@ func watch(c context.Context) {
 }
 ```
 
+## ctxvaluetype
+
+Reports a context.WithValue call whose value argument is the nil literal. If the parent lacks the key, Value still returns nil; if the parent holds a non-nil value under it, Value returns nil instead.
+
+```
+func store(ctx context.Context, key any) context.Context {
+    return context.WithValue(ctx, key, nil)
+}
+```
+
 ## cyclo
 
 Reports a function whose cyclomatic complexity is over 15, counted as one for the function, one per if, for, range, and && or ||, and one for a switch or select, whose clauses cost nothing. A function literal is measured separately, and its branches are not counted against the function that declares it.
