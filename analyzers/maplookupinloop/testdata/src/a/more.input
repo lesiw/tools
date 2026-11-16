@@ -1,0 +1,44 @@
+package a
+
+import "time"
+
+func plain(m map[string]int, xs []string, key string) {
+	for i := 0; i < len(xs); i++ {
+		_ = m[key] // want `map lookup does not depend on the loop; evaluate it once before the loop`
+	}
+}
+
+func header(m map[string]int, xs []string) {
+	for m["alpha"] > 0 {
+		break
+	}
+	for range xs {
+		for m["alpha"] > 0 { // want `map lookup does not depend on the loop; evaluate it once before the loop`
+			break
+		}
+	}
+}
+
+func literalLoop(m map[string]int, xs []string, key string) {
+	func() {
+		for range xs {
+			_ = m[key] // want `map lookup does not depend on the loop; evaluate it once before the loop`
+		}
+	}()
+}
+
+func packageKey(m map[time.Duration]int, xs []string) {
+	for range xs {
+		_ = m[time.Second] // want `map lookup does not depend on the loop; evaluate it once before the loop`
+	}
+}
+
+type labeled struct {
+	field int
+}
+
+func keyedLiteral(m map[labeled]int, xs []string) {
+	for range xs {
+		_ = m[labeled{field: 1}] // want `map lookup does not depend on the loop; evaluate it once before the loop`
+	}
+}

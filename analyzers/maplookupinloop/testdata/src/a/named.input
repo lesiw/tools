@@ -1,0 +1,27 @@
+package a
+
+type named map[string]int
+
+func namedLookup(xs []string) {
+	m := make(named)
+	for range xs {
+		_ = m["a"] // want `map lookup does not depend on the loop; evaluate it once before the loop`
+	}
+}
+
+func anyLookup(xs []string) {
+	m := make(map[string]any)
+	for range xs {
+		_ = m["a"] // want `map lookup does not depend on the loop; evaluate it once before the loop`
+	}
+}
+
+type keyStruct struct {
+	field string
+}
+
+func structFieldKey(m map[string]int, xs []string, k keyStruct) {
+	for range xs {
+		_ = m[k.field] // want `map lookup does not depend on the loop; evaluate it once before the loop`
+	}
+}

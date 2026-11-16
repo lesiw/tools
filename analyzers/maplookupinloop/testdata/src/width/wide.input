@@ -1,0 +1,7 @@
+package width
+
+func wide(m map[string]int, xs []string, key string) {
+	for range xs {
+		_ = m[key] // want `map lookup does not depend on the loop; evaluate it once before the loop`
+	}
+}

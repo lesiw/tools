@@ -1,0 +1,19 @@
+package a
+
+type literalKey string
+
+func literalCall(xs []string) {
+	n := map[int]int{len(xs): 1}
+	lookup := n[len(xs)]
+	for range xs {
+		_ = lookup // want `map lookup does not depend on the loop; evaluate it once before the loop`
+	}
+}
+
+func literalConverted(xs []string, key literalKey) {
+	n := map[literalKey]int{literalKey("a"): 1}
+	lookup2 := n[key]
+	for range xs {
+		_ = lookup2 // want `map lookup does not depend on the loop; evaluate it once before the loop`
+	}
+}

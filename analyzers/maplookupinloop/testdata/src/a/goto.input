@@ -1,0 +1,12 @@
+package a
+
+func laterLabel(m map[string]int, xs []string, retry bool) {
+	for range xs {
+		_ = m["alpha"] // want `map lookup does not depend on the loop; evaluate it once before the loop`
+	}
+	if retry {
+		goto done
+	}
+done:
+	_ = retry
+}

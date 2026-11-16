@@ -1,0 +1,10 @@
+package a
+
+func pairRHS(m map[string]int, xs []string, key string) {
+	var x, y int
+	lookup := m[key]
+	for range xs {
+		x, y = 0, lookup // want `map lookup does not depend on the loop; evaluate it once before the loop`
+	}
+	_, _ = x, y
+}

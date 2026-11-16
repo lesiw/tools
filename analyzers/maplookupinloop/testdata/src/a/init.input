@@ -1,0 +1,8 @@
+package a
+
+func made(xs []string) {
+	m := make(map[string]int)
+	for range xs {
+		_ = m["a"] // want `map lookup does not depend on the loop; evaluate it once before the loop`
+	}
+}

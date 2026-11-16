@@ -1,10 +1,9 @@
-// Package astexpr holds the facts about an expression that the analyzers
-// share: how it prints, whether two of them read the same value, whether
-// reading one twice gives one value, and whether its type can hold a NaN.
 // Package astexpr holds the facts about the syntax tree that the analyzers
-// share: an expression's printed form, whether reading it twice gives one
-// value, whether its type can hold a NaN, whether its type set holds only
-// arrays, and whether a statement reads the value it writes.
+// share: an expression's printed form, whether two expressions read the same
+// value or can be evaluated twice, whether evaluating one can run code or
+// panic, whether a type has no interface in it, whether a selection goes
+// through a pointer, whether a type can hold a NaN, whether its type set holds
+// only arrays, and whether a statement reads the value it writes.
 package astexpr
 
 import (
@@ -254,4 +253,174 @@ func SelfReads(stmt ast.Stmt) bool {
 		return stmt.Tok != token.ASSIGN && stmt.Tok != token.DEFINE
 	}
 	return false
+}
+
+// NoInterface reports whether t has no interface in it, which could contain a
+// value that cannot be hashed.
+func NoInterface(t types.Type) bool {
+	switch t := types.Unalias(t).Underlying().(type) {
+	case *types.Interface:
+		return false
+	case *types.Struct:
+		for field := range t.Fields() {
+			if !NoInterface(field.Type()) {
+				return false
+			}
+		}
+	case *types.Array:
+		return NoInterface(t.Elem())
+	}
+	return true
+}
+
+// Safe reports whether e can be evaluated without running code or panicking.
+func Safe(pass *analysis.Pass, e ast.Expr) bool {
+	switch e := e.(type) {
+	case *ast.Ident, *ast.BasicLit:
+		return true
+	case *ast.ParenExpr:
+		return Safe(pass, e.X)
+	case *ast.CompositeLit:
+		for _, elt := range e.Elts {
+			if !Safe(pass, elt) {
+				return false
+			}
+		}
+		return true
+	case *ast.KeyValueExpr:
+		return Safe(pass, e.Key) && Safe(pass, e.Value)
+	case *ast.SelectorExpr:
+		if _, ok := pass.TypesInfo.Selections[e]; !ok {
+			return Safe(pass, e.X)
+		}
+		return Follows(pass, e) && Safe(pass, e.X)
+	case *ast.IndexExpr:
+		// An index into a map cannot panic; one into a slice or a
+		// string checks its bounds.
+		m, ok := mapType(pass, e.X)
+		return ok && NoInterface(m.Key()) && Safe(pass, e.X) &&
+			Safe(pass, e.Index)
+	case *ast.UnaryExpr:
+		return e.Op != token.ARROW && e.Op != token.MUL && Safe(pass, e.X)
+	case *ast.CallExpr:
+		return called(pass, e)
+	case *ast.BinaryExpr:
+		return computed(pass, e)
+	}
+	return false
+}
+
+// mapType returns the map type of e.
+func mapType(pass *analysis.Pass, e ast.Expr) (*types.Map, bool) {
+	t := pass.TypesInfo.TypeOf(e)
+	if t == nil {
+		return nil, false
+	}
+	m, ok := t.Underlying().(*types.Map)
+	return m, ok
+}
+
+// called reports whether a call cannot run user code or panic: a conversion
+// judged on what it converts, or a builtin that only reads its arguments.
+func called(pass *analysis.Pass, e *ast.CallExpr) bool {
+	if pass.TypesInfo.Types[e.Fun].IsType() {
+		return converted(pass, e)
+	}
+	id, ok := ast.Unparen(e.Fun).(*ast.Ident)
+	if !ok {
+		return false
+	}
+	builtin, ok := pass.TypesInfo.Uses[id].(*types.Builtin)
+	if !ok {
+		return false
+	}
+	switch builtin.Name() {
+	case "cap", "len", "max", "min":
+	default:
+		return false
+	}
+	for _, arg := range e.Args {
+		if !Safe(pass, arg) {
+			return false
+		}
+	}
+	return true
+}
+
+// converted reports whether a conversion cannot panic: nothing it converts
+// can, and it does not build an array.
+func converted(pass *analysis.Pass, e *ast.CallExpr) bool {
+	if t := pass.TypesInfo.TypeOf(e); t == nil || !arrayless(t) {
+		return false
+	}
+	for _, arg := range e.Args {
+		if !Safe(pass, arg) {
+			return false
+		}
+	}
+	return true
+}
+
+// arrayless reports whether converting a slice to t cannot panic: a conversion
+// to an array, or to a pointer to one, panics when the slice is shorter.
+func arrayless(t types.Type) bool {
+	if _, ok := types.Unalias(t).(*types.TypeParam); ok {
+		return false
+	}
+	u := t.Underlying()
+	if p, ok := u.(*types.Pointer); ok {
+		u = p.Elem().Underlying()
+	}
+	_, array := u.(*types.Array)
+	return !array
+}
+
+// Follows reports whether reading e dereferences no pointer: neither the value
+// it starts from, nor a pointer-typed field on the way to the one selected.
+func Follows(pass *analysis.Pass, e *ast.SelectorExpr) bool {
+	t := pass.TypesInfo.TypeOf(e.X)
+	if t == nil {
+		return false
+	}
+	if _, ok := t.Underlying().(*types.Pointer); ok {
+		return false
+	}
+	sel, ok := pass.TypesInfo.Selections[e]
+	if !ok {
+		return true
+	}
+	t = sel.Recv()
+	index := sel.Index()
+	for _, i := range index[:len(index)-1] {
+		st, ok := t.Underlying().(*types.Struct)
+		if !ok {
+			return false
+		}
+		field := st.Field(i)
+		if _, ok := field.Type().Underlying().(*types.Pointer); ok {
+			return false
+		}
+		t = field.Type()
+	}
+	return true
+}
+
+// computed reports whether a binary expression cannot panic.
+func computed(pass *analysis.Pass, e *ast.BinaryExpr) bool {
+	switch e.Op {
+	case token.QUO, token.REM, token.SHL, token.SHR:
+		// A zero divisor and a negative shift count both panic.
+		return false
+	}
+	if e.Op == token.EQL || e.Op == token.NEQ {
+		// Two interface values panic on comparison when both hold the
+		// same type and that type cannot be hashed.
+		if t := pass.TypesInfo.TypeOf(e.X); t == nil || !NoInterface(t) {
+			return false
+		}
+		if t := pass.TypesInfo.TypeOf(e.Y); t == nil || !NoInterface(t) {
+			return false
+		}
+	}
+	return Safe(pass, e.X) && Safe(pass, e.Y)
 }

@@ -1,0 +1,75 @@
+package a
+
+func parenthesized(m map[string]int, xs []string, key string) {
+	for range xs {
+		value, ok := (m[key]) // want `map lookup does not depend on the loop; evaluate it once before the loop`
+		_, _ = value, ok
+	}
+}
+
+func innerConstant(m map[string]int, xs []string) {
+	for range xs {
+		const key = "alpha"
+		_ = m[key] // want `map lookup does not depend on the loop; evaluate it once before the loop`
+	}
+}
+
+func commentedLookup(m map[string]int, xs []string) {
+	for range xs {
+		_ = m[ /* key */ "alpha"] // want `map lookup does not depend on the loop; evaluate it once before the loop`
+	}
+}
+
+func commentedLoop(m map[string]int, xs []string) {
+	// Each string reads the same entry.
+	for range xs {
+		_ = m["alpha"] // want `map lookup does not depend on the loop; evaluate it once before the loop`
+	}
+}
+
+func jumped(m map[string]int, xs []string) {
+	if len(xs) > 0 {
+		goto after
+	}
+	for range xs {
+		_ = m["alpha"] // want `map lookup does not depend on the loop; evaluate it once before the loop`
+	}
+after:
+	_ = len(xs)
+}
+
+func panicKey(m map[int]int, xs []string, divisor int) {
+	for range xs {
+		_ = m[1/divisor] // want `map lookup does not depend on the loop; evaluate it once before the loop`
+	}
+}
+
+func keyedArrayKey(m map[[2]int]int, xs []string) {
+	for range xs {
+		const i = 0
+		_ = m[[2]int{i: 1}] // want `map lookup does not depend on the loop; evaluate it once before the loop`
+	}
+}
+
+func arrayKeyConvert(m map[[2]byte]int, xs []string, a [2]byte) {
+	for range xs {
+		_ = m[[2]byte(a)] // want `map lookup does not depend on the loop; evaluate it once before the loop`
+	}
+}
+
+func retryGoto(m map[string]int, xs []string, retry bool) {
+retry:
+	for range xs {
+		_ = m["alpha"] // want `map lookup does not depend on the loop; evaluate it once before the loop`
+	}
+	m["alpha"] = 1
+	if retry {
+		goto retry
+	}
+}
+
+func interfaceCompare(m map[bool]int, xs []string) {
+	for range xs {
+		_ = m[any(1) == any(2)] // want `map lookup does not depend on the loop; evaluate it once before the loop`
+	}
+}

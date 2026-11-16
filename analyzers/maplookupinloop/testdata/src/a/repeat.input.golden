@@ -1,0 +1,21 @@
+package a
+
+func repeated(m map[string]int, xs []string, key string) {
+	lookup := m[key]
+	for range xs {
+		if lookup > 0 { // want `map lookup does not depend on the loop; evaluate it once before the loop`
+			_ = 1
+		}
+		_ = lookup // want `map lookup does not depend on the loop; evaluate it once before the loop`
+	}
+}
+
+func repeatedPair(m map[string]int, xs []string, key string) {
+	lookup2, found := m[key]
+	for range xs {
+		value, ok := lookup2, found // want `map lookup does not depend on the loop; evaluate it once before the loop`
+		_, _ = value, ok
+		value, ok = lookup2, found // want `map lookup does not depend on the loop; evaluate it once before the loop`
+		_, _ = value, ok
+	}
+}

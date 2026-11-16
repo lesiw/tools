@@ -1,0 +1,7 @@
+package a
+
+func notKey(m map[bool]int, xs []string, flag bool) {
+	for range xs {
+		_ = m[!flag] // want `map lookup does not depend on the loop; evaluate it once before the loop`
+	}
+}

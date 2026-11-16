@@ -1,0 +1,27 @@
+package a
+
+type holder struct {
+	values map[string]int
+}
+
+func condition(m map[string]int, xs []string, key string) {
+	for _, s := range xs {
+		if m[key] > 0 { // want `map lookup does not depend on the loop; evaluate it once before the loop`
+			_ = s
+		}
+	}
+}
+
+func field(h holder, xs []string) {
+	for range xs {
+		_ = h.values["alpha"] // want `map lookup does not depend on the loop; evaluate it once before the loop`
+	}
+}
+
+func assigned(m map[string]int, xs []string, key string) {
+	var value int
+	for range xs {
+		value = m[key] // want `map lookup does not depend on the loop; evaluate it once before the loop`
+	}
+	_ = value
+}

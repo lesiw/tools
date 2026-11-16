@@ -1596,6 +1596,20 @@ func f(m map[any]int, xs []int) {
 }
 ```
 
+## maplookupinloop
+
+Reports a map lookup in a loop that reads the same map with a key that does not change. The lookup returns the same value on every pass.
+
+Adapted from staticcheck's SA6001.
+
+```
+func f(m map[string]int, keys []string) {
+    for range keys {
+        _ = m["alpha"]
+    }
+}
+```
+
 ## mapsloop
 
 Reports a range over a map or an iter.Seq2 whose body copies one entry into another map. maps.Copy writes the map loop as one call, maps.Insert the iterator loop, in a package that declares Go 1.23 or later.

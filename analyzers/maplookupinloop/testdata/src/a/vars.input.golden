@@ -1,0 +1,9 @@
+package a
+
+func declared(m map[string]int, xs []string, key string) {
+	lookup, found := m[key]
+	for range xs {
+		var value, ok = lookup, found // want `map lookup does not depend on the loop; evaluate it once before the loop`
+		_, _ = value, ok
+	}
+}

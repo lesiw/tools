@@ -1,0 +1,10 @@
+package a
+
+func assignedPair(m map[string]int, xs []string, key string) {
+	var value int
+	var ok bool
+	for range xs {
+		value, ok = m[key] // want `map lookup does not depend on the loop; evaluate it once before the loop`
+		_, _ = value, ok
+	}
+}

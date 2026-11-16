@@ -1,0 +1,15 @@
+package a
+
+func twoResult(m map[string]int, xs []string, key string) {
+	for range xs {
+		value, ok := m[key] // want `map lookup does not depend on the loop; evaluate it once before the loop`
+		_, _ = value, ok
+	}
+}
+
+func tuple(m map[string]int, xs []string, key string) {
+	for range xs {
+		value, ok := m[key], true // want `map lookup does not depend on the loop; evaluate it once before the loop`
+		_, _ = value, ok
+	}
+}

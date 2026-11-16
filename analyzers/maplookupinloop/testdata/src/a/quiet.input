@@ -1,0 +1,691 @@
+package a
+
+func quiet(m map[string]int, xs []string, key string, f func(map[string]int, string) int) {
+	for _, s := range xs {
+		_ = m[s]
+		_ = m[key]
+		key = s
+		_ = m[key]
+		m = nil
+		_ = m[key]
+		m = map[string]int{}
+		m[s] = 1
+		_ = m[key]
+		delete(m, s)
+		clear(m)
+		_ = f(m, key)
+		_ = m[readKey()]
+	}
+	_ = m[key]
+	for range []string{"a"} {
+		func() {
+			_ = m[key]
+		}()
+	}
+	for k := range m {
+		_ = m[k]
+	}
+	for i := 0; i < len(xs); i++ {
+		key = xs[i]
+		_ = m[key]
+	}
+}
+
+func readKey() string { return "" }
+
+type item interface {
+	item()
+}
+
+type one int
+
+func (one) item() {}
+
+func typeSwitch(m map[one]int, xs []item) {
+	for _, it := range xs {
+		switch x := it.(type) {
+		case one:
+			_ = m[x]
+		}
+	}
+}
+
+func pointerField(h *holder, xs []string) {
+	for range xs {
+		_ = h.values["alpha"]
+	}
+}
+
+func writeOnly(m map[string]int, xs []string) {
+	for range xs {
+		m["alpha"] = 1
+	}
+}
+
+type b struct {
+	N int
+}
+
+func benchmarkLookup(b *b, m map[string]int) {
+	for i := 0; i < b.N; i++ {
+		_ = m["alpha"]
+	}
+}
+
+func addressOfKey(m map[string]int, xs []string, key string) {
+	for range xs {
+		_ = &key
+		_ = m[key]
+	}
+}
+
+func addressOfMap(m map[string]int, xs []string, key string) {
+	for range xs {
+		_ = &m
+		_ = m[key]
+	}
+}
+
+func throughInterface(m map[string]int, xs []string) {
+	for range xs {
+		consumeAny(any(m))
+		_ = m["alpha"]
+	}
+}
+
+func consumeAny(any) {}
+
+func aliased(m map[string]int, xs []string) {
+	n := m
+	for range xs {
+		n["alpha"] = 1
+		_ = m["alpha"]
+	}
+}
+
+func aliasedDelete(m map[string]int, xs []string) {
+	n := m
+	for range xs {
+		delete(n, "alpha")
+		_ = m["alpha"]
+	}
+}
+
+func container(h holder, xs []string) {
+	for range xs {
+		consume(h)
+		_ = h.values["alpha"]
+	}
+}
+
+func consume(holder) {}
+
+type config struct {
+	values map[string]int
+}
+
+func (c *config) mutate() {}
+
+func methodContainer(c config, xs []string) {
+	for range xs {
+		c.mutate()
+		_ = c.values["alpha"]
+	}
+}
+
+type namedMap map[string]int
+
+func (namedMap) set() {}
+
+func receiver(m namedMap, xs []string) {
+	for range xs {
+		m.set()
+		_ = m["alpha"]
+	}
+}
+
+var packageMap = map[string]int{}
+
+func globalMap(xs []string) {
+	for range xs {
+		_ = packageMap["alpha"]
+	}
+}
+
+func increments(m map[string]int, xs []string) {
+	for range xs {
+		m["alpha"]++
+	}
+}
+
+func receiveKey(m map[string]int, xs []string, ch chan string) {
+	for range xs {
+		_ = m[<-ch]
+	}
+}
+
+func derefKey(m map[string]int, xs []string, p *string) {
+	for range xs {
+		_ = m[*p]
+	}
+}
+
+func indexKey(m map[int]int, xs []string, keys []int) {
+	for range xs {
+		_ = m[keys[0]]
+	}
+}
+
+func calledMap(xs []string, key string) {
+	for range xs {
+		_ = readMap()[key]
+	}
+}
+
+func readMap() map[string]int { return nil }
+
+func derefMap(m map[string]int, xs []string, p *map[string]int, key string) {
+	for range xs {
+		_ = (*p)[key]
+	}
+}
+
+func indexedMap(maps []map[string]int, xs []string, key string) {
+	for range xs {
+		_ = maps[0][key]
+	}
+}
+
+func literalMap(xs []string, key string) {
+	for range xs {
+		_ = map[string]int{"a": 1}[key]
+	}
+}
+
+func genericMap[M ~map[string]int](m M, xs []string, key string) {
+	for range xs {
+		_ = m[key]
+	}
+}
+
+type pair struct {
+	key string
+}
+
+func fieldKey(m map[string]int, xs []string) {
+	p := pair{key: "a"}
+	for range xs {
+		p.key = "b"
+		_ = m[p.key]
+	}
+}
+
+func arrayKey(m map[[2]int]int, xs []string) {
+	a := [2]int{0, 1}
+	for range xs {
+		a[0] = 2
+		_ = m[a]
+	}
+}
+
+func lengthKey(m map[string]int, xs []string, bs []byte) {
+	for range xs {
+		bs[0] = 'x'
+		_ = m[string(bs)]
+	}
+}
+
+func interfaceMap(m map[any]int, xs []string) {
+	key := []string{"a"}
+	for range xs {
+		_ = m[key]
+	}
+}
+
+func pointerMap(m map[string]int, xs []string) {
+	p := &m
+	for range xs {
+		*p = map[string]int{}
+		_ = m["alpha"]
+	}
+}
+
+func structCopy(h holder, xs []string) {
+	copy := h
+	for range xs {
+		copy.values["alpha"] = 1
+		_ = h.values["alpha"]
+	}
+}
+
+func identity(m map[string]int) map[string]int { return m }
+
+func returnedAlias(m map[string]int, xs []string) {
+	n := identity(m)
+	for range xs {
+		n["alpha"] = 1
+		_ = m["alpha"]
+	}
+}
+
+func pointerKey(m map[string]int, xs []string) {
+	key := "a"
+	p := &key
+	for range xs {
+		*p = "b"
+		_ = m[key]
+	}
+}
+
+func closureKey(m map[string]int, xs []string) {
+	key := "a"
+	set := func() { key = "b" }
+	for range xs {
+		set()
+		_ = m[key]
+	}
+}
+
+var globalKeyValue = "a"
+
+func globalKey(m map[string]int, xs []string) {
+	for range xs {
+		mutateKey()
+		_ = m[globalKeyValue]
+	}
+}
+
+func mutateKey() { globalKeyValue = "b" }
+
+func declaredKey(m map[string]int, xs []string) {
+	for range xs {
+		key := "a"
+		_ = m[key]
+	}
+}
+
+func declaredVarKey(m map[string]int, xs []string) {
+	for range xs {
+		var key = "a"
+		_ = m[key]
+	}
+}
+
+func rangeExpression(values map[string][]int) {
+	for range values["alpha"] {
+	}
+}
+
+func closureMap(m map[string]int, xs []string) {
+	set := func() { m["a"] = 1 }
+	for range xs {
+		set()
+		_ = m["a"]
+	}
+}
+
+func methodValueMap(m namedMap, xs []string) {
+	set := m.set
+	for range xs {
+		set()
+		_ = m["a"]
+	}
+}
+
+func reverseAlias(m map[string]int, xs []string) {
+	n := m
+	for range xs {
+		m["a"] = 1
+		_ = n["a"]
+	}
+}
+
+var globalMapValue = map[string]int{}
+
+func localPackageAlias(xs []string) {
+	m := globalMapValue
+	for range xs {
+		globalMapValue["a"]++
+		_ = m["a"]
+	}
+}
+
+func containerAlias(m map[string]int, xs []string) {
+	maps := []map[string]int{m}
+	for _, n := range maps {
+		n["a"] = 1
+		_ = m["a"]
+	}
+}
+
+func literalBoundary(m map[string]int, xs []string) {
+	n := m
+	func() {
+		for range xs {
+			n["a"] = 1
+			_ = m["a"]
+		}
+	}()
+}
+
+func holderComposite(m map[string]int, xs []string) {
+	h := holder{values: m}
+	for range xs {
+		h.values["a"] = 1
+		_ = m["a"]
+	}
+}
+
+func sliceKeyAlias(m map[string]int, xs []string, bs []byte) {
+	c := bs
+	for range xs {
+		c[0] = 'x'
+		_ = m[string(bs)]
+	}
+}
+
+func callKey(m map[string]int, xs []string, bs []byte) {
+	for range xs {
+		mutateBytes(bs)
+		_ = m[string(bs)]
+	}
+}
+
+func mutateBytes([]byte) {}
+
+func typeSwitchMap(xs []any) {
+	for _, x := range xs {
+		switch m := x.(type) {
+		case map[string]int:
+			_ = m["a"]
+		}
+	}
+}
+
+func callback(m map[string]int, xs []string, set func()) {
+	for range xs {
+		set()
+		_ = m["alpha"]
+	}
+}
+
+type setter struct {
+	set func()
+}
+
+func fieldCallback(s setter, m map[string]int, xs []string) {
+	for range xs {
+		s.set()
+		_ = m["alpha"]
+	}
+}
+
+func iterMap(m map[string]int, iter func(func(string) bool)) {
+	for range iter {
+		_ = m["alpha"]
+	}
+}
+
+func channelKey(m map[int]int, xs []string, ch chan int) {
+	for range xs {
+		_ = m[len(ch)]
+		<-ch
+	}
+}
+
+func sendKey(m map[string]int, xs []string, ch chan int) {
+	for range xs {
+		ch <- 1
+		_ = m["alpha"]
+	}
+}
+
+func rangeChannel(m map[int]int, ch chan string) {
+	for range ch {
+		_ = m[len(ch)]
+	}
+}
+
+func packageCallAlias(xs []string) {
+	m := globalMapValue
+	for range xs {
+		mutateGlobalMap()
+		_ = m["alpha"]
+	}
+}
+
+func mutateGlobalMap() { globalMapValue["a"] = 1 }
+
+func mapParams(m, n map[string]int, xs []string) {
+	for range xs {
+		n["a"] = 1
+		_ = m["a"]
+	}
+}
+
+func containerParam(m map[string]int, maps []map[string]int, xs []string) {
+	for range xs {
+		maps[0]["a"] = 1
+		_ = m["a"]
+	}
+}
+
+func sliceParams(m map[string]int, xs []string, bs, cs []byte) {
+	for range xs {
+		cs[0] = 'x'
+		_ = m[string(bs)]
+	}
+}
+
+func setPtr(p *map[string]int) { *p = map[string]int{} }
+
+func mutatePtr(p *map[string]int) { (*p)["a"] = 1 }
+
+func outerLiteralAlias(m map[string]int, xs []string) {
+	setPtr(&m)
+	func() {
+		for range xs {
+			mutatePtr(&m)
+			_ = m["a"]
+		}
+	}()
+}
+
+func pointerMapParam(m map[string]int, p *map[string]int, xs []string) {
+	for range xs {
+		*p = map[string]int{}
+		_ = m["a"]
+	}
+}
+
+func containerClear(m map[string]int, maps []map[string]int, xs []string) {
+	for range xs {
+		clear(maps[0])
+		_ = m["a"]
+	}
+}
+
+type holderSet struct {
+	values map[string]int
+}
+
+func (holderSet) clear() {}
+
+func holderMethod(h holderSet, m map[string]int, xs []string) {
+	for range xs {
+		h.clear()
+		_ = m["a"]
+	}
+}
+
+var globalReturned = map[string]int{}
+
+func getGlobal() map[string]int { return globalReturned }
+
+func globalReturnAlias(xs []string) {
+	m := getGlobal()
+	for range xs {
+		mutateGlobalMap()
+		_ = m["a"]
+	}
+}
+
+func typeParamMap[M ~map[string]int](m map[string]int, n M, xs []string) {
+	for range xs {
+		n["a"] = 1
+		_ = m["a"]
+	}
+}
+
+func arrayConvert(m map[[2]byte]int, xs []string, bs, cs []byte) {
+	for range xs {
+		cs[0] = 'x'
+		_ = m[[2]byte(bs)]
+	}
+}
+
+type mutator interface {
+	mutate()
+}
+
+func interfaceCall(b mutator, m map[string]int, xs []string) {
+	for range xs {
+		b.mutate()
+		_ = m["a"]
+	}
+}
+
+func asserted(x any, xs []string) {
+	m := x.(map[string]int)
+	for range xs {
+		m["a"] = 1
+		_ = m["a"]
+	}
+}
+
+func getMap() (int, map[string]int) { return 0, globalReturned }
+
+func multiReturn(xs []string) {
+	_, m := getMap()
+	for range xs {
+		mutateGlobalMap()
+		_ = m["a"]
+	}
+}
+
+func interfaceKey(m map[bool]int, xs []string, a, b any) {
+	for range xs {
+		_ = m[a == b]
+	}
+}
+
+func pointerKeyParam(m map[string]int, xs []string, key string, p *string) {
+	for range xs {
+		*p = "b"
+		_ = m[key]
+	}
+}
+
+func runCallback(f func()) { f() }
+
+func helperCallback(m map[string]int, xs []string, bump func()) {
+	for range xs {
+		runCallback(bump)
+		_ = m["a"]
+	}
+}
+
+func lenChannel(m map[int]int, xs []string, ch chan int) {
+	for range xs {
+		_ = m[len(ch)]
+	}
+}
+
+func typeParamValue[T ~int](m map[string]int, xs []string, v T) {
+	for range xs {
+		_ = m["a"]
+		_ = v
+	}
+}
+
+var sharedMap = map[string]int{}
+
+func touchShared() { sharedMap["alpha"] = 1 }
+
+func directCall(m map[string]int, xs []string) {
+	for range xs {
+		touchShared()
+		_ = m["alpha"]
+	}
+}
+
+func pointerFieldAssign(h holder, xs []string) {
+	for range xs {
+		(&h).values = make(map[string]int)
+		_ = h.values["a"]
+	}
+}
+
+func unusedMaps(m, other map[string]int, xs []string) {
+	for range xs {
+		_ = m["a"]
+	}
+}
+
+func unusedPointer(m map[string]int, key string, p *string, xs []string) {
+	for range xs {
+		_ = m[key]
+	}
+}
+
+func unusedInterface(m map[string]int, v any, xs []string) {
+	for range xs {
+		_ = m["a"]
+	}
+}
+
+func unusedTypeParam[T ~int](m map[string]int, v T, xs []string) {
+	for range xs {
+		_ = m["a"]
+	}
+}
+
+type countedHolder struct {
+	values map[string]int
+	count  int
+}
+
+func siblingField(h countedHolder, xs []string) {
+	for range xs {
+		_ = h.values["alpha"]
+		h.count++
+	}
+}
+
+func typeParamKey[K ~string](m map[K]int, xs []string) {
+	for range xs {
+		_ = m["a"]
+	}
+}
+
+func sliceKeyWrite(m map[[3]int]int, xs []string) {
+	a := [3]int{}
+	for range xs {
+		a[:][0] = 1
+		_ = m[a]
+	}
+}
+
+func typeParamConvertWrite[T ~map[string]int](m map[string]int, xs []string) {
+	for range xs {
+		T(m)["a"] = 1
+		_ = m["a"]
+	}
+}
+
+func typeParamAssertWrite[T ~map[string]int](m map[string]int, xs []string) {
+	for range xs {
+		any(m).(T)["a"] = 1
+		_ = m["a"]
+	}
+}

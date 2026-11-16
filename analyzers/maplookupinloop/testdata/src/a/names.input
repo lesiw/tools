@@ -1,0 +1,11 @@
+package a
+
+func collision(m map[string]int, xs []string, key string) {
+	lookup := 0
+	found := false
+	_, _ = lookup, found
+	for range xs {
+		value, ok := m[key] // want `map lookup does not depend on the loop; evaluate it once before the loop`
+		_, _ = value, ok
+	}
+}
