@@ -3,17 +3,17 @@
 // separator.
 //
 // path.Join's doc says "The result is Cleaned", and Clean's doc says a result
-// ends with a separator only where it names a root. So a separator at the end
-// of an element leaves the string the call returns unchanged, and a value that
-// holds only separators may be the root, which is why such a value is not
-// reported.
+// ends with a separator only where it names a root. So an element's trailing
+// separator leaves the returned string unchanged, unless it completes a root,
+// and a value that holds only separators may be the root, which is why such a
+// value is not reported.
 //
 // The rule reads only a literal element written at the call, and the suggested
 // fix deletes the separators it ends with. A slash separates on every host,
 // and filepath takes its separator from the host running the analyzer. On
-// Windows a separator can complete a root another argument began, so an
-// element is reported only when every argument is a constant and the host's
-// Join agrees.
+// Windows a separator can complete a root another argument began, so a
+// filepath.Join element is reported only when every argument is a constant and
+// joining the trimmed arguments produces the same path.
 //
 // The README catalogs every check, exemption, and fix.
 //
@@ -37,7 +37,7 @@ import (
 
 var Analyzer = &analysis.Analyzer{
 	Name: "joinseparator",
-	Doc:  "reports a join element ending in redundant separators",
+	Doc:  "reports a path.Join or filepath.Join element ending with a redundant separator",
 	Run:  run,
 }
 
@@ -116,9 +116,9 @@ func separator(b byte, native bool) bool {
 
 // exempt reports whether an element trimmed to s must be left alone. A value
 // that holds only separators may be the root, because an earlier argument may
-// be empty at run time. A volume is a root on Windows: followed by a separator
-// it is rooted at the drive, so filepath.Join("C:/", name) is "C:\name" where
-// filepath.Join("C:", name) is "C:name".
+// be empty at run time. A volume followed by a separator names the root of a
+// drive on Windows: filepath.Join("C:/", name) is C:\name, while
+// filepath.Join("C:", name) is C:name.
 func exempt(s string, native bool) bool {
 	if s == "" {
 		return true
@@ -126,8 +126,8 @@ func exempt(s string, native bool) bool {
 	if !native {
 		return false
 	}
-	// VolumeName answers in the host's spelling, so a volume written with a
-	// slash is one volume too.
+	// VolumeName returns the volume with the host's separator, so a volume
+	// written with a slash matches only after the same conversion.
 	slash := filepath.FromSlash(s)
 	return filepath.VolumeName(slash) == slash
 }
@@ -135,11 +135,10 @@ func exempt(s string, native bool) bool {
 // redundant reports whether deleting the separators at the end of argument i
 // leaves the path the call names.
 //
-// On Windows the separator of one element can decide the string an earlier
-// element produces: filepath.Join("\\host", "share/") is "\\host\share\",
-// because Clean keeps the separator a share root was written with. So the
-// answer is read from the call's constants, and an element is left alone where
-// they are not all known.
+// On Windows a later element's trailing separator can change the result:
+// filepath.Join("//host", "share/") is \\host\share\, because Clean keeps
+// the separator written after a share root. So the answer is read from the
+// call's constants, and an element is left alone where they are not all known.
 func redundant(pass *analysis.Pass, call *ast.CallExpr, i int, s string, native bool) bool {
 	if !native || filepath.Separator != '\\' {
 		return true

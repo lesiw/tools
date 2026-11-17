@@ -21,11 +21,12 @@ path, so the fix removes the separator `alpha/` ends with.
 
 ## Checks
 
-Join cleans its result, so a separator an element ends with leaves the string
-the call returns unchanged. Only a whole literal element is read, because the
-fix edits the literal in place. A separator inside a longer expression is not
-one the fix can remove, and in `filepath.Join(root, "some-dir/"+kind)` it does
-not end the value at run time either.
+Join cleans its result, so an element's trailing separator leaves the returned
+string unchanged, unless it completes a root. Only a whole literal element is
+read, because the fix edits the literal in place. A separator inside a longer
+expression is not one the fix can remove, and in
+`filepath.Join(root, "some-dir/"+kind)` it does not end the value at run time
+either.
 
 A separator is a byte that separates elements of the join: `/` on every host,
 and for `filepath.Join` the host's separator too. The host is the machine
@@ -41,26 +42,27 @@ as `/alpha`.
 
 What is not reported:
 
-- A value holding only separators, which may be the root. `filepath.Join("/",
-  name)` is `/name` and `filepath.Join("", name)` is `name`, so the root has to
-  stay.
-- A volume. `filepath.Join("C:/", name)` is `C:\name`, and
-  `filepath.Join("C:", name)` is `C:name`.
+- A value holding only separators, which may be the root: `path.Join("/", name)`
+  is `/name`; the edit would leave `path.Join("", name)`, which is `name`.
+- A volume. On Windows, `filepath.Join("C:/", name)` is `C:\name` while
+  `filepath.Join("C:", name)` is `C:name`, so `"C:/"` roots the path at the
+  drive and `"C:"` does not.
 - A call that does not resolve to `path.Join` or `filepath.Join`, such as a
   field named `Join`, a method named `Join`, a variable holding
   `filepath.Join`, or `strings.Join`.
 
-On Windows the separator of one element can decide the string an earlier one
-produces: `filepath.Join("\\host", "share/")` is `\\host\share\`, because
-`Clean` keeps the separator a share root was written with. An element is
-therefore reported only when every argument is a constant and the host's `Join`
-agrees, so `filepath.Join(dir, "alpha/")` is left alone there.
+On Windows a later element's trailing separator can change the result:
+`filepath.Join("//host", "share/")` is `\\host\share\`, because `Clean` keeps
+the separator written after a share root. A `filepath.Join` element is
+therefore reported only when every argument is a constant and joining the
+trimmed arguments produces the same path, so `filepath.Join(dir, "alpha/")` is
+left alone there.
 
 ## Fixes
 
-The suggested fix deletes the separators in place, so the rest of the literal's
-spelling survives. When the cut lands inside an escape, the fix writes a fresh
-quoted literal: `"alpha\u002f"` becomes `"alpha"`.
+The suggested fix deletes the separators in place, so the literal keeps its
+escapes and its quotes. When the cut lands inside an escape, the fix writes a
+fresh quoted literal: `"alpha\u002f"` becomes `"alpha"`.
 
 The rule is adapted from go-critic's `filepathJoin`, which reports any literal
 argument of `filepath.Join` that holds a separator; this one reads a trailing
@@ -79,7 +81,3 @@ Or run it as part of the suite:
 go tool lesiw.io/tools/cmd/vet -joinseparator ./...
 go tool lesiw.io/tools/cmd/fix -joinseparator ./...
 ```
-
-The rule follows the separator of the host it runs on, so a fixture that only
-builds on Windows cannot pin it: the same file is analyzed on one platform and
-ignored on another. The separator logic is covered by a unit test instead.

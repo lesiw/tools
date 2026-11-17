@@ -2025,9 +2025,11 @@
 //
 // # joinseparator
 //
-// Reports a literal element of a path.Join or filepath.Join call that ends
-// with a redundant separator. Join cleans the result, so an element that ends
-// with a separator names the same path without it.
+// Reports a literal element ending with a redundant separator in a path.Join
+// or filepath.Join call. Join cleans the result, so an element's trailing
+// separator changes nothing unless it completes a root. On Windows a
+// filepath.Join element is reported only when every argument is constant,
+// because a trailing separator there can complete a share root.
 //
 // Adapted from go-critic's filepathJoin, which reports a literal argument that
 // holds a separator.

@@ -1,4 +1,5 @@
-// Command joinseparator reports a join element ending in redundant separators.
+// Command joinseparator reports a path.Join or filepath.Join element ending
+// with a redundant separator.
 package main
 
 import (
