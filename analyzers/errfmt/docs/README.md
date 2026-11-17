@@ -11,20 +11,48 @@ An `analysis.Analyzer` for error format strings: error
 construction routes through `fmt.Errorf`, and error wrapping
 routes through its `%w` verb.
 
-`errors.New` can neither format nor wrap; `fmt.Errorf` does both,
-is imported nearly everywhere already, and one error constructor
-is simpler than two.
+`errors.New` can neither format nor wrap, and `fmt.Errorf`
+does both. A file that imports `fmt` and uses nothing else in `errors`
+keeps one error constructor where it had two.
 
 ## Checks
 
 ### errors.New can be replaced by fmt.Errorf
 
+The check fires where the rewrite adds no import and leaves none unused:
+every use of `errors` in the file is a call to `errors.New`, and `fmt`
+is imported by name and no declaration shadows it at any call. One call
+where `fmt` is shadowed leaves the whole file alone, since the `errors`
+import cannot go while that call remains.
+
 ```go
-errors.New("connection lost") // errors.New can be replaced by fmt.Errorf
+package store
+
+import (
+    "errors"
+    "fmt"
+)
+
+var errMissing = errors.New("missing item") // errors.New can be replaced by fmt.Errorf
+
+func open(name string) error {
+    return fmt.Errorf("open %s: %w", name, errMissing)
+}
 ```
 
-Reported only: a message could contain a percent sign `Errorf`
-would interpret, so the rewrite is the author's work.
+Silent, deliberately: the rewrite would add an import.
+
+```go
+package store
+
+import "errors"
+
+var errInvalid = errors.New("invalid item")
+```
+
+Reported only: a message could contain a percent sign `Errorf` would
+interpret, and a message that is not a literal needs a verb, so the
+rewrite is the author's work.
 
 ### Errors wrap with %w
 

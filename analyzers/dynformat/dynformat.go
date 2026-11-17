@@ -20,10 +20,8 @@
 // whether tracing is enabled, while Logf returns first. The rename changes
 // behavior with tracing off.
 //
-// fmt.Errorf is left alone. The only rewrite that drops the format-string
-// parameter is errors.New. errfmt already reports errors.New as replaceable
-// by fmt.Errorf and gives no fix, so renaming here would replace one
-// diagnostic with another that has no fix.
+// fmt.Errorf is left alone. Its rewrite is errors.New, in another package, so
+// a rename cannot write it.
 //
 // In a file that declares Go 1.24 or later, the printf pass reports the
 // testing and trace calls and fmt.Errorf; its "%s" fix writes the value as

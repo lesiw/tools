@@ -1,5 +1,8 @@
 package a
 
-import e "errors"
+import (
+	e "errors"
+	f "fmt"
+)
 
-var errAliased = e.New("aliased") // want `errors.New can be replaced by fmt.Errorf`
+var errAliased = e.New(f.Sprint("item")) // want `errors.New can be replaced by fmt.Errorf`

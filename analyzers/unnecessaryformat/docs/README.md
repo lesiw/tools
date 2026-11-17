@@ -28,9 +28,8 @@ on a type whose `Error` resolves to the method `testing` declares: `testing.T`,
 declares its own `Error` keeps the call, because the fix would call that
 method.
 
-`fmt.Errorf` is not among them. `errors.New` is the only rewrite, and the
-suite's `errfmt` reports `errors.New` as replaceable by `fmt.Errorf`, so a fix
-here would undo what `errfmt` asks for and leave a diagnostic no fix can clear.
+`fmt.Errorf` is not among them. Its rewrite is `errors.New`, in another
+package, so the fix cannot write it.
 
 The format must be a constant: for a value the analyzer cannot see, a
 directive may be present, and `Print` copies what `Printf` interprets. The fix

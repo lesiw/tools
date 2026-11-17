@@ -11,6 +11,10 @@ func dynamic(msg string) error {
 	return errors.New(msg) // want `errors.New can be replaced by fmt.Errorf`
 }
 
+func percentMessage() error {
+	return errors.New("100% done") // want `errors.New can be replaced by fmt.Errorf`
+}
+
 func wrap(err error) error {
 	return fmt.Errorf("open failed: %w", err) // want `error can be wrapped with %w, not %v`
 }

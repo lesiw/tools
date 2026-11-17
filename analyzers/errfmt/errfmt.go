@@ -4,9 +4,13 @@
 //
 // Two checks:
 //
-//   - errors.New can be replaced by fmt.Errorf. Reported only: a
-//     message could contain a percent sign Errorf would interpret,
-//     so the rewrite is the author's work.
+//   - errors.New can be replaced by fmt.Errorf where the rewrite adds no
+//     import and leaves none unused: every use of errors in the file
+//     is a call to errors.New, and fmt is imported by name and no
+//     declaration shadows it at any call. Reported only: a message
+//     could contain a percent sign Errorf would interpret, and a
+//     message that is not a literal needs a verb, so the rewrite is
+//     the author's work.
 //   - An error formatted into another error can wrap it: an error
 //     value passed to a fmt.Errorf %v or %s verb becomes %w. The
 //     fix rewrites the verb in place and is withheld when the
@@ -27,6 +31,8 @@ import (
 	"strings"
 
 	"golang.org/x/tools/go/analysis"
+
+	"lesiw.io/tools/internal/imports"
 )
 
 var Analyzer = &analysis.Analyzer{
@@ -36,19 +42,22 @@ var Analyzer = &analysis.Analyzer{
 }
 
 func run(pass *analysis.Pass) (any, error) {
-	for _, f := range pass.Files {
-		ast.Inspect(f, func(n ast.Node) bool {
+	for _, file := range pass.Files {
+		droppable := dropsErrors(pass, file)
+		ast.Inspect(file, func(n ast.Node) bool {
 			call, ok := n.(*ast.CallExpr)
 			if !ok {
 				return true
 			}
 			switch callee(pass, call) {
 			case "errors.New":
-				pass.Report(analysis.Diagnostic{
-					Pos:     call.Pos(),
-					End:     call.End(),
-					Message: "errors.New can be replaced by fmt.Errorf",
-				})
+				if droppable {
+					pass.Report(analysis.Diagnostic{
+						Pos:     call.Pos(),
+						End:     call.End(),
+						Message: "errors.New can be replaced by fmt.Errorf",
+					})
+				}
 			case "fmt.Errorf":
 				checkWrap(pass, call)
 			}
@@ -56,6 +65,47 @@ func run(pass *analysis.Pass) (any, error) {
 		})
 	}
 	return nil, nil
+}
+
+// fmtReaches reports whether fmt reaches the call at pos.
+func fmtReaches(pass *analysis.Pass, names map[string]string, pos token.Pos) bool {
+	_, reaches := imports.Qualifier(pass, names, "fmt", pos)
+	return reaches
+}
+
+// dropsErrors reports whether the file drops its errors import when every
+// errors.New call becomes fmt.Errorf: every use of errors in it is such a
+// call, and no declaration shadows fmt at one.
+func dropsErrors(pass *analysis.Pass, file *ast.File) bool {
+	names := imports.Names(pass, file)
+	if _, ok := names["errors"]; !ok {
+		return false
+	}
+	if _, ok := names["fmt"]; !ok {
+		return false
+	}
+	// Each call accounts for exactly one use of the package name, so equal
+	// counts mean every use of errors in the file is one of these calls.
+	var calls, uses, reached int
+	ast.Inspect(file, func(n ast.Node) bool {
+		switch n := n.(type) {
+		case *ast.CallExpr:
+			if callee(pass, n) != "errors.New" {
+				return true
+			}
+			calls++
+			if fmtReaches(pass, names, n.Pos()) {
+				reached++
+			}
+		case *ast.Ident:
+			pkg, ok := pass.TypesInfo.Uses[n].(*types.PkgName)
+			if ok && pkg.Imported().Path() == "errors" {
+				uses++
+			}
+		}
+		return true
+	})
+	return reached == calls && uses == calls
 }
 
 // callee returns the package-qualified name of a called package
