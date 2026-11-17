@@ -1,20 +1,30 @@
 // Package emptystring provides an analysis.Analyzer that reports a test of
 // whether a string is empty, written as a comparison of its length with zero.
 //
-// The spec's String types section says the length of a string is never
-// negative. So len(s) == 0 and len(s) <= 0 both become s == "", and
-// len(s) != 0 and len(s) > 0 both become s != ""; a comparison with "" is
-// the form a reader expects. len(s) < 0 is always false and len(s) >= 0 is
-// always true, and lenzero reports such a comparison as the constant it is.
+// The String types section of the spec says the length of a string is never
+// negative (https://go.dev/ref/spec#String_types). So len(s) == 0 and
+// len(s) <= 0 both become s == "", and len(s) != 0 and len(s) > 0 both become
+// s != ""; a comparison with "" is the form a reader expects. The rule
+// matches either operand order, so 0 == len(s) is reported too.
 //
-// The operand's type must be a string, or a type whose underlying type is a
-// string. A type parameter is not examined.
+// The zero must be the literal 0, and len must be the builtin. The operand's
+// type must be a string, or a type whose underlying type is a string; a
+// comparison whose operand is a type parameter is not reported.
 //
-// The fix is withheld when a comment is inside the comparison.
+// The fix is withheld when the operand's own text spans more than one line,
+// since the printed form would put it on one; when the printed form has a
+// newline, as an anonymous struct type has; and when a comment is inside the
+// comparison, since the rewrite would drop it. A comparison that wraps while
+// its operand does not still takes the fix.
 //
-// The rule is inspired by go-critic's emptyStringTest. That rule matches the
-// same four comparisons with the length on the left; this one matches the zero
-// on either side.
+// An operand that holds a composite literal is parenthesized, since the
+// comparison may sit in a statement header.
+//
+// The rule is inspired by go-critic's emptyStringTest, which matches the same
+// four comparisons with the length on the left.
+//
+// len(s) < 0 is always false and len(s) >= 0 is always true; lenzero reports
+// these comparisons in either order and replaces them with the constant.
 package emptystring
 
 import (
@@ -23,6 +33,8 @@ import (
 	"go/types"
 
 	"golang.org/x/tools/go/analysis"
+
+	"lesiw.io/tools/internal/astexpr"
 )
 
 var Analyzer = &analysis.Analyzer{
@@ -47,8 +59,9 @@ func run(pass *analysis.Pass) (any, error) {
 	return nil, nil
 }
 
-// test returns the string operand and the operator to write between it and ""
-// when bin is a comparison of a string's length with zero.
+// test returns the string operand and the operator to write when bin tests a
+// string's emptiness. len is never negative, so < is always false and >= is
+// always true; lenzero reports those two.
 func test(pass *analysis.Pass, bin *ast.BinaryExpr) (ast.Expr, token.Token, bool) {
 	var (
 		str, ok = stringOperand(pass, bin.X, bin.Y)
@@ -70,8 +83,8 @@ func test(pass *analysis.Pass, bin *ast.BinaryExpr) (ast.Expr, token.Token, bool
 	return nil, 0, false
 }
 
-// stringOperand returns the string when call is len of a string and other is
-// the literal 0.
+// stringOperand returns the operand of a call to the builtin len over a string
+// when other is the literal 0, ignoring parentheses on either side.
 func stringOperand(pass *analysis.Pass, call, other ast.Expr) (ast.Expr, bool) {
 	call, other = ast.Unparen(call), ast.Unparen(other)
 	lit, ok := other.(*ast.BasicLit)
@@ -112,8 +125,8 @@ func flip(op token.Token) token.Token {
 	return op
 }
 
-// report reports bin and, unless a comment inside it would be lost, suggests
-// the comparison with "" in its place.
+// report reports bin, with the rewrite as its suggested fix when one is
+// offered.
 func report(pass *analysis.Pass, file *ast.File, bin *ast.BinaryExpr, str ast.Expr, op token.Token) {
 	var (
 		from, to = bin.Pos(), bin.End()
@@ -123,8 +136,7 @@ func report(pass *analysis.Pass, file *ast.File, bin *ast.BinaryExpr, str ast.Ex
 			Message: `compare the string with "" instead`,
 		}
 	)
-	if !commented(file, from, to) {
-		text := types.ExprString(str) + " " + op.String() + ` ""`
+	if text, ok := rewrite(pass, file, bin, str, op); ok {
 		diag.SuggestedFixes = []analysis.SuggestedFix{{
 			Message: "Compare the string",
 			TextEdits: []analysis.TextEdit{{
@@ -135,6 +147,50 @@ func report(pass *analysis.Pass, file *ast.File, bin *ast.BinaryExpr, str ast.Ex
 		}}
 	}
 	pass.Report(diag)
+}
+
+// rewrite returns the text that replaces bin, and reports false where the fix
+// would join lines, drop a comment, or reflow the operand.
+func rewrite(pass *analysis.Pass, file *ast.File, bin *ast.BinaryExpr, str ast.Expr, op token.Token) (string, bool) {
+	// Written positions, which a //line directive does not move.
+	start, end := pass.Fset.PositionFor(str.Pos(), false),
+		pass.Fset.PositionFor(str.End(), false)
+	if start.Line != end.Line || commented(file, bin.Pos(), bin.End()) {
+		return "", false
+	}
+	text, ok := astexpr.OneLine(str)
+	if !ok {
+		return "", false
+	}
+	if composite(str) {
+		text = "(" + text + ")"
+	}
+	return text + " " + op.String() + ` ""`, true
+}
+
+// composite reports whether e holds a composite literal where a statement
+// header cannot have one. A literal inside a call argument, a pair of
+// parentheses, or an index is allowed.
+func composite(e ast.Expr) bool {
+	switch e := e.(type) {
+	case *ast.BinaryExpr:
+		return composite(e.X) || composite(e.Y)
+	case *ast.SelectorExpr:
+		return composite(e.X)
+	case *ast.IndexExpr:
+		return composite(e.X)
+	case *ast.IndexListExpr:
+		return composite(e.X)
+	case *ast.SliceExpr:
+		return composite(e.X)
+	case *ast.TypeAssertExpr:
+		return composite(e.X)
+	case *ast.CallExpr:
+		return composite(e.Fun)
+	case *ast.CompositeLit:
+		return true
+	}
+	return false
 }
 
 // commented reports whether a comment overlaps the text between lo and hi.

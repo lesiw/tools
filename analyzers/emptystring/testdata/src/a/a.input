@@ -60,8 +60,49 @@ func parenthesizedOperand(a, b string) bool {
 	return len((a + b)) == 0 // want `compare the string with "" instead`
 }
 
+type pair struct{ f string }
+
+func composite(p pair) bool {
+	if len(pair{f: p.f}.f) == 0 { // want `compare the string with "" instead`
+		return true
+	}
+	return false
+}
+
+func concat(p pair, suffix string) bool {
+	if len(pair{f: p.f}.f+suffix) == 0 { // want `compare the string with "" instead`
+		return true
+	}
+	return false
+}
+
+func compositeReturn(p pair) bool {
+	return len(pair{f: p.f}.f) == 0 // want `compare the string with "" instead`
+}
+
+func concatPrefix(p pair, prefix string) int {
+	if len(prefix+pair{f: p.f}.f) == 0 { // want `compare the string with "" instead`
+		return 1
+	}
+	return 2
+}
+
 func commented(s string) bool {
 	return len(s /* bytes */) == 0 // want `compare the string with "" instead`
+}
+
+func spansLines(s string) bool {
+	return /* want `compare the string with "" instead` */ len(s) ==
+		0
+}
+
+func splitOperand(firstLongName, secondLongName, thirdLongName string) bool {
+	return /* want `compare the string with "" instead` */ len(firstLongName + secondLongName +
+		thirdLongName) == 0
+}
+
+func structOperand(v any) bool {
+	return len(v.(struct{ a string; b int }).a) == 0 // want `compare the string with "" instead`
 }
 
 func parameter[T ~string](s T) bool {
@@ -79,8 +120,20 @@ func constantZero(s string) bool {
 	return len(s) == zero
 }
 
-func excluded(s string) bool {
-	return len(s) < 0 || len(s) >= 0 || 0 > len(s) || 0 <= len(s)
+func lessThanZero(s string) bool {
+	return len(s) < 0
+}
+
+func atLeastZero(s string) bool {
+	return len(s) >= 0
+}
+
+func zeroGreater(s string) bool {
+	return 0 > len(s)
+}
+
+func zeroAtMost(s string) bool {
+	return 0 <= len(s)
 }
 
 func ok(s string) bool {
