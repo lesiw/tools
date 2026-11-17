@@ -20,10 +20,10 @@ keeps one error constructor where it had two.
 ### errors.New can be replaced by fmt.Errorf
 
 The check fires where the rewrite adds no import and leaves none unused:
-every use of `errors` in the file is a call to `errors.New`, and `fmt`
-is imported by name and no declaration shadows it at any call. One call
-where `fmt` is shadowed leaves the whole file alone, since the `errors`
-import cannot go while that call remains.
+every use of `errors` in the file is a call to `errors.New` whose message is a
+literal, and `errors` and `fmt` are imported by name, with no declaration
+shadowing `fmt` at any call. One call the rewrite cannot make leaves the whole
+file alone, since the `errors` import cannot go while that call remains.
 
 ```go
 package store
@@ -50,9 +50,37 @@ import "errors"
 var errInvalid = errors.New("invalid item")
 ```
 
-Reported only: a message could contain a percent sign `Errorf` would
-interpret, and a message that is not a literal needs a verb, so the
-rewrite is the author's work.
+Silent, deliberately: the message is not a literal, and the file's literal
+message goes with it.
+
+```go
+package store
+
+import (
+    "errors"
+    "fmt"
+)
+
+const message = "invalid item"
+
+var errClosed = errors.New("closed item")
+
+func open(name string) error {
+    if name == "" {
+        return errors.New(message)
+    }
+    return errors.New(fmt.Sprintf("cannot open %s", name))
+}
+```
+
+The check reports only a message written at the call as a single string
+literal. A named constant is left alone, since escaping the message it shares
+would change every call that reads it, and a concatenation is not folded into
+one. A variable is left alone as well: `go vet` rejects its rewrite in a file
+that declares Go 1.24 or later.
+
+Reported only: a percent sign in the message would become a verb, so the
+rewrite can change what the error says.
 
 ### Errors wrap with %w
 

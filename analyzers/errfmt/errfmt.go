@@ -1,26 +1,18 @@
-// Package errfmt provides an analysis.Analyzer for error format
-// strings: error construction routes through fmt.Errorf, and error
-// wrapping routes through its %w verb.
+// Package errfmt provides an analysis.Analyzer for error format strings:
+// error construction routes through fmt.Errorf, and error wrapping routes
+// through its %w verb.
 //
-// Two checks:
+// fmt.Errorf takes a format string, so the errors.New rewrite turns a percent
+// sign in the message into a verb, and the author writes that escape. The
+// check reports only a call whose message argument is a string literal: a name
+// or a concatenation is not folded into one. It offers no fix, because the
+// rewrite can change what the error says. The errors import goes only after
+// the file's last call is rewritten.
 //
-//   - errors.New can be replaced by fmt.Errorf where the rewrite adds no
-//     import and leaves none unused: every use of errors in the file
-//     is a call to errors.New, and fmt is imported by name and no
-//     declaration shadows it at any call. Reported only: a message
-//     could contain a percent sign Errorf would interpret, and a
-//     message that is not a literal needs a verb, so the rewrite is
-//     the author's work.
-//   - An error formatted into another error can wrap it: an error
-//     value passed to a fmt.Errorf %v or %s verb becomes %w. The
-//     fix rewrites the verb in place and is withheld when the
-//     format's source spelling differs from its value, as with
-//     escape sequences.
+// The %w rewrite edits the verb in place, and is withheld where the format's
+// source spelling differs from its value, as with escape sequences.
 //
-// Only arguments whose static type is error are considered, and
-// only literal format strings are inspected. An indexed or star
-// verb skips the whole call: the argument mapping is no longer
-// positional.
+// The README catalogs every check, exemption, and fix.
 package errfmt
 
 import (
@@ -75,7 +67,7 @@ func fmtReaches(pass *analysis.Pass, names map[string]string, pos token.Pos) boo
 
 // dropsErrors reports whether the file drops its errors import when every
 // errors.New call becomes fmt.Errorf: every use of errors in it is such a
-// call, and no declaration shadows fmt at one.
+// call, no declaration shadows fmt at one, and every message is a literal.
 func dropsErrors(pass *analysis.Pass, file *ast.File) bool {
 	names := imports.Names(pass, file)
 	if _, ok := names["errors"]; !ok {
@@ -86,7 +78,7 @@ func dropsErrors(pass *analysis.Pass, file *ast.File) bool {
 	}
 	// Each call accounts for exactly one use of the package name, so equal
 	// counts mean every use of errors in the file is one of these calls.
-	var calls, uses, reached int
+	var calls, uses, rewritable int
 	ast.Inspect(file, func(n ast.Node) bool {
 		switch n := n.(type) {
 		case *ast.CallExpr:
@@ -94,8 +86,8 @@ func dropsErrors(pass *analysis.Pass, file *ast.File) bool {
 				return true
 			}
 			calls++
-			if fmtReaches(pass, names, n.Pos()) {
-				reached++
+			if fmtReaches(pass, names, n.Pos()) && messageIsLiteral(n) {
+				rewritable++
 			}
 		case *ast.Ident:
 			pkg, ok := pass.TypesInfo.Uses[n].(*types.PkgName)
@@ -105,7 +97,14 @@ func dropsErrors(pass *analysis.Pass, file *ast.File) bool {
 		}
 		return true
 	})
-	return reached == calls && uses == calls
+	return rewritable == calls && uses == calls
+}
+
+// messageIsLiteral reports whether an errors.New call writes its message as a
+// literal.
+func messageIsLiteral(call *ast.CallExpr) bool {
+	_, ok := ast.Unparen(call.Args[0]).(*ast.BasicLit)
+	return ok
 }
 
 // callee returns the package-qualified name of a called package

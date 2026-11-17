@@ -9,7 +9,7 @@ func shadowed(fmt string) error {
 	if fmt == "" {
 		return errors.New("empty format")
 	}
-	return errors.New(fmt)
+	return errors.New("missing format")
 }
 
 func unshadowed(name string) (string, error) {

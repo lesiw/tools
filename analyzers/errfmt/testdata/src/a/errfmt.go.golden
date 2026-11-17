@@ -7,12 +7,12 @@ import (
 
 var errSentinel = errors.New("sentinel") // want `errors.New can be replaced by fmt.Errorf`
 
-func dynamic(msg string) error {
-	return errors.New(msg) // want `errors.New can be replaced by fmt.Errorf`
-}
-
 func percentMessage() error {
 	return errors.New("100% done") // want `errors.New can be replaced by fmt.Errorf`
+}
+
+func parenMessage() error {
+	return errors.New(("some message")) // want `errors.New can be replaced by fmt.Errorf`
 }
 
 func wrap(err error) error {

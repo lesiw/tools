@@ -5,4 +5,8 @@ import (
 	f "fmt"
 )
 
-var errAliased = e.New(f.Sprint("item")) // want `errors.New can be replaced by fmt.Errorf`
+var errAliased = e.New("some message") // want `errors.New can be replaced by fmt.Errorf`
+
+func wrapAliased(err error) error {
+	return f.Errorf("some message: %v", err) // want `error can be wrapped with %w, not %v`
+}

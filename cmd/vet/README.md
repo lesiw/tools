@@ -1388,7 +1388,7 @@ func f(err error) int {
 
 ## errfmt
 
-Reports an error built with errors.New where rewriting it to fmt.Errorf needs no import and leaves errors unused. Reports an error formatted with %v or %s where %w would wrap it. Only a literal format string and an argument whose static type is error are considered.
+Reports an error built with errors.New whose message is a literal, where rewriting it to fmt.Errorf needs no import and leaves errors unused. Reports an error formatted with %v or %s where %w would wrap it. Only a literal format string and an argument whose static type is error are considered.
 
 ```
 func f(err error) error {
