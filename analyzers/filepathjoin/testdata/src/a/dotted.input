@@ -1,9 +1,0 @@
-package a
-
-import . "path/filepath"
-
-var _ = Separator
-
-func dotted(dir, name string) string {
-	return dir + "/" + name
-}

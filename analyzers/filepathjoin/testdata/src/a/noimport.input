@@ -1,5 +1,0 @@
-package a
-
-func assemble(dir, name string) string {
-	return dir + "/" + name
-}

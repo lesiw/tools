@@ -1667,20 +1667,6 @@
 //		return second{Kind: v.Kind}
 //	}
 //
-// # filepathjoin
-//
-// Reports a path concatenated with a literal separator, in a file that imports
-// path/filepath. filepath.Join writes the separator of the platform and cleans
-// the result.
-//
-// Adapted from go-critic's preferFilepathJoin.
-//
-//	import "path/filepath"
-//
-//	func config(dir, name string) string {
-//		return filepath.Dir(dir) + "/" + name
-//	}
-//
 // # finalizercapture
 //
 // Reports a runtime.SetFinalizer call whose finalizer captures the object

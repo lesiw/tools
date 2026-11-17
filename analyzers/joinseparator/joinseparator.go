@@ -15,13 +15,11 @@
 // element is reported only when every argument is a constant and the host's
 // Join agrees.
 //
-// The README catalogs every check, exemption, and fix. The suite writes the
-// shape this rule reads: filepathjoin's fix can leave an element ending with
-// the separator joinseparator removes.
+// The README catalogs every check, exemption, and fix.
 //
 // The rule is adapted from go-critic's filepathJoin, which reports any literal
 // argument of filepath.Join that holds a separator; this one reads a trailing
-// separator in either join and carries a fix.
+// separator in path.Join or filepath.Join and carries a fix.
 package joinseparator
 
 import (

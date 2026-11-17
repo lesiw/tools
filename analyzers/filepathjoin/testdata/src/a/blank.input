@@ -1,7 +1,0 @@
-package a
-
-import _ "path/filepath"
-
-func blank(dir, name string) string {
-	return dir + "/" + name
-}

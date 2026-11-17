@@ -1,9 +1,0 @@
-package a
-
-import "path/filepath"
-
-var _ = filepath.Separator
-
-func shadow(filepath, name string) string {
-	return filepath + "/" + name
-}

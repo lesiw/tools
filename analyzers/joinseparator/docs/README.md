@@ -64,9 +64,7 @@ quoted literal: `"alpha\u002f"` becomes `"alpha"`.
 
 The rule is adapted from go-critic's `filepathJoin`, which reports any literal
 argument of `filepath.Join` that holds a separator; this one reads a trailing
-separator in either join and carries a fix. `filepathjoin` writes the call this
-rule reads, and its fix can leave an element ending with the separator
-`joinseparator` removes.
+separator in `path.Join` or `filepath.Join` and carries a fix.
 
 ## Usage
 
