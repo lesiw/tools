@@ -1364,7 +1364,9 @@ func f(a, b string) bool {
 
 ## errcheck
 
-Reports a call that returns an error whose result is not used, so the failure goes unseen. A write to a Buffer or a Builder, a hash's Write, fmt output to standard output, a builder, or standard error, a random Read, and io.Pipe's CloseWithError are exempt. An error assigned to the blank identifier is left alone, and so is a call whose result is a type parameter, an alias of error, or an unnamed interface.
+Reports a call whose error is discarded, so the failure goes unseen. Writes to bytes.Buffer, strings.Builder, or hash.Hash are left alone, as are fmt's Print family, its Fprint family to bytes.Buffer, strings.Builder, or standard error, a Read from crypto/rand or math/rand, io.Pipe's CloseWithError, an error assigned to the blank identifier, and a deferred call that is not a function literal. An error whose type is a type parameter, an alias of error, or an unnamed interface is not reported.
+
+Imported from lesiw.io/errcheck, a fork of kisielk's errcheck.
 
 ```
 func save(path string) {
