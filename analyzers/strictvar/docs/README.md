@@ -75,6 +75,9 @@ t := stateIdle
   buf` or `var d int32 = 42`, is exempt: widening is work `:=`
   cannot express, so `var` is its one form.
 - Package scope has no `:=`, so package declarations keep `var`.
+- The fix replaces everything from `var` through the `=`, so a
+  comment in that span stands the fix down. A comment inside the
+  value survives, and the fix applies.
 
 ### new(T), not &T{}
 

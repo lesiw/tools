@@ -11,6 +11,10 @@ import (
 	"golang.org/x/tools/go/analysis"
 )
 
+// nonzeroPrefix starts the message the := rule reports. The test matches
+// diagnostics on it, so the wording is part of the test's contract.
+const nonzeroPrefix = "non-zero value can be declared with :="
+
 // declItem is a var or const declaration at a known index in its scope's
 // statement or declaration list.
 type declItem struct {
@@ -183,23 +187,29 @@ func (f *file) checkNonZeroVar(gd *ast.GenDecl) {
 		}
 	}
 	var edits []analysis.TextEdit
-	repl := name.Name + " := " + f.text(vs.Values[0].Pos(), vs.Values[0].End())
-	if !containsEmptyRef(vs.Values[0]) && !f.hasComment(gd.Pos(), gd.End()) {
+	head := name.Name + " := "
+	repl := head + f.text(vs.Values[0].Pos(), vs.Values[0].End())
+	// The edit replaces the head, so a comment in it would be erased with
+	// it, and the fix stands down.
+	if !f.hasComment(gd.Pos(), vs.Values[0].Pos()) {
+		// Another rule may rewrite the value, and a driver that merges
+		// the two edits as text writes code that does not parse.
 		edits = []analysis.TextEdit{{
 			Pos:     gd.Pos(),
-			End:     gd.End(),
-			NewText: []byte(repl),
+			End:     vs.Values[0].Pos(),
+			NewText: []byte(head),
 		}}
 	}
-	f.report(gd.Pos(), gd.End(),
-		"non-zero value can be declared with :=: "+repl,
+	f.report(
+		gd.Pos(), gd.End(), nonzeroPrefix+": "+repl,
 		"Declare with :=", edits,
 	)
 }
 
 // containsEmptyRef reports whether expr contains a &T{} the new(T) check will
-// rewrite. Its edit would nest inside this rule's edit, so withholding this
-// fix lets the rewrites apply on separate passes.
+// rewrite. A := statement in a preamble run is not a declaration, so the run
+// cannot record ownership of it; withholding the block rewrite here lets the
+// new(T) edit apply this pass and the block form on the next one.
 func containsEmptyRef(expr ast.Expr) bool {
 	var found bool
 	ast.Inspect(expr, func(n ast.Node) bool {

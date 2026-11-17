@@ -2,6 +2,8 @@ package group
 
 func use(...any) {}
 
+type T struct{}
+
 func f() int { return 1 }
 
 func run3() {
@@ -58,6 +60,21 @@ func nonZero() {
 func nonZeroTyped() {
 	var d int32 = 42
 	use(d, d)
+}
+
+func nonZeroPtr() {
+	p := new(T) // want `non-zero value can be declared with :=: p := &T\{\}` `&T\{\} can be new\(T\)`
+	use(p)
+}
+
+func nonZeroValueComment() {
+	n := f( /* note */ ) // want `non-zero value can be declared with :=: n := f\( /\* note \*/ \)`
+	use(n)
+}
+
+func nonZeroHeadComment() {
+	var h = /* note */ f() // want `non-zero value can be declared with :=: h := f\(\)`
+	use(h)
 }
 
 func preamble() {
