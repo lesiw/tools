@@ -1,6 +1,6 @@
 package a
 
-func f(n int) int {
+func collapsed(n int) int {
 	if n == 0 {
 		return 0
 	} else if n == 1 {
@@ -9,20 +9,194 @@ func f(n int) int {
 	return -1
 }
 
-func ok(n int) int {
-	if n == 0 {
-		return 0
-	} else if n == 1 {
-		return 1
-	}
-	return -1
-}
-
-func g(n int) int {
+func twoStatements(n int) int {
 	if n == 0 {
 		return 0
 	} else {
 		println("not zero")
+		if n == 1 {
+			return 1
+		}
+	}
+	return -1
+}
+
+func aboveIf(n int) int {
+	if n == 0 {
+		return 0
+		// want +1 `if nested in an else; write else if`
+	} else if v := n * 2; v > 0 {
+		// The table stores every value doubled.
+		return v
+	}
+	return -1
+}
+
+func sameLine(n int) int {
+	if n == 0 {
+		return 0
+		// want +1 `if nested in an else; write else if`
+	} else if n == 1 { // The odd half of the table.
+		return 1
+	}
+	return -1
+}
+
+func spansLines(n int) int {
+	if n == 0 {
+		return 0
+		// want +1 `if nested in an else; write else if`
+	} else if n == 1 {
+		/* The odd half
+		of the table. */
+		return 1
+	}
+	return -1
+}
+
+func insideBody(n int) int {
+	if n == 0 {
+		return 0
+		// want +1 `if nested in an else; write else if`
+	} else if n == 1 {
+		// Only the first entry is doubled.
+		return 1
+	}
+	return -1
+}
+
+func bothPlaces(n int) int {
+	if n == 0 {
+		return 0
+		// want +1 `if nested in an else; write else if`
+	} else if v := n / 2; v > 0 { // The half that needs a guard.
+		// Halve the value, since the table stores it doubled.
+		return v
+	}
+	return -1
+}
+
+func tooWide(n int) int {
+	if n == 0 {
+		return 0
+		// want +1 `if nested in an else; write else if`
+	} else if v := n / 4; v > 0 {
+		// The quarter that keeps the table small enough to sort in place.
+		// The remainder is dropped.
+		return v
+	}
+	return -1
+}
+
+func gapNote(n int) int {
+	if n == 0 {
+		return 0
+		// want +1 `if nested in an else; write else if`
+	} else /* keep */ if v := n / 2; v > 0 {
+		// The table is sorted; the first entry wins.
+		return v
+	}
+	return -1
+}
+
+func atLimit(n int) int {
+	if n == 0 {
+		return 0
+		// want +1 `if nested in an else; write else if`
+	} else if v := n / 2; v > 0 { // The table is sorted; the first entry wins.
+		return v
+	}
+	return -1
+}
+
+func overLimit(n int) int {
+	if n == 0 {
+		return 0
+		// want +1 `if nested in an else; write else if`
+	} else if v := n / 2; v > 10 {
+		// The table is sorted; the first entry wins.
+		return v
+	}
+	return -1
+}
+
+func empty(n int) int {
+	if n == 0 {
+		return 0
+		// want +1 `if nested in an else; write else if`
+	} else if n == 1 {
+		// The last entry is ignored.
+	}
+	return -1
+}
+
+func inline(n int) int {
+	if n == 0 {
+		return 0
+		// want +1 `if nested in an else; write else if`
+	} else if n == 1 {
+		// The first entry is doubled.
+		return 1
+	}
+	return -1
+}
+
+func wrapped(n int) int {
+	if n == 0 {
+		return 0
+		// want +1 `if nested in an else; write else if`
+	} else if n == 1 ||
+		n == 2 {
+		// The odd half of the table, sorted.
+		return 1
+	}
+	return -1
+}
+
+func trailing(n int) int {
+	if n == 0 {
+		return 0
+		// want +1 `if nested in an else; write else if`
+	} else {
+		if n == 1 {
+			return 1
+		}
+		// Nothing else matches.
+	}
+	return -1
+}
+
+func chained(n int) int {
+	if n == 0 {
+		return 0
+		// want +1 `if nested in an else; write else if`
+	} else if n == 1 {
+		return 1
+	} else {
+		// Every other value is a miss.
+		return -1
+	}
+}
+
+func lineDirective(n int) int {
+	if n == 0 {
+		return 0
+		// want +1 `if nested in an else; write else if`
+	} else {
+		//line table.go:100
+		if n == 1 {
+			return 1
+		}
+	}
+	return -1
+}
+
+func blockDirective(n int) int {
+	if n == 0 {
+		return 0
+		// want +1 `if nested in an else; write else if`
+	} else {
+		/*line table.go:100*/
 		if n == 1 {
 			return 1
 		}

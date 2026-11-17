@@ -29,9 +29,31 @@ indent add nothing.
 } else if n == 1 {
 ```
 
-The idea comes from go-critic's elseif.
+The rule is like go-critic's elseif.
 
-Fixable.
+## Fixes
+
+The fix removes the braces and joins the two lines.
+
+- A comment on the else line stays at the end of the `else if` line. When that
+  line would exceed linelen's limit, the comment moves into the body instead,
+  since the fix would otherwise leave a line that linelen reports. A line that
+  the join alone takes past the limit is left as it is, and a run that sets no
+  width keeps the comment on the line.
+- A comment on its own line before the nested if moves into the body. The
+  comment would sit between `else` and `if`, which breaks the `else if` across
+  two lines. A header that already spans lines has no single line to end, so
+  its comment moves too.
+
+A comment inside the nested if is outside the edit and stays where it is.
+Comments that move into the body keep their order in the source, and they sit
+above the branch's first statement, which is what they describe there.
+
+The fix is withheld when a carried comment cannot stay inside the statement. A
+comment that follows the nested if has only the else block's closing line,
+which the fix deletes. A directive, such as `//line table.go:1`, `//nolint`, or
+`//ignore`, is a comment with no space after its slashes, and a tool reads it at
+its position.
 
 ## Usage
 
