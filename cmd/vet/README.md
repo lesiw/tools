@@ -1838,7 +1838,7 @@ package p // import "example.com/p"
 
 ## importgroup
 
-Reports an import block that is not grouped standard library, other modules, then the packages the local flag names, one blank line between the groups and each group sorted by path.
+Reports an import block that is not grouped standard library, other modules, then the packages the -importgroup.local flag names, one blank line between the groups and each group sorted by path. Without a prefix there is no third group, so the rule reports nothing.
 
 ```
 import (

@@ -1,0 +1,12 @@
+package h
+
+import (
+	"lesiw.io/tools/pkg"
+
+	"example.com/other"
+	"os"
+)
+
+func f() {
+	_, _, _ = os.Getenv, pkg.Config, other.Value
+}

@@ -1,12 +1,15 @@
 // Package importgroup provides an analysis.Analyzer that reports an import
 // block that is not grouped standard library, other modules, then the packages
-// the -local flag names.
+// the -importgroup.local flag names.
 //
-// A block has three groups, in this order: the standard library, other
-// modules, and the packages the -local flag names. One blank line separates
-// the groups, and each group is sorted by path. goimports sorts within a group
-// and separates the standard library from the rest, so a block can be grouped
-// in many ways and still compile and format.
+// A block has up to three groups, in this order: the standard library, other
+// modules, and the packages the -importgroup.local flag names. One blank line
+// separates the groups, and each group is sorted by path. goimports sorts
+// within a group and separates the standard library from the rest, so a block
+// can be grouped in many ways and still compile and format.
+//
+// The analyzer reports nothing when the flag names no prefix: without a third
+// group it would only repeat goimports or undo a separation the author chose.
 package importgroup
 
 import (
@@ -38,6 +41,9 @@ func init() {
 }
 
 func run(pass *analysis.Pass) (any, error) {
+	if len(locals()) == 0 {
+		return nil, nil
+	}
 	for _, file := range pass.Files {
 		for _, decl := range file.Decls {
 			gen, ok := decl.(*ast.GenDecl)
@@ -163,8 +169,8 @@ func read(pass *analysis.Pass, gen *ast.GenDecl) ([]byte, bool) {
 }
 
 // classify returns the entries in the groups goimports gives them: the
-// standard library, then other modules, then the packages the -local flag
-// names.
+// standard library, then other modules, then the packages the
+// -importgroup.local flag names.
 func classify(entries []entry) [][]entry {
 	var (
 		prefixes = locals()

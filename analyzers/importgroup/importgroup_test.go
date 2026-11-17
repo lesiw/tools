@@ -29,6 +29,7 @@ func TestIndent(t *testing.T) {
 
 // Test checks which blocks are reported and what the fix writes.
 func Test(t *testing.T) {
+	defer func(old string) { local = old }(local)
 	if err := Analyzer.Flags.Set("local", "lesiw.io"); err != nil {
 		t.Fatal(err)
 	}
@@ -36,4 +37,14 @@ func Test(t *testing.T) {
 		t, fixtures.Dir(t, testdata),
 		Analyzer, "a", "b", "c", "d", "e", "f", "g",
 	)
+}
+
+// TestNoLocal checks that no block is reported when the flag names no prefix.
+// Its fixture holds the block Test reports for e.
+func TestNoLocal(t *testing.T) {
+	defer func(old string) { local = old }(local)
+	if err := Analyzer.Flags.Set("local", ""); err != nil {
+		t.Fatal(err)
+	}
+	analysistest.Run(t, fixtures.Dir(t, testdata), Analyzer, "h")
 }

@@ -124,4 +124,4 @@ clerk go tool lesiw.io/tools/cmd/clerk app
 ```
 
 `-importgroup.local` names the prefixes whose packages take the last import
-group. Without it, a block groups as standard library and everything else.
+group. Without it the rule reports nothing.
