@@ -16,18 +16,6 @@ func different(a, b time.Time) bool {
 	return !a.Equal(b) // want `compares more than the instant`
 }
 
-func unset(t time.Time) bool {
-	return t == time.Time{}
-}
-
-func set(t time.Time) bool {
-	return time.Time{} != t
-}
-
-func zeroLeft(t time.Time) bool {
-	return time.Time{} == t
-}
-
 func composite(d time.Duration, u time.Time) bool {
 	if (time.Time{}.Add(d)).Equal(u) { // want `compares more than the instant`
 		return true
@@ -47,13 +35,6 @@ func field(t struct{ At time.Time }, u time.Time) bool {
 	return !t.At.Equal(u) // want `compares more than the instant`
 }
 
-func zeroParen(t time.Time) bool {
-	if t == (time.Time{}) {
-		return false
-	}
-	return true
-}
-
 func leftParen(a, b time.Time) bool {
 	return a.Equal(b) // want `compares more than the instant`
 }
@@ -66,10 +47,6 @@ func parens(a, b time.Time) bool {
 	return !a.Equal(b) // want `compares more than the instant`
 }
 
-func notUnset(t time.Time) bool {
-	return !(t == time.Time{})
-}
-
 func notDifferent(a, b time.Time) bool {
 	return a.Equal(b) // want `compares more than the instant`
 }
@@ -80,6 +57,10 @@ func called(a time.Time) bool {
 
 func conjunction(a, b time.Time) bool {
 	return !a.Equal(b) && b.After(a) // want `compares more than the instant`
+}
+
+func nestedTimes(a, b time.Time, set bool) bool {
+	return a.Equal(b) == set // want `compares more than the instant`
 }
 
 func width(a, b time.Time) bool {
@@ -114,12 +95,10 @@ func aliasedFlag(a, b time.Time) alias {
 
 type Defined time.Time
 
+func (d Defined) IsZero() bool { return time.Time(d).IsZero() }
+
 func defined(a, b Defined) bool {
 	return a == b
-}
-
-func neither() bool {
-	return time.Time{} == time.Time{}
 }
 
 func switched(t, u time.Time) bool {

@@ -3761,25 +3761,13 @@ const date = "3/1/2024"
 
 ## timeequal
 
-Reports a comparison of two time.Time values with == or !=, including a comparison with the zero value. The operator compares the location and the monotonic reading too, and Equal and IsZero compare the instant.
+Reports a comparison of two time.Time values with == or !=, including a comparison against the zero-value literal. The operator compares the location and the monotonic clock reading as well; Equal compares the instant, and IsZero tests whether the time is zero.
 
 Inspired by revive's time-equal.
 
 ```
 func f(a, b time.Time) bool {
     return a == b
-}
-```
-
-## timeequal2
-
-Reports a comparison of a time.Time with the zero-value literal using == or !=. IsZero tests the instant alone, so a zero instant in a named location counts as unset.
-
-Inspired by revive's time-equal.
-
-```
-func unset(t time.Time) bool {
-    return t == time.Time{}
 }
 ```
 

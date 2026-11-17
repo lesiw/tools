@@ -13,6 +13,10 @@ An `analysis.Analyzer` that reports a `time.Time` compared with `==` or `!=`.
 func f(a, b time.Time) bool {
     return a == b // == on a time.Time compares more than the instant; write a.Equal(b)
 }
+
+func unset(t time.Time) bool {
+    return t == time.Time{} // time.Time compared with the zero value; write t.IsZero()
+}
 ```
 
 The time package says what the operator does: "Note that the Go == operator
@@ -20,26 +24,52 @@ compares not just the time instant but also the Location and the monotonic
 clock reading." The `Time` doc adds: "In general, prefer t.Equal(u) to t == u,
 since t.Equal uses the most accurate comparison available and correctly
 handles the case when only one of its arguments has a monotonic clock
-reading."
+reading." It says that "the Time.IsZero method gives a simple way of detecting
+a time that has not been initialized explicitly", which is what a comparison
+against the zero-value literal tests for. `IsZero` tests the instant alone, so
+a zero instant in a named location compares unequal to `time.Time{}` though
+`IsZero` returns true.
 
-A comparison against the zero-value literal is left to `timeequal2`, whose
-fix writes `IsZero`.
+## Checks
 
-The analyzer reports only a comparison written with the operator, between two
-`time.Time` values that are not the zero literal. A `case` in a switch on one,
-a map keyed by one, and a comparison of a struct or of a defined type that
-contains one are not reported.
+Both operands must be a `time.Time`, and the comparison must be written with
+the operator.
 
-A comparison can be deliberate: a test that checks a time's representation is
-written the same way as a mistake.
+Not reported:
+
+- a `case` in a switch on a time and a map keyed by one; neither is a
+  comparison;
+- a comparison of two zero-value literals, because neither operand is the time
+  under test;
+- a comparison of a struct that holds a time, because the operands are not
+  times;
+- a comparison of a defined type whose underlying type is `time.Time`, even
+  when the type declares `IsZero`.
+
+A test that checks a time's representation writes the comparison deliberately,
+and the rule reports it anyway.
+
+## Fixes
+
+The fix writes `Equal` for a comparison of two `time.Time` values, and `IsZero`
+for a comparison against the zero-value literal. Either form is negated for
+`!=`, and a `!` outside the comparison is folded into the replacement, so
+`!(t != time.Time{})` becomes `t.IsZero()`. The receiver is parenthesized where
+a selector would bind to its own operand, as in `(*p).IsZero()` and
+`(<-ch).IsZero()`, and where it begins with a composite literal, since a
+statement header cannot begin with one.
+
+The suggestion in the message, as in `; write t.IsZero()`, is left out when the
+receiver or the argument prints on more than one line, when the comparison has
+a defined boolean type, or when another comparison takes the result of a
+zero-value comparison as an operand. That last shape is usually a deliberate
+test of what the operator compares, so it takes no fix either. The fix is
+withheld when a comment sits inside the text it would replace, when the
+comparison spans lines, and when the rewrite would take the line past the
+width. A line already past the width still takes the fix.
 
 The idea comes from revive's time-equal, which reports the comparison without a
 fix.
-
-Fixable: the comparison becomes `Equal`. The fix is withheld when the
-comparison has a defined boolean type, when it would take the line past the
-width, when the comparison spans lines, and when a comment sits inside it. A
-line already past the width still takes the fix.
 
 ## Usage
 

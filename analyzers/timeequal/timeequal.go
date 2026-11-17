@@ -8,14 +8,30 @@
 // handles the case when only one of its arguments has a monotonic clock
 // reading."
 //
-// A comparison against the zero-value literal is left to timeequal2, whose
-// fix writes IsZero. Only a comparison of two time.Time values that are not
-// the zero literal is reported.
+// It says that "the Time.IsZero method gives a simple way of detecting a time
+// that has not been initialized explicitly", which is what a comparison
+// against the zero-value literal tests for. IsZero tests the instant alone, so
+// a zero instant in a named location compares unequal to time.Time{} though
+// IsZero returns true.
 //
-// The fix writes Equal, and is withheld where the comparison has a defined
-// boolean type, or the edit would lose a comment, join lines, or take the line
-// past the width. A case in a switch on one, a map keyed by one, and a
-// comparison of a struct or a defined type over one are not reported.
+// The fix writes Equal for a comparison of two time.Time values, and IsZero
+// for a comparison against the zero-value literal, negated for !=. A !
+// outside the comparison is folded into the replacement, so
+// !(t != time.Time{}) becomes t.IsZero().
+//
+// The suggestion in the message, as in "; write t.IsZero()", is left out when
+// the receiver or the argument prints on more than one line, when the
+// comparison has a defined boolean type, or when another comparison takes the
+// result of a zero-value comparison as an operand. That last shape is usually
+// a deliberate test of what the operator compares, so it takes no fix either.
+// The fix is withheld where a comment lies in the text it would replace, where
+// the comparison spans lines, and where the rewrite would take the line past
+// the width. A line already past the width still takes the fix.
+//
+// A case in a switch on one, a map keyed by one, a comparison of two
+// zero-value literals, a comparison of a struct that holds a time, and a
+// comparison of a defined type whose underlying type is time.Time, even when
+// the type declares IsZero, are not reported.
 //
 // The rule is like revive's time-equal, which reports the comparison without a
 // fix.
@@ -37,8 +53,15 @@ import (
 
 var Analyzer = &analysis.Analyzer{
 	Name: "timeequal",
-	Doc:  "reports a time.Time compared with == or !=, except the zero literal",
+	Doc:  "reports a time.Time compared with == or !=",
 	Run:  run,
+}
+
+// site is one comparison as a fix sees it.
+type site struct {
+	expr         ast.Expr // the node the replacement stands in for
+	negate       bool     // a ! covers the comparison
+	inComparison bool     // another comparison takes the result as a value
 }
 
 func run(pass *analysis.Pass) (any, error) {
@@ -63,92 +86,110 @@ func checkFile(pass *analysis.Pass, f *ast.File) {
 		if !isTime(pass, bin.X) || !isTime(pass, bin.Y) {
 			return true
 		}
-		if zeroLiteral(bin.X) || zeroLiteral(bin.Y) {
-			return true
-		}
-		span, negate := target(stack, bin)
-		report(pass, f, bin, span, negate)
+		report(pass, f, bin, stack)
 		return true
 	})
 }
 
-// target returns the node a fix replaces and whether a ! covers it. A
-// parenthesis or a ! is taken with the comparison because the replacement
-// binds the same way.
-func target(stack []ast.Node, bin *ast.BinaryExpr) (ast.Expr, bool) {
-	var (
-		span   ast.Expr = bin
-		negate bool
-	)
-	for i := len(stack) - 2; i >= 0; i-- {
-		switch parent := stack[i].(type) {
-		case *ast.ParenExpr:
-			span = parent
-		case *ast.UnaryExpr:
-			if parent.Op != token.NOT {
-				return span, negate
-			}
-			span, negate = parent, !negate
-		default:
-			return span, negate
-		}
+// report reports a comparison of two times and quotes the replacement it would
+// write: Equal, or IsZero when an operand is the zero-value literal. Two
+// zero-value literals leave no time under test, so they are not reported.
+func report(pass *analysis.Pass, f *ast.File, bin *ast.BinaryExpr, stack []ast.Node) {
+	xZero, yZero := zeroLiteral(bin.X), zeroLiteral(bin.Y)
+	if xZero && yZero {
+		return
 	}
-	return span, negate
-}
-
-func report(pass *analysis.Pass, file *ast.File, bin *ast.BinaryExpr, span ast.Expr, negate bool) {
-	var (
-		from, to = span.Pos(), span.End()
-		diag     = analysis.Diagnostic{
-			Pos:     from,
-			End:     to,
-			Message: bin.Op.String() + " on a time.Time compares more than the instant",
+	s := target(stack, bin)
+	from, to := s.expr.Pos(), s.expr.End()
+	zero := xZero || yZero
+	var message, label string
+	recv := bin.X
+	var arg ast.Expr
+	if zero {
+		message = "time.Time compared with the zero value"
+		label = "Compare with IsZero"
+		if xZero {
+			recv = bin.Y
 		}
-		not = bin.Op == token.NEQ
-	)
-	if negate {
+	} else {
+		message = bin.Op.String() + " on a time.Time compares more than the instant"
+		label = "Compare with Equal"
+		arg = bin.Y
+	}
+	not := bin.Op == token.NEQ
+	if s.negate {
 		not = !not
 	}
-	if !astexpr.IsBool(pass.TypesInfo.TypeOf(bin)) {
-		pass.Report(diag)
-		return
+	var text string
+	isBool := astexpr.IsBool(pass.TypesInfo.TypeOf(bin))
+	if isBool && !(zero && s.inComparison) {
+		text = replacement(pass.Fset, recv, arg, not)
 	}
-	text, err := rewrite(pass.Fset, bin.X, bin.Y, not)
-	if err != nil || strings.Contains(text, "\n") {
-		// Nothing is quoted that a reader cannot write on one line.
-		pass.Report(diag)
-		return
-	}
-	diag.Message += "; write " + text
-	if fits(pass, from, to, text) && !commented(file, from, to) {
-		diag.SuggestedFixes = []analysis.SuggestedFix{{
-			Message: "Compare with Equal",
-			TextEdits: []analysis.TextEdit{{
-				Pos:     from,
-				End:     to,
-				NewText: []byte(text),
-			}},
-		}}
+	diag := analysis.Diagnostic{Pos: from, End: to, Message: message}
+	if text != "" {
+		diag.Message += "; write " + text
+		if fits(pass, from, to, text) && !holdsComment(f, from, to) {
+			diag.SuggestedFixes = []analysis.SuggestedFix{{
+				Message: label,
+				TextEdits: []analysis.TextEdit{{
+					Pos:     from,
+					End:     to,
+					NewText: []byte(text),
+				}},
+			}}
+		}
 	}
 	pass.Report(diag)
 }
 
-// rewrite returns the text that compares recv with arg, negated when not is
-// set.
-func rewrite(fset *token.FileSet, recv, arg ast.Expr, not bool) (string, error) {
-	var bang string
+// replacement returns the text of a repair, and empty text when the call does
+// not print on one line. An argument writes Equal, and no argument writes
+// IsZero.
+func replacement(fset *token.FileSet, recv, arg ast.Expr, not bool) string {
+	name, err := receiverText(fset, recv)
+	if err != nil {
+		return ""
+	}
+	method, args := "IsZero", ""
+	if arg != nil {
+		call, err := render(fset, ast.Unparen(arg))
+		if err != nil {
+			return ""
+		}
+		method, args = "Equal", call
+	}
+	text := name + "." + method + "(" + args + ")"
+	if strings.Contains(text, "\n") {
+		return ""
+	}
 	if not {
-		bang = "!"
+		text = "!" + text
 	}
-	text, err := receiverText(fset, recv)
-	if err != nil {
-		return "", err
+	return text
+}
+
+// target returns the site of a fix for bin. A parenthesis or a ! is taken with
+// the comparison, because the replacement binds the same way, and a parent
+// comparison is recorded rather than taken.
+func target(stack []ast.Node, bin *ast.BinaryExpr) site {
+	s := site{expr: bin}
+	for i := len(stack) - 2; i >= 0; i-- {
+		switch parent := stack[i].(type) {
+		case *ast.ParenExpr:
+			s.expr = parent
+		case *ast.UnaryExpr:
+			if parent.Op != token.NOT {
+				return s
+			}
+			s.expr, s.negate = parent, !s.negate
+		case *ast.BinaryExpr:
+			s.inComparison = parent.Op == token.EQL || parent.Op == token.NEQ
+			return s
+		default:
+			return s
+		}
 	}
-	call, err := render(fset, ast.Unparen(arg))
-	if err != nil {
-		return "", err
-	}
-	return bang + text + ".Equal(" + call + ")", nil
+	return s
 }
 
 // receiverText returns the text of e where a selector follows it.
@@ -171,7 +212,10 @@ func receiverText(fset *token.FileSet, e ast.Expr) (string, error) {
 	return text, nil
 }
 
-// render returns the source of one expression.
+// render returns the source of one expression. It prints with the file's
+// FileSet, so an expression written across lines stays across lines; a fresh
+// FileSet would join them, and the analyzer would quote a replacement for an
+// expression it cannot write on one line.
 func render(fset *token.FileSet, e ast.Expr) (string, error) {
 	var buf bytes.Buffer
 	if err := format.Node(&buf, fset, e); err != nil {
@@ -198,8 +242,8 @@ func zeroLiteral(e ast.Expr) bool {
 	return ok && len(lit.Elts) == 0
 }
 
-// commented reports whether a comment lies in the text a fix would replace.
-func commented(file *ast.File, from, to token.Pos) bool {
+// holdsComment reports whether a comment lies in the text a fix would replace.
+func holdsComment(file *ast.File, from, to token.Pos) bool {
 	for _, group := range file.Comments {
 		for _, c := range group.List {
 			if c.Pos() >= from && c.Pos() < to {

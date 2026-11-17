@@ -1,0 +1,106 @@
+package a
+
+import "time"
+
+func unset(t time.Time) bool {
+	return t == time.Time{} // want `compared with the zero value`
+}
+
+func set(t time.Time) bool {
+	return t != time.Time{} // want `compared with the zero value`
+}
+
+func negatedUnset(t time.Time) bool {
+	return !(t == time.Time{}) // want `compared with the zero value`
+}
+
+func negatedSet(t time.Time) bool {
+	return !(t != time.Time{}) // want `compared with the zero value`
+}
+
+func literalLeft(t time.Time) bool {
+	return time.Time{} == t // want `compared with the zero value`
+}
+
+func literalLeftNot(t time.Time) bool {
+	return time.Time{} != t // want `compared with the zero value`
+}
+
+func literalParen(t time.Time) bool {
+	return t == (time.Time{}) // want `compared with the zero value`
+}
+
+func literalBothParens(t time.Time) bool {
+	return (t) == (time.Time{}) // want `compared with the zero value`
+}
+
+func literalAliased(t When) bool {
+	return t == When{} // want `compared with the zero value`
+}
+
+func literalDeref(p *time.Time) bool {
+	return *p == time.Time{} // want `compared with the zero value`
+}
+
+func literalReceived(ch chan time.Time) bool {
+	return <-ch != time.Time{} // want `compared with the zero value`
+}
+
+func literalField(item struct{ At time.Time }) bool {
+	return item.At == time.Time{} // want `compared with the zero value`
+}
+
+func picked() time.Time {
+	return time.Time{}
+}
+
+func literalCalled() bool {
+	return picked() == time.Time{} // want `compared with the zero value`
+}
+
+func literalConjunction(t time.Time) bool {
+	return t != time.Time{} && t.After(t) // want `compared with the zero value`
+}
+
+func literalCommented(t time.Time) bool {
+	return t == /* note */ time.Time{} // want `compared with the zero value`
+}
+
+func literalSplit(t time.Time) bool {
+	return t == // want `^time\.Time compared with the zero value; write t\.IsZero\(\)$`
+		time.Time{}
+}
+
+func literalMultiline() bool {
+	return func() time.Time { // want `^time\.Time compared with the zero value$`
+		return time.Time{}
+	}() == time.Time{}
+}
+
+func literalComposite(d time.Duration) bool {
+	if (time.Time{}.Add(d)) == (time.Time{}) { // want `compared with the zero value`
+		return true
+	}
+	return false
+}
+
+func literalFlag(t time.Time) flag {
+	return t == time.Time{} // want `compared with the zero value`
+}
+
+func literalDefined(d Defined) bool {
+	return d == Defined{}
+}
+
+func bothZero() bool {
+	return time.Time{} == time.Time{}
+}
+
+func nestedLiterals(t, u time.Time) bool {
+	return (t == time.Time{}) == // want `^time\.Time compared with the zero value$`
+		(u == time.Time{}) // want `^time\.Time compared with the zero value$`
+}
+
+func nestedLiteralFlag(t time.Time, set bool) bool {
+	return (t == time.Time{}) == set // want `^time\.Time compared with the zero value$`
+}
