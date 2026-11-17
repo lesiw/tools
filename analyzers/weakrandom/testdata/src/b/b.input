@@ -1,5 +1,0 @@
-package b
-
-func Intn(int) int { return 0 }
-
-func SetKey(key int) {}

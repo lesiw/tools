@@ -4395,18 +4395,6 @@
 //		}()
 //	}
 //
-// # weakrandom
-//
-// Reports a value from math/rand or math/rand/v2 that reaches a token, a key,
-// or a password. The generator is predictable, and which one to use instead is
-// the author's decision.
-//
-// Adapted from gosec's G404.
-//
-//	func newToken() int {
-//		return rand.Intn(1000000)
-//	}
-//
 // # weakrsa
 //
 // Reports a call to rsa.GenerateKey with a constant key size below 2048 bits,

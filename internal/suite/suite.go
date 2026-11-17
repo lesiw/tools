@@ -319,7 +319,6 @@ import (
 	"lesiw.io/tools/analyzers/valswap"
 	"lesiw.io/tools/analyzers/valuereceiver"
 	"lesiw.io/tools/analyzers/vargrouptype"
-	"lesiw.io/tools/analyzers/weakrandom"
 	"lesiw.io/tools/analyzers/weakrsa"
 	"lesiw.io/tools/analyzers/weaktls"
 	"lesiw.io/tools/analyzers/wgbody"
@@ -660,7 +659,6 @@ var (
 		valuereceiver.Analyzer,
 		vargrouptype.Analyzer,
 		waitgroup.Analyzer,
-		weakrandom.Analyzer,
 		weakrsa.Analyzer,
 		weaktls.Analyzer,
 		wgbody.Analyzer,
