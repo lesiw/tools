@@ -4062,24 +4062,6 @@ func f() {
 }
 ```
 
-## unnecessaryif
-
-Reports an if whose else block contains a single if. Writing it as else if removes a pair of braces and one level of indent.
-
-Adapted from go-critic's elseif.
-
-```
-func f(a, b bool) {
-    if a {
-        println("a")
-    } else {
-        if b {
-            println("b")
-        }
-    }
-}
-```
-
 ## unreachable
 
 Reports a statement that execution cannot reach, as one below a return, a panic, or an endless loop.
