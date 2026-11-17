@@ -25,6 +25,13 @@
 // block, the rule does not cover a switch, select, or for that never falls
 // through, so those are left alone.
 //
+// The fix writes the opposite operator: < and >= swap, <= and > swap, and ==
+// and != swap. It removes the ! from a negation and puts one in front of any
+// other condition, inside parentheses when that condition is binary.
+// Parentheses around the condition are dropped. An ordering comparison that a
+// NaN can reach is negated with the !, because a NaN is unordered against
+// every value and !(a < b) is true where a >= b is not.
+//
 // The fix is withheld when the then block declares a name directly, because
 // the declaration would move into the enclosing scope. It is also withheld
 // when the then block holds a raw string that spans lines, since outdenting
@@ -32,9 +39,9 @@
 // opening brace's line or its last statement shares the closing brace's line,
 // when a comment follows the else block's closing brace on the same line,
 // because the rewrite would move it onto the last then statement, or when a
-// comment would be removed: before or after the condition, inside a
-// parenthesized negated condition, between a leading ! and its operand, or
-// between the then block and the else block.
+// comment would be removed: before or after the condition, between a ! and its
+// operand, in the parentheses the fix drops, or between the then block and the
+// else block.
 //
 // The rule is inspired by revive's early-return.
 package deviatingelse
@@ -47,6 +54,8 @@ import (
 	"strings"
 
 	"golang.org/x/tools/go/analysis"
+
+	"lesiw.io/tools/internal/astexpr"
 )
 
 var Analyzer = &analysis.Analyzer{
@@ -197,7 +206,7 @@ func invert(pass *analysis.Pass, file *ast.File, stmt *ast.IfStmt, elseBlock *as
 	if !ok || !editable(file, tokFile, stmt, elseBlock) {
 		return nil, false
 	}
-	cond := negate(src, tokFile, stmt.Cond)
+	cond := negate(pass, src, tokFile, stmt.Cond)
 	parent, unit, ok := indentation(src, tokFile, stmt, elseBlock)
 	if !ok {
 		return nil, false
@@ -266,7 +275,15 @@ func uncommented(file *ast.File, stmt *ast.IfStmt, elseBlock *ast.BlockStmt) boo
 		after  = commented(file, stmt.Cond.End(), stmt.Body.Lbrace)
 		gap    = commented(file, stmt.Body.Rbrace+1, elseBlock.Lbrace)
 	)
-	return !before && !after && !gap && !lostNegation(file, stmt.Cond)
+	return !before && !after && !gap && !lostComment(file, stmt.Cond)
+}
+
+// lostComment reports whether cond holds a comment outside the text the fix
+// copies.
+func lostComment(file *ast.File, cond ast.Expr) bool {
+	kept, _ := stripped(cond)
+	return commented(file, cond.Pos(), kept.Pos()) ||
+		commented(file, kept.End(), cond.End())
 }
 
 // trailing reports whether a comment follows pos on the same line.
@@ -412,52 +429,72 @@ func unlabel(stmt ast.Stmt) ast.Stmt {
 }
 
 // negate returns the source of the condition that is true when cond is false.
-func negate(src []byte, tokFile *token.File, cond ast.Expr) []byte {
+func negate(pass *analysis.Pass, src []byte, tokFile *token.File, cond ast.Expr) []byte {
 	var (
-		lo      = tokFile.Offset(cond.Pos())
-		hi      = tokFile.Offset(cond.End())
-		text    = src[lo:hi]
-		not, ok = ast.Unparen(cond).(*ast.UnaryExpr)
+		kept, negated = stripped(cond)
+		lo            = tokFile.Offset(kept.Pos())
+		text          = src[lo:tokFile.Offset(kept.End())]
 	)
-	if ok && not.Op == token.NOT {
-		start, end := tokFile.Offset(not.X.Pos()), tokFile.Offset(not.X.End())
-		return src[start:end]
+	if negated {
+		return text
 	}
-	bin, ok := ast.Unparen(cond).(*ast.BinaryExpr)
-	if ok && (bin.Op == token.EQL || bin.Op == token.NEQ) {
-		return flipped(text, tokFile.Offset(bin.OpPos)-lo, bin.Op)
+	bin, ok := kept.(*ast.BinaryExpr)
+	if !ok {
+		return append([]byte("!"), text...)
 	}
-	if ok {
-		if _, paren := cond.(*ast.ParenExpr); paren {
-			return append([]byte("!"), text...)
-		}
-		out := []byte("!(")
-		out = append(out, text...)
-		return append(out, ')')
+	if opp, ok := opposite[bin.Op]; ok && !mayBeNaN(pass, bin) {
+		return replaced(text, tokFile.Offset(bin.OpPos)-lo, bin.Op, opp)
 	}
-	return append([]byte("!"), text...)
+	out := []byte("!(")
+	out = append(out, text...)
+	return append(out, ')')
 }
 
-// flipped returns text with the equality operator at off replaced by its
-// opposite.
-func flipped(text []byte, off int, op token.Token) []byte {
-	opp := "!="
-	if op == token.NEQ {
-		opp = "=="
+// stripped returns the expression the fix writes where cond was, which is cond
+// without its parentheses and, for a negation, without the ! and the
+// parentheses around its operand.
+func stripped(cond ast.Expr) (e ast.Expr, negated bool) {
+	cond = ast.Unparen(cond)
+	if not, ok := cond.(*ast.UnaryExpr); ok && not.Op == token.NOT {
+		return ast.Unparen(not.X), true
 	}
-	out := append([]byte{}, text[:off]...)
-	out = append(out, opp...)
-	return append(out, text[off+len(op.String()):]...)
+	return cond, false
 }
 
-// lostNegation reports whether removing a leading ! would drop a comment.
-func lostNegation(file *ast.File, cond ast.Expr) bool {
-	not, ok := ast.Unparen(cond).(*ast.UnaryExpr)
-	if !ok || not.Op != token.NOT {
+// opposite maps a comparison to the one that is true where it is false.
+var opposite = map[token.Token]token.Token{
+	token.EQL: token.NEQ,
+	token.NEQ: token.EQL,
+	token.LSS: token.GEQ,
+	token.GEQ: token.LSS,
+	token.GTR: token.LEQ,
+	token.LEQ: token.GTR,
+}
+
+// mayBeNaN reports whether a NaN can reach bin's ordering comparison. Under
+// IEEE 754 a NaN is unordered against every value, so !(a < b) is true where
+// a >= b is not; == and != give the same answer either way.
+func mayBeNaN(pass *analysis.Pass, bin *ast.BinaryExpr) bool {
+	switch bin.Op {
+	case token.LSS, token.LEQ, token.GTR, token.GEQ:
+	default:
 		return false
 	}
-	return commented(file, cond.Pos(), not.X.Pos()) ||
-		commented(file, not.X.End(), cond.End())
+	for _, operand := range []ast.Expr{bin.X, bin.Y} {
+		tv := pass.TypesInfo.Types[operand]
+		// A constant is never a NaN.
+		if tv.Value == nil && astexpr.MayBeNaN(tv.Type) {
+			return true
+		}
+	}
+	return false
+}
+
+// replaced returns text with op at off replaced by opp.
+func replaced(text []byte, off int, op, opp token.Token) []byte {
+	out := append([]byte{}, text[:off]...)
+	out = append(out, opp.String()...)
+	return append(out, text[off+len(op.String()):]...)
 }
 
 // commented reports whether a comment overlaps the half-open range lo to hi.

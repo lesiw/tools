@@ -305,6 +305,96 @@ func notEqual(n int) int {
 	return -1
 }
 
+func less(a, b int) int {
+	if a < b {
+		print(a)
+	} else { // want `else does not fall through; invert the condition and outdent the then block`
+		return b
+	}
+	return a
+}
+
+func lessOrEqual(a, b int) int {
+	if a <= b {
+		print(a)
+	} else { // want `else does not fall through; invert the condition and outdent the then block`
+		return b
+	}
+	return a
+}
+
+func greater(a, b int) int {
+	if a > b {
+		print(a)
+	} else { // want `else does not fall through; invert the condition and outdent the then block`
+		return b
+	}
+	return a
+}
+
+func greaterOrEqual(a, b int) int {
+	if a >= b {
+		print(a)
+	} else { // want `else does not fall through; invert the condition and outdent the then block`
+		return b
+	}
+	return a
+}
+
+func unordered(a, b float64) int {
+	if a < b {
+		print(a)
+	} else { // want `else does not fall through; invert the condition and outdent the then block`
+		return 1
+	}
+	return 0
+}
+
+func floatEqual(a, b float64) int {
+	if a == b {
+		print(a)
+	} else { // want `else does not fall through; invert the condition and outdent the then block`
+		return 1
+	}
+	return 0
+}
+
+func constrained[T int | float64](a, b T) int {
+	if a < b {
+		print(a)
+	} else { // want `else does not fall through; invert the condition and outdent the then block`
+		return 1
+	}
+	return 0
+}
+
+func constantOrder() int {
+	if 1.0 < 2.0 {
+		print(1)
+	} else { // want `else does not fall through; invert the condition and outdent the then block`
+		return 1
+	}
+	return 0
+}
+
+func constantBound(x float64) int {
+	if x < 1.0 {
+		print(x)
+	} else { // want `else does not fall through; invert the condition and outdent the then block`
+		return 0
+	}
+	return -1
+}
+
+func parenNegation(a, b int) int {
+	if !(a < b) {
+		print(a)
+	} else { // want `else does not fall through; invert the condition and outdent the then block`
+		return b
+	}
+	return a
+}
+
 func elseComment(n int) int {
 	if n == 0 {
 		print(n)

@@ -1,0 +1,10 @@
+package a
+
+func parenthesized(a, b int) int {
+	if (a < b) {
+		print(a)
+	} else { // want `else does not fall through; invert the condition and outdent the then block`
+		return b
+	}
+	return a
+}

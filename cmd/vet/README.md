@@ -957,7 +957,7 @@ func Old() {}
 
 ## deviatingelse
 
-Reports an if/else whose else block does not fall through to the statement after the if. Inverting the condition removes a level of indentation from the then block.
+Reports an if/else whose else block does not fall through to the statement after the if. Inverting the condition removes a level of indentation from the then block. The fix writes a comparison with the opposite operator, and negates a compound condition whole.
 
 Inspired by revive's early-return.
 

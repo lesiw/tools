@@ -46,10 +46,14 @@ are left alone.
 
 ## Fixes
 
-The fix inverts the condition and moves the then block after the if. An
-equality test swaps `==` and `!=`, a `!` that is the whole condition is
-dropped, and any other condition is prefixed with `!`, with parentheses around
-a binary condition.
+The fix inverts the condition and moves the then block after the if. It writes
+the opposite operator: `<` and `>=` swap, `<=` and `>` swap, and `==` and `!=`
+swap. It removes the `!` from a negation and puts one in front of any other
+condition, inside parentheses when that condition is binary. Parentheses around
+the condition are dropped. An ordering comparison that a NaN can reach is
+negated with the `!`, because a NaN is unordered against every value and
+`!(a < b)` is true where `a >= b` is not.
+
 The fix is withheld when the then block declares a name directly, because the
 declaration would move into the enclosing scope. It is also withheld when the
 then block holds a raw string that spans lines, since outdenting would change
@@ -57,8 +61,8 @@ its value, when either block's first statement shares the opening brace's line
 or its last statement shares the closing brace's line, when a comment follows
 the else block's closing brace on the same line, because the rewrite would move
 it onto the last then statement, or when a comment would be removed: before or
-after the condition, inside a parenthesized negated condition, between a
-leading `!` and its operand, or between the then block and the else block.
+after the condition, between a `!` and its operand, in the parentheses the fix
+drops, or between the then block and the else block.
 
 The rule is inspired by revive's early-return.
 

@@ -76,3 +76,39 @@ func parenNotTail(ok bool) int {
 	}
 	return -1
 }
+
+func parenTrailing(a, b int) int {
+	if (a < b /* why */) {
+		print(a)
+	} else { // want `else does not fall through; invert the condition and outdent the then block`
+		return b
+	}
+	return a
+}
+
+func parenLeading(a, b int) int {
+	if ( /* why */ a < b) {
+		print(a)
+	} else { // want `else does not fall through; invert the condition and outdent the then block`
+		return b
+	}
+	return a
+}
+
+func negatedParen(ok bool) int {
+	if !( /* why */ ok) {
+		print("alpha")
+	} else { // want `else does not fall through; invert the condition and outdent the then block`
+		return 0
+	}
+	return -1
+}
+
+func negationGap(ok bool) int {
+	if !/* why */ ok {
+		print("alpha")
+	} else { // want `else does not fall through; invert the condition and outdent the then block`
+		return 0
+	}
+	return -1
+}
