@@ -5,7 +5,7 @@ import (
 	"unsafe"
 )
 
-type item struct {
+type record struct {
 	count int
 }
 
@@ -18,11 +18,11 @@ func (container) method() *int { return nil }
 
 type count int
 
-type pointer *item
+type recordPointer *record
 
-type otherPointer *item
+type otherRecordPointer *record
 
-type alias = *item
+type alias = *record
 
 type measured struct {
 	ratio float64
@@ -32,8 +32,8 @@ type linked struct {
 	next *int
 }
 
-type boxed struct {
-	pointer unsafe.Pointer
+type addressed struct {
+	address unsafe.Pointer
 }
 
 type zeroHolder struct {
@@ -125,9 +125,9 @@ type listPtr *[]int
 
 type versionPtrDefined *versionPtr
 
-type doublePtr **item
+type doublePtr **record
 
-type itemPtr *item
+type recordPtr *record
 
 type zeroMixed struct {
 	values [0][]int
@@ -139,8 +139,12 @@ type blankHolder struct {
 	count int
 }
 
+type blankPointerHolder struct {
+	_ *int
+}
+
 type relay struct {
-	ch chan *item
+	ch chan *record
 }
 
 type dynamic struct {
@@ -155,7 +159,7 @@ type uncomparable struct {
 	values []int
 }
 
-func sameItems(left, right *item) bool {
+func sameRecords(left, right *record) bool {
 	return left == right // want `reflect\.DeepEqual on two pointers compares what they point to; compare the pointers`
 }
 
@@ -211,11 +215,15 @@ func sameBlankFields(left, right *blankHolder) bool {
 	return left == right // want `reflect\.DeepEqual on two pointers compares what they point to; compare the pointers`
 }
 
+func sameBlankPointerFields(left, right *blankPointerHolder) bool {
+	return reflect.DeepEqual(left, right)
+}
+
 func arrayOfSlices(left, right *[2][]int) bool {
 	return reflect.DeepEqual(left, right)
 }
 
-func sameDefined(left, right pointer) bool {
+func sameDefined(left, right recordPointer) bool {
 	return left == right // want `reflect\.DeepEqual on two pointers compares what they point to; compare the pointers`
 }
 
@@ -275,7 +283,7 @@ func sameChannels(left, right *chan int) bool {
 	return left == right // want `reflect\.DeepEqual on two pointers compares what they point to; compare the pointers`
 }
 
-func samePointerChannels(left, right *chan *item) bool {
+func samePointerChannels(left, right *chan *record) bool {
 	return left == right // want `reflect\.DeepEqual on two pointers compares what they point to; compare the pointers`
 }
 
@@ -307,53 +315,53 @@ func sameDefinedUnsafePointers(left, right *address) bool {
 	return left == right // want `reflect\.DeepEqual on two pointers compares what they point to; compare the pointers`
 }
 
-func typedNil(left *item) bool {
-	return left == (*item)(nil) // want `reflect\.DeepEqual on two pointers compares what they point to; compare the pointers`
+func typedNil(left *record) bool {
+	return left == (*record)(nil) // want `reflect\.DeepEqual on two pointers compares what they point to; compare the pointers`
 }
 
-func parenthesized(left, right *item) bool {
+func parenthesized(left, right *record) bool {
 	return left == right // want `reflect\.DeepEqual on two pointers compares what they point to; compare the pointers`
 }
 
-func negated(left, right *item) bool {
+func negated(left, right *record) bool {
 	return !(left == right) // want `reflect\.DeepEqual on two pointers compares what they point to; compare the pointers`
 }
 
-func conjunction(left, right *item, ok bool) bool {
+func conjunction(left, right *record, ok bool) bool {
 	return left == right && ok // want `reflect\.DeepEqual on two pointers compares what they point to; compare the pointers`
 }
 
-func conditional(left, right *item) bool {
-	if (left == &item{}) { // want `reflect\.DeepEqual on two pointers compares what they point to; compare the pointers`
+func conditional(left, right *record) bool {
+	if (left == &record{}) { // want `reflect\.DeepEqual on two pointers compares what they point to; compare the pointers`
 		return true
 	}
 	return false
 }
 
-func conditionalRight(left, right *item) bool {
-	switch (&item{} == right) { // want `reflect\.DeepEqual on two pointers compares what they point to; compare the pointers`
+func conditionalRight(left, right *record) bool {
+	switch (&record{} == right) { // want `reflect\.DeepEqual on two pointers compares what they point to; compare the pointers`
 	case true:
 		return true
 	}
 	return false
 }
 
-func conditionalAnd(left, right *item, ok bool) bool {
-	if ok && (left == &item{}) { // want `reflect\.DeepEqual on two pointers compares what they point to; compare the pointers`
+func conditionalAnd(left, right *record, ok bool) bool {
+	if ok && (left == &record{}) { // want `reflect\.DeepEqual on two pointers compares what they point to; compare the pointers`
 		return true
 	}
 	return false
 }
 
-func conditionalPlain(left, right *item) bool {
+func conditionalPlain(left, right *record) bool {
 	if left == right { // want `reflect\.DeepEqual on two pointers compares what they point to; compare the pointers`
 		return true
 	}
 	return false
 }
 
-func conditionalFor(left, right *item) bool {
-	for (left == &item{}) { // want `reflect\.DeepEqual on two pointers compares what they point to; compare the pointers`
+func conditionalFor(left, right *record) bool {
+	for (left == &record{}) { // want `reflect\.DeepEqual on two pointers compares what they point to; compare the pointers`
 		return true
 	}
 	return false
@@ -380,67 +388,67 @@ func conditionalMethod(left *int) bool {
 	return false
 }
 
-func conditionalInit(left, right *item) bool {
-	if same := (left == &item{}); same { // want `reflect\.DeepEqual on two pointers compares what they point to; compare the pointers`
+func conditionalInit(left, right *record) bool {
+	if same := (left == &record{}); same { // want `reflect\.DeepEqual on two pointers compares what they point to; compare the pointers`
 		return true
 	}
 	return false
 }
 
-func conditionalSwitchInit(left, right *item) bool {
-	switch same := (left == &item{}); same { // want `reflect\.DeepEqual on two pointers compares what they point to; compare the pointers`
+func conditionalSwitchInit(left, right *record) bool {
+	switch same := (left == &record{}); same { // want `reflect\.DeepEqual on two pointers compares what they point to; compare the pointers`
 	case true:
 		return true
 	}
 	return false
 }
 
-func guardLeft(left, right *item, ok bool) bool {
+func guardLeft(left, right *record, ok bool) bool {
 	return (left == right) == ok // want `reflect\.DeepEqual on two pointers compares what they point to; compare the pointers`
 }
 
-func guardRight(left, right *item, ok bool) bool {
+func guardRight(left, right *record, ok bool) bool {
 	return ok == (left == right) // want `reflect\.DeepEqual on two pointers compares what they point to; compare the pointers`
 }
 
-func guardNotEqual(left, right *item, ok bool) bool {
+func guardNotEqual(left, right *record, ok bool) bool {
 	return (left == right) != ok // want `reflect\.DeepEqual on two pointers compares what they point to; compare the pointers`
 }
 
-func commented(left, right *item) bool {
+func commented(left, right *record) bool {
 	return reflect.DeepEqual( /* note */ left, right) // want `reflect\.DeepEqual on two pointers compares what they point to; compare the pointers`
 }
 
-func multiline(left *item) bool { // want +1 `reflect\.DeepEqual on two pointers compares what they point to; compare the pointers`
-	return reflect.DeepEqual(left, func() *item {
+func multiline(left *record) bool { // want +1 `reflect\.DeepEqual on two pointers compares what they point to; compare the pointers`
+	return reflect.DeepEqual(left, func() *record {
 		return nil
 	}())
 }
 
-func splitCall(left, right *item) bool {
+func splitCall(left, right *record) bool {
 	return reflect.DeepEqual( // want `reflect\.DeepEqual on two pointers compares what they point to; compare the pointers`
 		left, right)
 }
 
-func ignored(left, right *item) {
+func ignored(left, right *record) {
 	reflect.DeepEqual(left, right) // want `reflect\.DeepEqual on two pointers compares what they point to; compare the pointers`
 }
 
-func parenthesizedStatement(left, right *item) {
+func parenthesizedStatement(left, right *record) {
 	(reflect.DeepEqual(left, right)) // want `reflect\.DeepEqual on two pointers compares what they point to; compare the pointers`
 }
 
-func labeledStatement(left, right *item) {
+func labeledStatement(left, right *record) {
 L:
 	(reflect.DeepEqual(left, right)) // want `reflect\.DeepEqual on two pointers compares what they point to; compare the pointers`
 	goto L
 }
 
-func started(left, right *item) {
+func started(left, right *record) {
 	go reflect.DeepEqual(left, right) // want `reflect\.DeepEqual on two pointers compares what they point to; compare the pointers`
 }
 
-func deferred(left, right *item) {
+func deferred(left, right *record) {
 	defer reflect.DeepEqual(left, right) // want `reflect\.DeepEqual on two pointers compares what they point to; compare the pointers`
 }
 
@@ -448,7 +456,7 @@ func pointerField(left, right *linked) bool {
 	return reflect.DeepEqual(left, right)
 }
 
-func unsafeField(left, right *boxed) bool {
+func unsafeField(left, right *addressed) bool {
 	return left == right // want `reflect\.DeepEqual on two pointers compares what they point to; compare the pointers`
 }
 
@@ -464,11 +472,11 @@ func interfacePointee(left, right *any) bool {
 	return reflect.DeepEqual(left, right)
 }
 
-func pointerPointee(left, right **item) bool {
+func pointerPointee(left, right **record) bool {
 	return reflect.DeepEqual(left, right)
 }
 
-func arrayPointerPointee(left, right *[2]*item) bool {
+func arrayPointerPointee(left, right *[2]*record) bool {
 	return reflect.DeepEqual(left, right)
 }
 
@@ -496,11 +504,11 @@ func funcPointers(left, right *func()) bool {
 	return reflect.DeepEqual(left, right)
 }
 
-func maps(left, right map[int]int) bool {
+func bareMaps(left, right map[int]int) bool {
 	return reflect.DeepEqual(left, right)
 }
 
-func channels(left, right chan int) bool {
+func bareChannels(left, right chan int) bool {
 	return reflect.DeepEqual(left, right)
 }
 
@@ -512,15 +520,15 @@ func genericStruct[T any](left, right *genericHolder[T]) bool {
 	return reflect.DeepEqual(left, right)
 }
 
-func generic[T any](left, right *T) bool {
+func pointerToParameter[T any](left, right *T) bool {
 	return reflect.DeepEqual(left, right)
 }
 
-func constrained[T ~int](left, right *T) bool {
+func constrainedPointer[T ~int](left, right *T) bool {
 	return reflect.DeepEqual(left, right)
 }
 
-func bareTypeParameter[T interface{ ~*item }](left, right T) bool {
+func bareTypeParameter[T interface{ ~*record }](left, right T) bool {
 	return reflect.DeepEqual(left, right)
 }
 
@@ -528,11 +536,11 @@ func values(left, right int) bool {
 	return reflect.DeepEqual(left, right)
 }
 
-func mixed(left *item, right item) bool {
+func pointerAndValue(left *record, right record) bool {
 	return reflect.DeepEqual(left, right)
 }
 
-func nilValue(left *item) bool {
+func nilValue(left *record) bool {
 	return reflect.DeepEqual(left, nil)
 }
 
@@ -540,19 +548,19 @@ func interfaces(left, right any) bool {
 	return reflect.DeepEqual(left, right)
 }
 
-func slices(left, right []int) bool {
+func bareSlices(left, right []int) bool {
 	return reflect.DeepEqual(left, right)
 }
 
-func different(left *item, right *int) bool {
+func different(left *record, right *int) bool {
 	return reflect.DeepEqual(left, right)
 }
 
-func differentDefined(left pointer, right otherPointer) bool {
+func differentDefined(left recordPointer, right otherRecordPointer) bool {
 	return reflect.DeepEqual(left, right)
 }
 
-func definedAndRaw(left pointer, right *item) bool {
+func definedAndRaw(left recordPointer, right *record) bool {
 	return left == right // want `reflect\.DeepEqual on values of different types is always false; compare the pointers`
 }
 
@@ -564,15 +572,15 @@ func sameVersionPtrDefined(left versionPtrDefined, right *versionPtr) bool {
 	return left == right // want `reflect\.DeepEqual on values of different types is always false; compare the pointers`
 }
 
-func sameDoublePtr(left doublePtr, right **item) bool {
+func sameDoublePtr(left doublePtr, right **record) bool {
 	return left == right // want `reflect\.DeepEqual on values of different types is always false; compare the pointers`
 }
 
-func sameItemPtr(left itemPtr, right *item) bool {
+func sameRecordPtr(left recordPtr, right *record) bool {
 	return left == right // want `reflect\.DeepEqual on values of different types is always false; compare the pointers`
 }
 
-func functionValue(left, right *item) bool {
+func functionVariable(left, right *record) bool {
 	equal := reflect.DeepEqual
 	return equal(left, right)
 }

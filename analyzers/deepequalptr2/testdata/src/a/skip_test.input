@@ -1,7 +1,0 @@
-package a
-
-import "reflect"
-
-func testFile(left, right *item) bool {
-	return reflect.DeepEqual(left, right)
-}

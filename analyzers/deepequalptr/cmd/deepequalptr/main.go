@@ -1,5 +1,5 @@
 // Command deepequalptr reports a reflect.DeepEqual call on a type with an
-// Equal method and a pointer field.
+// Equal method and a pointer field, or on two pointers.
 package main
 
 import (

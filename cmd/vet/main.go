@@ -768,8 +768,10 @@
 // # deepequalptr
 //
 // Reports a reflect.DeepEqual call on a type with an Equal method and a
-// pointer field. DeepEqual compares the fields and the values the pointers
-// point to, so it can disagree with Equal.
+// pointer field, or on two pointers. The Equal arm reports a call on such a
+// type, where DeepEqual compares the field's pointee and never calls the
+// method. The identity arm reports a call on two pointer values, where
+// DeepEqual can return true for distinct pointers to equal values.
 //
 // Inspired by staticcheck's SA1021, which reports a net.IP comparison by its
 // bytes.
@@ -782,26 +784,13 @@
 //		return i.meta == other.meta
 //	}
 //
-//	func same(a, b item) bool {
-//		return reflect.DeepEqual(a, b)
+//	func same(left, right item) bool {
+//		return reflect.DeepEqual(left, right)
 //	}
 //
-// # deepequalptr2
+// For two pointer values:
 //
-// Reports a reflect.DeepEqual call on two pointer values of the same type with
-// a plain pointee, on two assignable pointer values of different types, or on
-// two values of the same unsafe.Pointer type. A pointee is plain when its
-// underlying type is a basic type, a channel, a zero-length array, or an array
-// or struct built from those. For a pointer value, DeepEqual compares the
-// pointee as well, so distinct pointers of the same type that point to deeply
-// equal values compare equal; a defined pointer type and its underlying
-// pointer type are reported because DeepEqual is always false for different
-// static types.
-//
-// Adapted from staticcheck's SA1021, which reports a net.IP comparison by its
-// bytes.
-//
-//	func same(left, right *int) bool {
+//	func samePointer(left, right *int) bool {
 //		return reflect.DeepEqual(left, right)
 //	}
 //

@@ -47,10 +47,10 @@ func (p pair) Equal(other pair) bool {
 	return p.left == other.left && p.right == other.right
 }
 
-type pointer *pair
+type pairPointer *pair
 
 type indirect struct {
-	value pointer
+	value pairPointer
 }
 
 func (i indirect) Equal(other indirect) bool {
@@ -137,17 +137,17 @@ func (h holder[T]) Equal(other holder[T]) bool {
 	return h.value == other.value
 }
 
-type left struct {
+type alpha struct {
 	value *header
 }
 
-func (l left) Equal(other left) bool { return true }
+func (a alpha) Equal(other alpha) bool { return true }
 
-type right struct {
+type beta struct {
 	value *header
 }
 
-func (r right) Equal(other right) bool { return true }
+func (b beta) Equal(other beta) bool { return true }
 
 type base struct {
 	meta *header
@@ -267,7 +267,7 @@ func doublyPointed(a, b **item) bool {
 	return reflect.DeepEqual(a, b) // want `reflect\.DeepEqual does not call item\.Equal; pointer field meta is followed to its pointee`
 }
 
-func definedPointer(a, b pointer) bool {
+func definedPointer(a, b pairPointer) bool {
 	return reflect.DeepEqual(a, b) // want `reflect\.DeepEqual does not call pair\.Equal; pointer field left is followed to its pointee`
 }
 
@@ -363,10 +363,6 @@ func plainValues(a, b plain) bool {
 	return reflect.DeepEqual(a, b)
 }
 
-func integers(a, b *int) bool {
-	return reflect.DeepEqual(a, b)
-}
-
 func recursiveValues(a, b recursive) bool {
 	return reflect.DeepEqual(a, b)
 }
@@ -419,7 +415,7 @@ func parameter[T ~*header](a, b T) bool {
 	return reflect.DeepEqual(a, b)
 }
 
-func mixed(a left, b right) bool {
+func mixed(a alpha, b beta) bool {
 	return reflect.DeepEqual(a, b)
 }
 

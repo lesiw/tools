@@ -5,3 +5,7 @@ import "reflect"
 func testFile(a, b item) bool {
 	return reflect.DeepEqual(a, b)
 }
+
+func testPointerFile(left, right *int) bool {
+	return reflect.DeepEqual(left, right)
+}

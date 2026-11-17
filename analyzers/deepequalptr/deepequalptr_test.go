@@ -14,5 +14,5 @@ var testdata embed.FS
 
 func TestAnalysisTest(t *testing.T) {
 	dir := fixtures.Dir(t, testdata)
-	analysistest.Run(t, dir, Analyzer, "a")
+	analysistest.RunWithSuggestedFixes(t, dir, Analyzer, "a")
 }
