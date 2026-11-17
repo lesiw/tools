@@ -1077,16 +1077,6 @@
 //		return Contains(s, "x")
 //	}
 //
-// # dotimports
-//
-// Reports a dot import, which declares an imported package's exported
-// identifiers in the file block. A name from the imported package then appears
-// without a qualifier, and the reader cannot tell which package supplied it.
-//
-// Adapted from revive's dot-imports.
-//
-//	import . "fmt"
-//
 // # dubbitshift
 //
 // Reports a shift of a fixed-size typed constant by a count at least as large

@@ -1046,16 +1046,6 @@ func f(s string) bool {
 }
 ```
 
-## dotimports
-
-Reports a dot import, which declares an imported package's exported identifiers in the file block. A name from the imported package then appears without a qualifier, and the reader cannot tell which package supplied it.
-
-Adapted from revive's dot-imports.
-
-```
-import . "fmt"
-```
-
 ## dubbitshift
 
 Reports a shift of a fixed-size typed constant by a count at least as large as the type's width, or a shift of an unsigned typed constant whose result is zero below that width. A shift of a non-constant operand is left alone, and so is a shift with a platform-dependent type anywhere in its expression.
