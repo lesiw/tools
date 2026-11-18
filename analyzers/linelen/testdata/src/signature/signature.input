@@ -1,0 +1,50 @@
+package signature
+
+type T struct{}
+
+func (T) Method(someLongParameterNameThatPushesPastTheLimit string, b int) error {
+	return nil
+}
+
+type I interface {
+	Method(someLongParameterNameThatPushesEvenFurtherPastTheLimit string, b int) error
+}
+
+func Func(someLongParameterNameThatPushesEvenFurtherPastTheLimit string, b int) error {
+	return nil
+}
+
+var _ = func(someLongParameterNameThatPushesEvenFurtherPastTheLimit string, b int) error {
+	return nil
+}
+
+var Hook func(someLongParameterNameThatPushesEvenFurtherPastTheLimit string, b int) error
+
+type HookFunc func(someLongParameterNameThatPushesEvenFurtherPastTheLimit string, b int) error
+
+func callWithASignaturePastTheLimit(s string, n int, fn func(string) error) {}
+
+func literalSignature() {
+	_ = func(someLongParameterNameThatPushesEvenFurtherPastTheLimit string, anotherLongParameterNameThatPushesPastTheLimit bool) error {
+		return nil
+	}
+	callWithASignaturePastTheLimit("alpha-argument-name-that-is-longer-here", 2, func(someLongParameterNameThatPushesPastTheLimit string) error { // want "line is .* characters long, exceeds 79 limit"
+		return nil
+	})
+}
+
+type withField struct {
+	Handler func(someLongParameterNameThatPushesEvenFurtherPastTheLimit string, b int) error
+}
+
+var byName map[string]func(someLongParameterNameThatPushesEvenFurtherPastTheLimit string, b int) error
+
+func takeFunc(cb func(someLongParameterNameThatPushesEvenFurtherPastTheLimit string, b int) error) {
+	_ = cb
+}
+
+type FileMode uint32
+
+type withNamedMethod interface {
+	Mode() FileMode // the mode bits of the file, which every caller reads before opening it
+}

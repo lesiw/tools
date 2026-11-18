@@ -49,6 +49,7 @@ import (
 
 	"lesiw.io/tools/analyzers/linelen"
 	"lesiw.io/tools/internal/header"
+	"lesiw.io/tools/internal/signature"
 )
 
 // Analyzer reports bracket layout that does not match the list's shape.
@@ -994,18 +995,21 @@ type layoutFill struct {
 
 // overWide reports whether a line of the list's own layout is longer than the
 // width allows. Only the lines an element starts on are measured, and a line
-// written inside a declared signature is not measured here: a signature wraps
-// as its author chose, and the join rule restores that wrap whatever its
-// width.
+// written inside a signature is left alone: a signature stays on one line, and
+// the join rule pulls a wrapped one onto one line at any width. Measuring it
+// would leave the two rules undoing each other.
 func overWide(l *layout, file *ast.File, p pair) bool {
-	seen := make(map[int]struct{}, len(p.elts))
+	var (
+		seen  = make(map[int]struct{}, len(p.elts))
+		spans = signature.Spans(file)
+	)
 	for _, e := range p.elts {
 		line := l.line(e.Pos())
 		if _, ok := seen[line]; ok {
 			continue
 		}
 		seen[line] = struct{}{}
-		if inSignature(file, e.Pos()) {
+		if signature.In(spans, e.Pos()) {
 			continue
 		}
 		if !linelen.CheckLine(l.lineText(e.Pos())) {
@@ -1013,39 +1017,6 @@ func overWide(l *layout, file *ast.File, p pair) bool {
 		}
 	}
 	return false
-}
-
-// inSignature reports whether pos falls in a declared signature's span: a
-// function or method declaration from its keyword through its type, or a
-// method in an interface. A signature can hold a bracketed list, as in
-// func f(m Map[string, int]), and a signature wraps as its author chose, so
-// the list is not measured; measuring it would leave the join rule restoring
-// the wrap forever.
-func inSignature(file *ast.File, pos token.Pos) bool {
-	var found bool
-	ast.Inspect(file, func(n ast.Node) bool {
-		if found {
-			return false
-		}
-		switch n := n.(type) {
-		case *ast.FuncDecl:
-			if n.Type == nil {
-				return true
-			}
-			found = pos >= n.Pos() && pos <= n.Type.End()
-		case *ast.InterfaceType:
-			for _, field := range n.Methods.List {
-				if _, ok := field.Type.(*ast.FuncType); !ok {
-					continue
-				}
-				if pos >= field.Pos() && pos <= field.End() {
-					found = true
-				}
-			}
-		}
-		return !found
-	})
-	return found
 }
 
 // packer is the state one list is laid out from: the text of each element, the

@@ -15,6 +15,8 @@ import (
 	"strings"
 
 	"golang.org/x/tools/go/analysis"
+
+	"lesiw.io/tools/internal/signature"
 )
 
 // Config is the line-length policy. Len at zero means unlimited; a driver
@@ -80,18 +82,45 @@ func CheckFile(fset *token.FileSet, f *ast.File, src []byte) (long []Line) {
 		n, pos   int
 		measured = checked(fset, f, src)
 		file     = fset.File(f.FileStart)
-		lits     = astLits(fset, f)
 	)
 	for line := range bytes.SplitSeq(src, []byte("\n")) {
 		n++
 		width := Width(line)
-		if measured(n) && width > Config.Len && !continuous(line, lits[n]) {
+		if measured(n, line) && width > Config.Len {
 			long = append(long, Line{N: n, Width: width, Pos: file.Pos(pos)})
 		}
 		pos += len(line) + 1 // len("\n")
 	}
 	return long
 }
+
+// explained reports whether the signature text on a line accounts for its
+// width: the line is within the limit once that text is removed. A signature
+// has no second line to move to, so the limit has nothing to say about it. A
+// line the rest of the statement made long is still the author's to wrap.
+func explained(line []byte, spans []span) bool {
+	if len(spans) == 0 {
+		return false
+	}
+	slices.SortFunc(spans, byOffset)
+	var (
+		kept []byte
+		end  int
+	)
+	for _, s := range spans {
+		lo, hi := max(s.pos, end), min(s.end, len(line))
+		if lo >= hi {
+			continue
+		}
+		kept = append(kept, line[end:lo]...)
+		end = hi
+	}
+	kept = append(kept, line[end:]...)
+	return Width(kept) <= Config.Len
+}
+
+// byOffset orders two spans of one line by where they start.
+func byOffset(a, b span) int { return cmp.Compare(a.pos, b.pos) }
 
 // continuous reports whether one continuous string literal or URL takes
 // up more than half of the line's width, ignoring indentation.
@@ -252,14 +281,18 @@ func astLits(fset *token.FileSet, f *ast.File) map[int][]span {
 	return out
 }
 
-// checked returns a predicate reporting whether the limit applies to
-// a line of f. An import declaration is not measured, and neither is a
-// line of a function, method, or interface method signature: a
-// signature wraps as its author chose. A signature line a statement of
-// the body starts on is measured.
-func checked(fset *token.FileSet, f *ast.File, src []byte) func(line int) bool {
+// checked returns a predicate reporting whether the limit applies to a line of
+// f, given the line's text. An import declaration is not measured, and neither
+// is a line whose width the signature text on it accounts for: a signature has
+// no second line to move to, so the limit could only ask for a wrap that the
+// join rule undoes. A line the rest of the statement makes long is still
+// measured, and so is the line a body's first statement starts on, because the
+// statement can move down.
+func checked(fset *token.FileSet, f *ast.File, src []byte) func(line int, text []byte) bool {
 	var (
 		skip      = make(map[int]struct{})
+		sigs      = make(map[int][]span)
+		lits      = astLits(fset, f)
 		markLines = func(first, last int) {
 			for line := first; line <= last; line++ {
 				skip[line] = struct{}{}
@@ -268,40 +301,43 @@ func checked(fset *token.FileSet, f *ast.File, src []byte) func(line int) bool {
 	)
 	markExpectedOutput(fset, f, src, markLines)
 	ast.Inspect(f, func(n ast.Node) bool {
-		switch node := n.(type) {
-		case *ast.GenDecl:
-			if node.Tok == token.IMPORT {
-				markLines(writtenLines(fset, node.Pos(), node.End()))
-			}
-		case *ast.FuncDecl:
-			first, last := writtenLines(fset, node.Pos(), node.Type.End())
-			// The exempt range is the signature's lines, less the one
-			// the body starts on. A body with no statements starts
-			// nowhere.
-			if body := node.Body; body != nil && len(body.List) > 0 {
-				start := writtenLine(fset, body.List[0].Pos())
-				last = min(last, start-1)
-			}
-			markLines(first, last)
-		case *ast.InterfaceType:
-			// Interface methods are *ast.Field entries whose Type
-			// is *ast.FuncType. The whole field span is the
-			// signature; let it wrap.
-			if node.Methods == nil {
-				return true
-			}
-			for _, field := range node.Methods.List {
-				if _, ok := field.Type.(*ast.FuncType); !ok {
-					continue
-				}
-				markLines(writtenLines(fset, field.Pos(), field.End()))
-			}
+		if decl, ok := n.(*ast.GenDecl); ok && decl.Tok == token.IMPORT {
+			markLines(writtenLines(fset, decl.Pos(), decl.End()))
 		}
 		return true
 	})
-	return func(line int) bool {
-		_, skipped := skip[line]
-		return !skipped
+	for _, sig := range signature.Spans(f) {
+		first, last := writtenLines(fset, sig.Pos(), sig.End())
+		if start := sig.BodyStart(); start.IsValid() {
+			last = min(last, writtenLine(fset, start)-1)
+		}
+		file := fset.File(sig.Pos())
+		lo, hi := file.Offset(sig.Pos()), file.Offset(sig.End())
+		for line := first; line <= last; line++ {
+			var (
+				at  = file.Offset(file.LineStart(line))
+				end = file.Size()
+			)
+			if line < file.LineCount() {
+				end = file.Offset(file.LineStart(line + 1))
+			}
+			from, to := max(lo, at), min(hi, end)
+			if to > from {
+				sigs[line] = append(sigs[line], span{
+					pos: from - at,
+					end: to - at,
+				})
+			}
+		}
+	}
+	return func(line int, text []byte) bool {
+		if _, ok := skip[line]; ok {
+			return false
+		}
+		if explained(text, sigs[line]) {
+			return false
+		}
+		return !continuous(text, lits[line])
 	}
 }
 

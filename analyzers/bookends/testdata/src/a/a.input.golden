@@ -522,3 +522,17 @@ func keyedGrouped(log *slog.Logger) {
 		"kind", 2,
 	)
 }
+
+type factoryBox[A, B, C any] struct{}
+
+type alphaFactoryOne struct{}
+type betaFactoryTwo struct{}
+type gammaFactoryThree struct{}
+
+func useRegister(fn func(m factoryBox[alphaFactoryOne, betaFactoryTwo, gammaFactoryThree]) error) {}
+
+func registerInSignature() {
+	useRegister(func(m factoryBox[alphaFactoryOne, betaFactoryTwo, gammaFactoryThree]) error {
+		return nil
+	})
+}

@@ -22,9 +22,12 @@ A line wider than the limit is reported with its measured width.
 A tab counts four columns by default. A line is not reported when:
 
 - It is an import declaration.
-- It is the signature of a function, method, or interface method
-  declaration, unless a statement of the body starts on that line. A
-  signature wraps as its author chose.
+- It fits once the text of the signatures on it is removed, and no body's
+  first statement starts on it. A function type is a signature wherever it
+  appears, and one is never broken across lines, so wrapping it is not a
+  remedy; a line the rest of the statement makes long is still reported, and
+  so is the line a body's first statement starts on, because the statement
+  can move down.
 - It is in a generated file.
 - It holds an example's expected output in a test file. That text is
   program output, so wrapping it changes what the test compares.

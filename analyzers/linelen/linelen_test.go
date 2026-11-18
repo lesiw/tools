@@ -52,6 +52,6 @@ func TestAnalysisTest(t *testing.T) {
 	// expected output.
 	analysistest.Run(t, fixtures.Dir(t, testdata), ignore.Apply(Analyzer)[0],
 		"basic", "longimportblock", "longimportstmt", "exampleoutput",
-		"methodwrap", "oneline", "continuous", "linedirective",
+		"signature", "oneline", "continuous", "linedirective",
 	)
 }

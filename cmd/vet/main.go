@@ -2060,8 +2060,12 @@
 // # linelen
 //
 // Reports a line wider than the limit, counted in columns with a tab as four.
-// An import, a function signature, a generated file, and a line whose width is
-// mostly one string literal or URL are exempt.
+// An import, a generated file, and a line whose width is mostly one string
+// literal or URL are exempt.
+//
+// A function signature is exempt too, because a function type is never broken
+// across lines. Only the signature's own text is excused: a line that a call
+// around it makes too long is still reported.
 //
 //	func f() {
 //		fmt.Println("alpha", "bravo", "charlie", "delta")

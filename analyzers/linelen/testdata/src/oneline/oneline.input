@@ -13,3 +13,7 @@ func BodyBelow(
 }
 
 func EmptyBody(someLongParameterNameThatPushesPastTheLimitForSure string, b int) {}
+
+func LitBodyOnTheSignatureLine() {
+	_ = func(someLongParameterNameThatPushesPastTheLimit string, b int) bool { return b > 0 } // want "line is .* characters long, exceeds 79 limit"
+}
