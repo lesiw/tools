@@ -1,4 +1,4 @@
-// Command unwrap reports wrapped constructs that fit on one line.
+// Command unwrap reports wrapped constructs that belong on one line.
 package main
 
 import (

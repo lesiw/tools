@@ -6,7 +6,8 @@ import (
 )
 
 // The rules have golden fixtures of their own; this checks the wiring: a
-// wrapped construct that fits is joined, and one that does not is left.
+// wrapped call that fits is joined, one that does not is left, and a signature
+// joins however wide the line it lands on.
 func TestJoin(t *testing.T) {
 	cases := []struct {
 		name string
@@ -22,6 +23,29 @@ func TestJoin(t *testing.T) {
 			"\t\tbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb)\n}\n",
 		want: "package p\n\nfunc f() {\n\tg(aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa,\n" +
 			"\t\tbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb)\n}\n",
+	}, {
+		name: "a signature that does not fit",
+		src: `package p
+
+func f() {
+	g := func(
+		someLongParameterNameThatPushesEvenFurtherPastTheLimit string,
+		anotherLongParameterNameThatPushesPastTheLimit bool,
+	) error {
+		return nil
+	}
+	_ = g
+}
+`,
+		want: `package p
+
+func f() {
+	g := func(someLongParameterNameThatPushesEvenFurtherPastTheLimit string, anotherLongParameterNameThatPushesPastTheLimit bool) error {
+		return nil
+	}
+	_ = g
+}
+`,
 	}}
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {

@@ -8,8 +8,8 @@ import (
 )
 
 // TestGolden holds each fixture to the file one pass of the rules leaves
-// behind. A fixture whose input already holds a long line keeps it: the
-// rewrite may leave a long line, and may not make one.
+// behind. No join makes a line the width rules reject, except a signature's,
+// which is exempt however wide it turns out.
 func TestGolden(t *testing.T) {
 	inputs, err := filepath.Glob("testdata/*.input")
 	if err != nil {

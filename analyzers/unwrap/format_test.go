@@ -90,7 +90,8 @@ func TestFormatProperties(t *testing.T) {
 }
 
 // TestNoAddedLongLine holds the rewrite to the rule the width check enforces
-// downstream: it may leave a long line it was handed, and it may not make one.
+// downstream: no join makes a line the width rules reject. A joined signature
+// is exempt from that check, so it may be past the width.
 func TestNoAddedLongLine(t *testing.T) {
 	for _, path := range sources(t) {
 		t.Run(path, func(t *testing.T) {

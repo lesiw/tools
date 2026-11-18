@@ -17,8 +17,9 @@ func Format(name string, src []byte) ([]byte, error) {
 // it to the printer's own form, and the result twice more.
 //
 // Each decision is measured against a rendering of the file as it stands. No
-// decision makes a later one wrong. A join is kept only when the line it
-// produces fits.
+// decision makes a later one wrong. A join is kept only when the printer
+// agrees with it, and outside a signature only when the line it produces
+// fits.
 func applyAll(name string, src []byte) ([]byte, error) {
 	return apply(name, src)
 }

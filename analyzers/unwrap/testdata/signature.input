@@ -28,7 +28,7 @@ type Iface interface {
 	) error
 }
 
-func lit() {
+func litThatFits() {
 	f := func(
 		a int,
 		b int,
@@ -38,7 +38,7 @@ func lit() {
 	_ = f
 }
 
-func longLit() {
+func longLitThatFits() {
 	g := func(
 		first *Alpha, second *Beta,
 		third map[string]*Gamma,
@@ -51,4 +51,50 @@ func longLit() {
 func withBlockComment(a int, b string,
 	/* inline */ c bool, d []byte) error {
 	return nil
+}
+
+var declared func(
+	first *Alpha,
+	second *Beta,
+) error
+
+func litSignaturePastTheWidth() {
+	_ = func(
+		someLongParameterNameThatPushesEvenFurtherPastTheLimit string,
+		anotherLongParameterNameThatPushesPastTheLimit bool,
+	) error {
+		return nil
+	}
+}
+
+type (
+	handlerFunc func(
+		first *Alpha,
+		second *Beta,
+	) error
+)
+
+func argument() {
+	register(a, func(
+		first *Alpha,
+		second *Beta,
+	) error {
+		return nil
+	})
+}
+
+type field struct {
+	Handler func(
+		someLongParameterNameThatPushesEvenFurtherPastTheLimit string,
+	) error
+}
+
+var table map[string]func(
+	someLongParameterNameThatPushesEvenFurtherPastTheLimit string,
+) error
+
+func parameter(cb func(
+	someLongParameterNameThatPushesEvenFurtherPastTheLimit string,
+) error) {
+	_ = cb
 }

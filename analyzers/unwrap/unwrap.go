@@ -1,8 +1,8 @@
-// Package unwrap reports a file whose wrapped constructs fit on one line.
+// Package unwrap reports a file whose wrapped constructs belong on one line.
 //
-// The rules need no type information: a wrapped signature, call, binary
-// expression, header or single-spec block goes back on one line when the line
-// it produces fits. The width is
+// The rules need no type information: a wrapped call, binary expression,
+// header or single-spec block goes back on one line when the line it produces
+// fits, and a function signature goes back whatever its width. The width is
 // linelen's, so a driver that sets none joins everything it can.
 //
 // A bracketed list the author broke into two or more indented lines may be a
@@ -19,7 +19,7 @@ import (
 // Analyzer reports files the join rules would change.
 var Analyzer = &analysis.Analyzer{
 	Name: "unwrap",
-	Doc:  "reports wrapped constructs that fit on one line",
+	Doc:  "reports wrapped constructs that belong on one line",
 	Run:  run,
 }
 
@@ -36,7 +36,7 @@ func run(pass *analysis.Pass) (any, error) {
 		}
 		pass.Report(analysis.Diagnostic{
 			Pos:     file.FileStart + token.Pos(firstDiff(src, out)),
-			Message: "a wrapped construct fits on one line",
+			Message: "a wrapped construct belongs on one line",
 			SuggestedFixes: []analysis.SuggestedFix{{
 				Message: "Join the lines",
 				TextEdits: []analysis.TextEdit{{

@@ -7,7 +7,22 @@ import (
 	"strings"
 
 	"lesiw.io/tools/internal/header"
+	"lesiw.io/tools/internal/signature"
 )
+
+// collapseSignatures pulls every wrapped signature back onto one line. A
+// signature stays on one line, so the merge does not consult width; linelen
+// exempts the line it produces. A merge that would swallow a line comment is
+// left alone.
+func collapseSignatures(r *renderer) {
+	file := r.file
+	for _, sig := range signature.Spans(file) {
+		if lineCommentWithin(file, sig.Pos(), sig.End()) {
+			continue
+		}
+		joinExempt(r, sig.Pos(), sig.End())
+	}
+}
 
 // collapseWrappedLines merges a wrapped binary expression or call. It keeps
 // the merge only when the printer and the width rules both allow the line.
@@ -16,7 +31,7 @@ func collapseWrappedLines(r *renderer) {
 		tokFile = r.tokFile
 		file    = r.file
 
-		sigs    = signatures(file)
+		sigs    = signature.Spans(file)
 		headers = header.Spans(file)
 		lits    = multiLineLits(tokFile, file)
 
@@ -38,9 +53,10 @@ func collapseWrappedLines(r *renderer) {
 			if nestedInLit(lits, pos) || lineCommentWithin(file, pos, end) {
 				return false
 			}
-			// A wrap inside a declared signature is the author's
-			// chosen layout.
-			return !inSignature(sigs, pos)
+			// collapseSignatures owns a signature: it joins the
+			// whole of one, or leaves it because a line comment
+			// sits inside.
+			return !signature.In(sigs, pos)
 		}
 	)
 	ast.Inspect(file, func(n ast.Node) bool {

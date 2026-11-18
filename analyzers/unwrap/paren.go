@@ -7,6 +7,7 @@ import (
 	"slices"
 
 	"lesiw.io/tools/internal/header"
+	"lesiw.io/tools/internal/signature"
 )
 
 // delimited is one bracketed list: a call's arguments, a function type's
@@ -24,7 +25,7 @@ type delimited struct {
 // layout and is left alone.
 func collectDelimited(tokFile *token.File, file *ast.File) (result []delimited) {
 	var (
-		sigs    = signatures(file)
+		sigs    = signature.Spans(file)
 		headers = header.Spans(file)
 	)
 	ast.Inspect(file, func(n ast.Node) bool {
@@ -75,10 +76,10 @@ func callDelimited(file *ast.File, tokFile *token.File, headers [][2]token.Pos, 
 }
 
 // typeDelimited returns the parameter and result lists of a function type.
-// Declared signatures keep their author-chosen layout, as does anything nested
-// inside one; function literals collapse normally.
-func typeDelimited(sigs []signature, n *ast.FuncType) (out []delimited) {
-	if inSignature(sigs, n.Pos()) {
+// A signature's lists belong to collapseSignatures, which joins the whole
+// signature, so only a function type outside a signature is collected here.
+func typeDelimited(sigs []signature.Span, n *ast.FuncType) (out []delimited) {
+	if signature.In(sigs, n.Pos()) {
 		return nil
 	}
 	for _, l := range []*ast.FieldList{n.Params, n.Results} {

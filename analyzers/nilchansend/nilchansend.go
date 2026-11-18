@@ -123,9 +123,7 @@ type flow struct {
 type facts map[ssa.Value]struct{}
 
 // edgeFunc returns the facts on one edge of the control-flow graph.
-type edgeFunc func(
-	pred *ssa.BasicBlock, in []facts, succ *ssa.BasicBlock,
-) facts
+type edgeFunc func(pred *ssa.BasicBlock, in []facts, succ *ssa.BasicBlock) facts
 
 // flowFacts returns the facts at the start of each block in fn.
 func flowFacts(fn *ssa.Function) *flow {

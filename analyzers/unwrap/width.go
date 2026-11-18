@@ -169,8 +169,8 @@ func mergeLines(r *renderer, start, end token.Pos, exempt bool) {
 }
 
 // keeps reports whether the edit made since before leaves a line the width
-// rules accept. It restores the line table when it does not. A caller that
-// edited the tree undoes that itself.
+// rules accept, or a line they exempt. It restores the line table when the
+// edit fails. A caller that edited the tree undoes that itself.
 func (r *renderer) keeps(before []int, pos, end token.Pos, exempt bool) bool {
 	var (
 		lines, ok = r.render()

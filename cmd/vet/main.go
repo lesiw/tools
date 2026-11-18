@@ -4280,9 +4280,12 @@
 //
 // # unwrap
 //
-// Reports a construct written across several lines that fits on one: a
-// signature, a call, a binary expression, a header, or a block of one spec.
-// The width is linelen's.
+// Reports a construct written across several lines that fits on one: a call, a
+// binary expression, a header, or a block of one spec.
+//
+// A function signature goes back on one line whatever its width, because a
+// signature is never broken across lines. That covers a function type in a
+// field, a map value, or a parameter.
 //
 //	func f() {
 //		use(1,

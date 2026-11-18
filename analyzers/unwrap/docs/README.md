@@ -7,8 +7,8 @@
 [![Discord](https://img.shields.io/discord/1145827224516300971?logo=discord&logoColor=white&color=5865F2&label=discord)](https://lesiw.dev/discord)
 [![License](https://img.shields.io/github/license/lesiw/tools)](../../../LICENSE)
 
-An `analysis.Analyzer` for a construct that is wrapped across lines but fits
-on one.
+An `analysis.Analyzer` for a construct that is wrapped across lines but
+belongs on one.
 
 ## Usage
 
@@ -17,17 +17,29 @@ on one.
 
 ## Checks
 
-### A wrapped construct that fits
+### A wrapped construct
 
-A signature, call, binary expression, control-flow header or single-spec
-declaration block that spans lines is reported when the line it would produce
-fits:
+A call, binary expression, control-flow header or single-spec declaration
+block that spans lines is reported when the line it would produce fits:
 
-    g(a, // a wrapped construct fits on one line
+    g(a, // a wrapped construct belongs on one line
         b)
 
 The fix joins the lines. The width is analyzers/linelen; with none set, every
 construct that can be joined is joined.
+
+A function type is a signature wherever it appears, and it is reported
+whatever the width of the line it lands on:
+
+    handle := func(
+        first *Alpha, second *Beta,
+        third map[string]*Gamma, fourth map[string][]int,
+    ) int {
+        return 0
+    }
+
+That joins to 102 columns and stays. A signature holding a `//` comment is
+left as it is, because joining it would swallow the comment.
 
 A bracketed list the author broke into two or more indented lines is left
 alone: the grouping is written nowhere but the layout, and joining it would
