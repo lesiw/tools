@@ -27,8 +27,14 @@ Go doc syntax has forms of its own, and they are not findings:
 
 - An indented block is a code block, and a backtick belongs there.
 - A heading is a line beginning with a number sign and a space.
-- A bracketed name with no URL after it is a doc link.
+- A bracketed name that resolves is a doc link, and the parentheses after it
+  print as written: `[strings.Split](s, sep)`.
 - A line beginning with a dash is a list item.
+
+A bracketed name is a link when it does not resolve and its parentheses hold
+nothing but a Markdown target: a target holds no spaces or tabs, balances its
+unescaped parentheses, or runs in angle brackets. Either form may be empty, so
+`[Name]()` is a link.
 
 Report only. The repair is prose.
 

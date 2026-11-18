@@ -1019,7 +1019,7 @@ func Foo() {}
 
 ## docsyntax
 
-Reports Markdown that Go doc comments do not implement: a code span, a fenced block, bold, or a link with a URL. Go renders each of them as literal punctuation.
+Reports Markdown that Go doc comments do not implement: a code span, a fenced block, bold, or a link. A link is a bracketed name that does not resolve, followed by parentheses that hold nothing but a target, so a signature written after a name is not one. Go renders each of them as literal punctuation.
 
 ```
 // F returns a `value`.
