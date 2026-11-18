@@ -11,8 +11,7 @@ An `analysis.Analyzer` for bracket layout. Five shapes are reported, and each
 fix moves a bracket or a line break; no element is added or removed:
 
 - a closing bracket that is not at the indent of its opening bracket;
-- an elided-type literal whose opening brace shares a line with its first
-  element, so its elements start at different columns;
+- an elided literal whose opening brace shares a line with its first element;
 - a table whose rows span lines and do not read down, and a table whose row on
   one line runs past the width;
 - a list indented across two lines to carry one line of elements, and a list
@@ -60,14 +59,14 @@ The printer then places the closer under its opener.
 
 ### An opener that shares its line
 
-A literal whose type is elided shares its first line with its opening
-brace, so its elements start at different columns:
+An elided literal keeps its elements off the opening brace's line, so every
+element starts at one column. One that spans lines and starts its first element
+on that line is reported, unless it sits inside a table:
 
     rows = []row{{1, 2, 3, 4,
         5, 6, 7, 8}}
 
-The fix moves the first element to a line of its own, and every element
-then starts at one column.
+The fix starts the first element on a line of its own.
 
 ### A table that does not read down
 
@@ -91,9 +90,13 @@ Indenting a list across two lines to carry one line of elements wastes the
 indentation. The fix packs the elements by the layout with the least
 raggedness, the sum of the squared space left at the end of each line. Two or
 more indented lines are a grouping, so they stay, unless the list is a `slog`
-call's key-value pairs or holds a line past the width. A list whose every line
-would hold one element written across lines is left alone: the line holds
-nothing but an opener, so there is no layout to offer.
+call's key-value pairs or holds a line past the width. The fix moves a list's
+only element, written across lines, onto the opener's line when the elements are
+not keyed and are not a row or a column, the pulled line fits, the closer begins
+a line, and no comment sits beside the element. An elided literal is left alone:
+the opener rule's fix starts that element on a line of its own again. A list
+whose every line would hold one element written across lines is left alone: the
+line holds nothing but an opener, so there is no layout to offer.
 
 ### A keyed literal past the width
 

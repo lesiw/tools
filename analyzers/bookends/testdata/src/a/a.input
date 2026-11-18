@@ -177,6 +177,32 @@ func pullUp() {
 
 func registerFunc(fn func()) {}
 
+var elided = map[string][]func(){
+	"alpha-one": {
+		func() {
+			registerThreeStrings("aaaa")
+		},
+	},
+}
+
+var pulledElided = map[string][]func(){
+	"alpha-one": {func() { // want `opening bracket shares a line with its first element`
+		registerThreeStrings("aaaa")
+	}},
+}
+
+var typed = []func(){
+	func() { // want `element fits on the opener's line`
+		registerThreeStrings("aaaa")
+	},
+}
+
+var packedElided = map[string][]string{
+	"alpha-one": { // want `elements fit on 2 lines`
+		inner("aaaaaaaa", "bbbbbbbb"), inner("cccccccc", "dddddddd"), inner("eeeeeeee", "ffffffff"),
+	},
+}
+
 var wideKeyed = payloadUnderTest{Alpha: "value-one", Beta: "value-two", Gamma: "value-three", Delta: "value-four", Epsilon: "value-five"} // want `keyed literal runs past the width`
 
 func overWideGroup(w http.ResponseWriter, err error) {

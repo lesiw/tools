@@ -1,0 +1,9 @@
+package p
+
+func call() {}
+
+var handlers = map[string][]func(){
+	"alpha-one": {func() {
+		call()
+	}},
+}

@@ -6,23 +6,25 @@
 // different columns. The fix breaks the line before the closer and leaves the
 // printer to place it.
 //
-// The package also reports four shapes that depend on the same braces. A
-// literal whose type is elided shares its first line with its opening brace,
-// so its elements start at different columns. A table, a literal whose
-// elements are elided literals, is left alone when every row sits on one
-// line and none runs past the width; otherwise it reads down when every
-// non-empty row spans lines and every brace shares a line with the brace it
-// meets. A table that does neither is rewritten as one edit, and every
-// element of a row takes a line of its own. The rebuild writes back a comment
-// on the opening line ahead of the first row's first element, and one after an
-// element on that element's line. A table holding any other comment inside it
-// is left alone. A list with a single indented line is packed: indenting a
-// list across two lines to carry one line of elements wastes the indentation.
-// So is a list with a line past the width, which cannot stand as written. A
-// keyed literal on one line past the width takes one key per line, which is
+// The package also reports four shapes that depend on the same braces. An
+// elided literal keeps its elements off the opening brace's line, so every
+// element starts at one column. One that spans lines and starts its first
+// element on that line is reported, unless it sits inside a table. A table, a
+// literal whose elements are elided literals, is left alone when every row
+// sits on one line and none runs past the width; otherwise it reads down when
+// every non-empty row spans lines and every brace shares a line with the
+// brace it meets. A table that does neither is rewritten as one edit, and
+// every element of a row takes a line of its own. The rebuild writes back a
+// comment on the opening line ahead of the first row's first element, and one
+// after an element on that element's line. A table holding any other comment
+// inside it is left alone. A list with a single indented line is packed:
+// indenting a list across two lines to carry one line of elements wastes the
+// indentation. So is a list with a line past the width, which cannot stand as
+// written. An elided literal's element is not pulled up to the opener's line.
+// A keyed literal on one line past the width takes one key per line, which is
 // the shape it takes once it no longer fits. The layout is the one with the
-// least raggedness, the sum of the squared space left at the end of each line,
-// so elements spread by width: a short element joins a long one.
+// least raggedness, the sum of the squared space left at the end of each
+// line, so elements spread by width: a short element joins a long one.
 //
 // Two indented lines within the width are a grouping the author chose. The
 // layout is the only place it is written down, so a rewrite would erase it,
@@ -808,10 +810,11 @@ func packPlan(pass *analysis.Pass, l *layout, file *ast.File, p pair) (layoutFil
 
 // pullUp returns the layout that moves a lone element up to the opener's line,
 // for a list whose one element line holds a single element written across
-// lines. Both layouts hold one line at an indent level, so the shorter one is
-// the layout to write.
+// lines. An elided literal is left alone: the opener rule's fix starts that
+// element on a line of its own again. Both layouts hold one line at an indent
+// level, so the shorter one is the layout to write.
 func pullUp(l *layout, file *ast.File, p pair) (layoutFill, bool) {
-	if len(p.elts) == 0 {
+	if p.lit != nil && p.lit.Type == nil {
 		return layoutFill{}, false
 	}
 	var (
@@ -910,9 +913,12 @@ func wanted(l *layout, file *ast.File, p pair, f layoutFill, indented int) bool 
 	return !slices.Equal(f.breaks, breaks(l, p))
 }
 
-// packable reports whether the list is one this rule may pack: the elements
-// are not keyed and are not a literal's rows or constants.
+// packable reports whether the list is one this rule may pack: it has
+// elements, and they are not keyed or a literal's rows or constants.
 func packable(pass *analysis.Pass, p pair) bool {
+	if len(p.elts) == 0 {
+		return false
+	}
 	// A literal's elements are its rows or its column, and either is read
 	// down; a call's arguments are neither, so both guards apply only to a
 	// literal.
