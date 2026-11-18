@@ -79,9 +79,11 @@ every brace shares a line with the brace it meets: `{{` begins the table,
 reading down, and the message names the first that applies: a one-line row
 beside a multi-line one, a row on one line that runs past the width, or
 braces that do not share their lines. The rebuild writes the whole literal
-as one edit, each row's elements on lines of their own. An empty row on
-one line counts as neither shape, and is written `{}` with its braces
-together. A comment the rebuild cannot write back leaves the table alone.
+as one edit, each row's elements on lines of their own. An empty row on one
+line counts as neither shape, and is written `{}` with its braces together.
+It writes back a comment on the opening line ahead of the first row's first
+element, and one after an element on that element's line. A table holding any
+other comment inside it is left alone.
 
 ### A list indented to carry one line
 

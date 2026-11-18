@@ -13,14 +13,16 @@
 // line and none runs past the width; otherwise it reads down when every
 // non-empty row spans lines and every brace shares a line with the brace it
 // meets. A table that does neither is rewritten as one edit, and every
-// element of a row takes a line of its own. A list with a single indented
-// line is packed: indenting a list across two lines to carry one line of
-// elements wastes the indentation. So is a list with a line past the width,
-// which cannot stand as written. A keyed literal on one line past the width
-// takes one key per line, which is the shape it takes once it no longer
-// fits. The layout is the one with the least raggedness, the sum of the
-// squared space left at the end of each line, so elements spread by width: a
-// short element joins a long one.
+// element of a row takes a line of its own. The rebuild writes back a comment
+// on the opening line ahead of the first row's first element, and one after an
+// element on that element's line. A table holding any other comment inside it
+// is left alone. A list with a single indented line is packed: indenting a
+// list across two lines to carry one line of elements wastes the indentation.
+// So is a list with a line past the width, which cannot stand as written. A
+// keyed literal on one line past the width takes one key per line, which is
+// the shape it takes once it no longer fits. The layout is the one with the
+// least raggedness, the sum of the squared space left at the end of each line,
+// so elements spread by width: a short element joins a long one.
 //
 // Two indented lines within the width are a grouping the author chose. The
 // layout is the only place it is written down, so a rewrite would erase it,
@@ -178,9 +180,6 @@ func inTable(tables []pair, pos token.Pos) bool {
 func reportTable(pass *analysis.Pass, l *layout, src []byte, file *ast.File, p pair) {
 	if p.fault == "" {
 		return // the table reads down already
-	}
-	if hasComment(l, file, p) {
-		return
 	}
 	// A table is one edit: the braces, the seams and the row breaks
 	// overlap, so they are decided together.
@@ -382,12 +381,14 @@ func rowWide(pass *analysis.Pass, l *layout, row *ast.CompositeLit) bool {
 	return !linelen.CheckLine(line)
 }
 
-// trailingComments returns the comments that sit on the table's opening line.
-// The rebuild replaces that line, so they are written back explicitly.
-func trailingComments(l *layout, file *ast.File, lit *ast.CompositeLit) (out []*ast.Comment) {
+// openingComments returns the comments that occupy the table's opening line.
+// The rebuild replaces that line, so it writes them back itself. A block
+// comment that runs past the line leaves the table alone, since the brace it
+// writes after the comment would land on the comment's last line.
+func openingComments(l *layout, file *ast.File, lit *ast.CompositeLit) (out []*ast.Comment) {
 	open := l.line(lit.Lbrace)
 	for _, c := range commentsIn(file, lit.Lbrace, lit.Rbrace) {
-		if l.line(c.Pos()) == open {
+		if l.line(c.Pos()) == open && l.line(c.End()) == open {
 			out = append(out, c)
 		}
 	}
@@ -400,43 +401,50 @@ func trailingComments(l *layout, file *ast.File, lit *ast.CompositeLit) (out []*
 // from the middle of a line.
 func tableText(pass *analysis.Pass, l *layout, src []byte, lit *ast.CompositeLit, file *ast.File) ([]byte, bool) {
 	var (
-		start    = l.lineStart(lit.Lbrace)
-		head     = src[start : int(lit.Lbrace)-l.base]
-		b        strings.Builder
-		indent   = l.indentAt(lit.Lbrace)
-		inner    = append(slices.Clone(indent), '\t')
-		comments = trailingComments(l, file, lit)
-		written  = make(map[bool]struct{}, 2)
+		start  = l.lineStart(lit.Lbrace)
+		head   = src[start : int(lit.Lbrace)-l.base]
+		b      strings.Builder
+		indent = l.indentAt(lit.Lbrace)
+		inner  = append(slices.Clone(indent), '\t')
+		first  = lit.Elts[0].(*ast.CompositeLit)
+		placed = trailedComments(l, file, lit)
+		opener = slices.DeleteFunc(openingComments(l, file, lit),
+			func(c *ast.Comment) bool {
+				_, ok := placed[c]
+				return ok // written after the element it follows
+			},
+		)
 	)
-	// A block comment stays before the row's brace, where the source put
-	// it, since a line comment cannot sit there and still allow the brace
-	// on the opener's line.
-	writeComments := func(isBlock bool) {
-		if _, ok := written[isBlock]; ok {
-			return
-		}
-		written[isBlock] = struct{}{}
-		for _, c := range comments {
-			text := src[int(c.Pos())-l.base : int(c.End())-l.base]
-			if strings.HasPrefix(string(text), "/*") != isBlock {
+	// A block comment ahead of the first row's brace keeps its place; a line
+	// comment there goes after the brace, since it cannot precede the brace
+	// and leave the brace on the opener's line.
+	writeComments := func(ahead bool) {
+		for _, c := range opener {
+			if _, ok := placed[c]; ok {
+				continue // an earlier row wrote it
+			}
+			var (
+				text  = src[int(c.Pos())-l.base : int(c.End())-l.base]
+				block = bytes.HasPrefix(text, []byte("/*"))
+			)
+			if (block && c.End() <= first.Lbrace) != ahead {
 				continue
 			}
 			b.WriteString(" ")
 			b.Write(text)
+			placed[c] = struct{}{}
 		}
 	}
-	// The rebuild writes a block comment before the first row's brace and a
-	// line comment after it. An empty row has no brace to hang either on, and
-	// a block comment past that brace would move across the row it labels.
-	first := lit.Elts[0].(*ast.CompositeLit)
-	if len(first.Elts) == 0 && len(comments) > 0 {
+	// A comment on the opening line stays there when it sits ahead of the
+	// first row's first element. Past it, the comment labels a row or an
+	// element the rebuild moves onto another line. An empty first row has no
+	// element to sit ahead of, and a comment written after its braces would
+	// swallow the row that follows.
+	if len(first.Elts) == 0 && len(opener) > 0 {
 		return nil, false
 	}
-	for _, c := range comments {
-		if c.Pos() <= first.Lbrace {
-			continue
-		}
-		if !bytes.HasPrefix(src[int(c.Pos())-l.base:], []byte("//")) {
+	for _, c := range opener {
+		if c.Pos() > first.Elts[0].Pos() {
 			return nil, false
 		}
 	}
@@ -454,14 +462,20 @@ func tableText(pass *analysis.Pass, l *layout, src []byte, lit *ast.CompositeLit
 			b.WriteString("{")
 			writeComments(false)
 			b.WriteString("\n")
-			for _, e := range row.Elts {
+			for j, e := range row.Elts {
 				var buf bytes.Buffer
 				if err := format.Node(&buf, pass.Fset, e); err != nil {
 					return nil, false
 				}
 				b.Write(inner)
 				b.Write(buf.Bytes())
-				b.WriteString(",\n")
+				b.WriteString(",")
+				for _, c := range elementTrail(l, file, row, j) {
+					b.WriteString(" ")
+					b.Write(src[int(c.Pos())-l.base : int(c.End())-l.base])
+					placed[c] = struct{}{}
+				}
+				b.WriteString("\n")
 			}
 			b.Write(indent)
 			b.WriteString("}")
@@ -472,7 +486,45 @@ func tableText(pass *analysis.Pass, l *layout, src []byte, lit *ast.CompositeLit
 		}
 		b.WriteString("}")
 	}
+	for _, c := range commentsIn(file, lit.Lbrace, lit.Rbrace) {
+		if _, ok := placed[c]; !ok {
+			return nil, false // the rebuild has no line for this comment
+		}
+	}
 	return []byte(b.String()), true
+}
+
+// elementTrail returns the comments that follow element i of a row on the
+// line the element ends, up to the next element.
+func elementTrail(l *layout, file *ast.File, row *ast.CompositeLit, i int) (out []*ast.Comment) {
+	var (
+		e  = row.Elts[i]
+		hi = row.Rbrace
+	)
+	if i+1 < len(row.Elts) {
+		hi = row.Elts[i+1].Pos()
+	}
+	for _, c := range commentsIn(file, e.End(), hi) {
+		if l.line(c.Pos()) == l.line(e.End()) {
+			out = append(out, c)
+		}
+	}
+	return
+}
+
+// trailedComments returns the comments elementTrail places, so the rebuild
+// does not also write one as an opener comment.
+func trailedComments(l *layout, file *ast.File, lit *ast.CompositeLit) map[*ast.Comment]struct{} {
+	out := make(map[*ast.Comment]struct{})
+	for _, elt := range lit.Elts {
+		row := elt.(*ast.CompositeLit)
+		for i := range row.Elts {
+			for _, c := range elementTrail(l, file, row, i) {
+				out[c] = struct{}{}
+			}
+		}
+	}
+	return out
 }
 
 // openerPair returns the pair for a literal whose type is elided. A row of a
@@ -935,8 +987,8 @@ func joinFits(pass *analysis.Pass, l *layout, p pair) bool {
 // hasComment reports whether a comment sits among the elements. A comment
 // between two of them is inside the edit that rewrites the list, and one ahead
 // of the first explains that element alone. A comment on the opener's line
-// stays on that line, as it does in a table, unless it sits inside an element:
-// an element is written from its text, which does not carry a comment.
+// stays on that line unless it sits inside an element: an element is written
+// from its text, which does not carry a comment.
 func hasComment(l *layout, file *ast.File, p pair) bool {
 	open := l.line(p.open)
 	for _, c := range commentsIn(file, p.open, p.close) {

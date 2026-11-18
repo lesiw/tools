@@ -470,6 +470,79 @@ var commentAfterRow = []eightFields{{1, 2, 3, 4, 5, 6, 7, 8}, /* row */ {
 	5, 6, 7, 8},
 }
 
+var commentOnOwnLine = []eightFields{
+	{1, 2, 3, 4, 5, 6, 7, 8},
+	{1, 2, 3, 4,
+		// note
+		5, 6, 7, 8},
+}
+
+var commentInMixedRow = []eightFields{{ // want `table mixes one-line and multi-line rows`
+	1,
+	2,
+	3,
+	4,
+	5,
+	6, // note
+	7,
+	8,
+}, {
+	1,
+	2,
+	3,
+	4,
+	5,
+	6,
+	7,
+	8,
+}}
+
+var commentInWideRow = []item{{ // want `table row runs past the width`
+	"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", /* note */
+	"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+}, {
+	"alpha",
+	"beta",
+}}
+
+var commentInRowElement = []item{
+	{"alpha", "beta"},
+	{inner("aa", /* one */ "bb"),
+		"delta"},
+}
+
+var commentAfterBrace = []item{ /* // want `table mixes one-line and multi-line rows` */ { /* note */
+	"a",
+	"b",
+}, {
+	"c",
+	"d",
+}}
+
+var commentAcrossLines = []item{ /* note
+	continued */ {"alpha", "beta"}, {"gamma",
+		"delta"}}
+
+func returnedRows() []pair {
+	return []pair{{ // want `table braces do not share their lines`
+		a: 1,
+		b: 2,
+	}, {
+		a: 3,
+		b: 4,
+	}}
+}
+
+func commentInReturnedRow() []pair {
+	return []pair{{ // want `table braces do not share their lines`
+		a: 1,
+		b: 2,
+	}, {
+		a: 3, // note
+		b: 4,
+	}}
+}
+
 func nameList() {
 	registerFourErrors( // want `elements fit on 2 lines`
 		http.ErrBodyReadAfterClose, http.ErrMissingBoundary,
