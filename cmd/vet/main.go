@@ -3497,7 +3497,9 @@
 // Reports a declaration the suite would write another way, such as a zero
 // value given a value, a non-zero value under var, adjacent declarations left
 // ungrouped, a preamble spread over several blocks, or an immediate call where
-// a var and an init function do. The rewrite keeps every value and comment.
+// a var and an init function do. The rewrite keeps every value and comment. An
+// example's published code keeps its var and const blocks, and every other
+// rule applies there.
 //
 //	func f() int {
 //		x := 0

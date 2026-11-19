@@ -1,0 +1,95 @@
+package published
+
+var (
+	someLiteral = "some-kind" // want `package variable someLiteral is read once and can be declared where it is read`
+)
+
+var near = f() // want `2 adjacent var declarations can be grouped into a var block`
+var far = f()
+
+var (
+	early = f()
+)
+
+var (
+	late = f() // want `var block can be merged into the var block on line 10`
+)
+
+func ExampleLiteral() {
+	use(someLiteral)
+}
+
+func ExampleGrouped() {
+	a := f()
+	b := f()
+	use(a, b)
+}
+
+func ExampleStrayBlock() {
+	use(1)
+	var (
+		b []byte
+	)
+	use(b)
+}
+
+func ExampleStrayBlockAssign() {
+	use(1)
+	var (
+		m map[string]int // want `m can be made in its declaration`
+	)
+	m = make(map[string]int)
+	use(m)
+}
+
+func ExampleBlockSpecs() {
+	use(1)
+	var (
+		day  int
+		year int = -1 // want `redundant type can be elided: year = -1`
+		// limit bounds the scan.
+		limit = 100 // want `commented declaration should be preceded by a blank line`
+	)
+	use(day, year, limit)
+}
+
+func ExampleZeroed() {
+	x := 0    // want `zero value can be declared with var: var x int`
+	p := &T{} // want `&T\{\} can be new\(T\)`
+	use(x, p)
+}
+
+func ExampleAssigned() {
+	var v = 42 // want `non-zero value can be declared with :=: v := 42`
+	use(v)
+}
+
+func ExampleCombined() {
+	var i int
+	var j int // want `zero-value declarations of the same type can be combined: var i, j int`
+	var (
+		one int // want `zero-value declarations of the same type can be combined: one, two int`
+		two int
+	)
+	use(i, j, one, two)
+}
+
+func ExampleConsts() {
+	const one = 1
+	const two = 2
+	const (
+		three = 3
+	)
+	const (
+		four = 4
+	)
+	use(one, two, three, four)
+}
+
+func ordinary() {
+	a := f() // want `2 adjacent declarations can be grouped into a var block`
+	b := f()
+	x := 0    // want `zero value can be declared with var: var x int`
+	p := &T{} // want `&T\{\} can be new\(T\)`
+	use(a, b, x, p)
+}

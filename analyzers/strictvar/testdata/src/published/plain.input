@@ -1,0 +1,12 @@
+package published
+
+func use(...any) {}
+
+type T struct{}
+
+func f() int { return 1 }
+
+func ExampleLookalike() {
+	x := 0 // want `zero value can be declared with var: var x int`
+	use(x)
+}

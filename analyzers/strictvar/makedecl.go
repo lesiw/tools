@@ -8,13 +8,14 @@ import (
 	"golang.org/x/tools/go/analysis"
 )
 
-// checkMakeDecls reports a zero-value declaration whose first use, in the same
-// statement list, overwrites the whole variable. The declaration and the
+// checkMakeDecls reports a zero-value declaration whose first use, in the
+// same statement list, overwrites the whole variable. The declaration and the
 // assignment belong together: x := v. When the declaration lives in a
 // preamble var block, or is about to be grouped into one, and the assignment
 // immediately follows the block, the value folds into its spec instead: x =
 // v. A block outside the preamble dissolves first, and the standalone form of
-// this check takes over on a later pass.
+// this check takes over on a later pass. A block in an example's published
+// code stays, so its specs are folded here.
 func (f *file) checkMakeDecls() {
 	f.stmtLists(f.checkListMakeDecls)
 }
@@ -30,7 +31,7 @@ func (f *file) checkListMakeDecls(list []ast.Stmt) {
 			continue
 		}
 		if gd.Lparen.IsValid() {
-			if f.preambleAnchored(list, i, gd) {
+			if f.preambleAnchored(list, i, gd) || f.inExample(gd.Pos()) {
 				f.checkBlockAssign(list, i, gd)
 			}
 			continue

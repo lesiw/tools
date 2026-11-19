@@ -230,6 +230,9 @@ func containsEmptyRef(expr ast.Expr) bool {
 // marks them as deliberately separate: no report.
 func (f *file) reportRun(run []declItem) {
 	first, last := run[0].decl, run[len(run)-1].decl
+	if f.inExample(first.Pos()) {
+		return
+	}
 	if first.Tok == token.CONST {
 		for _, it := range run {
 			if mentionsIota(f.pass.TypesInfo, it.decl) {
@@ -481,6 +484,9 @@ func (f *file) checkOneBlock(items []declItem, tok token.Token) {
 // comment on its own line between the blocks marks them deliberately separate,
 // as does a comment inside b not trailing a spec.
 func (f *file) reportExtraBlock(a, b *ast.GenDecl) {
+	if f.inExample(b.Pos()) {
+		return
+	}
 	if b.Tok == token.CONST && mentionsIota(f.pass.TypesInfo, b) {
 		return
 	}

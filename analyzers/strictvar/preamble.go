@@ -100,6 +100,9 @@ func (f *file) checkRun(units []ast.Stmt) {
 	if len(units) < 2 {
 		return
 	}
+	if f.inExample(units[0].Pos()) {
+		return
+	}
 	if f.zeroRunStmts(units) {
 		return
 	}
@@ -200,6 +203,9 @@ func (f *file) preambleAnchored(list []ast.Stmt, i int, gd *ast.GenDecl) bool {
 // reportStrayBlock reports a var block outside the preamble and suggests
 // dissolving it into standalone declarations.
 func (f *file) reportStrayBlock(gd *ast.GenDecl) {
+	if f.inExample(gd.Pos()) {
+		return
+	}
 	edits := f.dissolveEdits(gd)
 	if edits != nil {
 		f.owned[gd] = struct{}{}

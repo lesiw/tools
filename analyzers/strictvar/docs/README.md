@@ -37,6 +37,9 @@ keeps them separate, and doc and trailing comments ride along with
 their specs through every rewrite. A fix is withheld when it would
 strand a comment attached to nothing.
 
+One exemption runs through the checks below: an example's published
+code keeps its `var` and `const` blocks.
+
 ### Zero values use var
 
 ```go
@@ -408,6 +411,17 @@ var (
 - A conditional assignment such as `if m == nil { m = make(...) }`
   is not reported, so `var err error` checked and conditionally set
   before a final `return err` survives untouched.
+- A block in an example's published code is never dissolved, so its
+  specs fold here.
+
+## Left alone
+
+An example's published code is its body, or the whole test file when
+`go/doc` publishes its one example whole; only a test file publishes
+examples. In it, a `var` or `const` block is neither formed nor
+dissolved, since an example may be demonstrating how its declarations
+are laid out. Every other check runs there, though a declaration is
+never moved out of a block.
 
 ## Always allowed
 

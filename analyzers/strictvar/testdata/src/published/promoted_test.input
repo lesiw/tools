@@ -1,0 +1,27 @@
+package published
+
+var (
+	head = f()
+)
+
+var (
+	tail = f()
+)
+
+var one = f()
+var two = f()
+
+var fileLiteral = "some-other-kind" // want `package variable fileLiteral is read once and can be declared where it is read`
+
+func helper() []byte {
+	use(1)
+	var (
+		b []byte
+	)
+	use(b)
+	return nil
+}
+
+func ExamplePromoted() {
+	use(head, tail, one, two, fileLiteral, helper())
+}

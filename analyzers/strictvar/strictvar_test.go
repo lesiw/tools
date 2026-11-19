@@ -10,6 +10,7 @@ import (
 	"golang.org/x/tools/go/analysis/analysistest"
 
 	"lesiw.io/tools/internal/fixtures"
+	"lesiw.io/tools/internal/ignore"
 )
 
 //go:embed testdata
@@ -28,6 +29,16 @@ func TestSuggestedFixes(t *testing.T) {
 		)
 	)
 	checkNonZeroEdits(t, results)
+}
+
+// TestPublished runs the filtered analyzer. A test file's package has a
+// generated test main, and the driver drops generated files before the
+// analyzer sees them, so the raw analyzer would report on it.
+func TestPublished(t *testing.T) {
+	analysistest.Run(
+		t, fixtures.Dir(t, testdata),
+		ignore.Apply(Analyzer)[0], "published",
+	)
 }
 
 // TestInlineBlock covers a shape gofmt erases, which is why it lives

@@ -20,13 +20,20 @@
 // Fixes are only suggested when there is exactly one obvious rewrite and no
 // information is lost. A fix is withheld when it would remove a comment
 // attached to nothing. Applying fixes can expose further fixes, so the tool
-// may need to run more than once until all fixes apply cleanly. The README
-// catalogs every check, exemption, and fix.
+// may need to run more than once until all fixes apply cleanly.
+//
+// An example's published code is its body, or the whole test file when go/doc
+// publishes its one example whole. In it, a var or const block is neither
+// formed nor dissolved, since an example may be demonstrating how its
+// declarations are laid out.
+//
+// The README catalogs every check, exemption, and fix.
 package strictvar
 
 import (
 	"fmt"
 	"go/ast"
+	"go/doc"
 	"go/token"
 	"go/types"
 	"strings"
@@ -47,7 +54,10 @@ func run(pass *analysis.Pass) (any, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to open file: %w", err)
 		}
-		f := &file{pass: pass, File: tf, syntax: syntax, src: src}
+		f := &file{
+			pass: pass, File: tf, syntax: syntax, src: src,
+			examples: exampleSpans(tf, syntax),
+		}
 		f.check()
 	}
 	checkSingleUseStrings(pass)
@@ -62,6 +72,9 @@ type file struct {
 	syntax *ast.File
 	src    []byte
 
+	// examples holds the spans of this file's published example code.
+	examples [][2]token.Pos
+
 	// owned holds declarations another rule is rewriting this pass.
 	// Later rules leave them alone, and spec-level fixes inside them
 	// wait for the following pass.
@@ -75,18 +88,15 @@ type file struct {
 
 // claimed reports whether pos lies inside a span another rule is rewriting.
 func (f *file) claimed(pos token.Pos) bool {
-	for _, s := range f.spans {
-		if pos >= s[0] && pos <= s[1] {
-			return true
-		}
-	}
-	return false
+	return inSpans(f.spans, pos)
 }
 
 func (f *file) check() {
 	f.owned = make(map[*ast.GenDecl]struct{})
 	// checkGroups runs first. It claims declarations in owned, and
-	// every later check stands down inside a claimed span.
+	// every later check stands down inside a claimed span. An example's
+	// published code keeps its blocks: the four rules that form or
+	// dissolve one return before they report.
 	f.checkGroups()
 	f.checkZeroDecls()
 	f.checkIIFE()
@@ -219,6 +229,34 @@ func (f *file) stmtLists(fn func(list []ast.Stmt)) {
 		}
 		return true
 	})
+}
+
+// exampleSpans returns the spans of the code each example publishes: the
+// example function's body, or the whole test file when go/doc publishes its
+// one example whole. go/doc decides what an example is.
+func exampleSpans(tf *token.File, syntax *ast.File) (spans [][2]token.Pos) {
+	if !strings.HasSuffix(tf.Name(), "_test.go") {
+		return nil
+	}
+	for _, ex := range doc.Examples(syntax) {
+		spans = append(spans, [2]token.Pos{ex.Code.Pos(), ex.Code.End()})
+	}
+	return spans
+}
+
+// inSpans reports whether pos lies inside one of the spans.
+func inSpans(spans [][2]token.Pos, pos token.Pos) bool {
+	for _, s := range spans {
+		if pos >= s[0] && pos < s[1] {
+			return true
+		}
+	}
+	return false
+}
+
+// inExample reports whether pos lies in code an example publishes.
+func (f *file) inExample(pos token.Pos) bool {
+	return inSpans(f.examples, pos)
 }
 
 // report emits a diagnostic. fix names the edit as a capitalized imperative
