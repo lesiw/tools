@@ -149,7 +149,7 @@ func isInlineComment(comment *ast.Comment, pass *analysis.Pass) bool {
 	if err != nil {
 		return false
 	}
-	pos := file.Offset(file.LineStart(pass.Fset.Position(comment.Pos()).Line))
+	pos := file.Offset(file.LineStart(lineOf(pass, comment.Pos())))
 	end := file.Offset(comment.Pos() + 1)
 	return !commentRe.Match(buf[pos:end])
 }
@@ -159,6 +159,10 @@ func ignoreCommentLine(comment *ast.Comment, pass *analysis.Pass, analyzers map[
 	return ignoreRange{start, end, analyzers}
 }
 
+func lineOf(pass *analysis.Pass, p token.Pos) int {
+	return pass.Fset.PositionFor(p, false).Line
+}
+
 // lineStart widens p to the start of its line, since a diagnostic may
 // anchor at column 1.
 func lineStart(pass *analysis.Pass, p token.Pos) token.Pos {
@@ -166,7 +170,7 @@ func lineStart(pass *analysis.Pass, p token.Pos) token.Pos {
 	if file == nil {
 		return p
 	}
-	return file.LineStart(file.Line(p))
+	return file.LineStart(lineOf(pass, p))
 }
 
 // lineEnd widens p to the end of its line, since a diagnostic may
@@ -176,7 +180,7 @@ func lineEnd(pass *analysis.Pass, p token.Pos) token.Pos {
 	if file == nil {
 		return p
 	}
-	line := file.Line(p)
+	line := lineOf(pass, p)
 	if line < file.LineCount() {
 		return file.LineStart(line+1) - 1
 	}
