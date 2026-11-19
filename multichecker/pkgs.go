@@ -24,7 +24,7 @@ func roots(pkgs []*packages.Package) []*packages.Package {
 	}
 	out := make([]*packages.Package, 0, len(pkgs))
 	for _, p := range pkgs {
-		if isTestMain(p, byID) {
+		if isTestMain(p, byID) || isFake(p) {
 			continue
 		}
 		// A variant arrives twice: once by its own ID and once as the
@@ -58,6 +58,16 @@ func baseOf(p *packages.Package) (string, bool) {
 		return "", false
 	}
 	return base, true
+}
+
+// isFake reports whether p is one of the fake packages: builtin and unsafe
+// have nothing to build, so no vet tool runs on them.
+func isFake(p *packages.Package) bool {
+	switch p.PkgPath {
+	case "builtin", "unsafe":
+		return true
+	}
+	return false
 }
 
 // isTestMain reports whether p is the generated main of a test binary: the

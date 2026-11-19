@@ -50,6 +50,20 @@ func TestRootsKeepsExternalTestPackage(t *testing.T) {
 	}
 }
 
+// The go command gives builtin and unsafe no action, so a vet tool is never
+// run on them. builtin cannot be type-checked either: it declares the
+// predeclared types as self-referential.
+func TestRootsDropsFakePackages(t *testing.T) {
+	got, want := ids(roots([]*packages.Package{
+		{ID: "builtin", Name: "builtin", PkgPath: "builtin"},
+		{ID: "unsafe", Name: "unsafe", PkgPath: "unsafe"},
+		{ID: "example.com/p", Name: "p", PkgPath: "example.com/p"},
+	})), []string{"example.com/p"}
+	if !slices.Equal(got, want) {
+		t.Fatalf("roots() = %v", got)
+	}
+}
+
 // A main package in a directory that ends in .test is not the generated main
 // of a test binary, even when the package its ID trims to is loaded beside it.
 func TestRootsDirectoryNamedTest(t *testing.T) {
