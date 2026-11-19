@@ -1,0 +1,13 @@
+package a
+
+//line :2:1
+var split = "one " + // want "joined by"
+	"two"
+
+//line :5:1
+var sameLine = []string{"alpha", "bravo", "charlie", "delta", "echo", "foxtrot", "one " +
+//line :5:1
+	"two"}
+
+//line other.go:21
+var joined = "one " + "two" // want "joined by"

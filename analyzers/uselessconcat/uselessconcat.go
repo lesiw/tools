@@ -171,9 +171,11 @@ func merge(operands []*ast.BasicLit) (string, bool) {
 // can only shorten it; a join across lines needs a width to say the result
 // fits.
 func fits(pass *analysis.Pass, bin *ast.BinaryExpr, merged string) bool {
+	// Measure the line as it is on disk. A //line directive reports a line
+	// of another file, whose text this is not.
 	var (
-		start = pass.Fset.Position(bin.Pos())
-		end   = pass.Fset.Position(bin.End())
+		start = pass.Fset.PositionFor(bin.Pos(), false)
+		end   = pass.Fset.PositionFor(bin.End(), false)
 	)
 	src, err := pass.ReadFile(start.Filename)
 	if err != nil {
