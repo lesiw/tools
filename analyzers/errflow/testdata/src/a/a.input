@@ -1,0 +1,799 @@
+package a
+
+import (
+	"errors"
+	"fmt"
+)
+
+type failure struct{}
+
+func (failure) Error() string { return "failed" }
+
+func load() error { return failure{} }
+
+func save() error { return failure{} }
+
+func rename(name string) error { return failure{} }
+
+func renameAll(first, second, third, fourth, fifth, sixth string) error {
+	return failure{}
+}
+
+func renameEvery(first, second, third string) error { return failure{} }
+
+func failing() *failure { return nil }
+
+func fetch() (int, error) { return 0, nil }
+
+func returning(err error) int {
+	if err != nil {
+		return 0
+	} else { // want `unnecessary else`
+		return 1
+	}
+}
+
+func breaking(xs []int) int {
+	total := 0
+	for _, x := range xs {
+		if x < 0 {
+			break
+		} else { // want `unnecessary else`
+			total += x
+		}
+	}
+	return total
+}
+
+func panicking(ok bool) {
+	if !ok {
+		panic("not ok")
+	} else { // want `unnecessary else`
+		println("ok")
+	}
+}
+
+func bothWays(err error, n int) int {
+	if err != nil {
+		if n > 0 {
+			return n
+		} else { // want `unnecessary else`
+			return -n
+		}
+	} else { // want `unnecessary else`
+		return 0
+	}
+}
+
+func fallingThrough(err error) int {
+	n := 0
+	if err != nil {
+		n = 1
+	} else {
+		n = 2
+	}
+	return n
+}
+
+func switchFallthrough(n int) int {
+	switch n {
+	case 0:
+		fallthrough
+	case 1:
+		return 1
+	}
+	return 0
+}
+
+func chain(n int) int {
+	if n == 0 {
+		return 0
+	} else if n == 1 {
+		return 1
+	}
+	return -1
+}
+
+func withInit() error {
+	if v, err := fetch(); err != nil {
+		return err
+	} else {
+		_ = v
+	}
+	return nil
+}
+
+func existing(err error) error {
+	// want +1 `redundant guard; write return err`
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func reversed(err error) error {
+	// want +1 `redundant guard; write return err`
+	if nil != err {
+		return err
+	}
+	return nil
+}
+
+func parenthesized(err error) error {
+	// want +1 `redundant guard; write return err`
+	if (err) != (nil) {
+		return (err)
+	}
+	return (nil)
+}
+
+func oneStep() error {
+	// want +1 `redundant guard; write return load\(\)`
+	if err := load(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func twoSteps() error {
+	if err := load(); err != nil {
+		return err
+	}
+	// want +1 `unguarded last call`
+	return save()
+}
+
+func checkedTwo() error {
+	if err := load(); err != nil {
+		return err
+	}
+	if err := save(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func literalInit() error {
+	// want +1 `redundant guard; write return func\(\)`
+	if err := func() error { return nil }(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func multilineLiteral() error {
+	// want +1 `redundant guard$`
+	if err := func() error {
+		load()
+		return load()
+	}(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func elseBranch(err error) error {
+	if err != nil {
+		return err
+	} else { // want `unnecessary else`
+		return nil
+	}
+}
+
+func declaredReversed() error {
+	// want +1 `redundant guard; write return load\(\)`
+	if err := load(); nil != err {
+		return err
+	}
+	return nil
+}
+
+func commentBefore(err error) error {
+	// the load may fail
+	// want +1 `redundant guard; write return err`
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func commentBetween(err error) error {
+	// want +1 `redundant guard$`
+	if err != nil {
+		return err
+	}
+	// the load succeeded
+	return nil
+}
+
+func headerComment(err error) error {
+	// want +1 `redundant guard$`
+	if err != nil /* the load failed */ {
+		return err
+	}
+	return nil
+}
+
+func braceComment(err error) error {
+	// want +1 `redundant guard$`
+	if err != nil {
+		return err
+	} // the load succeeded
+	return nil
+}
+
+func conditionComment(err error) error {
+	// want +1 `redundant guard$`
+	if /* the load may fail */ err != nil {
+		return err
+	}
+	return nil
+}
+
+func touchingComment() error {
+	// want +1 `redundant guard$`
+	if err := load(); err != nil/* the load failed */ {
+		return err
+	}
+	return nil
+}
+
+func openingBraceComment() error {
+	// want +1 `redundant guard$`
+	if err := load(); err != nil { // the load failed
+		return err
+	}
+	return nil
+}
+
+func directiveComment(err error) error {
+	// want +1 `redundant guard$`
+	if err != nil {
+		//nolint
+		return err
+	}
+	return nil
+}
+
+func wrappedComment(name string) error {
+	// want +1 `redundant guard$`
+	if err := rename(
+		/* the name the caller passed */ name,
+	); err != nil {
+		return err
+	}
+	return nil
+}
+
+func directiveExpression() error {
+	// want +1 `redundant guard$`
+	if err := rename(
+		//nolint:errcheck
+		"alpha-one",
+	); err != nil {
+		return err
+	}
+	return nil
+}
+
+func literalCollapse(err error) error {
+	inner := func(inner error) error {
+		// want +1 `redundant guard; write return inner`
+		if inner != nil {
+			return inner
+		}
+		return nil
+	}
+	return inner(err)
+}
+
+func twoNames() error {
+	if _, err := pair(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func pair() (int, error) { return 0, nil }
+
+func listed() int { return 1 }
+
+func named() (err error) {
+	// want +1 `redundant guard; write return err`
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func wrapped() error {
+	// want +1 `redundant guard$`
+	if err := renameAll(
+		"alpha-one",
+		"beta-two",
+		"gamma-three",
+		"delta-four",
+		"epsilon-five",
+		"zeta-six",
+	); err != nil {
+		return err
+	}
+	return nil
+}
+
+func raw() error {
+	// want +1 `redundant guard$`
+	if err := rename(`alpha
+beta`); err != nil {
+		return err
+	}
+	return nil
+}
+
+func commentInside(err error) error {
+	// want +1 `redundant guard$`
+	if err != nil {
+		// the load failed
+		return err
+	}
+	return nil
+}
+
+func adjacentComments(err error) error {
+	// want +1 `redundant guard$`
+	if err != nil {
+		return err // the load failed
+		// and the mode was wrong
+	}
+	return nil
+}
+
+func spacedComments(err error) error {
+	// want +1 `redundant guard$`
+	if err != nil {
+		// the load failed
+
+		// and the mode was wrong
+		return err
+	}
+	return nil
+}
+
+func blockComment(err error) error {
+	// want +1 `redundant guard$`
+	if err != nil {
+		/*
+			The load failed:
+			  - the file may be missing
+			  - the mode may be wrong
+		*/
+		return err
+	}
+	return nil
+}
+
+func midLineComment(err error) error {
+	// want +1 `redundant guard$`
+	if err != nil {
+		return err /* the load failed
+		and the mode was wrong */
+	}
+	return nil
+}
+
+func blankBlockComment(err error) error {
+	// want +1 `redundant guard$`
+	if err != nil {
+		/*
+			The load failed:
+
+			and the mode was wrong
+		*/
+		return err
+	}
+	return nil
+}
+
+func caseComment(n int) error {
+	switch n {
+	case 1:
+		// want +1 `redundant guard$`
+		if err := load(); err != nil {
+			// the load failed
+			return err
+		}
+		return nil
+	}
+	return nil
+}
+
+func shortName() error {
+	// want +1 `redundant guard; write return renameEvery`
+	e := renameEvery("alpha-one-extra", "beta-two-extra", "gamma-three-extra")
+	if e != nil {
+		return e
+	}
+	return nil
+}
+
+func selectComment(c chan error) error {
+	select {
+	case <-c:
+		// want +1 `redundant guard$`
+		if err := load(); err != nil {
+			// the load failed
+			return err
+		}
+		return nil
+	}
+	return nil
+}
+
+func nilReturnComment(err error) error {
+	// want +1 `redundant guard$`
+	if err != nil {
+		return err
+	}
+	return nil // nothing left to do
+}
+
+func wideTail() error {
+	if err := load(); err != nil {
+		return err
+	}
+	// want +1 `unguarded last call`
+	return renameEvery("alpha-first", "beta-second", "gamma-third")
+}
+
+func wrappedTail() error {
+	if err := load(); err != nil {
+		return err
+	}
+	// want +1 `unguarded last call`
+	return renameEvery(
+		"alpha-first",
+		"beta-second",
+		"gamma-third",
+	)
+}
+
+func commentedTail() error {
+	if err := load(); err != nil {
+		return err
+	}
+	// want +1 `unguarded last call`
+	return save( /* the caller reports it */ )
+}
+
+func directiveTail() error {
+	if err := load(); err != nil {
+		return err
+	}
+	// want +1 `unguarded last call`
+	return save() //nolint
+}
+
+func beforeCallComment() error {
+	if err := load(); err != nil {
+		return err
+	}
+	// want +1 `unguarded last call`
+	return /* the caller reports it */ save()
+}
+
+func trailingContinuation() error {
+	if err := load(); err != nil {
+		return err
+	}
+	// want +1 `unguarded last call`
+	return save() // the caller reports it
+	// and the user sees it
+}
+
+func midLineTail() error {
+	if err := load(); err != nil {
+		return err
+	}
+	// want +1 `unguarded last call`
+	return save() /* the caller reports it
+	and the user sees it */
+}
+
+func trailingTailComment() error {
+	if err := load(); err != nil {
+		return err
+	}
+	// want +1 `unguarded last call`
+	return save() // the caller reports it
+}
+
+// want +1 `unguarded last call`
+func inlineTail() error { if err := load(); err != nil { return err }; return save() }
+
+// want +1 `redundant guard$`
+func inlineComment(err error) error { if err != nil { /* the load failed */ return err }; return nil }
+
+// want +1 `redundant guard; write return err`
+func inlineUncommented(err error) error { if err != nil { return err }; return nil }
+
+func built() error {
+	if err := load(); err != nil {
+		return err
+	}
+	return fmt.Errorf("load failed: %w", failure{})
+}
+
+func converted(p *failure) error {
+	if err := load(); err != nil {
+		return err
+	}
+	return error(p)
+}
+
+func builtNew() error {
+	if err := load(); err != nil {
+		return err
+	}
+	return errors.New("load failed")
+}
+
+func equalsNil(err error) error {
+	if err == nil {
+		return err
+	}
+	return nil
+}
+
+func bodyWork(err error) error {
+	if err != nil {
+		println("failed")
+		return err
+	}
+	return nil
+}
+
+func otherReturn(err, other error) error {
+	if err != nil {
+		return other
+	}
+	return nil
+}
+
+func assignment(err error) error {
+	if err = load(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func typedNil(p *failure) error {
+	if p != nil {
+		return p
+	}
+	return nil
+}
+
+func typedDeclared() error {
+	if err := failing(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func twoResults() (int, error) {
+	if err := load(); err != nil {
+		return 0, err
+	}
+	return 0, save()
+}
+
+func pointer(p *int) *int {
+	if p != nil {
+		return p
+	}
+	return nil
+}
+
+func stepBefore(err error) error {
+	println("start")
+	// want +1 `redundant guard; write return err`
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func produced() error {
+	// want +1 `redundant guard; write return load\(\)`
+	err := load()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func declaredComment() error {
+	// want +1 `redundant guard$`
+	err := load()
+	if err != nil {
+		// the load failed
+		return err
+	}
+	return nil
+}
+
+func producedVar() error {
+	// want +1 `redundant guard; write return load\(\)`
+	var err = load()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func producedTwo() error {
+	n, err := pair()
+	_ = n
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func varBlock() error {
+	var (
+		_   = listed()
+		err = load()
+	)
+	// want +1 `redundant guard; write return err`
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func producedAssign() error {
+	var err error
+	err = load()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func producedFar() error {
+	err := load()
+	println("start")
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func stepAfterCheck(n int) error {
+	if n == 0 {
+		return nil
+	}
+	// want +1 `redundant guard; write return load\(\)`
+	if err := load(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func twoNilChecks(err, other error) error {
+	if other != nil {
+		return other
+	}
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func extraStep(err error) error {
+	if err != nil {
+		return err
+	}
+	println("done")
+	return nil
+}
+
+func nested(err error) error {
+	{
+		// want +1 `redundant guard; write return err`
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+}
+
+func inSwitch(n int, err error) error {
+	switch n {
+	case 1:
+		// want +1 `redundant guard; write return err`
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+	return nil
+}
+
+func inSelect(ch chan error) error {
+	select {
+	case err := <-ch:
+		// want +1 `redundant guard; write return err`
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+	return nil
+}
+
+func assignedTail() error {
+	var err error
+	if err = load(); err != nil {
+		return err
+	}
+	// want +1 `unguarded last call`
+	return save()
+}
+
+func guardlessTail(err error) error {
+	if err != nil {
+		return err
+	}
+	// want +1 `unguarded last call`
+	return save()
+}
+
+func nestedTail(ok bool) error {
+	if ok {
+		if err := load(); err != nil {
+			return err
+		}
+		return save()
+	}
+	return nil
+}
+
+func literal() {
+	inner := func() error {
+		if err := load(); err != nil {
+			return err
+		}
+		// want +1 `unguarded last call`
+		return save()
+	}
+	_ = inner
+}
+
+func noGuard() error {
+	return save()
+}
+
+func otherTail(err, other error) error {
+	if err != nil {
+		return err
+	}
+	return other
+}
+
+func typedTail() error {
+	if err := load(); err != nil {
+		return err
+	}
+	return failing()
+}
+
+func blockDirective(err error) error {
+	// want +1 `redundant guard$`
+	if err != nil {
+		/*line alpha.go:200*/
+		return err
+	}
+	return nil
+}

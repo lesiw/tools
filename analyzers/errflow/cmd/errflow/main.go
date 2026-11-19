@@ -1,4 +1,4 @@
-// Command errflow reports an else block that follows a terminating statement.
+// Command errflow reports confusing or inconsistent error flows.
 package main
 
 import (

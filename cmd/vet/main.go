@@ -1414,12 +1414,13 @@
 //
 // # errflow
 //
-// Reports an else block whose if block ends in a return, a break, a continue,
-// a goto, or a panic. The else runs only when the block did not take that
-// exit, so its code reads at the function's level. An else if chain, and an
-// else under an if with an init statement, are left alone.
+// Reports a function that writes the same error path two ways: an else block
+// after a branch that exits, a nil check that only returns the value it
+// tested, or a last call whose error no guard checks. A function with a single
+// check returns the call directly; a function with more than one check guards
+// every step.
 //
-// Inspired by revive's indent-error-flow.
+// Inspired by revive's indent-error-flow and if-return.
 //
 //	func f(err error) int {
 //		if err != nil {
@@ -1527,22 +1528,6 @@
 //
 //	func f(err error) bool {
 //		return errors.Is(errors.ErrUnsupported, err)
-//	}
-//
-// # errreturn
-//
-// Reports an if that returns the value it tests against nil using !=,
-// followed by a return of nil. The branch returns the value when the test
-// holds and the trailing return yields nil otherwise, so one return covers
-// both. The value must have the function's result type.
-//
-// Adapted from revive's if-return.
-//
-//	func f(err error) error {
-//		if err != nil {
-//			return err
-//		}
-//		return nil
 //	}
 //
 // # errshadow

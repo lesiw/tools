@@ -44,7 +44,10 @@ func Dir(t *testing.T, testdata fs.FS) string {
 			if err := os.MkdirAll(filepath.Dir(out), 0o777); err != nil {
 				return err
 			}
-			return os.WriteFile(out, content, 0o666)
+			if err := os.WriteFile(out, content, 0o666); err != nil {
+				return err
+			}
+			return nil
 		}
 	)
 	if err := fs.WalkDir(testdata, ".", walk); err != nil {
