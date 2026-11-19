@@ -150,28 +150,50 @@ func extractIndent(line []byte) []byte {
 // reject. A merge that fits on paper can still print too long, because the
 // printer pads a declaration group to the longest name in it.
 func join(r *renderer, start, end token.Pos) {
-	mergeLines(r, start, end, false)
+	mergeLines(r, start, end, alignment{}, false)
+}
+
+// joinAligned merges like join, and measures every line of the alignment the
+// span sits in. The padding a merge adds to its columns lengthens the lines
+// around it, and the merged span does not cover those.
+func joinAligned(r *renderer, start, end token.Pos, a alignment) {
+	mergeLines(r, start, end, a, false)
 }
 
 // joinExempt merges like join for a span the width rules exempt. Only the
 // printer has a say.
 func joinExempt(r *renderer, start, end token.Pos) {
-	mergeLines(r, start, end, true)
+	mergeLines(r, start, end, alignment{}, true)
 }
 
-func mergeLines(r *renderer, start, end token.Pos, exempt bool) {
+// alignment is the span of a construct the printer aligns, with the render it
+// had before the merge. The zero alignment is none.
+type alignment struct {
+	lo, hi   token.Pos
+	previous [][]byte
+}
+
+func mergeLines(r *renderer, start, end token.Pos, a alignment, exempt bool) {
 	if sameLine(r.tokFile, start, end) {
 		return
 	}
+	if a.lo.IsValid() {
+		// The alignment's other lines take their padding from the
+		// merge, so they are compared with the render from before it.
+		// A render that disagrees with the line table compares nothing.
+		if lines, ok := r.render(); ok {
+			a.previous = lines
+		}
+	}
 	before := slices.Clone(r.tokFile.Lines())
 	mergeSpan(r.tokFile, start, end)
-	r.keeps(before, start, end, exempt)
+	r.keeps(before, start, end, a, exempt)
 }
 
 // keeps reports whether the edit made since before leaves a line the width
 // rules accept, or a line they exempt. It restores the line table when the
 // edit fails. A caller that edited the tree undoes that itself.
-func (r *renderer) keeps(before []int, pos, end token.Pos, exempt bool) bool {
+func (r *renderer) keeps(before []int, pos, end token.Pos, a alignment, exempt bool) bool {
 	var (
 		lines, ok = r.render()
 		at        = lineAt(r.tokFile, pos)
@@ -193,10 +215,46 @@ func (r *renderer) keeps(before []int, pos, end token.Pos, exempt bool) bool {
 			r.tokFile.SetLines(before)
 			return false
 		}
+		if a.lo.IsValid() {
+			removed := len(before) - r.tokFile.LineCount()
+			if !r.keptAligned(lines, a, removed, at) {
+				r.tokFile.SetLines(before)
+				return false
+			}
+		}
 		return true
 	}
 	r.tokFile.SetLines(before)
 	return false
+}
+
+// keptAligned reports whether the merge left the lines around it acceptable.
+// It drops the merge only for a line that ends past the width and wider than
+// it was.
+func (r *renderer) keptAligned(lines [][]byte, a alignment, removed, at int) bool {
+	if a.previous == nil || linelen.Config.Len <= 0 {
+		return true
+	}
+	lo, hi := lineAt(r.tokFile, a.lo), lineAt(r.tokFile, a.hi)
+	for line := lo; line <= hi; line++ {
+		if line == at {
+			// The merged line is measured against the width rules.
+			continue
+		}
+		was := line
+		if line > at {
+			was += removed
+		}
+		if was < 1 || was > len(a.previous) {
+			continue
+		}
+		text := lines[line-1]
+		width := linelen.Width(a.previous[was-1])
+		if !fits(text) && linelen.Width(text) > width {
+			return false
+		}
+	}
+	return true
 }
 
 // placement is a line a rule has laid out. It carries the span of source it

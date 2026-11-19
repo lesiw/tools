@@ -116,6 +116,7 @@ func rules() []func(*renderer) {
 	return []func(*renderer){
 		collapseSignatures,
 		collapseSingleDecls,
+		collapseInterfaceTypes,
 		collapseDelimited,
 		collapseWrappedLines,
 		collapseHeaders,

@@ -19,14 +19,55 @@ belongs on one.
 
 ### A wrapped construct
 
-A call, binary expression, control-flow header or single-spec declaration
-block that spans lines is reported when the line it would produce fits:
+A call, binary expression, control-flow header, single-spec declaration block
+or interface type that spans lines is reported when the line it would produce
+fits:
 
     g(a, // a wrapped construct belongs on one line
         b)
 
 The fix joins the lines. The width is analyzers/linelen; with none set, every
 construct that can be joined is joined.
+
+An interface type goes back only where go/printer prints it on one line, which
+takes at most one short field:
+
+    func narrow(err error) error {
+        h, ok := err.(interface {
+            Hint() error
+        })
+        if !ok {
+            return err
+        }
+        return h.Hint()
+    }
+
+A long method is not joined at any width, an interface holding two methods has
+no one-line form at all, and a `//` comment inside one keeps its lines, because
+joining would swallow the comment.
+
+An interface inside a signature or a header goes back only with the construct
+around it: a signature joins at any width, and a header when the whole of it
+fits.
+
+An interface join inside a declaration block, a struct type, or a literal also
+has to leave the lines around it within the width: the printer pads those lines
+to their widest entry, so a join in one moves the columns of the rest.
+
+A type declaration's interface type is left alone, and so is an alias's. The
+braces the declaration was written with stay, though a wrapped method signature
+inside one is still joined:
+
+    type declared interface {
+        Hint() error
+    }
+
+A type parameter's constraint is a use of an interface type rather than a
+definition, so it is reported:
+
+    type set[T interface {
+        Size() int
+    }] struct{ v T }
 
 A function type is a signature wherever it appears, and it is reported
 whatever the width of the line it lands on:

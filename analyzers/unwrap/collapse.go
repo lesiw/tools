@@ -173,7 +173,7 @@ func collapseSingleDecls(r *renderer) {
 		// lines. They also stay when removing them would make the line
 		// too long. A const block costs a tab, and a bare const costs six
 		// columns.
-		if !r.keeps(before, gd.TokPos, gd.End(), false) {
+		if !r.keeps(before, gd.TokPos, gd.End(), alignment{}, false) {
 			gd.Lparen, gd.Rparen = lparen, rparen
 		}
 		return true

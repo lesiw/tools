@@ -1,0 +1,150 @@
+package p
+
+type item struct {
+	Kind  string
+	Extra interface {
+		Label() string
+	}
+}
+
+type tagged struct {
+	Kind  string `json:"kind"`
+	Extra interface {
+		Label() string
+	}
+}
+
+var (
+	inner interface {
+		Size() int
+	}
+)
+
+var (
+	padded interface {
+		Label() string
+	} = item{}
+	sibling = alpha + bravo + charlie + delta + echo + foxtrot + golf
+)
+
+var (
+	joined interface {
+		Size() int
+	}
+	// a comment that already runs past the column limit and stays on its own line
+)
+
+var empty interface {
+}
+
+type declared interface {
+	Size() int
+}
+
+type parens (interface {
+	Size() int
+})
+
+type alias = interface {
+	Size() int
+}
+
+func narrow(err error) error {
+	h, ok := err.(interface {
+		Hint() error
+	})
+	if !ok {
+		return err
+	}
+	return h.Hint()
+}
+
+func documented(err error) bool {
+	_, ok := err.(interface {
+		// a note
+		Retry() bool
+	})
+	return ok
+}
+
+var entries = []any{
+	alpha,
+	v.(interface {
+		Size() int
+	}),
+}
+
+var labels = map[any]string{
+	v.(interface {
+		Kind() string
+	}): "first",
+	left:  "second",
+	right: "a message that fills the row near the limit once the key moves",
+}
+
+var sums = map[any]int{
+	v.(interface {
+		Kind() string
+	}): alphaValue,
+	left:  bravoValue + charlieValue + deltaValue + echoValue + foxtrotValue,
+}
+
+func kind(v any) {
+	switch v.(type) {
+	case interface {
+		Kind() string
+	}:
+	}
+}
+
+func methods(v any) {
+	_ = v.(interface {
+		Name() string
+		Size() int
+	})
+}
+
+type spread struct {
+	A int // a comment that fills out the rest of this line almost to the limit
+	B interface {
+		M() int
+	}
+	LongFieldName int
+}
+
+type set[T interface {
+	Size() int
+}] struct{ v T }
+
+func header(v any) {
+	if x, ok := v.(interface {
+		Size() int
+	}); ok &&
+		aLongConditionName && anotherLongConditionName {
+		_ = x
+	}
+}
+
+func parameter(
+	v interface {
+		Size() int
+	},
+	n int, // a note
+) {
+	_ = v
+	_ = n
+}
+
+func longField(v any) {
+	_ = v.(interface {
+		Step(first int, second int) error
+	})
+}
+
+func shortField(v any) {
+	report(v.(interface {
+		Size() int
+	}), aLongerArgumentNameThatPushesTheJoinedLinePastTheLimit)
+}
+
+func report(args ...any) {}

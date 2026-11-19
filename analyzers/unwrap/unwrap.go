@@ -1,9 +1,14 @@
 // Package unwrap reports a file whose wrapped constructs belong on one line.
 //
 // The rules need no type information: a wrapped call, binary expression,
-// header or single-spec block goes back on one line when the line it produces
-// fits, and a function signature goes back whatever its width. The width is
-// linelen's, so a driver that sets none joins everything it can.
+// header, single-spec block or interface type goes back on one line when the
+// line it produces fits, and a function signature goes back whatever its
+// width. The width is linelen's limit, so a driver that sets none joins
+// everything it can.
+//
+// go/printer prints an interface type on one line only when it holds at most
+// one short field, so an interface with two methods is left alone. A type
+// declaration's own interface type is left alone too.
 //
 // A bracketed list the author broke into two or more indented lines may be a
 // grouping, and nothing but the layout says so, so it is left alone.
