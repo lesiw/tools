@@ -7,7 +7,13 @@
 [![Discord](https://img.shields.io/discord/1145827224516300971?logo=discord&logoColor=white&color=5865F2&label=discord)](https://lesiw.dev/discord)
 [![License](https://img.shields.io/github/license/lesiw/tools)](../../../LICENSE)
 
-An `analysis.Analyzer` that reports a meaningless package name, a name that
+An `analysis.Analyzer` that reports a package name that gives no sense of its
+contents, such as `util` or `misc`, a name with an underscore, a name that is
+not all lower case, or a package named `pkg` whose directory has another base
+name.
+
+Adapted from revive's `package-naming`.
+
 ## Usage
 
 ```sh
