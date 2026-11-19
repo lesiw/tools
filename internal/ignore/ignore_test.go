@@ -30,6 +30,7 @@ var analysistestCases = []struct {
 	{"LineEndIgnore", "lineend", []*analysis.Analyzer{dotAnalyzer}},
 	{"Dependencies", "dependency", []*analysis.Analyzer{dependentAnalyzer}},
 	{"GeneratedFiles", "generated", []*analysis.Analyzer{publicNames}},
+	{"LineDirective", "linedirective", []*analysis.Analyzer{publicNames}},
 }
 
 func TestAnalyzers(t *testing.T) {

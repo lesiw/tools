@@ -198,13 +198,15 @@ func ignoreDiagnostic(diag analysis.Diagnostic, ranges []ignoreRange, analyzerNa
 	if !diag.Pos.IsValid() {
 		return false
 	}
-	diagPos := fset.Position(diag.Pos)
-
 	for _, r := range ranges {
 		if !r.start.IsValid() {
 			continue
 		}
-		if fset.Position(r.start).Filename != diagPos.Filename {
+		// Compare the files, not their names: a //line directive changes
+		// the name a position reports, and a generated file in cgo output
+		// carries one, so a name comparison would let its diagnostics
+		// through the generated-file range.
+		if fset.File(r.start) != fset.File(diag.Pos) {
 			continue
 		}
 		if analyzersContains(r.analyzers, analyzerName) {
