@@ -1,0 +1,120 @@
+package a
+
+//go:embed import_present.go // want `go:embed directives must precede a "var" declaration`
+import (
+	"embed"
+	named "embed"
+	_ "embed"
+)
+
+//go:embed import_present.go
+var presentText string
+
+//go:embed import_present.go
+var presentBytes []byte
+
+//go:embed import_present.go
+var presentTree embed.FS
+
+//go:embed import_present.go
+var presentNamed named.FS
+
+type presentTreeAlias = named.FS
+
+//go:embed import_present.go
+var presentAliased presentTreeAlias
+
+type FS struct{}
+
+//go:embed import_present.go // want `declarations following go:embed directives must be of type string, \[\]byte or embed.FS`
+var presentLocalFS FS
+
+//go:embed import_present.go
+//go:embed import_present.go
+var presentTwice string
+
+//go:embed import_present.go
+//
+// intervening
+
+var presentApart string
+
+type presentBytesType []byte
+
+//go:embed import_present.go
+var presentDefined presentBytesType
+
+type presentTextAlias = string
+
+//go:embed import_present.go
+var presentTextAliased presentTextAlias
+
+var (
+	presentFirst, presentSecond string
+	//go:embed import_present.go
+	presentInner                string
+	presentThird                string
+)
+
+//go:embed import_present.go
+var (
+	presentGroupFirst string
+	presentGroupLast  string
+)
+
+//go:embed import_present.go // want `declarations following go:embed directives must be of type string, \[\]byte or embed.FS`
+var (
+	presentGroupByte  byte
+	presentGroupLater string
+)
+
+//go:embed import_present.go // want `go:embed directives must precede a "var" declaration`
+func presentFunc() {}
+
+//go:embed import_present.go // want "declarations following go:embed directives must define a single variable"
+var presentTwo, presentThree string
+
+//go:embed import_present.go // want "declarations following go:embed directives must not specify a value"
+var presentValue string
+
+//go:embed import_present.go // want `go:embed directives must precede a "var" declaration`
+var ()
+
+//go:embed import_present.go // want `declarations following go:embed directives must be of type string, \[\]byte or embed.FS`
+var presentByte byte
+
+//go:embed import_present.go // want `declarations following go:embed directives must be of type string, \[\]byte or embed.FS`
+var presentStrings []string
+
+type presentByteType byte
+
+//go:embed import_present.go // want `declarations following go:embed directives must be of type string, \[\]byte or embed.FS`
+var presentByteDefined presentByteType
+
+type presentTreeType embed.FS
+
+//go:embed import_present.go // want `declarations following go:embed directives must be of type string, \[\]byte or embed.FS`
+var presentTreeDefined presentTreeType
+
+//go:embed import_present.go // want `declarations following go:embed directives must be of type string, \[\]byte or embed.FS`
+var presentMissing embed.Foo
+
+func presentText() string { return "alpha-one" }
+
+//go:embed import_present.go // want "declarations following go:embed directives must not specify a value"
+var presentCalled string = presentText()
+
+//go:embed import_present.go // want "declarations following go:embed directives must not specify a value"
+var presentCommented string = "alpha" + // the author's reason
+	"-one"
+
+//go:embed import_present.go // want "declarations following go:embed directives must not specify a value"
+var presentUntyped = "alpha-one"
+
+//go:embed import_present.go // want "declarations following go:embed directives must not specify a value"
+var presentWrongType int = 3
+
+//go:embed import_present.go // want `declarations following go:embed directives must be of type string, \[\]byte or embed.FS`
+var presentByteSlice []presentByteType
+
+//go:embed import_present.go // want `go:embed directives must precede a "var" declaration`

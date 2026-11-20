@@ -1,0 +1,8 @@
+package a
+
+var (
+	//go:embed import_late.go
+	lateText string
+)
+
+import _ "embed"

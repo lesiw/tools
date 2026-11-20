@@ -61,8 +61,9 @@ func checkAssignStmt(node *ast.AssignStmt, pass *analysis.Pass, checker identChe
 
 var (
 	publicNames = &analysis.Analyzer{
-		Name: "publicnames",
-		Doc:  "reports on public names",
+		Name:             "publicnames",
+		Doc:              "reports on public names",
+		RunDespiteErrors: true,
 		Run: identAnalyze(func(pass *analysis.Pass, ident *ast.Ident) {
 			if ident.IsExported() {
 				pass.Reportf(ident.Pos(), "%s is public", ident.Name)

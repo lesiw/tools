@@ -1,0 +1,7 @@
+package a
+
+//go:embed import_twice.go // want `must import "embed" when using go:embed directives`
+var firstTwice string
+
+//go:embed import_twice.go // want `must import "embed" when using go:embed directives`
+var secondTwice string

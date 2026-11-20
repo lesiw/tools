@@ -1,6 +1,6 @@
 // Package imports holds what an analyzer needs to write a package qualifier: a
 // file's imports by path, the name one of them reaches at a position, and the
-// declaration an edit adds when the import is missing.
+// declaration an edit adds when the file does not import the package.
 package imports
 
 import (
@@ -61,15 +61,10 @@ func Lookup(pass *analysis.Pass, name string, pos token.Pos) types.Object {
 }
 
 // Add returns the edit that adds paths as an import declaration after the
-// package clause. A driver that only formats leaves the declaration in place,
-// and goimports folds it into the file's own block. One path is written as a
-// single declaration, since nothing unwraps a block of one.
+// package clause. One path is written as a single declaration, since nothing
+// unwraps a block of one.
 func Add(pass *analysis.Pass, file *ast.File, paths ...string) analysis.TextEdit {
-	var (
-		tokFile = pass.Fset.File(file.Pos())
-		b       strings.Builder
-	)
-	b.WriteString("\n\n")
+	var b strings.Builder
 	if len(paths) == 1 {
 		b.WriteString("import " + strconv.Quote(paths[0]))
 	} else {
@@ -79,10 +74,31 @@ func Add(pass *analysis.Pass, file *ast.File, paths ...string) analysis.TextEdit
 		}
 		b.WriteString(")")
 	}
-	// A file can end at its package clause, which has no line after it.
-	pos := file.Name.End()
+	return afterPackage(pass, file, b.String())
+}
+
+// AddBlank returns the edit that adds a blank import of importPath after the
+// package clause. A file that needs a package but never names it takes the
+// blank identifier.
+func AddBlank(pass *analysis.Pass, file *ast.File, importPath string) analysis.TextEdit {
+	return afterPackage(pass, file, "import _ "+strconv.Quote(importPath))
+}
+
+// afterPackage returns the edit that writes text after the package clause. A
+// driver that only formats leaves the declaration in place, and goimports
+// folds it into the file's own block. A file can end at its package clause,
+// which has no line after it.
+func afterPackage(pass *analysis.Pass, file *ast.File, text string) analysis.TextEdit {
+	var (
+		tokFile = pass.Fset.File(file.Pos())
+		pos     = file.Name.End()
+	)
 	if tokFile.LineCount() > tokFile.Line(file.Name.Pos()) {
 		pos = tokFile.LineStart(tokFile.Line(file.Name.Pos())+1) - 1
 	}
-	return analysis.TextEdit{Pos: pos, End: pos, NewText: []byte(b.String())}
+	return analysis.TextEdit{
+		Pos:     pos,
+		End:     pos,
+		NewText: []byte("\n\n" + text),
+	}
 }

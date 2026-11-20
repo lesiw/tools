@@ -1286,6 +1286,18 @@
 //		return -1
 //	}
 //
+// # embeddirective
+//
+// Reports a //go:embed directive the compiler rejects: a directive in a file
+// that does not import embed, or one that does not precede a single variable
+// of type string, []byte or embed.FS with no value. A slice whose byte type is
+// defined is reported too, though the compiler accepts it.
+//
+// Copied from gopls' embed, which is internal.
+//
+//	//go:embed static/index.html
+//	var pages []string
+//
 // # embedlit
 //
 // Reports an embedded type named in a composite literal, or a field of it

@@ -1,0 +1,4 @@
+package a
+
+//go:embed import_named.go // want `must import "embed" when using go:embed directives` `declarations following go:embed directives must be of type string, \[\]byte or embed.FS`
+var tree embed.FS

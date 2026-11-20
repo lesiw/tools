@@ -63,9 +63,10 @@ all: when two analyzers would edit the same span, one of them waits for the
 next round.
 
 An analyzer that sets `RunDespiteErrors` runs on a package that loads with
-errors; every other analyzer is skipped for that package. `unusedvariable` is
-the rule whose reports are wanted there, and the `//ignore` prerequisite runs
-too, since computing a range needs no type information. The last round's load
+errors; every other analyzer is skipped for that package. `unusedvariable` and
+`embeddirective` are the rules whose reports are wanted there, and the
+`//ignore` prerequisite runs too, since computing a range needs no type
+information. The last round's load
 decides the status, so a package a fix repaired no longer counts. A tree that
 still does not build ends the run with a non-zero status, after the loader has
 printed what is wrong with it.

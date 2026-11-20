@@ -44,6 +44,16 @@ func TestAnalyzers(t *testing.T) {
 	}
 }
 
+// TestRunDespiteErrors checks that a package with an error still has its
+// ignore ranges, so a filter reports there. The table's combined analyzer
+// cannot run in such a package, so the case runs the filter directly.
+func TestRunDespiteErrors(t *testing.T) {
+	analysistest.Run(
+		t, analysistest.TestData(),
+		Apply(publicNames)[0], "broken",
+	)
+}
+
 func TestParseIgnore(t *testing.T) {
 	var (
 		allOnly   = map[string]struct{}{"all": {}}
@@ -148,13 +158,13 @@ var typeErrorAnalyzer = &analysis.Analyzer{
 	},
 }
 
-// TestRunDespiteErrors holds the filter to a package that does not compile,
-// which a driver skips unless the analyzer asks for it. It stays out of
+// TestRunDespiteErrorsOnATypeError holds the filter to a package whose error
+// is a type error rather than an undefined name. It stays out of
 // analysistestCases because combined runs analyzers itself, and so never asks
 // the driver anything.
-func TestRunDespiteErrors(t *testing.T) {
+func TestRunDespiteErrorsOnATypeError(t *testing.T) {
 	analysistest.Run(
 		t, analysistest.TestData(),
-		Apply(typeErrorAnalyzer)[0], "broken",
+		Apply(typeErrorAnalyzer)[0], "typeerr",
 	)
 }

@@ -132,6 +132,7 @@ import (
 	"lesiw.io/tools/analyzers/dynformat"
 	"lesiw.io/tools/analyzers/earlyreturn"
 	"lesiw.io/tools/analyzers/elseif"
+	"lesiw.io/tools/analyzers/embeddirective"
 	"lesiw.io/tools/analyzers/emptybranch"
 	"lesiw.io/tools/analyzers/emptycritical"
 	"lesiw.io/tools/analyzers/emptydecl"
@@ -443,6 +444,7 @@ var (
 		dynformat.Analyzer,
 		earlyreturn.Analyzer,
 		elseif.Analyzer,
+		embeddirective.Analyzer,
 		emptybranch.Analyzer,
 		emptycritical.Analyzer,
 		emptydecl.Analyzer,

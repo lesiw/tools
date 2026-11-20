@@ -1249,6 +1249,17 @@ func f(n int) int {
 }
 ```
 
+## embeddirective
+
+Reports a //go:embed directive in a file that does not import embed, or one that does not precede a single variable of type string, \[]byte or embed.FS with no value.
+
+Copied from gopls' embed, which is internal.
+
+```
+//go:embed static/index.html
+var pages []string
+```
+
 ## embedlit
 
 Reports an embedded type named in a composite literal, or a field of it assigned just after, where Go 1.27 sets the promoted field in the outer literal instead.

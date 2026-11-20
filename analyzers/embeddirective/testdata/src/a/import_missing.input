@@ -1,0 +1,8 @@
+package a
+
+import "strings"
+
+//go:embed import_missing.go // want `must import "embed" when using go:embed directives`
+var embedded string
+
+func joined(parts []string) string { return strings.Join(parts, "") }
