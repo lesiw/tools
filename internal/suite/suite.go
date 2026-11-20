@@ -191,6 +191,7 @@ import (
 	"lesiw.io/tools/analyzers/mapkey"
 	"lesiw.io/tools/analyzers/maplenloop"
 	"lesiw.io/tools/analyzers/maplookupinloop"
+	"lesiw.io/tools/analyzers/maprange"
 	"lesiw.io/tools/analyzers/marshalfunc"
 	"lesiw.io/tools/analyzers/marshalrecv"
 	"lesiw.io/tools/analyzers/mathintconv"
@@ -515,6 +516,7 @@ var (
 		mapkey.Analyzer,
 		maplenloop.Analyzer,
 		maplookupinloop.Analyzer,
+		maprange.Analyzer,
 		marshalfunc.Analyzer,
 		marshalrecv.Analyzer,
 		mathintconv.Analyzer,

@@ -1,0 +1,76 @@
+package a
+
+import "maps"
+
+type holder struct {
+	counts map[string]int
+}
+
+func use(...any) {}
+
+func plain(m map[string]int) {
+	for range maps.Keys(m) { // want `unnecessary and inefficient call of maps.Keys`
+	}
+
+	for range maps.Values(m) { // want `unnecessary and inefficient call of maps.Values`
+	}
+
+	for name := range maps.Keys(m) { // want `unnecessary and inefficient call of maps.Keys`
+		use(name)
+	}
+
+	for count := range maps.Values(m) { // want `unnecessary and inefficient call of maps.Values`
+		use(count)
+	}
+}
+
+func header(into map[string]string, counts map[string]int, m map[string]int) {
+	for into["alpha"] = range maps.Keys(m) { // want `unnecessary and inefficient call of maps.Keys`
+	}
+
+	for counts["alpha"] = range maps.Values(m) { // want `unnecessary and inefficient call of maps.Values`
+	}
+}
+
+func field(h holder) {
+	for range maps.Keys(h.counts) { // want `unnecessary and inefficient call of maps.Keys`
+	}
+}
+
+func aroundCall(m map[string]int) {
+	for /* name */ name := range /* over */ maps.Keys(/* m */ m) { // want `unnecessary and inefficient call of maps.Keys`
+		use(name)
+	}
+}
+
+func body(m map[string]int) {
+	for name := range maps.Keys(m) { // want `unnecessary and inefficient call of maps.Keys`
+		use(name, len(m))
+	}
+}
+
+func typed(m map[string]int) {
+	for name := range maps.Keys[map[string]int, string, int](m) { // want `unnecessary and inefficient call of maps.Keys`
+		use(name)
+	}
+}
+
+func partial(m map[string]int) {
+	for name := range maps.Keys[map[string]int](m) { // want `unnecessary and inefficient call of maps.Keys`
+		use(name)
+	}
+}
+
+func blank(m map[string]int) {
+	for _ = range maps.Values(m) { // want `unnecessary and inefficient call of maps.Values`
+	}
+}
+
+func quiet(m map[string]int, keys []string) {
+	for name, count := range m {
+		use(name, count)
+	}
+	for range keys {
+		use(maps.Keys(m))
+	}
+}

@@ -1,0 +1,11 @@
+package dotted
+
+import . "maps"
+
+func use(...any) {}
+
+func dotted(m map[string]int) {
+	for key := range Keys(m) { // want `unnecessary and inefficient call of maps.Keys`
+		use(key)
+	}
+}

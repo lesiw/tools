@@ -1,0 +1,21 @@
+package go121
+
+import "golang.org/x/exp/maps"
+
+func use(...any) {}
+
+func plain(m map[string]int) {
+	for _, key := range maps.Keys(m) { // want `unnecessary and inefficient call of golang.org/x/exp/maps.Keys`
+		use(key)
+	}
+}
+
+func counted(m map[string]int) {
+	for i := range maps.Keys(m) { // want `likely incorrect use of golang.org/x/exp/maps.Keys \(returns a slice\)`
+		use(i)
+	}
+
+	for i, _ := range maps.Values(m) { // want `likely incorrect use of golang.org/x/exp/maps.Values \(returns a slice\)`
+		use(i)
+	}
+}

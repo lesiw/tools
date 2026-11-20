@@ -1,0 +1,9 @@
+//go:build go1.22
+
+package go121
+
+func raised(m map[string]int) {
+	for i := range len(m) { // want `unnecessary and inefficient call of golang.org/x/exp/maps.Keys`
+		use(i)
+	}
+}

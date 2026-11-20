@@ -1,0 +1,117 @@
+package go124
+
+import "golang.org/x/exp/maps"
+
+type holder struct {
+	counts map[string]int
+}
+
+func use(...any) {}
+
+func keys(m map[string]int) {
+	for range maps.Keys(m) { // want `unnecessary and inefficient call of golang.org/x/exp/maps.Keys`
+	}
+
+	for _, key := range maps.Keys(m) { // want `unnecessary and inefficient call of golang.org/x/exp/maps.Keys`
+		use(key)
+	}
+
+	for i := range maps.Keys(m) { // want `unnecessary and inefficient call of golang.org/x/exp/maps.Keys`
+		use(i)
+	}
+
+	for i, _ := range maps.Keys(m) { // want `unnecessary and inefficient call of golang.org/x/exp/maps.Keys`
+		use(i)
+	}
+
+	for i, key := range maps.Keys(m) {
+		use(i, key)
+	}
+}
+
+func values(m map[string]int) {
+	for range maps.Values(m) { // want `unnecessary and inefficient call of golang.org/x/exp/maps.Values`
+	}
+
+	for _, count := range maps.Values(m) { // want `unnecessary and inefficient call of golang.org/x/exp/maps.Values`
+		use(count)
+	}
+
+	for count := range maps.Values(m) { // want `unnecessary and inefficient call of golang.org/x/exp/maps.Values`
+		use(count)
+	}
+}
+
+func assign(m map[string]int) {
+	var i int
+	for i, _ = range maps.Values(m) { // want `unnecessary and inefficient call of golang.org/x/exp/maps.Values`
+		use(i)
+	}
+
+	for _, _ = range maps.Values(m) { // want `unnecessary and inefficient call of golang.org/x/exp/maps.Values`
+	}
+}
+
+func field(h holder) {
+	for range maps.Keys(h.counts) { // want `unnecessary and inefficient call of golang.org/x/exp/maps.Keys`
+	}
+}
+
+func mutates(m map[string]int) {
+	for _, key := range maps.Keys(m) { // want `unnecessary and inefficient call of golang.org/x/exp/maps.Keys`
+		m[key] = 0
+	}
+}
+
+func reads(m map[string]int) {
+	for _, key := range maps.Keys(m) { // want `unnecessary and inefficient call of golang.org/x/exp/maps.Keys`
+		use(key, len(m))
+	}
+}
+
+func header(m map[string]int) {
+	for _, m["alpha"] = range maps.Values(m) { // want `unnecessary and inefficient call of golang.org/x/exp/maps.Values`
+	}
+}
+
+func betweenVars(m map[string]int) {
+	for i /* keep */, _ := range maps.Keys(m) { // want `unnecessary and inefficient call of golang.org/x/exp/maps.Keys`
+		use(i)
+	}
+}
+
+func shadow(m map[string]int) {
+	len := func(map[string]int) int { return 1 }
+	for i := range maps.Keys(m) { // want `unnecessary and inefficient call of golang.org/x/exp/maps.Keys`
+		use(i)
+	}
+	use(len)
+}
+
+func keyed(m map[string]string) {
+	for _, m["alpha"] = range maps.Keys(m) { // want `unnecessary and inefficient call of golang.org/x/exp/maps.Keys`
+	}
+}
+
+func counted(h holder) {
+	for i := range maps.Keys(h.counts) { // want `unnecessary and inefficient call of golang.org/x/exp/maps.Keys`
+		use(i)
+	}
+}
+
+func inCallee(m map[string]int) {
+	for k := range maps /* why */ .Keys(m) { // want `unnecessary and inefficient call of golang.org/x/exp/maps.Keys`
+		use(k)
+	}
+}
+
+func parens(m map[string]int) {
+	for k := range (maps.Keys(m)) { // want `unnecessary and inefficient call of golang.org/x/exp/maps.Keys`
+		use(k)
+	}
+
+	var i int
+	for i, (_) = range maps.Keys(m) { // want `unnecessary and inefficient call of golang.org/x/exp/maps.Keys`
+		use(i)
+	}
+}

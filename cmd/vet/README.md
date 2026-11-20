@@ -2222,6 +2222,20 @@ func f(m map[string]int, keys []string) {
 }
 ```
 
+## maprange
+
+Reports a call to maps.Keys or maps.Values in a range. A range over a map yields the key and the value, so the call is unnecessary.
+
+A mirror of gopls' maprange, which is internal.
+
+```
+func f(m map[string]int) {
+    for name := range maps.Keys(m) {
+        use(name)
+    }
+}
+```
+
 ## mapsloop
 
 Reports a range over a map or an iter.Seq2 whose body copies one entry into another map. maps.Copy writes the map loop as one call, maps.Insert the iterator loop, in a package that declares Go 1.23 or later.
