@@ -25,28 +25,29 @@ func Current() {}
 func deprecatedFoo() {}
 ```
 
-godoc and every editor that renders it only recognize a paragraph that begins
-with Deprecated: . A comment that opens with the word instead is prose. A
-caller gets no warning.
+godoc and the editors that render it take a deprecation only from a paragraph
+that begins with `Deprecated: `. A comment that opens with the word instead is
+prose, so a caller gets no warning.
 
 ```go
 // Deprecated: use New instead.
 func Old() {}
 ```
 
-The idea comes from go-critic's deprecatedComment.
+The rule is inspired by go-critic's `deprecatedComment`.
 
-Report only: the note has to say what replaces it.
+Report only: the fix would need the name of the replacement, and only the
+author knows it.
 
 ## Usage
 
 ```sh
-go get -tool lesiw.io/tools/analyzers/deprecated/cmd/deprecated
-go tool deprecated ./...
+go get -tool lesiw.io/tools/analyzers/deprecatedform/cmd/deprecatedform
+go tool deprecatedform ./...
 ```
 
 Or run it as part of the suite:
 
 ```sh
-go tool lesiw.io/tools/cmd/vet -deprecated ./...
+go tool lesiw.io/tools/cmd/vet -deprecatedform ./...
 ```
