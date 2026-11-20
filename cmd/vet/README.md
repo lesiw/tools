@@ -4397,7 +4397,7 @@ func dead() {}
 
 ## unusedparams
 
-Reports a parameter of a declared function that the body never reads. Renaming it to the blank identifier says the position is deliberate, and an exported function, a matching interface method, and a function used as a value keep their names.
+Reports a parameter of a declared function that the body never uses. Renaming it to the blank identifier says the position is deliberate, and an exported function, a matching interface method, and a function used as a value keep their names.
 
 Vendored from gopls' unusedparams.
 

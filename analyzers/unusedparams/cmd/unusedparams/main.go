@@ -1,4 +1,4 @@
-// Command unusedparams reports a parameter a function never reads.
+// Command unusedparams reports a parameter a declared function never uses.
 package main
 
 import (

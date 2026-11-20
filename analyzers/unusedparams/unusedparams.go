@@ -1,24 +1,14 @@
 // Package unusedparams provides an analysis.Analyzer that reports a parameter
-// a function never reads.
+// a declared function never uses.
 //
-// This mirrors gopls' unusedparams
-// (gopls/internal/analysis/unusedparams, golang.org/x/tools/gopls), which is
-// internal and cannot be imported. The rule for a declared function is the
-// same; gopls also reports a func literal, which this does not.
+// Vendored from gopls' unusedparams
+// (gopls/internal/analysis/unusedparams, golang.org/x/tools/gopls v0.24.0),
+// which is internal and cannot be imported. The rule is upstream's; the code
+// is adapted to this repository's helpers.
 //
-// A parameter that is never read is either a leftover or a signature the
-// author meant to keep. Renaming it to the blank identifier says which, and
-// costs nothing. The rule stands down where the name may be read or copied
-// from elsewhere. An exported function or method is documented by its
-// parameter names. An unexported method may be written to match a method that
-// an interface in the package declares itself. Any function used as a value
-// rather than called may have to match a func type. A function with no body,
-// or one that only panics, is a placeholder, so its parameters stay as
-// written.
-//
-// A func literal's parameters are left alone. The signature it is assigned to
-// is written somewhere else, and the literal cannot show whether it was
-// chosen.
+// Renaming a parameter to the blank identifier says the position is
+// deliberate, and every report carries that fix. The README lists the shapes
+// the rule leaves alone and the places it differs from upstream.
 package unusedparams
 
 import (
@@ -32,7 +22,7 @@ import (
 
 var Analyzer = &analysis.Analyzer{
 	Name: "unusedparams",
-	Doc:  "reports a parameter a function never reads",
+	Doc:  "reports a parameter a declared function never uses",
 	Run:  run,
 }
 
@@ -50,14 +40,21 @@ func run(pass *analysis.Pass) (any, error) {
 				continue
 			}
 			if fn.Name.IsExported() {
-				continue // another package may take its address
+				continue // the names document the signature
 			}
 			self, ok := info.Defs[fn.Name].(*types.Func)
-			if ok && methods.Has(self) {
-				continue // the method may be written to match the interface
+			if !ok {
+				continue
+			}
+			if fn.Recv != nil {
+				// As upstream has it, a name match is enough: a signature
+				// that mentions a type parameter never compares identical.
+				if _, ok := methods[fn.Name.Name]; ok {
+					continue
+				}
 			}
 			if _, isHeld := held[self]; isHeld {
-				continue // used as a value, so the signature is fixed
+				continue // the signature was chosen elsewhere
 			}
 			if placeholder(fn.Body) {
 				continue
@@ -68,7 +65,7 @@ func run(pass *analysis.Pass) (any, error) {
 	return nil, nil
 }
 
-// report names each parameter of fn that nothing reads.
+// report names each parameter of fn that nothing uses.
 func report(pass *analysis.Pass, fn *ast.FuncDecl, read map[*types.Var]struct{}) {
 	for _, field := range fn.Type.Params.List {
 		for _, id := range field.Names {
@@ -85,7 +82,7 @@ func report(pass *analysis.Pass, fn *ast.FuncDecl, read map[*types.Var]struct{})
 			pass.Report(analysis.Diagnostic{
 				Pos:     id.Pos(),
 				End:     id.End(),
-				Message: "parameter " + id.Name + " is never read",
+				Message: "parameter " + id.Name + " is never used",
 				SuggestedFixes: []analysis.SuggestedFix{{
 					Message: "Rename the parameter to _",
 					TextEdits: []analysis.TextEdit{{
@@ -99,12 +96,13 @@ func report(pass *analysis.Pass, fn *ast.FuncDecl, read map[*types.Var]struct{})
 	}
 }
 
-// readVars returns the variables the package reads.
+// readVars returns the variables the package refers to. A field is never a
+// parameter, so it is not gathered.
 func readVars(pass *analysis.Pass) map[*types.Var]struct{} {
 	out := make(map[*types.Var]struct{})
 	for _, obj := range pass.TypesInfo.Uses {
 		v, ok := obj.(*types.Var)
-		if ok {
+		if ok && !v.IsField() {
 			out[v] = struct{}{}
 		}
 	}

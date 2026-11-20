@@ -7,45 +7,52 @@
 [![Discord](https://img.shields.io/discord/1145827224516300971?logo=discord&logoColor=white&color=5865F2&label=discord)](https://lesiw.dev/discord)
 [![License](https://img.shields.io/github/license/lesiw/tools)](../../../LICENSE)
 
-An `analysis.Analyzer` that reports a parameter a function never reads.
+An `analysis.Analyzer` that reports a parameter a declared function never
+uses.
 
 ```go
-func unread(a int, b string) string { // parameter a is never read
+func unused(a int, b string) string { // parameter a is never used
     return b
 }
 ```
 
-A parameter that is never read is either a leftover or a signature the author
+A parameter that is never used is either a leftover or a signature the author
 meant to keep. Renaming it to the blank identifier says which, and costs
-nothing:
+nothing.
 
-```go
-func unread(_ int, b string) string {
-    return b
-}
-```
-
-The rule stands down where the name may be read or copied from elsewhere:
+The rule leaves these alone:
 
 - an exported function or method, which is documented by its parameter names;
-- an unexported method whose signature matches one an interface in the package
-  declares, which may have been written to match it. A method declared here
-  cannot satisfy a name from another package, so an interface embedded from
-  one constrains nothing, and a same-named method with a different signature
-  is reported;
-- any function used as a value rather than called, which may have to match a
-  func type;
-- a function with no body, or one that only panics, which is a placeholder.
+- an unexported method whose name matches one an interface in the package
+  declares. An unexported name cannot be satisfied from another package, so an
+  interface declared elsewhere constrains nothing;
+- any function used as a value, which may have to match a func type;
+- a function whose body is empty or absent, or one that only panics, which is a
+  placeholder.
 
-A func literal's parameters are left alone: the signature it is assigned to is
-written somewhere else, and the literal cannot show whether it was chosen.
+Vendored from gopls' `unusedparams`
+(`gopls/internal/analysis/unusedparams`, `golang.org/x/tools/gopls` v0.24.0),
+which is internal and cannot be imported. The rule is upstream's; the code is
+adapted to this repository's helpers.
 
-This mirrors gopls' `unusedparams`
-(`gopls/internal/analysis/unusedparams`, `golang.org/x/tools/gopls`), which is
-internal and cannot be imported. The rule for a declared function is the same;
-gopls also reports a func literal, which this does not.
+Upstream also reports a func literal that is bound to a variable the package
+never uses as a value. A literal is not a declaration, so this rule, which
+reports declared functions, leaves every literal as written. Upstream's second
+fix removes the parameter and the arguments passed for it at every call site,
+and that takes a gopls command, so this rule offers the rename alone. Upstream
+underlines the whole parameter field when it declares one name, where this rule
+underlines the name.
 
 ## Usage
 
-    go tool lesiw.io/tools/cmd/vet -unusedparams ./...
-    go tool lesiw.io/tools/cmd/fix -unusedparams ./...
+```sh
+go get -tool lesiw.io/tools/analyzers/unusedparams/cmd/unusedparams
+go tool unusedparams ./...
+```
+
+Or run it as part of the suite:
+
+```sh
+go tool lesiw.io/tools/cmd/vet -unusedparams ./...
+go tool lesiw.io/tools/cmd/fix -unusedparams ./...
+```

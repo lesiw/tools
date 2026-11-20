@@ -2,12 +2,16 @@ package a
 
 import "foreign"
 
-func unread(a int, b string) string { // want `parameter a is never read`
+func unread(a int, b string) string { // want `parameter a is never used`
 	return b
 }
 
 func blank(_ int, b string) string {
 	return b
+}
+
+func pair(a, b int) int { // want `parameter b is never used`
+	return a
 }
 
 func Exported(a int, b string) string {
@@ -42,6 +46,14 @@ func (genericBox[T]) notify(v T) {
 	_ = 0
 }
 
+type genericAcceptor[T any] interface {
+	accept(v T)
+}
+
+type instantiatedReceiver[T any] struct{}
+
+func (*instantiatedReceiver[int]) accept(v bool) { println() }
+
 type reader interface {
 	read(a int, b string) string
 }
@@ -56,28 +68,37 @@ func (impl) read(a int, b string) string {
 	return b
 }
 
-func (impl) name(a int, b string) string { // want `parameter a is never read`
+func (impl) name(a int, b string) string {
 	return b
 }
 
-func (impl) step(a int, b string) string { // want `parameter a is never read`
+func (impl) step(a int, b string) string { // want `parameter a is never used`
 	return b
 }
 
-func (impl) other(a int, b string) string { // want `parameter a is never read`
+func (impl) other(a int, b string) string { // want `parameter a is never used`
 	return b
 }
 
-func read(a int, b string) string { // want `parameter a is never read`
+func read(a int, b string) string { // want `parameter a is never used`
 	return b
 }
 
-func generic[T any](x T, y int) T { // want `parameter y is never read`
+func generic[T any](x T, y int) T { // want `parameter y is never used`
 	return x
 }
 
+func pick[T any](x T, y int) T { return x }
+
+var heldPick = pick[int]
+
 func literal() func(int, string) string {
 	return func(a int, b string) string { return b }
+}
+
+func bound() int {
+	f := func(a int, b string) string { return b }
+	return len(f(1, "b"))
 }
 
 func stub(a int, b string) {}
@@ -93,7 +114,9 @@ func use() {
 	_ = impl{}.step(1, "b")
 	_ = impl{}.other(1, "b")
 	_ = read(1, "b")
+	_ = pair(1, 2)
 	_ = literal()(1, "b")
+	_ = bound()
 	_ = generic[int](1, 2)
 	stub(1, "b")
 }
