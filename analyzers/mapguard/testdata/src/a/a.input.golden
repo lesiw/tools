@@ -1,0 +1,89 @@
+package a
+
+type ledger struct {
+	index map[string][]string
+}
+
+func appendOne(index map[string][]string, kind string) {
+	// want+1 `map write does not need a presence check`
+	index["alpha"] = append(index["alpha"], kind)
+}
+
+func appendTwo(index map[string][]string, first, second string) {
+	// want+1 `map write does not need a presence check`
+	index["alpha"] = append(index["alpha"], first, second)
+}
+
+func appendByName(index map[string][]string, name, kind string) {
+	// want+1 `map write does not need a presence check`
+	index[name] = append(index[name], kind)
+}
+
+func appendToField(l *ledger, kind string) {
+	// want+1 `map write does not need a presence check`
+	l.index["alpha"] = append(l.index["alpha"], kind)
+}
+
+func appendNested(groups map[string]map[string][]string, group, kind string) {
+	// want+1 `map write does not need a presence check`
+	groups[group]["alpha"] = append(groups[group]["alpha"], kind)
+}
+
+func appendSplit(index map[string][]string, kind string) {
+	// want+1 `map write does not need a presence check`
+	index["alpha"] = append(index["alpha"], kind)
+}
+
+func addToTotal(total map[string]int, delta int) {
+	// want+1 `map write does not need a presence check`
+	total["alpha"] += delta
+}
+
+func addLength(total map[string]int, parts []string) {
+	// want+1 `map write does not need a presence check`
+	total["alpha"] += len(parts)
+}
+
+func addLiteral(total map[string]int) {
+	// want+1 `map write does not need a presence check`
+	total["alpha"] += 4
+}
+
+func addFloatLiteral(total map[string]float64) {
+	// want+1 `map write does not need a presence check`
+	total["alpha"] += 1
+}
+
+func increment(total map[string]int) {
+	// want+1 `map write does not need a presence check`
+	total["alpha"]++
+}
+
+func incrementFloat(total map[string]float64) {
+	// want+1 `map write does not need a presence check`
+	total["alpha"]++
+}
+
+func addFromCall(total map[string]int, next func() int) {
+	// want+1 `map write does not need a presence check`
+	total["alpha"] += next()
+}
+
+func incrementWrittenInHex(total map[string]int) {
+	// want+1 `map write does not need a presence check`
+	total["alpha"]++
+}
+
+func throughAssertion(held any, delta int) {
+	// want+1 `map write does not need a presence check`
+	held.(map[string][]int)["a"] = append(held.(map[string][]int)["a"], delta)
+}
+
+func appendInElseIf(index map[string][]string, kind string, other bool) {
+	if other {
+		index["alpha"] = nil
+		// want+1 `map write does not need a presence check`
+	} else {
+		index["alpha"] = append(index["alpha"], kind)
+	}
+}

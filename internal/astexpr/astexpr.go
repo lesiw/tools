@@ -1,5 +1,5 @@
 // Package astexpr holds the facts about the syntax tree that the analyzers
-// share: an expression's printed form, whether it begins with a composite
+// share: a node's printed form, whether an expression begins with a composite
 // literal, whether two expressions read the same value or can be evaluated
 // twice, whether evaluating one can run code or panic, whether a type has no
 // interface in it, whether a selection goes through a pointer, whether a type
@@ -20,14 +20,15 @@ import (
 	"golang.org/x/tools/go/analysis"
 )
 
-// Text returns e as source text, with the line breaks the printer chooses. A
-// fresh FileSet drops the line breaks of the source, so a wrapped expression
-// matches an unwrapped one, and go/printer keeps the elements of a composite
-// literal, which types.ExprString would elide.
-func Text(e ast.Expr) string {
+// Text returns n as source text, with the line breaks the printer chooses. A
+// fresh FileSet drops the line breaks of the source, so an expression or
+// statement written on several lines matches the same one on a single line,
+// and go/printer keeps the elements of a composite literal, which
+// types.ExprString would elide. A node the printer refuses prints as nothing.
+func Text(n ast.Node) string {
 	var buf bytes.Buffer
 	// A bytes.Buffer cannot fail.
-	_ = printer.Fprint(&buf, token.NewFileSet(), e)
+	_ = printer.Fprint(&buf, token.NewFileSet(), n)
 	return buf.String()
 }
 
@@ -37,10 +38,10 @@ func Pure(pass *analysis.Pass, call *ast.CallExpr) bool {
 	return pureCall(pass, call)
 }
 
-// OneLine returns e as source text on one line, and reports false when it has
+// OneLine returns n as source text on one line, and reports false when it has
 // none, as a raw string holding a newline has none.
-func OneLine(e ast.Expr) (string, bool) {
-	text := Text(e)
+func OneLine(n ast.Node) (string, bool) {
+	text := Text(n)
 	if strings.ContainsRune(text, '\n') {
 		return "", false
 	}

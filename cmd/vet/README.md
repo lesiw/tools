@@ -2199,6 +2199,22 @@ func f(m map[string]int, want string) (int, bool) {
 }
 ```
 
+## mapguard
+
+Reports a presence check around a map write that needs none. A missing key reads as the element's zero value, so each branch writes the same value.
+
+Adapted from staticcheck's S1036.
+
+```
+func f(index map[string][]string, kind string) {
+    if _, ok := index["alpha"]; ok {
+        index["alpha"] = append(index["alpha"], kind)
+    } else {
+        index["alpha"] = []string{kind}
+    }
+}
+```
+
 ## mapkey
 
 Reports a map key that is unhashable. A map keyed by an interface accepts a slice, a map, or a function, and the map panics when it hashes one. For a conversion to an interface the report names the operand's type, so any(xs) names \[]int.

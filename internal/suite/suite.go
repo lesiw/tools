@@ -189,6 +189,7 @@ import (
 	"lesiw.io/tools/analyzers/makezero"
 	"lesiw.io/tools/analyzers/manualtrim"
 	"lesiw.io/tools/analyzers/mapfind"
+	"lesiw.io/tools/analyzers/mapguard"
 	"lesiw.io/tools/analyzers/mapkey"
 	"lesiw.io/tools/analyzers/maplenloop"
 	"lesiw.io/tools/analyzers/maplookupinloop"
@@ -521,6 +522,7 @@ var (
 		makezero.Analyzer,
 		manualtrim.Analyzer,
 		mapfind.Analyzer,
+		mapguard.Analyzer,
 		mapkey.Analyzer,
 		maplenloop.Analyzer,
 		maplookupinloop.Analyzer,

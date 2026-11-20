@@ -1,0 +1,6 @@
+package nowidth
+
+func keep(indexWithALongName map[string][]string, kindWithALongName string) {
+	// want+1 `map write does not need a presence check`
+	indexWithALongName["alpha"] = append(indexWithALongName["alpha"], kindWithALongName)
+}

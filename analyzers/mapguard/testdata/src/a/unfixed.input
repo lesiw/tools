@@ -1,0 +1,54 @@
+package a
+
+func noted(index map[string][]string, kind string) {
+	// want+1 `map write does not need a presence check`
+	if _, ok := index["alpha"]; ok {
+		// note
+		index["alpha"] = append(index["alpha"], kind)
+	} else {
+		index["alpha"] = []string{kind}
+	}
+}
+
+func trailingNote(index map[string][]string, kind string) {
+	// want+1 `map write does not need a presence check`
+	if _, ok := index["alpha"]; ok {
+		index["alpha"] = append(index["alpha"], kind)
+	} else {
+		index["alpha"] = []string{kind}
+	} // only when the key is present
+}
+
+func leadingNote(index map[string][]string, kind string) {
+	// want+1 `map write does not need a presence check`
+	/* only when present */ if _, ok := index["alpha"]; ok {
+		index["alpha"] = append(index["alpha"], kind)
+	} else {
+		index["alpha"] = []string{kind}
+	}
+}
+
+func rawKey(index map[string][]string, kind string) {
+	// want+1 `map write does not need a presence check`
+	if _, ok := index[`alpha
+beta`]; ok {
+		index[`alpha
+beta`] = append(index[`alpha
+beta`], kind)
+	} else {
+		index[`alpha
+beta`] = []string{kind}
+	}
+}
+
+func notedElse(first, second map[string][]string, kind string) {
+	if len(first) > 0 {
+		second["alpha"] = nil
+	// want+2 `map write does not need a presence check`
+	} else // only when present
+	if _, ok := second["alpha"]; ok {
+		second["alpha"] = append(second["alpha"], kind)
+	} else {
+		second["alpha"] = []string{kind}
+	}
+}

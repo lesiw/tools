@@ -1,0 +1,202 @@
+package a
+
+func differentValues(index map[string][]string, kind, other string) {
+	if _, ok := index["alpha"]; ok {
+		index["alpha"] = append(index["alpha"], kind)
+	} else {
+		index["alpha"] = []string{other}
+	}
+}
+
+func differentKey(index map[string][]string, kind string) {
+	if _, ok := index["alpha"]; ok {
+		index["alpha"] = append(index["beta"], kind)
+	} else {
+		index["alpha"] = []string{kind}
+	}
+}
+
+func differentMap(one, two map[string][]string, kind string) {
+	if _, ok := one["alpha"]; ok {
+		one["alpha"] = append(two["alpha"], kind)
+	} else {
+		one["alpha"] = []string{kind}
+	}
+}
+
+func differentTarget(index, other map[string][]string, kind string) {
+	if _, ok := index["alpha"]; ok {
+		other["alpha"] = append(index["alpha"], kind)
+	} else {
+		other["alpha"] = []string{kind}
+	}
+}
+
+func subtract(total map[string]int, delta int) {
+	if _, ok := total["alpha"]; ok {
+		total["alpha"] -= delta
+	} else {
+		total["alpha"] = delta
+	}
+}
+
+func decrement(total map[string]int) {
+	if _, ok := total["alpha"]; ok {
+		total["alpha"]--
+	} else {
+		total["alpha"] = 0
+	}
+}
+
+func notOne(total map[string]int) {
+	if _, ok := total["alpha"]; ok {
+		total["alpha"]++
+	} else {
+		total["alpha"] = 2
+	}
+}
+
+func incrementedOther(total map[string]int) {
+	if _, ok := total["alpha"]; ok {
+		total["alpha"]++
+	} else {
+		total["beta"] = 1
+	}
+}
+
+func eitherCondition(index map[string][]string, kind string, ready bool) {
+	if _, ok := index["alpha"]; ok && ready {
+		index["alpha"] = append(index["alpha"], kind)
+	} else {
+		index["alpha"] = []string{kind}
+	}
+}
+
+func fewerValues(index map[string][]string, first, second string) {
+	if _, ok := index["alpha"]; ok {
+		index["alpha"] = append(index["alpha"], first, second)
+	} else {
+		index["alpha"] = []string{first}
+	}
+}
+
+func moreValues(index map[string][]string, first, second string) {
+	if _, ok := index["alpha"]; ok {
+		index["alpha"] = append(index["alpha"], first)
+	} else {
+		index["alpha"] = []string{first, second}
+	}
+}
+
+func otherSum(total map[string]int, delta int) {
+	if _, ok := total["alpha"]; ok {
+		total["alpha"] += delta
+	} else {
+		total["alpha"] = 2
+	}
+}
+
+func inverted(index map[string][]string, kind string) {
+	if _, ok := index["alpha"]; !ok {
+		index["alpha"] = append(index["alpha"], kind)
+	} else {
+		index["alpha"] = []string{kind}
+	}
+}
+
+func moreStatements(index map[string][]string, kind string) {
+	if _, ok := index["alpha"]; ok {
+		index["alpha"] = append(index["alpha"], kind)
+		index["beta"] = nil
+	} else {
+		index["alpha"] = []string{kind}
+	}
+}
+
+func emptyAppend(index map[string][]string) {
+	if _, ok := index["alpha"]; ok {
+		index["alpha"] = append(index["alpha"])
+	} else {
+		index["alpha"] = []string{}
+	}
+}
+
+func spreadAppend(index map[string][]any, xs []any) {
+	if _, ok := index["alpha"]; ok {
+		index["alpha"] = append(index["alpha"], xs...)
+	} else {
+		index["alpha"] = []any{xs}
+	}
+}
+
+func channelKey(index map[int][]string, ch chan int, kind string) {
+	if _, ok := index[len(ch)]; ok {
+		index[len(ch)] = append(index[len(ch)], kind)
+	} else {
+		index[len(ch)] = []string{kind}
+	}
+}
+
+func effectfulKey(index map[string][]string, kind string) {
+	if _, ok := index[next()]; ok {
+		index[next()] = append(index[next()], kind)
+	} else {
+		index[next()] = []string{kind}
+	}
+}
+
+func assignedFlag(index map[string][]string, kind string, ok bool) {
+	if _, ok = index["alpha"]; ok {
+		index["alpha"] = append(index["alpha"], kind)
+	} else {
+		index["alpha"] = []string{kind}
+	}
+}
+
+func noElse(index map[string][]string, kind string) {
+	if _, ok := index["alpha"]; ok {
+		index["alpha"] = append(index["alpha"], kind)
+	}
+}
+
+func elseIsIf(index map[string][]string, kind string, other bool) {
+	if _, ok := index["alpha"]; ok {
+		index["alpha"] = append(index["alpha"], kind)
+	} else if other {
+		index["alpha"] = nil
+	}
+}
+
+func keyedLiteral(index map[string][]string, kind string) {
+	if _, ok := index["alpha"]; ok {
+		index["alpha"] = append(index["alpha"], kind)
+	} else {
+		index["alpha"] = []string{0: kind}
+	}
+}
+
+func floatSum(total map[string]float64, delta float64) {
+	if _, ok := total["alpha"]; ok {
+		total["alpha"] += delta
+	} else {
+		total["alpha"] = delta
+	}
+}
+
+func complexSum(total map[string]complex128, delta complex128) {
+	if _, ok := total["alpha"]; ok {
+		total["alpha"] += delta
+	} else {
+		total["alpha"] = delta
+	}
+}
+
+func flagReadByTheWrite(index map[string][]bool) {
+	if _, ok := index["alpha"]; ok {
+		index["alpha"] = append(index["alpha"], ok)
+	} else {
+		index["alpha"] = []bool{ok}
+	}
+}
+
+func next() string { return "alpha" }

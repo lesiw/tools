@@ -1,0 +1,154 @@
+package a
+
+type ledger struct {
+	index map[string][]string
+}
+
+func appendOne(index map[string][]string, kind string) {
+	// want+1 `map write does not need a presence check`
+	if _, ok := index["alpha"]; ok {
+		index["alpha"] = append(index["alpha"], kind)
+	} else {
+		index["alpha"] = []string{kind}
+	}
+}
+
+func appendTwo(index map[string][]string, first, second string) {
+	// want+1 `map write does not need a presence check`
+	if _, found := index["alpha"]; found {
+		index["alpha"] = append(index["alpha"], first, second)
+	} else {
+		index["alpha"] = []string{first, second}
+	}
+}
+
+func appendByName(index map[string][]string, name, kind string) {
+	// want+1 `map write does not need a presence check`
+	if _, ok := index[name]; ok {
+		index[name] = append(index[name], kind)
+	} else {
+		index[name] = []string{kind}
+	}
+}
+
+func appendToField(l *ledger, kind string) {
+	// want+1 `map write does not need a presence check`
+	if _, ok := l.index["alpha"]; ok {
+		l.index["alpha"] = append(l.index["alpha"], kind)
+	} else {
+		l.index["alpha"] = []string{kind}
+	}
+}
+
+func appendNested(groups map[string]map[string][]string, group, kind string) {
+	// want+1 `map write does not need a presence check`
+	if _, ok := groups[group]["alpha"]; ok {
+		groups[group]["alpha"] = append(groups[group]["alpha"], kind)
+	} else {
+		groups[group]["alpha"] = []string{kind}
+	}
+}
+
+func appendSplit(index map[string][]string, kind string) {
+	// want+1 `map write does not need a presence check`
+	if _, ok := index["alpha"]; ok {
+		index["alpha"] = append(
+			index["alpha"],
+			kind,
+		)
+	} else {
+		index["alpha"] = []string{kind}
+	}
+}
+
+func addToTotal(total map[string]int, delta int) {
+	// want+1 `map write does not need a presence check`
+	if _, ok := total["alpha"]; ok {
+		total["alpha"] += delta
+	} else {
+		total["alpha"] = delta
+	}
+}
+
+func addLength(total map[string]int, parts []string) {
+	// want+1 `map write does not need a presence check`
+	if _, ok := total["alpha"]; ok {
+		total["alpha"] += len(parts)
+	} else {
+		total["alpha"] = len(parts)
+	}
+}
+
+func addLiteral(total map[string]int) {
+	// want+1 `map write does not need a presence check`
+	if _, ok := total["alpha"]; ok {
+		total["alpha"] += 4
+	} else {
+		total["alpha"] = 4
+	}
+}
+
+func addFloatLiteral(total map[string]float64) {
+	// want+1 `map write does not need a presence check`
+	if _, ok := total["alpha"]; ok {
+		total["alpha"] += 1
+	} else {
+		total["alpha"] = 1
+	}
+}
+
+func increment(total map[string]int) {
+	// want+1 `map write does not need a presence check`
+	if _, ok := total["alpha"]; ok {
+		total["alpha"]++
+	} else {
+		total["alpha"] = 1
+	}
+}
+
+func incrementFloat(total map[string]float64) {
+	// want+1 `map write does not need a presence check`
+	if _, ok := total["alpha"]; ok {
+		total["alpha"]++
+	} else {
+		total["alpha"] = 1.0
+	}
+}
+
+func addFromCall(total map[string]int, next func() int) {
+	// want+1 `map write does not need a presence check`
+	if _, ok := total["alpha"]; ok {
+		total["alpha"] += next()
+	} else {
+		total["alpha"] = next()
+	}
+}
+
+func incrementWrittenInHex(total map[string]int) {
+	// want+1 `map write does not need a presence check`
+	if _, ok := total["alpha"]; ok {
+		total["alpha"]++
+	} else {
+		total["alpha"] = 0x1
+	}
+}
+
+func throughAssertion(held any, delta int) {
+	// want+1 `map write does not need a presence check`
+	if _, ok := held.(map[string][]int)["a"]; ok {
+		held.(map[string][]int)["a"] = append(held.(map[string][]int)["a"], delta)
+	} else {
+		held.(map[string][]int)["a"] = []int{delta}
+	}
+}
+
+func appendInElseIf(index map[string][]string, kind string, other bool) {
+	if other {
+		index["alpha"] = nil
+		// want+1 `map write does not need a presence check`
+	} else if _, ok := index["alpha"]; ok {
+		index["alpha"] = append(index["alpha"], kind)
+	} else {
+		index["alpha"] = []string{kind}
+	}
+}

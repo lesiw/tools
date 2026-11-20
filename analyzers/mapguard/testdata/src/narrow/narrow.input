@@ -1,0 +1,21 @@
+package narrow
+
+func keep(index map[string][]string, kind string) {
+	// want+1 `map write does not need a presence check`
+	if _, ok := index["alpha"]; ok {
+		index["alpha"] = append(index["alpha"], kind)
+	} else {
+		index["alpha"] = []string{kind}
+	}
+}
+
+func keepChained(index map[string][]string, kind string, other bool) {
+	if other {
+		index["alpha"] = nil
+		// want+1 `map write does not need a presence check`
+	} else if _, ok := index["alpha"]; ok {
+		index["alpha"] = append(index["alpha"], kind)
+	} else {
+		index["alpha"] = []string{kind}
+	}
+}

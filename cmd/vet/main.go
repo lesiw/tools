@@ -2261,6 +2261,21 @@
 //		return 0, false
 //	}
 //
+// # mapguard
+//
+// Reports a presence check around a map write that needs none. A missing key
+// reads as the element's zero value, so each branch writes the same value.
+//
+// Adapted from staticcheck's S1036.
+//
+//	func f(index map[string][]string, kind string) {
+//		if _, ok := index["alpha"]; ok {
+//			index["alpha"] = append(index["alpha"], kind)
+//		} else {
+//			index["alpha"] = []string{kind}
+//		}
+//	}
+//
 // # mapkey
 //
 // Reports a map key that is unhashable. A map keyed by an interface accepts a

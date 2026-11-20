@@ -1,0 +1,25 @@
+package past
+
+type ledger struct {
+	index map[string][]string
+}
+
+func keep(l *ledger, kind string) {
+	// want+1 `map write does not need a presence check`
+	if _, ok := l.index["alpha"]; ok {
+		l.index["alpha"] = append(l.index["alpha"], kind)
+	} else {
+		l.index["alpha"] = []string{kind}
+	}
+}
+
+func keepChained(groups map[string]map[string][]string, group, kind string, other bool) {
+	if other {
+		groups[group]["alpha"] = nil
+		// want+1 `map write does not need a presence check`
+	} else if _, ok := groups[group]["alpha"]; ok {
+		groups[group]["alpha"] = append(groups[group]["alpha"], kind)
+	} else {
+		groups[group]["alpha"] = []string{kind}
+	}
+}
