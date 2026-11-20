@@ -1,0 +1,139 @@
+package a
+
+import (
+	"fmt"
+	"log"
+	"testing"
+)
+
+type texts []byte
+
+func (*texts) String() string { return "" }
+
+type stringed []byte
+
+func (stringed) String() string { return "" }
+
+type failed []byte
+
+func (failed) Error() string { return "" }
+
+type formatted []byte
+
+func (formatted) Format(fmt.State, rune) {}
+
+type mismatched []byte
+
+func (mismatched) Format(n int, verb rune) {}
+
+type sink []byte
+
+func (sink) Write(p []byte) (int, error) { return len(p), nil }
+
+func defaults(b []byte, s string) {
+	fmt.Print(b, s)         // want `formats as a list of numbers`
+	fmt.Println(s, b)       // want `formats as a list of numbers`
+	fmt.Fprint(nil, b)      // want `formats as a list of numbers`
+	fmt.Fprintln(nil, s, b) // want `formats as a list of numbers`
+	fmt.Sprint(b)           // want `formats as a list of numbers`
+	fmt.Sprintln(b)         // want `formats as a list of numbers`
+}
+
+func logged(l *log.Logger, b []byte) {
+	log.Print(b)   // want `formats as a list of numbers`
+	log.Println(b) // want `formats as a list of numbers`
+	log.Fatal(b)   // want `formats as a list of numbers`
+	log.Fatalln(b) // want `formats as a list of numbers`
+	log.Panic(b)   // want `formats as a list of numbers`
+	log.Panicln(b) // want `formats as a list of numbers`
+	l.Print(b)     // want `formats as a list of numbers`
+	l.Println(b)   // want `formats as a list of numbers`
+	l.Fatal(b)     // want `formats as a list of numbers`
+	l.Fatalln(b)   // want `formats as a list of numbers`
+	l.Panic(b)     // want `formats as a list of numbers`
+	l.Panicln(b)   // want `formats as a list of numbers`
+}
+
+func recorded(t *testing.T, bench *testing.B, f *testing.F, tb testing.TB, src []byte) {
+	t.Error(src)               // want `formats as a list of numbers`
+	t.Log(src)                 // want `formats as a list of numbers`
+	t.Fatal(src)               // want `formats as a list of numbers`
+	t.Skip(src)                // want `formats as a list of numbers`
+	bench.Error(src)           // want `formats as a list of numbers`
+	f.Skip(src)                // want `formats as a list of numbers`
+	tb.Log(src)                // want `formats as a list of numbers`
+	(*testing.T).Error(t, src) // want `formats as a list of numbers`
+}
+
+type recorder struct{ *log.Logger }
+
+type hidden struct{ *log.Logger }
+
+func (hidden) Print(...any) {}
+
+type ownTest struct{ *testing.T }
+
+func (ownTest) Log(...any) {}
+
+func embedded(r recorder, h hidden, o ownTest, l *log.Logger, b []byte) {
+	r.Print(b)   // want `formats as a list of numbers`
+	h.Println(b) // want `formats as a list of numbers`
+	h.Print(b)
+	o.Log(b)
+	o.Error(b)                // want `formats as a list of numbers`
+	(*log.Logger).Print(l, b) // want `formats as a list of numbers`
+}
+
+func named() {
+	type element = byte
+	type digit byte
+	type grouped []element
+	type digits []digit
+	type copied = texts
+	fmt.Print(grouped{}) // want `formats as a list of numbers`
+	fmt.Print(digits{})  // want `formats as a list of numbers`
+	fmt.Print(copied{})  // want `formats as a list of numbers`
+}
+
+func writes(s sink, b []byte) {
+	fmt.Fprint(s, b) // want `formats as a list of numbers`
+}
+
+func pointers(t texts, p *texts) {
+	fmt.Print(t) // want `formats as a list of numbers`
+	fmt.Print(p)
+}
+
+func silent(v stringed, e failed, f formatted) {
+	fmt.Print(v, e, f)
+	fmt.Println(v)
+}
+
+func shaped(m mismatched) {
+	fmt.Print(m) // want `formats as a list of numbers`
+}
+
+func shadowed(b []byte) {
+	string := len(b)
+	fmt.Print(b) // want `formats as a list of numbers`
+	_ = string
+}
+
+func others(xs []int, rs []rune, s string) {
+	fmt.Print(xs, rs, s)
+}
+
+func elsewhere(b []byte) {
+	fmt.Printf("%s", b)
+	fmt.Errorf("%s", b)
+	fmt.Sprint(string(b))
+	fmt.Print(pair())
+	fmt.Print(b[:]) // want `formats as a list of numbers`
+	fmt.Print((b))  // want `formats as a list of numbers`
+}
+
+func pair() ([]byte, int) { return nil, 0 }
+
+func generic[T ~[]byte](src T) {
+	fmt.Print(src)
+}

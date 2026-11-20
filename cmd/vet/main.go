@@ -2878,6 +2878,17 @@
 //		b.WriteString(string([]byte{'0'}))
 //	}
 //
+// # printbytes
+//
+// Reports a byte slice printed by a call that formats its operands the
+// default way. A slice's default format prints its elements in decimal.
+//
+// Adapted from staticcheck's QF1010.
+//
+//	func f(b []byte) {
+//		fmt.Print(b)
+//	}
+//
 // # printf
 //
 // Reports a format string whose verbs and arguments disagree, and a formatting

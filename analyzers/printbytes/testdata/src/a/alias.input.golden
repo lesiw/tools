@@ -1,0 +1,12 @@
+package a
+
+import (
+	f "fmt"
+	l "log"
+)
+
+func aliased(src []byte) {
+	f.Print(string(src))    // want `formats as a list of numbers`
+	f.Sprintln(string(src)) // want `formats as a list of numbers`
+	l.Println(string(src))  // want `formats as a list of numbers`
+}

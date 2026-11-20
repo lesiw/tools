@@ -1,0 +1,8 @@
+package a
+
+import . "log"
+
+func dotted(src []byte) {
+	Print(string(src))   // want `formats as a list of numbers`
+	Println(string(src)) // want `formats as a list of numbers`
+}

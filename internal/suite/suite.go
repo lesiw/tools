@@ -231,6 +231,7 @@ import (
 	"lesiw.io/tools/analyzers/preferfprint"
 	"lesiw.io/tools/analyzers/preferstringwriter"
 	"lesiw.io/tools/analyzers/preferwritebyte"
+	"lesiw.io/tools/analyzers/printbytes"
 	"lesiw.io/tools/analyzers/ptrtoerror"
 	"lesiw.io/tools/analyzers/queryadd"
 	"lesiw.io/tools/analyzers/randzero"
@@ -568,6 +569,7 @@ var (
 		preferfprint.Analyzer,
 		preferstringwriter.Analyzer,
 		preferwritebyte.Analyzer,
+		printbytes.Analyzer,
 		printf.Analyzer,
 		ptrtoerror.Analyzer,
 		queryadd.Analyzer,

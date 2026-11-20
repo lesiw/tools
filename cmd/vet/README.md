@@ -2822,6 +2822,18 @@ func f(b *bytes.Buffer) {
 }
 ```
 
+## printbytes
+
+Reports a byte slice printed by a call that formats its operands the default way. A slice's default format prints its elements in decimal.
+
+Adapted from staticcheck's QF1010.
+
+```
+func f(b []byte) {
+    fmt.Print(b)
+}
+```
+
 ## printf
 
 Reports a format string whose verbs and arguments disagree, and a formatting call with the wrong number of arguments. The check covers fmt, log, and a wrapper of either.
