@@ -1,0 +1,311 @@
+package a
+
+func use(...any) {}
+
+type namer interface{ Name() string }
+
+func newValue() any { return nil }
+
+func single(x any) {
+	switch x.(type) { // want `a case asserts the value again; bind it in the switch`
+	case int:
+		use(x.(int))
+	}
+}
+
+func twoCases(x any) {
+	switch x.(type) { // want `a case asserts the value again; bind it in the switch`
+	case int:
+		use(x.(int))
+	case string:
+		use(len(x.(string)))
+	}
+}
+
+func twiceInOneCase(x any) {
+	switch x.(type) { // want `a case asserts the value again; bind it in the switch`
+	case int:
+		use(x.(int), x.(int))
+	}
+}
+
+func mixedValues(x, y any) {
+	switch x.(type) { // want `a case asserts the value again; bind it in the switch`
+	case int:
+		use(x.(int), y.(int))
+	}
+}
+
+func interfaceCase(x any) {
+	switch x.(type) { // want `a case asserts the value again; bind it in the switch`
+	case namer:
+		use(x.(namer).Name())
+	}
+}
+
+func parenthesized(x any) {
+	switch (x).(type) { // want `a case asserts the value again; bind it in the switch`
+	case int:
+		use((x).(int))
+	}
+}
+
+func withDefault(x any) {
+	switch x.(type) { // want `a case asserts the value again; bind it in the switch`
+	case int:
+		use(x.(int))
+	default:
+		use(x)
+	}
+}
+
+func withMultiple(x any) {
+	switch x.(type) { // want `a case asserts the value again; bind it in the switch`
+	case int:
+		use(x.(int))
+	case int8, int16:
+		use(x)
+	}
+}
+
+func shadowedBlock(x any) {
+	switch x.(type) { // want `a case asserts the value again; bind it in the switch`
+	case int:
+		{
+			x := "alpha"
+			use(x)
+		}
+		use(x.(int))
+	}
+}
+
+func repeatedAssertion(x any) {
+	switch x.(type) {
+	case int:
+		for i := 0; i < 2; i++ {
+			use(x.(int))
+			x = i
+		}
+	}
+}
+
+func nestedUnreported(x, y any) {
+	switch x.(type) { // want `a case asserts the value again; bind it in the switch`
+	case int:
+		use(x.(int))
+		switch y.(type) {
+		case string:
+			use(y)
+		}
+	}
+}
+
+func writtenBefore(x any) {
+	switch x.(type) {
+	case int:
+		x = "alpha"
+		use(x.(int))
+	}
+}
+
+func writtenInCase(x any) {
+	switch x.(type) { // want `a case asserts the value again; bind it in the switch`
+	case int:
+		use(x.(int))
+		x = 1
+	}
+	use(x)
+}
+
+func declaredInCase(x any) {
+	switch x.(type) { // want `a case asserts the value again; bind it in the switch`
+	case int:
+		use(x.(int))
+		x, n := 0, 1
+		use(x, n)
+	}
+}
+
+func declaredInBlock(x any) {
+	switch x.(type) { // want `a case asserts the value again; bind it in the switch`
+	case int:
+		use(x.(int))
+		var x string
+		use(x)
+	}
+}
+
+func addressedInCase(x any) {
+	switch x.(type) { // want `a case asserts the value again; bind it in the switch`
+	case int:
+		use(x.(int))
+		p := &x
+		use(p)
+	}
+}
+
+func capturedInCase(x any) {
+	switch x.(type) { // want `a case asserts the value again; bind it in the switch`
+	case int:
+		use(x.(int))
+		defer func() { x = 1 }()
+	}
+}
+
+func readInClosure(x any) {
+	var later func()
+	switch x.(type) {
+	case int:
+		later = func() { use(x.(int)) }
+		x = "alpha"
+	}
+	later()
+}
+
+func addressedAbove(x any) {
+	p := &x
+	switch x.(type) {
+	case int:
+		*p = "alpha"
+		use(x.(int))
+	}
+}
+
+func inLiteral(x any) {
+	f := func() {
+		switch x.(type) { // want `a case asserts the value again; bind it in the switch`
+		case int:
+			use(x.(int))
+		}
+	}
+	f()
+}
+
+func writtenByCall(x any) {
+	set := func() { x = "alpha" }
+	switch x.(type) {
+	case int:
+		set()
+		use(x.(int))
+	}
+}
+
+func writtenByRange(x any, items []int) {
+	switch x.(type) {
+	case int:
+		for x = range items {
+		}
+		use(x.(int))
+	}
+}
+
+func comparedWithNil(x any) {
+	switch x.(type) { // want `a case asserts the value again; bind it in the switch`
+	case int:
+		use(x.(int), x != nil, nil == x)
+	}
+}
+
+func anotherType(x any) {
+	switch x.(type) { // want `a case asserts the value again; bind it in the switch`
+	case int:
+		use(x.(int), x.(string))
+	}
+}
+
+func nestedSwitch(x, y any) {
+	switch x.(type) { // want `a case asserts the value again; bind it in the switch`
+	case int:
+		use(x.(int))
+		switch y.(type) { // want `a case asserts the value again; bind it in the switch`
+		case int:
+			use(y.(int), x.(int))
+		}
+	}
+}
+
+func commaOk(x any) {
+	switch x.(type) { // want `a case asserts the value again; bind it in the switch`
+	case int:
+		got, ok := (x.(int))
+		var more, others = x.(int)
+		use(got, ok, more, others, x.(int))
+	}
+}
+
+func nameInUse(x any) {
+	switch x.(type) { // want `a case asserts the value again; bind it in the switch`
+	case int:
+		v := 1
+		use(v, x.(int))
+	}
+}
+
+func commentedAssertion(x any) {
+	switch x.(type) { // want `a case asserts the value again; bind it in the switch`
+	case int:
+		use(x.( /* keep */ int))
+	}
+}
+
+func commentedGuard(x any) {
+	switch x. /* keep */ (type) { // want `a case asserts the value again; bind it in the switch`
+	case int:
+		use(x.(int))
+	}
+}
+
+func returned(x any) int {
+	switch x.(type) { // want `a case asserts the value again; bind it in the switch`
+	case int:
+		return x.(int)
+	}
+	return 0
+}
+
+func alreadyBound(x any) {
+	switch v := x.(type) { // want `a case asserts the value again; read v from the switch`
+	case int:
+		use(v, x.(int))
+	}
+}
+
+func nestedSameValue(x any) {
+	switch x.(type) { // want `a case asserts the value again; bind it in the switch`
+	case int:
+		use(x.(int))
+		switch x.(type) { // want `a case asserts the value again; bind it in the switch`
+		case int:
+			use(x.(int))
+		}
+	}
+}
+
+func anotherValue(x, y any) {
+	switch x.(type) {
+	case int:
+		use(y.(int))
+	}
+}
+
+func onlySuccessResult(x any) {
+	switch x.(type) {
+	case int:
+		_, ok := x.(int)
+		use(ok)
+	}
+}
+
+func computedGuard() {
+	switch newValue().(type) {
+	case int:
+		use(newValue().(int))
+	}
+}
+
+func noAssertion(x any) {
+	switch x.(type) {
+	case int:
+		use(x)
+	}
+}

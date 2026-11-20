@@ -65,6 +65,7 @@ import (
 	"lesiw.io/tools/analyzers/argoverwritten"
 	"lesiw.io/tools/analyzers/assertelse"
 	"lesiw.io/tools/analyzers/assertnil"
+	"lesiw.io/tools/analyzers/assertresult"
 	"lesiw.io/tools/analyzers/assignop"
 	"lesiw.io/tools/analyzers/atoinarrow"
 	"lesiw.io/tools/analyzers/badcall"
@@ -374,6 +375,7 @@ var (
 		asmdecl.Analyzer,
 		assertelse.Analyzer,
 		assertnil.Analyzer,
+		assertresult.Analyzer,
 		assign.Analyzer,
 		assignop.Analyzer,
 		atoinarrow.Analyzer,

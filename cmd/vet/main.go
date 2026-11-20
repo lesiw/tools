@@ -205,6 +205,21 @@
 //		}
 //	}
 //
+// # assertresult
+//
+// Reports a case that asserts the value its type switch already tested. A case
+// that lists one type is entered only when that type matches, so the assertion
+// cannot fail.
+//
+// Adapted from staticcheck's S1034.
+//
+//	func f(x any) {
+//		switch x.(type) {
+//		case int:
+//			print(x.(int))
+//		}
+//	}
+//
 // # assign
 //
 // Reports an assignment that stores an expression into itself, as x = x or
