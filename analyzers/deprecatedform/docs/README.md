@@ -1,6 +1,6 @@
-# lesiw.io/tools/analyzers/deprecated
+# lesiw.io/tools/analyzers/deprecatedform
 
-[![Go Reference](https://pkg.go.dev/badge/lesiw.io/tools/analyzers/deprecated.svg)](https://pkg.go.dev/lesiw.io/tools/analyzers/deprecated)
+[![Go Reference](https://pkg.go.dev/badge/lesiw.io/tools/analyzers/deprecatedform.svg)](https://pkg.go.dev/lesiw.io/tools/analyzers/deprecatedform)
 [![CI](https://github.com/lesiw/tools/actions/workflows/main.yml/badge.svg?branch=main)](https://github.com/lesiw/tools/actions/workflows/main.yml)
 [![Release](https://img.shields.io/github/v/tag/lesiw/tools?sort=semver&label=release)](https://github.com/lesiw/tools/tags)
 [![Go Version](https://img.shields.io/github/go-mod/go-version/lesiw/tools)](../../../go.mod)

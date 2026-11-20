@@ -1,10 +1,10 @@
-// Package deprecated provides an analysis.Analyzer that reports a doc comment
-// that marks something deprecated without the form godoc reads.
+// Package deprecatedform provides an analysis.Analyzer that reports a doc
+// comment that marks something deprecated without the form godoc reads.
 //
-// godoc and every editor that renders it look for a paragraph beginning with
+// godoc and the editors that render it look for a paragraph beginning with
 // "Deprecated: ". A comment that opens with the word instead is prose, so the
 // deprecation is invisible to the tools that would warn a caller.
-package deprecated
+package deprecatedform
 
 import (
 	"go/ast"
@@ -14,7 +14,7 @@ import (
 )
 
 var Analyzer = &analysis.Analyzer{
-	Name: "deprecated",
+	Name: "deprecatedform",
 	Doc:  "reports a deprecation that godoc will not read",
 	Run:  run,
 }

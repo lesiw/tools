@@ -944,7 +944,7 @@ func f(rows map[string]int, name string) {
 }
 ```
 
-## deprecated
+## deprecatedform
 
 Reports a doc comment that marks something deprecated without the paragraph godoc reads. godoc and the editors that render it warn a caller only for a paragraph beginning with Deprecated: .
 

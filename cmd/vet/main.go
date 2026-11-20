@@ -970,11 +970,11 @@
 //		}
 //	}
 //
-// # deprecated
+// # deprecatedform
 //
 // Reports a doc comment that marks something deprecated without the paragraph
-// godoc reads. godoc and the editors that render it warn a caller only for a
-// paragraph beginning with Deprecated: .
+// godoc reads. godoc and the editors that render it take a deprecation only
+// from a paragraph that begins with Deprecated: and a space.
 //
 // Inspired by go-critic's deprecatedComment.
 //
