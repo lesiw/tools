@@ -260,6 +260,7 @@ import (
 	"lesiw.io/tools/analyzers/selectsleep"
 	"lesiw.io/tools/analyzers/selfassert"
 	"lesiw.io/tools/analyzers/shellcommand"
+	"lesiw.io/tools/analyzers/simplifycompositelit"
 	"lesiw.io/tools/analyzers/singlefield"
 	"lesiw.io/tools/analyzers/slenstr"
 	"lesiw.io/tools/analyzers/sliceclear"
@@ -602,6 +603,7 @@ var (
 		shellcommand.Analyzer,
 		shift.Analyzer,
 		sigchanyzer.Analyzer,
+		simplifycompositelit.Analyzer,
 		singlefield.Analyzer,
 		slenstr.Analyzer,
 		sliceclear.Analyzer,

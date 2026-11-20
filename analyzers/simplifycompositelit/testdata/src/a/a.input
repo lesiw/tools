@@ -1,0 +1,258 @@
+package a
+
+type pair struct {
+	x, y int
+}
+
+type code struct {
+	w, z int
+}
+
+var _ = [4]pair{
+	pair{},     // want "redundant type in array literal"
+	pair{1, 2}, // want "redundant type in array literal"
+	pair{3, 4}, // want "redundant type in array literal"
+}
+
+var _ = [...]pair{
+	pair{},     // want "redundant type in array literal"
+	pair{1, 2}, // want "redundant type in array literal"
+	pair{3, 4}, // want "redundant type in array literal"
+}
+
+var _ = []pair{
+	pair{},     // want "redundant type in slice literal"
+	pair{1, 2}, // want "redundant type in slice literal"
+	pair{3, 4}, // want "redundant type in slice literal"
+}
+
+var _ = []pair{
+	pair{}, // want "redundant type in slice literal"
+	10:     pair{1, 2}, // want "redundant type in slice literal"
+	20:     pair{3, 4}, // want "redundant type in slice literal"
+}
+
+var _ = []struct {
+	x, y int
+}{
+	struct{ x, y int }{}, // want "redundant type in slice literal"
+	10:                   struct{ x, y int }{1, 2}, // want "redundant type in slice literal"
+	20:                   struct{ x, y int }{3, 4}, // want "redundant type in slice literal"
+}
+
+var _ = []interface{}{
+	pair{},
+	10: pair{1, 2},
+	20: pair{3, 4},
+}
+
+var _ = [][]int{
+	[]int{},     // want "redundant type in slice literal"
+	[]int{1, 2}, // want "redundant type in slice literal"
+	[]int{3, 4}, // want "redundant type in slice literal"
+}
+
+var _ = [][]int{
+	([]int{}),
+	([]int{1, 2}),
+	[]int{3, 4}, // want "redundant type in slice literal"
+}
+
+var _ = [][][]int{
+	[][]int{}, // want "redundant type in slice literal"
+	[][]int{ // want "redundant type in slice literal"
+		[]int{},           // want "redundant type in slice literal"
+		[]int{0, 1, 2, 3}, // want "redundant type in slice literal"
+		[]int{4, 5},       // want "redundant type in slice literal"
+	},
+}
+
+var _ = map[string]pair{
+	"one":   pair{},     // want "redundant type in map literal"
+	"two":   pair{1, 2}, // want "redundant type in map literal"
+	"three": pair{3, 4}, // want "redundant type in map literal"
+}
+
+var _ = map[string]struct {
+	x, y int
+}{
+	"one":   struct{ x, y int }{},     // want "redundant type in map literal"
+	"two":   struct{ x, y int }{1, 2}, // want "redundant type in map literal"
+	"three": struct{ x, y int }{3, 4}, // want "redundant type in map literal"
+}
+
+var _ = map[string]interface{}{
+	"one":   pair{},
+	"two":   pair{1, 2},
+	"three": pair{3, 4},
+}
+
+var _ = map[string][]int{
+	"one":   []int{},     // want "redundant type in map literal"
+	"two":   []int{1, 2}, // want "redundant type in map literal"
+	"three": []int{3, 4}, // want "redundant type in map literal"
+}
+
+var _ = map[string][]int{
+	"one":   ([]int{}),
+	"two":   ([]int{1, 2}),
+	"three": []int{3, 4}, // want "redundant type in map literal"
+}
+
+type cell struct {
+	a int
+	b int
+}
+
+type row struct {
+	a int
+	b int
+	c cell
+	d []cell
+	e *cell
+	f *cell
+}
+
+var grid = []row{
+	row{0, 0, cell{4, 1}, []cell{cell{0, 0}, cell{1, 0}}, nil, nil}, // want "redundant type in slice literal" "redundant type in slice literal" "redundant type in slice literal"
+}
+
+var _ = [4]*pair{
+	&pair{},     // want "redundant type in array literal"
+	&pair{1, 2}, // want "redundant type in array literal"
+	&pair{3, 4}, // want "redundant type in array literal"
+}
+
+var _ = [...]*pair{
+	&pair{},     // want "redundant type in array literal"
+	&pair{1, 2}, // want "redundant type in array literal"
+	&pair{3, 4}, // want "redundant type in array literal"
+}
+
+var _ = []*pair{
+	&pair{},     // want "redundant type in slice literal"
+	&pair{1, 2}, // want "redundant type in slice literal"
+	&pair{3, 4}, // want "redundant type in slice literal"
+}
+
+var _ = []*pair{
+	& /* keep */ pair{}, // want "redundant type in slice literal"
+}
+
+var _ = []*pair{
+	&pair{}, // want "redundant type in slice literal"
+	10:      &pair{1, 2}, // want "redundant type in slice literal"
+	20:      &pair{3, 4}, // want "redundant type in slice literal"
+}
+
+var _ = []*struct {
+	x, y int
+}{
+	&struct{ x, y int }{}, // want "redundant type in slice literal"
+	10:                    &struct{ x, y int }{1, 2}, // want "redundant type in slice literal"
+	20:                    &struct{ x, y int }{3, 4}, // want "redundant type in slice literal"
+}
+
+var _ = []interface{}{
+	&pair{},
+	10: &pair{1, 2},
+	20: &pair{3, 4},
+}
+
+var _ = []*[]int{
+	&[]int{},     // want "redundant type in slice literal"
+	&[]int{1, 2}, // want "redundant type in slice literal"
+	&[]int{3, 4}, // want "redundant type in slice literal"
+}
+
+var _ = []*[]int{
+	(&[]int{}),
+	(&[]int{1, 2}),
+	&[]int{3, 4}, // want "redundant type in slice literal"
+}
+
+var _ = []*[]*[]int{
+	&[]*[]int{}, // want "redundant type in slice literal"
+	&[]*[]int{ // want "redundant type in slice literal"
+		&[]int{},     // want "redundant type in slice literal"
+		&[]int{4, 5}, // want "redundant type in slice literal"
+	},
+}
+
+var _ = map[string]*pair{
+	"one":   &pair{},     // want "redundant type in map literal"
+	"two":   &pair{1, 2}, // want "redundant type in map literal"
+	"three": &pair{3, 4}, // want "redundant type in map literal"
+}
+
+var _ = map[string]*struct {
+	x, y int
+}{
+	"one":   &struct{ x, y int }{},     // want "redundant type in map literal"
+	"two":   &struct{ x, y int }{1, 2}, // want "redundant type in map literal"
+	"three": &struct{ x, y int }{3, 4}, // want "redundant type in map literal"
+}
+
+var _ = map[string]interface{}{
+	"one":   &pair{},
+	"two":   &pair{1, 2},
+	"three": &pair{3, 4},
+}
+
+var _ = map[string]*[]int{
+	"one":   &[]int{},     // want "redundant type in map literal"
+	"two":   &[]int{1, 2}, // want "redundant type in map literal"
+	"three": &[]int{3, 4}, // want "redundant type in map literal"
+}
+
+var _ = map[string]*[]int{
+	"one":   (&[]int{}),
+	"two":   (&[]int{1, 2}),
+	"three": &[]int{3, 4}, // want "redundant type in map literal"
+}
+
+var gridptr = []*row{
+	&row{0, 0, cell{4, 1}, []cell{cell{0, 0}, cell{1, 0}}, nil, nil}, // want "redundant type in slice literal" "redundant type in slice literal" "redundant type in slice literal"
+}
+
+var _ = map[pair]code{
+	pair{1, 2}: code{3, 4}, // want "redundant type in map literal" "redundant type in map literal"
+	pair{5, 6}: code{7, 8}, // want "redundant type in map literal" "redundant type in map literal"
+}
+
+var _ = map[*pair]*code{
+	&pair{1, 2}: &code{3, 4}, // want "redundant type in map literal" "redundant type in map literal"
+	&pair{5, 6}: &code{7, 8}, // want "redundant type in map literal" "redundant type in map literal"
+}
+
+type aliasPair = pair
+
+var _ = []pair{
+	aliasPair{}, // want "redundant type in slice literal"
+}
+
+var _ = []aliasPair{
+	pair{}, // want "redundant type in slice literal"
+}
+
+var _ = []*aliasPair{
+	&pair{}, // want "redundant type in slice literal"
+}
+
+var _ = map[string]aliasPair{
+	"one": pair{}, // want "redundant type in map literal"
+}
+
+type pairList = []pair
+
+var _ = pairList{
+	pair{},
+}
+
+var commentInType = [][]int{
+	[] /* keep */ int{}, // want "redundant type in slice literal"
+}
+
+var commentInPointerType = []*[]int{
+	&[] /* keep */ int{}, // want "redundant type in slice literal"
+}

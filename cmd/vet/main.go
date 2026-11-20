@@ -3339,6 +3339,15 @@
 //		signal.Notify(ch, os.Interrupt)
 //	}
 //
+// # simplifycompositelit
+//
+// Reports an element or map key that repeats the type its composite literal
+// names. The spec allows the elision, and gofmt -s writes it.
+//
+// Vendored from gopls' simplifycompositelit.
+//
+//	var _ = [][]int{[]int{1, 2}}
+//
 // # singlefield
 //
 // Reports a struct of one field that the type could carry instead. A pointer,

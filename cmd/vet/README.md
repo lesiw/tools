@@ -3281,6 +3281,16 @@ func f(ch chan os.Signal) {
 }
 ```
 
+## simplifycompositelit
+
+Reports an element or map key that repeats the type its composite literal names. The spec allows the elision, and gofmt -s writes it.
+
+Vendored from gopls' simplifycompositelit.
+
+```
+var _ = [][]int{[]int{1, 2}}
+```
+
 ## singlefield
 
 Reports a struct of one field that the type could carry instead. A pointer, interface, embedded, or tagged field is left alone. The field and the type fold into a defined type, and for an exported one that changes every importer.
