@@ -1,0 +1,10 @@
+package a
+
+import . "time"
+
+func pauseDotted() {
+	// want +1 `select with a single case that receives from time\.After$`
+	select {
+	case <-After(Second):
+	}
+}

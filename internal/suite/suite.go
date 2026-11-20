@@ -256,6 +256,7 @@ import (
 	"lesiw.io/tools/analyzers/seekwhence"
 	"lesiw.io/tools/analyzers/selectempty"
 	"lesiw.io/tools/analyzers/selectone"
+	"lesiw.io/tools/analyzers/selectsleep"
 	"lesiw.io/tools/analyzers/selfassert"
 	"lesiw.io/tools/analyzers/shellcommand"
 	"lesiw.io/tools/analyzers/singlefield"
@@ -593,6 +594,7 @@ var (
 		seekwhence.Analyzer,
 		selectempty.Analyzer,
 		selectone.Analyzer,
+		selectsleep.Analyzer,
 		selfassert.Analyzer,
 		shellcommand.Analyzer,
 		shift.Analyzer,

@@ -26,6 +26,8 @@ case, the send or receive in the case blocks the same way without the select.
 Not reported:
 
 - A select with no cases, a default clause, or more than one case.
+- A select whose single case discards a value received from `time.After`, which
+  the `selectsleep` analyzer reports.
 - A select whose case body holds a break that leaves the select. The break
   statement section says a break ends the innermost for, switch, or select, or
   the statement named by a label
@@ -36,8 +38,9 @@ Fixable: the select is replaced with the send or receive in the case and the
 body. The fix is withheld when it would delete a comment, when the select does
 not occupy whole lines, when the body holds a raw string that spans lines, when
 a name in the case is declared anywhere in the block around the select or in a
-scope that block can see, or when a goto would jump over a var declaration the
-fix moves out of the case.
+scope that block can see, when a goto would jump over a var declaration the fix
+moves out of the case, and when a sibling select would move a name into that
+block too.
 
 A name in the case can shadow a name in an outer scope that later code in the
 block uses, so moving the declaration would change which value that code reads.

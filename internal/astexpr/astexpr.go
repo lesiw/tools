@@ -5,8 +5,8 @@
 // interface in it, whether a selection goes through a pointer, whether a type
 // is the predeclared boolean, whether a type can hold a NaN, whether its type
 // set holds only arrays, whether its type set can be written through an index,
-// what the parent of every node is, and whether a statement reads the value it
-// writes.
+// what the parent of every node is, whether a comment overlaps a span, and
+// whether a statement reads the value it writes.
 package astexpr
 
 import (

@@ -1,7 +1,8 @@
 // Package timeexpr provides facts about time.Time expressions and rewrites
 // that the analyzers share: the name a file uses for the time package, whether
 // an expression is a time.Time or a *time.Time, whether a call is a time
-// function, and whether a rewrite would join lines or drop a comment.
+// function, the time.After call a select case receives from and discards, and
+// whether a rewrite would join lines or drop a comment.
 package timeexpr
 
 import (
@@ -25,8 +26,17 @@ func NowQualifier(pass *analysis.Pass, e ast.Expr) (string, bool) {
 	if !ok || !IsFunc(pass, sel.Sel, "Now") {
 		return "", false
 	}
+	return qualifier(pass, sel)
+}
+
+// qualifier returns the name the file uses for the time package in sel, and
+// false when the receiver is not that package.
+func qualifier(pass *analysis.Pass, sel *ast.SelectorExpr) (string, bool) {
 	id, ok := ast.Unparen(sel.X).(*ast.Ident)
 	if !ok {
+		return "", false
+	}
+	if _, ok := pass.TypesInfo.Uses[id].(*types.PkgName); !ok {
 		return "", false
 	}
 	return id.Name, true
@@ -55,6 +65,52 @@ func Text(pass *analysis.Pass, e ast.Expr) (string, bool) {
 	return text, true
 }
 
+// AfterCall returns the time.After call of a select case that receives from it
+// and discards the value, as in <-time.After(d) or _ = <-time.After(d), and
+// the name the file uses for the time package, which is empty for a dot
+// import.
+func AfterCall(pass *analysis.Pass, stmt ast.Stmt) (call *ast.CallExpr, qual string, ok bool) {
+	var e ast.Expr
+	switch stmt := stmt.(type) {
+	case *ast.ExprStmt:
+		e = stmt.X
+	case *ast.AssignStmt:
+		if stmt.Tok != token.ASSIGN {
+			return nil, "", false
+		}
+		if len(stmt.Lhs) != 1 || len(stmt.Rhs) != 1 {
+			return nil, "", false
+		}
+		if id, ok := stmt.Lhs[0].(*ast.Ident); !ok || id.Name != "_" {
+			return nil, "", false
+		}
+		e = stmt.Rhs[0]
+	default:
+		return nil, "", false
+	}
+	recv, ok := ast.Unparen(e).(*ast.UnaryExpr)
+	if !ok || recv.Op != token.ARROW {
+		return nil, "", false
+	}
+	call, ok = ast.Unparen(recv.X).(*ast.CallExpr)
+	if !ok || len(call.Args) != 1 {
+		return nil, "", false
+	}
+	fun, ok := ast.Unparen(call.Fun).(*ast.SelectorExpr)
+	if !ok {
+		id, ok := ast.Unparen(call.Fun).(*ast.Ident)
+		if !ok || !IsFunc(pass, id, "After") {
+			return nil, "", false
+		}
+		return call, "", true
+	}
+	if !IsFunc(pass, fun.Sel, "After") {
+		return nil, "", false
+	}
+	qual, ok = qualifier(pass, fun)
+	return call, qual, ok
+}
+
 // IsFunc reports whether id is the function called name in package time.
 func IsFunc(pass *analysis.Pass, id *ast.Ident, name string) bool {
 	fn, ok := pass.TypesInfo.Uses[id].(*types.Func)
@@ -72,12 +128,7 @@ func Fixable(fset *token.FileSet, file *ast.File, span ast.Node) bool {
 	if start.Line != end.Line {
 		return false
 	}
-	for _, group := range file.Comments {
-		if group.Pos() < span.End() && span.Pos() < group.End() {
-			return false
-		}
-	}
-	return true
+	return !astexpr.Commented(file, span.Pos(), span.End())
 }
 
 // isValue reports whether t is time.Time.

@@ -3252,13 +3252,29 @@
 //
 // Reports a select statement with a single case clause and no default. The
 // send or receive in the case blocks the same way without the select. A select
-// whose case body holds a break that leaves the select is left alone.
+// whose case body holds a break that leaves the select is left alone, and so
+// is one whose case discards a value received from time.After, which
+// selectsleep reports.
 //
 // Adapted from staticcheck's S1000.
 //
 //	func wait(ch <-chan int) {
 //		select {
 //		case <-ch:
+//		}
+//	}
+//
+// # selectsleep
+//
+// Reports a select statement with a single case that receives from
+// time.After and discards the value. The select waits for that one channel, so
+// time.Sleep(d) writes the same wait in one statement.
+//
+// Adapted from staticcheck's S1037.
+//
+//	func wait() {
+//		select {
+//		case <-time.After(time.Second):
 //		}
 //	}
 //

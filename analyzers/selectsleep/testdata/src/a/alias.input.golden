@@ -1,0 +1,14 @@
+package a
+
+import t "time"
+
+func pauseAliasedThenWorks() {
+	// want +1 `select with a single case that receives from time\.After; write t\.Sleep\(t\.Second\)$`
+	t.Sleep(t.Second)
+	use()
+}
+
+func pauseAliased() {
+	// want +1 `select with a single case that receives from time\.After; write t\.Sleep\(t\.Second\)$`
+	t.Sleep(t.Second)
+}

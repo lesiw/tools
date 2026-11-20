@@ -1,6 +1,9 @@
 package a
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
 func use(...any) {}
 
@@ -227,6 +230,27 @@ func onlyDefault(ch <-chan int) {
 	select {
 	default:
 		use(ch)
+	}
+}
+
+func siblingNames(ch <-chan int) {
+	// want +1 `select with a single case is redundant`
+	select {
+	case <-ch:
+		v := 1
+		use(v)
+	}
+	// want +1 `select with a single case is redundant`
+	select {
+	case <-ch:
+		v := 2
+		use(v)
+	}
+}
+
+func waitsOnAfter() {
+	select {
+	case <-time.After(time.Second):
 	}
 }
 

@@ -1,0 +1,252 @@
+package a
+
+import "time"
+
+func use(...any) {}
+
+func timer() <-chan time.Time { return nil }
+
+type clock struct{}
+
+func (clock) After(time.Duration) <-chan time.Time { return nil }
+
+func pause() {
+	// want +1 `select with a single case that receives from time\.After; write time\.Sleep\(time\.Second\)$`
+	time.Sleep(time.Second)
+}
+
+func pauseThenWork() {
+	// want +1 `select with a single case that receives from time\.After; write time\.Sleep\(time\.Second\)$`
+	time.Sleep(time.Second)
+	use()
+}
+
+func pauseNamed() {
+	const delay = time.Second
+	// want +1 `select with a single case that receives from time\.After; write time\.Sleep\(delay\)$`
+	time.Sleep(delay)
+}
+
+func pauseInLoop() {
+	for range 3 {
+		// want +1 `select with a single case that receives from time\.After; write time\.Sleep\(time\.Second\)$`
+		time.Sleep(time.Second)
+	}
+}
+
+func pauseOnOneLine() {
+	// want +1 `select with a single case that receives from time\.After; write time\.Sleep\(time\.Second\)$`
+	time.Sleep(time.Second)
+}
+
+func pauseInACase(ch <-chan struct{}) {
+	select {
+	case <-ch:
+		// want +1 `select with a single case that receives from time\.After; write time\.Sleep\(time\.Second\)$`
+		time.Sleep(time.Second)
+	}
+}
+
+func pauseAfterGoto() {
+	goto wait
+wait:
+	// want +1 `select with a single case that receives from time\.After; write time\.Sleep\(time\.Second\)$`
+	time.Sleep(time.Second)
+}
+
+func commentsTheArgument() {
+	// want +1 `select with a single case that receives from time\.After; write time\.Sleep\( /\* one second \*/ time\.Second\)$`
+	time.Sleep(/* one second */ time.Second)
+}
+
+func commentsTheArgumentThenWorks() {
+	// want +1 `select with a single case that receives from time\.After; write time\.Sleep\( /\* one second \*/ time\.Second\)$`
+	time.Sleep(/* one second */ time.Second)
+	use()
+}
+
+func commentsTheCaseLine() {
+	// want +1 `select with a single case that receives from time\.After$`
+	select {
+	case <-time.After(time.Second): // one second
+	}
+}
+
+func discardsTheBlankThenWorks() {
+	// want +1 `select with a single case that receives from time\.After; write time\.Sleep\(time\.Second\)$`
+	time.Sleep(time.Second)
+	use()
+}
+
+func pausesInASwitchCase(n int) {
+	switch n {
+	case 1:
+		// want +1 `select with a single case that receives from time\.After; write time\.Sleep\(time\.Second\)$`
+		time.Sleep(time.Second)
+		use()
+	}
+}
+
+func annotated() {
+	// want +1 `select with a single case that receives from time\.After$`
+	select {
+	case <-time.After(time.Second):
+		// keep this
+	}
+}
+
+func annotatesTheClose() {
+	// want +1 `select with a single case that receives from time\.After; write time\.Sleep\(time\.Second\)$`
+	time.Sleep(time.Second) // note
+}
+
+func endsWithAComment() {
+	// want +1 `select with a single case that receives from time\.After$`
+	select {
+	case <-time.After(time.Second):
+		use()
+	} // note
+}
+
+func jumpsOverTheMove() {
+	goto done
+	// want +1 `select with a single case that receives from time\.After$`
+	select {
+	case <-time.After(time.Second):
+		v := time.Second
+		use(v)
+	}
+done:
+	use(0)
+}
+
+func movesASiblingName() {
+	// want +1 `select with a single case that receives from time\.After$`
+	select {
+	case <-time.After(time.Second):
+		v := time.Second
+		use(v)
+	}
+	// want +1 `select with a single case that receives from time\.After$`
+	select {
+	case <-time.After(time.Minute):
+		v := time.Minute
+		use(v)
+	}
+}
+
+func annotatedHeader() {
+	// want +1 `select with a single case that receives from time\.After$`
+	select { // keep this
+	case <-time.After(time.Second):
+	}
+}
+
+func declaresFreshName() {
+	// want +1 `select with a single case that receives from time\.After; write time\.Sleep\(time\.Second\)$`
+	time.Sleep(time.Second)
+	v := time.Second
+	use(v)
+}
+
+func shadowsTheParameter(delay time.Duration) {
+	// want +1 `select with a single case that receives from time\.After$`
+	select {
+	case <-time.After(delay):
+		delay := time.Second
+		use(delay)
+	}
+}
+
+func declaresInALoop() {
+	// want +1 `select with a single case that receives from time\.After; write time\.Sleep\(time\.Second\)$`
+	time.Sleep(time.Second)
+	for range 2 {
+		v := time.Second
+		use(v)
+	}
+}
+
+func breaksInBody() {
+	for {
+		// want +1 `select with a single case that receives from time\.After$`
+		select {
+		case <-time.After(time.Second):
+			break
+		}
+		break
+	}
+}
+
+func holdsARawString() {
+	// want +1 `select with a single case that receives from time\.After$`
+	select {
+	case <-time.After(time.Second):
+		use(`first
+second`)
+	}
+}
+
+func sharesItsLine() {
+	if timer() != nil {
+		select { case <-time.After(time.Second): use() } // want `select with a single case that receives from time\.After$`
+	}
+}
+
+func waitsForTwo(ch <-chan struct{}) {
+	select {
+	case <-time.After(time.Second):
+	case <-ch:
+	}
+}
+
+func waitsTwice() {
+	select {
+	case <-time.After(time.Second):
+	case <-time.After(time.Minute):
+	}
+}
+
+func waitsWithDefault() {
+	select {
+	case <-time.After(time.Second):
+	default:
+	}
+}
+
+func onlyDefault() {
+	select {
+	default:
+	}
+}
+
+func waitsToSend(ch chan<- struct{}) {
+	select {
+	case ch <- struct{}{}:
+	}
+}
+
+func waitsOnChannel(ch <-chan struct{}) {
+	select {
+	case <-ch:
+	}
+}
+
+func keepsTheTime() {
+	select {
+	case at := <-time.After(time.Second):
+		use(at)
+	}
+}
+
+func discardsTheBlank() {
+	// want +1 `select with a single case that receives from time\.After; write time\.Sleep\(time\.Second\)$`
+	time.Sleep(time.Second)
+}
+
+func keepsALocalTime() {
+	time := clock{}
+	select {
+	case <-time.After(0):
+	}
+}
