@@ -312,6 +312,7 @@ import (
 	"lesiw.io/tools/analyzers/unsignedcmp"
 	"lesiw.io/tools/analyzers/unslice"
 	"lesiw.io/tools/analyzers/unusedctxkey"
+	"lesiw.io/tools/analyzers/unusedfunc"
 	"lesiw.io/tools/analyzers/unusedparams"
 	"lesiw.io/tools/analyzers/unusedrecv"
 	"lesiw.io/tools/analyzers/unusedtypeparam"
@@ -657,6 +658,7 @@ var (
 		unsignedcmp.Analyzer,
 		unslice.Analyzer,
 		unusedctxkey.Analyzer,
+		unusedfunc.Analyzer,
 		unusedparams.Analyzer,
 		unusedrecv.Analyzer,
 		unusedresult.Analyzer,

@@ -759,17 +759,6 @@ func summarize(parts []part) (out summary) {
 	return out
 }
 
-// tailComplex reports whether a non-separator literal follows the last
-// variable.
-func tailComplex(parts []part, last int) bool {
-	for _, p := range parts[last+1:] {
-		if p.ok && p.text != "" && !allSeparators(p.text) {
-			return true
-		}
-	}
-	return false
-}
-
 // text returns the path when every variable is empty.
 func (c *checker) text(arg ast.Expr) (string, bool) {
 	arg = ast.Unparen(arg)

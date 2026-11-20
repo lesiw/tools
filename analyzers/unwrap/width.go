@@ -101,49 +101,6 @@ func (s *snapshot) line(pos token.Pos) int {
 	return i
 }
 
-// lineStart returns the first position on pos's line, as the line ran when the
-// snapshot was taken.
-func (s *snapshot) lineStart(pos token.Pos) token.Pos {
-	if i := s.line(pos); i > 0 {
-		return token.Pos(s.starts[i-1] + s.base)
-	}
-	return token.Pos(s.base)
-}
-
-// lineEnd returns the last position on pos's line, as the line ran when the
-// snapshot was taken.
-func (s *snapshot) lineEnd(pos token.Pos) token.Pos {
-	if i := s.line(pos); i > 0 && i < len(s.starts) {
-		return token.Pos(s.starts[i] + s.base - 1)
-	}
-	return token.Pos(s.end)
-}
-
-// text returns the rendered text of a line, or nil when the line is out of
-// range. An out-of-range line reads as empty, so a width test on it never
-// reports an overlong line the render cannot confirm.
-func (s *snapshot) text(line int) []byte {
-	if line < 1 || line > len(s.lines) {
-		return nil
-	}
-	return s.lines[line-1]
-}
-
-// indent returns a copy of the whitespace that begins the rendered line
-// holding pos.
-func (s *snapshot) indent(pos token.Pos) []byte {
-	return slices.Clone(extractIndent(s.text(s.line(pos))))
-}
-
-func extractIndent(line []byte) []byte {
-	for i, b := range line {
-		if b != '\t' && b != ' ' {
-			return line[:i]
-		}
-	}
-	return line
-}
-
 // join merges every line between start and end onto start's line. It keeps the
 // merge only when the printer agrees with it. The file still renders one line
 // per line-table entry, and the line that results is not one the width rules
@@ -257,32 +214,6 @@ func (r *renderer) keptAligned(lines [][]byte, a alignment, removed, at int) boo
 	return true
 }
 
-// placement is a line a rule has laid out. It carries the span of source it
-// covers and the text it will render as, which begins with its indent. A list
-// nested inside a placement is measured against the line it was just moved
-// onto, not the line the snapshot found it on. That keeps the outer and inner
-// lists of one expression from both wrapping when only the outer one had to.
-type placement struct {
-	lo, hi token.Pos
-	text   string
-}
-
-// indent returns the whitespace text begins with.
-func (p placement) indent() []byte { return extractIndent([]byte(p.text)) }
-
-// innermost returns the narrowest placement holding pos.
-func innermost(placed []placement, pos token.Pos) (out placement, found bool) {
-	for _, p := range placed {
-		if pos < p.lo || pos > p.hi {
-			continue
-		}
-		if !found || p.lo > out.lo {
-			out, found = p, true
-		}
-	}
-	return out, found
-}
-
 // lineAt returns the line pos is written on, ignoring any //line directive. A
 // directive renumbers positions for the compiler. The line table is indexed by
 // the lines the file is written on, so every rule needs the unadjusted number.
@@ -378,12 +309,6 @@ func predictable(line []byte) bool {
 	return !bytes.Contains(body, []byte("  "))
 }
 
-// onOneLine reports whether a and b were on one line when the snapshot was
-// taken. The live table moves under a rule; this one does not.
-func (s *snapshot) onOneLine(a, b token.Pos) bool {
-	return s.line(a) == s.line(b)
-}
-
 // sameLine reports whether a and b are written on one line.
 func sameLine(tokFile *token.File, a, b token.Pos) bool {
 	return lineAt(tokFile, a) == lineAt(tokFile, b)
@@ -394,18 +319,4 @@ func mergeSpan(tokFile *token.File, start, end token.Pos) {
 	for lineAt(tokFile, end) > startLine && startLine < tokFile.LineCount() {
 		tokFile.MergeLine(startLine)
 	}
-}
-
-// addNewline inserts a line boundary at the offset of at, unless one is
-// already there.
-func addNewline(tokFile *token.File, at token.Pos) {
-	var (
-		offset    = tokFile.Offset(at)
-		lines     = tokFile.Lines()
-		i, exists = slices.BinarySearch(lines, offset)
-	)
-	if exists {
-		return
-	}
-	tokFile.SetLines(slices.Insert(lines, i, offset))
 }

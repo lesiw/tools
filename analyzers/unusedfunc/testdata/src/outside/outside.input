@@ -1,0 +1,5 @@
+package outside
+
+type Item interface{ write() }
+
+func Len(Item) int { return 0 }

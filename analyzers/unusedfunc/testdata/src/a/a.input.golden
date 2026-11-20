@@ -1,0 +1,170 @@
+package a
+
+func main() {
+	_ = anchor()
+}
+
+func init() {}
+
+func Public() {}
+
+func anchor() int { return 0 }
+
+//go:linkname elsewhere
+func linked() {}
+
+func bodiless() int // want `function "bodiless" is unused`
+
+//go:wasmexport start
+func wasmEntry() {} // want `function "wasmEntry" is unused`
+
+//export cEntry
+func cEntry() {} // want `function "cEntry" is unused`
+
+type Shown int
+type hidden int
+
+func (Shown) Public()  {}
+func (hidden) Public() {}
+
+func (x Shown) dyn() {}
+
+type _ interface{ dyn() }
+
+type local struct{}
+
+func shared() {}
+
+var adjacent, deadTwo2 = 1, 3 // want `var "deadOne2" is unused` `var "deadTwo2" is unused`
+
+type (
+	base int
+)
+
+type holder[T any] int
+
+type vault[T any] struct{ v T }
+
+func (v vault[T]) get() T { return v.v }
+
+func _() {
+	_ = vault[int]{}.get()
+}
+
+const (
+	_ = iota // want `const "gone" is unused`
+	still
+	name string = "some-name"
+)
+
+const (
+	first        = iota // want `const "surplus" is unused`
+	label string = "some-label"
+	trail
+)
+
+const (
+	low, high = 1, int64(2)
+	_, right  // want `const "left" is unused`
+)
+
+const (
+	_, beside = 1, 2 // want `const "along" is unused`
+	across, around
+	tag string = "tag"
+)
+
+const (
+	_            = iota // want `const "step" is unused`
+	stride int64 = iota
+)
+
+const (
+	rank = iota
+	_    // want `const "next" is unused`
+	last
+	size int64 = 100
+)
+
+const keptConst = 1
+
+const usedSix = 6 // want `const "spareFive" is unused`
+
+const (
+	alpha = "alpha"
+	beta  = "beta"
+	gamma = "gamma"
+)
+
+var (
+	liveA = 1
+	liveB = 2
+)
+
+type (
+	liveType int
+)
+
+const (
+	constA = 1
+)
+
+var (
+	//go:linkname hook elsewhere.hook
+	hook int
+)
+
+var (
+	pin, latch int // want `var "slot" is unused`
+)
+
+var (
+	head int // want `var "foot" is unused`
+)
+
+var (
+	usedVar int
+	_, _, _ = triple() // want `var "droppedTwo" is unused`
+)
+
+var (
+	// freshVar is read below.
+	freshVar = 2
+)
+
+var fresh = 4 // want `var "stale" is unused`
+
+var _ = load() // want `var "pending" is unused`
+
+var _ = <-ready // want `var "awaited" is unused`
+
+var ready = make(chan int)
+
+var kept, _ = pair() // want `var "spare" is unused`
+
+var a, b = 1, a + 1 // want `var "a" is unused`
+
+func _() {
+	print(alpha)
+	_, _ = still, name
+	_, _, _ = first, label, trail
+	_, _ = low, high
+	_ = right
+	_, _, _, _ = beside, across, around, tag
+	_ = stride
+	_, _, _ = rank, last, size
+	_ = usedSix
+	_, _, _ = pin, latch, head
+	_, _ = liveA, liveB
+	var _ liveType
+	_ = constA
+	_ = adjacent
+	_ = freshVar
+	_, _, _ = fresh, b, kept
+}
+
+func load() int { return 0 }
+
+func pair() (int, int) { return 0, 0 }
+
+func triple() (int, int, int)

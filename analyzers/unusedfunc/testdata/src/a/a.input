@@ -1,0 +1,239 @@
+package a
+
+func main() {
+	_ = anchor()
+}
+
+func init() {}
+
+func Public() {}
+
+// orphan is a leftover.
+func orphan() { // want `function "orphan" is unused`
+}
+
+func loopback() int { // want `function "loopback" is unused`
+	return loopback()
+}
+
+func anchor() int { return 0 }
+
+//go:linkname elsewhere
+func linked() {}
+
+func bodiless() int // want `function "bodiless" is unused`
+
+//go:wasmexport start
+func wasmEntry() {} // want `function "wasmEntry" is unused`
+
+//export cEntry
+func cEntry() {} // want `function "cEntry" is unused`
+
+type Shown int
+type hidden int
+
+func (Shown) Public()  {}
+func (hidden) Public() {}
+
+func (x Shown) dropped() { // want `method "dropped" is unused`
+	x.dropped()
+}
+
+func (u hidden) dropped() { // want `method "dropped" is unused`
+	u.dropped()
+}
+
+func (x Shown) dyn() {}
+
+type _ interface{ dyn() }
+
+type local struct{}
+
+func (local) write() {} // want `method "write" is unused`
+
+func shared() {}
+
+func leftToAnother() int { return 0 } // want `function "leftToAnother" is unused`
+
+var adjacent, deadOne2, deadTwo2 = 1, 2, 3 // want `var "deadOne2" is unused` `var "deadTwo2" is unused`
+
+type selfRef struct{ *selfRef } // want `type "selfRef" is unused`
+
+type (
+	base int
+	derived base // want `type "derived" is unused`
+)
+
+type holder[T any] int
+
+func (holder[T]) pick() {} // want `method "pick" is unused`
+
+type vault[T any] struct{ v T }
+
+func (v vault[T]) get() T { return v.v }
+
+func _() {
+	_ = vault[int]{}.get()
+}
+
+const lonely = 1 // want `const "lonely" is unused`
+
+const (
+	gone = iota // want `const "gone" is unused`
+	still
+	name string = "some-name"
+)
+
+const (
+	first, surplus = iota, iota // want `const "surplus" is unused`
+	label string = "some-label"
+	trail
+)
+
+const (
+	low, high   = 1, int64(2)
+	left, right // want `const "left" is unused`
+)
+
+const (
+	along, beside = 1, 2 // want `const "along" is unused`
+	across, around
+	tag string = "tag"
+)
+
+const (
+	step = iota // want `const "step" is unused`
+	stride int64 = iota
+)
+
+const (
+	rank = iota
+	next // want `const "next" is unused`
+	last
+	size int64 = 100
+)
+
+const iotaOnly = iota // want `const "iotaOnly" is unused`
+
+const keptConst = 1
+const derivedConst = keptConst // want `const "derivedConst" is unused`
+const _, spareThree = 0, 3 // want `const "spareThree" is unused`
+const spareFour, _ = 4, 0 // want `const "spareFour" is unused`
+const spareFive, usedSix = 4, 6 // want `const "spareFive" is unused`
+
+const (
+	alpha = "alpha"
+	beta  = "beta"
+	gamma = "gamma"
+)
+
+const ( // want `all values in this set of constants are unused`
+	delta = "delta"
+	epsilon = "epsilon"
+)
+
+var bare int // want `var "bare" is unused`
+
+var (
+	deadOne = 1 // want `var "deadOne" is unused`
+	deadTwo = 2 // want `var "deadTwo" is unused`
+)
+
+var (
+	liveA = 1
+	liveB = 2
+	// deadVar is documented, and the note goes with it.
+	deadVar = 3 // want `var "deadVar" is unused`
+)
+
+type (
+	liveType int
+	// deadType is documented too.
+	deadType liveType // want `type "deadType" is unused`
+)
+
+const (
+	constA = 1
+	// constB is documented as well.
+	constB string = "b" // want `const "constB" is unused`
+)
+
+type (
+	deadT int    // want `type "deadT" is unused`
+	deadU string // want `type "deadU" is unused`
+)
+
+var (
+	//go:linkname hook elsewhere.hook
+	hook  int
+	dead3 int // want `var "dead3" is unused`
+)
+
+var (
+	pin, slot, latch int // want `var "slot" is unused`
+)
+
+var (
+	head, foot int // want `var "foot" is unused`
+)
+
+var lonelyVar = 1 // want `var "lonelyVar" is unused`
+
+var (
+	lonelyVar2 = 1 // want `var "lonelyVar2" is unused`
+)
+
+var (
+	usedVar int
+	droppedVar = usedVar // want `var "droppedVar" is unused`
+	_, droppedTwo, _ = triple() // want `var "droppedTwo" is unused`
+)
+
+var (
+	keptVar = 1 // want `var "keptVar" is unused`
+	// freshVar is read below.
+	freshVar = 2
+)
+
+var stale = 3; var fresh = 4 // want `var "stale" is unused`
+
+var pending = load() // want `var "pending" is unused`
+
+var conv = int64(0) // want `var "conv" is unused`
+
+var builtin = max(1, 2) // want `var "builtin" is unused`
+
+var awaited = <-ready // want `var "awaited" is unused`
+
+var closure = func() {} // want `var "closure" is unused`
+
+var ready = make(chan int)
+
+var kept, spare = pair() // want `var "spare" is unused`
+
+var a, b = 1, a + 1 // want `var "a" is unused`
+
+func _() {
+	print(alpha)
+	_, _ = still, name
+	_, _, _ = first, label, trail
+	_, _ = low, high
+	_ = right
+	_, _, _, _ = beside, across, around, tag
+	_ = stride
+	_, _, _ = rank, last, size
+	_ = usedSix
+	_, _, _ = pin, latch, head
+	_, _ = liveA, liveB
+	var _ liveType
+	_ = constA
+	_ = adjacent
+	_ = freshVar
+	_, _, _ = fresh, b, kept
+}
+
+func load() int { return 0 }
+
+func pair() (int, int) { return 0, 0 }
+
+func triple() (int, int, int)

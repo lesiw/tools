@@ -4233,6 +4233,20 @@ func read(ctx context.Context) any {
 }
 ```
 
+## unusedfunc
+
+Reports a package-level declaration that nothing in the package refers to. An exported name may be referred to from another package, and a method whose name matches one an interface in the package declares may be called through it.
+
+A mirror of gopls' unusedfunc, which is internal.
+
+```
+func main() { live() }
+
+func live() {}
+
+func dead() {}
+```
+
 ## unusedparams
 
 Reports a parameter of a declared function that the body never reads. Renaming it to the blank identifier says the position is deliberate, and an exported function, a matching interface method, and a function used as a value keep their names.

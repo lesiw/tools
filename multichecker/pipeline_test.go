@@ -8,8 +8,10 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"golang.org/x/tools/go/analysis"
 
 	"lesiw.io/tools/analyzers/linelen"
+	"lesiw.io/tools/analyzers/unusedfunc"
 	"lesiw.io/tools/internal/suite"
 )
 
@@ -24,13 +26,14 @@ type pipelineCase struct {
 	golden string
 }
 
-// TestPipeline runs the whole pipeline over every case and compares each
-// result with the golden beside it.
+// TestPipeline runs the pipeline over every case and compares each result
+// with the golden beside it.
 //
-// The pipeline is the whole suite, so a golden records the output of every
-// analyzer: this module's, the x/tools passes, and modernize. A new check
-// that fires on a case changes that case's golden, and a change in
-// golang.org/x/tools can change several at once.
+// The pipeline is the suite but for the rule a case cannot survive, so a
+// golden records the output of every other analyzer: this module's, the
+// x/tools passes, and modernize. A new check that fires on a case changes that
+// case's golden, and a change in golang.org/x/tools can change several at
+// once.
 //
 // A case is one file that builds, named .input so a formatter run over the
 // repository leaves it alone. Every case goes into one module, one package
@@ -46,13 +49,26 @@ func TestPipeline(t *testing.T) {
 	)
 	// Chdir is process-wide, so this test stays serial.
 	t.Chdir(work)
-	if err := run([]string{"./..."}, suite.Analyzers()); err != nil {
+	if err := run([]string{"./..."}, pipelineAnalyzers()); err != nil {
 		// This is setup for every case, so the comparisons still run.
 		t.Errorf("fix ./...: %v", err)
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) { compare(t, work, c) })
 	}
+}
+
+// pipelineAnalyzers returns the suite without the rule that reports a
+// declaration nothing in the package refers to. A case is one file that
+// builds, so nothing refers to its declarations and the rule would delete the
+// shape the case exists to show.
+func pipelineAnalyzers() (out []*analysis.Analyzer) {
+	for _, a := range suite.Analyzers() {
+		if a.Name != unusedfunc.Analyzer.Name {
+			out = append(out, a)
+		}
+	}
+	return out
 }
 
 // readCases returns the cases, in the order their files sort.

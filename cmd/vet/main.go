@@ -4278,6 +4278,21 @@
 //		return ctx.Value(deadKey)
 //	}
 //
+// # unusedfunc
+//
+// Reports a package-level declaration that nothing in the package refers to.
+// An exported name may be referred to from another package, and a method may
+// be called through an interface in the package that declares its name, so
+// neither is reported.
+//
+// Vendored from gopls' unusedfunc.
+//
+//	func main() { live() }
+//
+//	func live() {}
+//
+//	func dead() {}
+//
 // # unusedparams
 //
 // Reports a parameter of a declared function that the body never reads.

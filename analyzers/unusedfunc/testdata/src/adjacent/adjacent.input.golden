@@ -1,0 +1,28 @@
+package adjacent
+
+var (
+	keep = 1
+)
+
+type (
+	live int
+)
+
+const (
+	keptC = 1
+)
+
+var (
+	keepD = 1
+)
+
+var liveA = 2 // want `var "deadA" is unused`
+
+var liveB = 1
+
+func _() {
+	_, _ = keep, keptC
+	_, _ = keepD, liveA
+	_ = liveB
+	var _ live
+}

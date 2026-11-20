@@ -1,0 +1,39 @@
+package adjacent
+
+var (
+	keep  = 1
+	dead1 = 2 // want `var "dead1" is unused`
+	dead2 = 3 // want `var "dead2" is unused`
+)
+
+type (
+	live   int
+	deadT1 int // want `type "deadT1" is unused`
+	deadT2 int // want `type "deadT2" is unused`
+)
+
+const (
+	keptC  = 1
+	deadC1 = int64(2) // want `const "deadC1" is unused`
+	deadC2 = int64(3) // want `const "deadC2" is unused`
+)
+
+var (
+	keepD  = 1
+	deadD1 = 2 // want `var "deadD1" is unused`
+	// deadD2 is documented, and the note goes with it.
+	deadD2 = 3 // want `var "deadD2" is unused`
+)
+
+var deadA = 1; var liveA = 2 // want `var "deadA" is unused`
+
+var liveB = 1; var deadB = 2 // want `var "deadB" is unused`
+
+var deadC = 1; var deadD = 2 // want `var "deadC" is unused` `var "deadD" is unused`
+
+func _() {
+	_, _ = keep, keptC
+	_, _ = keepD, liveA
+	_ = liveB
+	var _ live
+}
