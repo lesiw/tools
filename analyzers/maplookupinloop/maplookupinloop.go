@@ -1201,8 +1201,7 @@ func stableLiteral(pass *analysis.Pass, key *ast.CompositeLit) bool {
 			}
 			continue
 		}
-		expr, ok := elt.(ast.Expr)
-		if !ok || !stableKey(pass, expr) {
+		if !stableKey(pass, elt) {
 			return false
 		}
 	}

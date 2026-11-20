@@ -1,0 +1,136 @@
+package a
+
+type filter interface {
+	allow() bool
+}
+
+type other interface {
+	allow() bool
+}
+
+type keen interface {
+	allow() bool
+	deny() bool
+}
+
+var current filter
+
+func define() {
+	f, ok := current.(filter) // want `from a type to itself`
+	_, _ = f, ok
+}
+
+func parenthesized() {
+	f, ok := (current.(filter)) // want `from a type to itself`
+	_, _ = f, ok
+}
+
+func declare() {
+	var f, ok = current.(filter) // want `from a type to itself`
+	_, _ = f, ok
+}
+
+func declareTyped() {
+	var g, valid any = current.(filter) // want `from a type to itself`
+	_, _ = g, valid
+}
+
+func assign() {
+	var (
+		f  filter
+		ok bool
+	)
+	f, ok = current.(filter) // want `from a type to itself`
+	_, _ = f, ok
+}
+
+func guard() {
+	if f, ok := current.(filter); ok { // want `from a type to itself`
+		_ = f
+	}
+}
+
+func keepCheck(x filter) bool {
+	_, ok := any(x).(any) // want `from a type to itself`
+	return ok
+}
+
+func keepCheckOfCall() bool {
+	_, ok := fetch().(filter) // want `from a type to itself`
+	return ok
+}
+
+func keepValue() {
+	f, _ := current.(filter) // want `from a type to itself`
+	_ = f
+}
+
+func keepCheckOfReceive(ch chan filter) bool {
+	_, ok := (<-ch).(filter) // want `from a type to itself`
+	return ok
+}
+
+func declareCheck() {
+	var _, ok = current.(filter) // want `from a type to itself`
+	_ = ok
+}
+
+func keepNeither() {
+	_, _ = current.(filter) // want `from a type to itself`
+}
+
+func discard() {
+	_ = current.(filter) // want `from a type to itself`
+}
+
+func produce(x any) any {
+	_ = x.(interface{}) // want `from a type to itself`
+	return x.(any)      // want `from a type to itself`
+}
+
+func alongside() {
+	f, ok := current.(filter), true // want `from a type to itself`
+	_, _ = f, ok
+}
+
+func receive(ch chan filter) {
+	f, ok := (<-ch).(filter) // want `from a type to itself`
+	_, _ = f, ok
+}
+
+func unstable() {
+	f, ok := fetch().(filter) // want `from a type to itself`
+	_, _ = f, ok
+}
+
+func fetch() filter { return current }
+
+func holdComment() {
+	f, ok := current.( /* kept */ filter) // want `from a type to itself`
+	_, _ = f, ok
+}
+
+func narrow(r any) int {
+	n, _ := r.(int)
+	return n
+}
+
+func widen(x any) filter {
+	return x.(filter)
+}
+
+func conv(x any) any {
+	return any(x)
+}
+
+func differ(f filter) {
+	_ = f.(other)
+	_ = f.(keen)
+	_ = f.(interface{ allow() bool })
+}
+
+func typeswitch(x any) {
+	switch x.(type) {
+	case filter:
+	}
+}

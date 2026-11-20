@@ -1,0 +1,26 @@
+package width
+
+type filter interface{ allow() bool }
+
+var handlerByKind = map[string]filter{}
+
+var registrationHandlersByKindAndOwnerName = map[string]filter{}
+
+func crosses() {
+	// want +1 `from a type to itself`
+	f, ok := handlerByKind["alpha-one-plus-one"].(filter)
+	_, _ = f, ok
+}
+
+func crossesLines() {
+	// want +1 `from a type to itself`
+	f, ok := (handlerByKind["alpha-one-plus-one"].
+		(filter))
+	_, _ = f, ok
+}
+
+func alreadyPast() {
+	// want +1 `from a type to itself`
+	f, ok := registrationHandlersByKindAndOwnerName["alpha-one-plus-one"], registrationHandlersByKindAndOwnerName["alpha-one-plus-one"] != nil
+	_, _ = f, ok
+}

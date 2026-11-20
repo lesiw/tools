@@ -3223,9 +3223,9 @@ func wait() {
 
 ## selfassert
 
-Reports a type assertion from a type to itself. The assertion yields the value it was given, so it does nothing. A nil value panics in the assertion, so removing it would change behavior, and the rule reports without a fix.
+Reports a type assertion from a type to itself: the asserted type is the one the value already has, so the assertion checks only for nil. The fixes write the value, the comparison against nil, or both, as the left side keeps them. The one-value form is reported without a fix, because the assertion is where a nil interface panics.
 
-Inspired by go-critic's sloppyTypeAssert.
+Adapted from staticcheck's S1040; go-critic's sloppyTypeAssert reports the same shape.
 
 ```
 func f(v any) any {
