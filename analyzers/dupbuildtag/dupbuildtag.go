@@ -38,7 +38,6 @@
 package dupbuildtag
 
 import (
-	"bytes"
 	"fmt"
 	"go/ast"
 	"go/build/constraint"
@@ -48,6 +47,8 @@ import (
 	"unicode"
 
 	"golang.org/x/tools/go/analysis"
+
+	"lesiw.io/tools/internal/buildtag"
 )
 
 var Analyzer = &analysis.Analyzer{
@@ -69,7 +70,7 @@ func run(pass *analysis.Pass) (any, error) {
 // check reports each // +build line whose condition an earlier line in file
 // already gives.
 func check(pass *analysis.Pass, file *ast.File) {
-	cutoff, ok := headerCutoff(pass, file)
+	cutoff, ok := buildtag.HeaderEnd(pass, file)
 	if !ok {
 		return
 	}
@@ -95,50 +96,6 @@ func check(pass *analysis.Pass, file *ast.File) {
 			seen[key] = text
 		}
 	}
-}
-
-// headerCutoff returns the first position after the header the go command
-// reads a legacy line from. The package doc comment and anything after the
-// header are not constraints. The offset needs the source the file was parsed
-// from, so a file whose source cannot be read is left alone.
-func headerCutoff(pass *analysis.Pass, file *ast.File) (token.Pos, bool) {
-	tokFile := pass.Fset.File(file.FileStart)
-	if tokFile == nil {
-		return token.NoPos, false
-	}
-	src, err := pass.ReadFile(tokFile.Name())
-	if err != nil || tokFile.Size() != len(src) {
-		return token.NoPos, false
-	}
-	return tokFile.Pos(headerEnd(src)), true
-}
-
-// headerEnd returns the offset just after the last blank line in the run of
-// blank lines and // comments at the start of src. The go command reads a
-// legacy line only inside that run; a /* */ comment or the package clause ends
-// it.
-func headerEnd(src []byte) (end int) {
-	var i int
-	if bytes.HasPrefix(src, []byte("\ufeff")) {
-		i = len("\ufeff")
-	}
-	for i < len(src) {
-		next := bytes.IndexByte(src[i:], '\n')
-		if next < 0 {
-			next = len(src)
-		} else {
-			next += i + 1
-		}
-		line := bytes.TrimSpace(src[i:next])
-		switch {
-		case len(line) == 0:
-			end = next
-		case !bytes.HasPrefix(line, []byte("//")):
-			return end
-		}
-		i = next
-	}
-	return end
 }
 
 // valid reports whether every tag in a legacy line can be read. The parser

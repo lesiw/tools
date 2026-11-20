@@ -1,0 +1,9 @@
+//go:build !windows
+
+package a
+
+import "runtime"
+
+func possible() bool {
+	return runtime.GOOS == "linux" || runtime.GOOS == "darwin"
+}

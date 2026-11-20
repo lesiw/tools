@@ -1,0 +1,12 @@
+//go:build !windows
+
+package a
+
+import "runtime"
+
+func foldgoos() string {
+	if false { // want `the file's build constraints rule out GOOS=windows`
+		return "a"
+	}
+	return runtime.GOOS
+}

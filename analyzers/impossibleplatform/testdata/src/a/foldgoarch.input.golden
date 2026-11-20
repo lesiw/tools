@@ -1,0 +1,12 @@
+//go:build !wasm
+
+package a
+
+import "runtime"
+
+func foldgoarch() string {
+	if false { // want `the file's build constraints rule out GOARCH=wasm`
+		return "a"
+	}
+	return runtime.GOARCH
+}

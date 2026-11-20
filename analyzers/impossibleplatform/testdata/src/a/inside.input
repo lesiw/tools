@@ -1,0 +1,9 @@
+//go:build !windows
+
+package a
+
+import "runtime"
+
+func inside() bool {
+	return runtime.GOOS /* note */ == "windows" // want `the file's build constraints rule out GOOS=windows`
+}

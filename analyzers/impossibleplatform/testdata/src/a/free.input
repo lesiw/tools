@@ -1,0 +1,9 @@
+//go:build !windows || alpha
+
+package a
+
+import "runtime"
+
+func free() bool {
+	return runtime.GOOS == "windows"
+}

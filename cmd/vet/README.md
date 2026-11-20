@@ -535,7 +535,7 @@ package p
 
 ## builtinbound
 
-Reports a comparison of len or cap with zero that is always true or always false. Neither builtin returns a negative number, so the comparison cannot vary.
+Reports a comparison of len or cap with zero that is always true or always false. Neither builtin returns a negative number, so the answer does not depend on the operand.
 
 Adapted from staticcheck's SA4024 and go-critic's sloppyLen.
 
@@ -960,7 +960,7 @@ func f(rows map[string]int, name string) {
 
 ## deprecated
 
-Reports a use of an identifier or imported package whose doc comment carries a Deprecated: paragraph.
+Reports a use of an identifier or imported package whose doc comment carries a deprecation note.
 
 Vendored from gopls' deprecated.
 
@@ -972,7 +972,7 @@ func f() {
 
 ## deprecatedform
 
-Reports a doc comment that marks something deprecated without the paragraph godoc reads. godoc and the editors that render it warn a caller only for a paragraph beginning with Deprecated: .
+Reports a doc comment that marks something deprecated without the paragraph godoc reads. godoc and the editors that render it take a deprecation only from a paragraph that begins with Deprecated: and a space.
 
 Inspired by go-critic's deprecatedComment.
 
@@ -1282,7 +1282,7 @@ func pick(kind string) int {
 
 ## embeddirective
 
-Reports a //go:embed directive in a file that does not import embed, or one that does not precede a single variable of type string, \[]byte or embed.FS with no value.
+Reports a //go:embed directive the compiler rejects: a directive in a file that does not import embed, or one that does not precede a single variable of type string, \[]byte or embed.FS with no value. A slice whose byte type is defined is reported too, though the compiler accepts it.
 
 Vendored from gopls' embeddirective.
 
@@ -1526,7 +1526,7 @@ func f(err error) {
 
 ## errorsastypeshadow
 
-Reports an errors.AsType call that tests a zero value from an earlier call in the same if/else chain. An else branch runs only when the call in the branch above it failed. The value passed there is a zero value, so the answer says nothing about the original error.
+Reports an errors.AsType call that tests a zero value from an earlier call in the same if/else chain. An else branch runs only when the call in the branch above it failed, so the value passed to the second call is the first call's zero value, and its answer says nothing about the original error.
 
 Vendored from gopls' errorsastypeshadow.
 
@@ -1897,6 +1897,22 @@ func join(dir, name string) string {
 
 func clean(path string) string {
     return path
+}
+```
+
+## impossibleplatform
+
+Reports a comparison of runtime.GOOS or runtime.GOARCH with a value the file's build constraints rule out. The constraints come from the file name and from the //go:build line, so the comparison has one answer in every build of the target they name.
+
+Adapted from staticcheck's SA4032.
+
+```
+//go:build windows
+
+package a
+
+func f() bool {
+    return runtime.GOOS == "linux"
 }
 ```
 
@@ -2842,7 +2858,7 @@ func f(n int) string {
 
 ## ptrtoerror
 
-Reports a concrete error type that a package converts to error both as a value and as a pointer. A type assertion matches only the form the package converted to, so a package that writes both leaves the caller no form that always matches. A type that implements error both ways and is never converted in its own package is also reported.
+Reports a concrete error type that a package converts to error both as a value and as a pointer. A caller's type assertion matches one form, so it fails on the errors the package converted the other way. A type that implements error both ways and is never converted in its own package is also reported.
 
 Vendored from gopls' ptrtoerror.
 
@@ -3229,7 +3245,7 @@ func wait() {
 
 ## selfassert
 
-Reports a type assertion from a type to itself: the asserted type is the one the value already has, so the assertion checks only for nil. The fixes write the value, the comparison against nil, or both, as the left side keeps them. The one-value form is reported without a fix, because the assertion is where a nil interface panics.
+Reports a type assertion from a type to itself: the asserted type is the one the value already has, so the assertion only checks for nil. The fix writes the value, the comparison against nil, or both, depending on which results the left side keeps. The one-value form is reported without a fix, because the assertion is where a nil interface panics.
 
 Adapted from staticcheck's S1040; go-critic's sloppyTypeAssert reports the same shape.
 
@@ -4383,7 +4399,7 @@ func read(ctx context.Context) any {
 
 ## unusedfunc
 
-Reports a package-level declaration that nothing in the package refers to. An exported name may be referred to from another package, and a method whose name matches one an interface in the package declares may be called through it.
+Reports a package-level declaration that nothing in the package refers to. An exported name may be referred to from another package, and a method may be called through an interface in the package that declares its name, so neither is reported.
 
 Vendored from gopls' unusedfunc.
 

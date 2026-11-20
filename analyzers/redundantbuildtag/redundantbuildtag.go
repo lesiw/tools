@@ -62,11 +62,11 @@ import (
 	"go/build/constraint"
 	"go/token"
 	"go/version"
-	"path/filepath"
 	"slices"
-	"strings"
 
 	"golang.org/x/tools/go/analysis"
+
+	"lesiw.io/tools/internal/buildtag"
 )
 
 var Analyzer = &analysis.Analyzer{
@@ -113,7 +113,7 @@ func check(pass *analysis.Pass, file *ast.File, name, goVersion string) error {
 	if expr == nil {
 		return nil
 	}
-	named := namedTags(filepath.Base(name))
+	named := buildtag.NameTags(name)
 	settles := func(tag string) bool {
 		return slices.Contains(named, tag) || release(tag, goVersion)
 	}
@@ -269,47 +269,3 @@ func removal(file *token.File, d drop, src []byte) analysis.TextEdit {
 	}
 	return analysis.TextEdit{Pos: file.Pos(start), End: file.Pos(end)}
 }
-
-// namedTags returns the tags the file name gives, and nil for a name that
-// gives none. This copies go/build's rule for a name that matches *_GOOS,
-// *_GOARCH or *_GOOS_GOARCH: the part after the first underscore decides, from
-// its last one or two elements.
-func namedTags(name string) []string {
-	name, _, _ = strings.Cut(name, ".")
-	i := strings.Index(name, "_")
-	if i < 0 {
-		return nil
-	}
-	parts := strings.Split(name[i:], "_")
-	if n := len(parts); n > 0 && parts[n-1] == "test" {
-		parts = parts[:n-1]
-	}
-	n := len(parts)
-	switch {
-	case n >= 2 && slices.Contains(allOS, parts[n-2]) &&
-		slices.Contains(allArch, parts[n-1]):
-		return []string{parts[n-2], parts[n-1]}
-	case n >= 1 && (slices.Contains(allOS, parts[n-1]) ||
-		slices.Contains(allArch, parts[n-1])):
-		return []string{parts[n-1]}
-	}
-	return nil
-}
-
-// allOS and allArch are the values a file name can name, from the go command's
-// own table of them, internal/syslist. A value added to the go command after
-// this list is not recognized here: a name that ends in it then gives no tag,
-// and the report waits until the value is added.
-var (
-	allOS = []string{
-		"aix", "android", "darwin", "dragonfly", "freebsd", "hurd",
-		"illumos", "ios", "js", "linux", "nacl", "netbsd", "openbsd",
-		"plan9", "solaris", "wasip1", "windows", "zos",
-	}
-	allArch = []string{
-		"386", "amd64", "amd64p32", "arm", "armbe", "arm64", "arm64be",
-		"loong64", "mips", "mipsle", "mips64", "mips64le", "mips64p32",
-		"mips64p32le", "ppc", "ppc64", "ppc64le", "riscv", "riscv64",
-		"s390", "s390x", "sparc", "sparc64", "wasm",
-	}
-)

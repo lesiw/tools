@@ -1,0 +1,12 @@
+//go:build !windows && alpha
+
+package a
+
+import "runtime"
+
+func pinned() string {
+	if false { // want `the file's build constraints rule out GOOS=windows`
+		return "a"
+	}
+	return runtime.GOOS
+}

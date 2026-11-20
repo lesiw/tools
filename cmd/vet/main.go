@@ -1959,6 +1959,23 @@
 //		return path
 //	}
 //
+// # impossibleplatform
+//
+// Reports a comparison of runtime.GOOS or runtime.GOARCH with a value the
+// file's build constraints rule out. The constraints come from the file name
+// and from the //go:build line, so the comparison has one answer in every
+// build of the target they name.
+//
+// Adapted from staticcheck's SA4032.
+//
+//	//go:build windows
+//
+//	package a
+//
+//	func f() bool {
+//		return runtime.GOOS == "linux"
+//	}
+//
 // # increment
 //
 // Reports an increment or decrement written as a compound assignment. The spec

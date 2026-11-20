@@ -169,6 +169,7 @@ import (
 	"lesiw.io/tools/analyzers/ifreturn"
 	"lesiw.io/tools/analyzers/importgroup"
 	"lesiw.io/tools/analyzers/importshadow"
+	"lesiw.io/tools/analyzers/impossibleplatform"
 	"lesiw.io/tools/analyzers/increment"
 	"lesiw.io/tools/analyzers/indexalloc"
 	"lesiw.io/tools/analyzers/indexcontains"
@@ -507,6 +508,7 @@ var (
 		ifreturn.Analyzer,
 		importgroup.Analyzer,
 		importshadow.Analyzer,
+		impossibleplatform.Analyzer,
 		increment.Analyzer,
 		indexalloc.Analyzer,
 		indexcontains.Analyzer,

@@ -1,0 +1,13 @@
+//go:build !windows
+
+package a
+
+import "runtime"
+
+func switched() int {
+	switch runtime.GOOS {
+	case "windows":
+		return 1
+	}
+	return 0
+}

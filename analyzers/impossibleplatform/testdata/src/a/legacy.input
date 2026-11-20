@@ -1,0 +1,12 @@
+// +build !windows
+
+package a
+
+import "runtime"
+
+func legacy() string {
+	if runtime.GOOS == "windows" { // want `the file's build constraints rule out GOOS=windows`
+		return "a"
+	}
+	return runtime.GOOS
+}
