@@ -1,0 +1,144 @@
+package a
+
+import (
+	"fmt"
+	"log"
+	"testing"
+)
+
+func prints(n int) {
+	fmt.Printf("%d", n)         // want `use fmt.Printf`
+	fmt.Printf("%d\n", n)       // want `use fmt.Printf with the newline`
+	fmt.Fprintf(nil, "%d", n)   // want `use fmt.Fprintf`
+	fmt.Fprintf(nil, "%d\n", n) // want `use fmt.Fprintf`
+}
+
+func sprintln(n int) string {
+	return fmt.Sprintf("%d\n", n) // want `use fmt.Sprintf`
+}
+
+func held(n int) {
+	format := "%d"
+	fmt.Printf(format, n)      // want `use fmt.Printf`
+	fmt.Printf(format+"\n", n) // want `use fmt.Printf`
+	log.Printf(format+"\n", n) // want `use log.Printf`
+}
+
+func raw(n int) {
+	fmt.Printf(`%d`+"\n", n) // want `use fmt.Printf`
+	fmt.Printf("%d\n\n", n)  // want `use fmt.Printf`
+}
+
+func parenthesized(n int) {
+	fmt.Printf("%d", n) // want `use fmt.Printf`
+}
+
+func spread(args []any) {
+	fmt.Printf("%d\n", args...) // want `use fmt.Printf`
+}
+
+func annotated(n int) {
+	fmt.Print(fmt.Sprintf( /* verb */ "%d", n))   // want `use fmt.Printf`
+	fmt.Println(fmt.Sprintf("%d", n /* count */)) // want `use fmt.Printf`
+}
+
+func recorded(t *testing.T, b *testing.B, f *testing.F, tb testing.TB, n int) {
+	t.Errorf("%d\n", n)  // want `use t.Errorf with the newline`
+	t.Fatalf("%d\n", n)  // want `use t.Fatalf`
+	t.Logf("%d\n", n)    // want `use t.Logf`
+	t.Skipf("%d\n", n)   // want `use t.Skipf`
+	b.Errorf("%d\n", n)  // want `use b.Errorf`
+	b.Fatalf("%d\n", n)  // want `use b.Fatalf`
+	b.Logf("%d\n", n)    // want `use b.Logf`
+	b.Skipf("%d\n", n)   // want `use b.Skipf`
+	tb.Errorf("%d\n", n) // want `use tb.Errorf`
+	tb.Fatalf("%d\n", n) // want `use tb.Fatalf`
+	tb.Logf("%d\n", n)   // want `use tb.Logf`
+	tb.Skipf("%d\n", n)  // want `use tb.Skipf`
+	f.Logf("%d\n", n)    // want `use f.Logf`
+	f.Skipf("%d\n", n)   // want `use f.Skipf`
+	t.Logf("%d\n\n", n)  // want `use t.Logf`
+}
+
+type promoted struct{ *testing.T }
+
+type ownErrorf struct{ *testing.T }
+
+func (ownErrorf) Errorf() {}
+
+type ownError struct{ *testing.T }
+
+func (ownError) Error(string, ...any) {}
+
+type throughTB struct{ testing.TB }
+
+func embedded(e1 promoted, e2 ownErrorf, e3 ownError, e4 throughTB, n int) {
+	e1.Errorf("%d\n", n) // want `use e1.Errorf`
+	e1.Fatalf("%d\n", n) // want `use e1.Fatalf`
+	e2.Error(fmt.Sprintf("%d", n))
+	e2.Fatalf("%d\n", n) // want `use e2.Fatalf`
+	e3.Error(fmt.Sprintf("%d", n))
+	e3.Fatalf("%d\n", n) // want `use e3.Fatalf`
+	e4.Errorf("%d\n", n) // want `use e4.Errorf`
+	e4.Fatalf("%d\n", n) // want `use e4.Fatalf`
+}
+
+type embeddedLog struct{ *log.Logger }
+
+func loggedEmbed(e embeddedLog, n int) {
+	e.Printf("%d\n", n) // want `use e.Printf with the newline`
+}
+
+func malformed(n int) {
+	fmt.Printf("%d\n", n, n) // want `use fmt.Printf with the newline`
+	fmt.Printf("%d%\n", n)   // want `use fmt.Printf with the newline`
+}
+
+func logged(l *log.Logger, n int) {
+	log.Printf("%d", n)   // want `use log.Printf`
+	log.Printf("%d\n", n) // want `use log.Printf`
+	log.Fatalf("%d", n)   // want `use log.Fatalf`
+	log.Fatalf("%d\n", n) // want `use log.Fatalf`
+	log.Panicf("%d", n)   // want `use log.Panicf`
+	log.Panicf("%d\n", n) // want `use log.Panicf`
+	l.Printf("%d", n)     // want `use l.Printf`
+	l.Printf("%d\n", n)   // want `use l.Printf`
+	l.Fatalf("%d", n)     // want `use l.Fatalf`
+	l.Fatalf("%d\n", n)   // want `use l.Fatalf`
+	l.Panicf("%d", n)     // want `use l.Panicf`
+	l.Panicf("%d\n", n)   // want `use l.Panicf`
+}
+
+type recorder struct{}
+
+func (recorder) Error(...any)          {}
+func (recorder) Errorf(string, ...any) {}
+
+func alone(r recorder, n int, s string) {
+	r.Error(fmt.Sprintf("%d", n))
+	fmt.Printf("%d", n)
+	fmt.Println(n)
+	fmt.Errorf("%d", n)
+	fmt.Sprint(s)
+	fmt.Printf("%s", fmt.Sprintf("%d", n))
+	fmt.Print(fmt.Sprintf("%d", n), "x")
+	fmt.Fprintln(nil, fmt.Sprintf("%d", n), "x")
+}
+
+func message() (string, []any) { return "%d", []any{1} }
+
+func multiValue() {
+	fmt.Printf(message())                   // want `use fmt.Printf`
+	fmt.Fprint(nil, fmt.Sprintf(message())) // want `use fmt.Fprintf`
+	fmt.Println(fmt.Sprintf(message()))     // want `use fmt.Printf`
+}
+
+func Sprintf(s string) string { return s }
+
+func shadowedSprintf(format string) {
+	fmt.Print(Sprintf(format))
+}
+
+func methodExpression(t *testing.T, n int) {
+	(*testing.T).Errorf(t, "%d\n", n) // want `Errorf`
+}

@@ -3477,6 +3477,18 @@ func f(names []string) {
 }
 ```
 
+## sprintfprint
+
+Reports a fmt.Sprintf call whose result a print call formats again. Its f form formats the operands in place of the message, so no string is built in between.
+
+Adapted from staticcheck's S1038.
+
+```
+func f(n int) {
+    fmt.Print(fmt.Sprintf("%d", n))
+}
+```
+
 ## sprintfquotedstring
 
 Reports a format string that writes quotes around a %s by hand. A quote or a backslash in the value ends the quoted text early, where %q escapes the value and supplies the quotes.

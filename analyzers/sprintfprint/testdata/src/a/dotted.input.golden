@@ -1,0 +1,17 @@
+package a
+
+import (
+	"fmt"
+	. "log"
+)
+
+func dotted(n int) {
+	Printf("%d", n)   // want `use Printf`
+	Printf("%d\n", n) // want `use Printf`
+}
+
+func shadowed(n int) {
+	Printf := n
+	_ = Printf
+	Print(fmt.Sprintf("%d", n))
+}

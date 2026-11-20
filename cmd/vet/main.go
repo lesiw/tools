@@ -3533,6 +3533,17 @@
 //		sort.Strings(names)
 //	}
 //
+// # sprintfprint
+//
+// Reports a fmt.Sprintf call whose result a print call formats again. The
+// printf form takes the operands directly, so no string is built in between.
+//
+// Adapted from staticcheck's S1038.
+//
+//	func f(n int) {
+//		fmt.Print(fmt.Sprintf("%d", n))
+//	}
+//
 // # sprintfquotedstring
 //
 // Reports a format string that writes quotes around a %s by hand. A quote or

@@ -1,0 +1,12 @@
+package a
+
+import (
+	l "log"
+	"testing"
+)
+
+func alias(t *testing.T, n int) {
+	t.Errorf("%d\n", n) // want `use t.Errorf`
+	l.Printf("%d", n)   // want `use l.Printf`
+	l.Printf("%d\n", n) // want `use l.Printf`
+}
