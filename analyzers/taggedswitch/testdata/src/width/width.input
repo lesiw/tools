@@ -1,0 +1,16 @@
+package width
+
+func kind(k string) {
+	switch { // want `switch without a tag`
+	case k == "alpha-first" || k == "alpha-second" ||
+		k == "bravo-first" || k == "bravo-second" ||
+		k == "charlie-first":
+	}
+}
+
+func header(kind string) {
+	// want +1 `switch without a tag`
+	switch { // the tag pushes this comment past the width that linelen allows
+	case kind == "alpha":
+	}
+}

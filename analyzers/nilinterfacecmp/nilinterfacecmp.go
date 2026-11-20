@@ -354,10 +354,10 @@ func (a *analyzer) declare(spec *ast.ValueSpec, st state) {
 			continue
 		}
 		var status nilness
-		switch {
-		case len(spec.Values) == 0:
+		switch len(spec.Values) {
+		case 0:
 			status = zeroStatus(obj.Type())
-		case len(spec.Values) == len(spec.Names):
+		case len(spec.Names):
 			value := a.valueOf(spec.Values[i], st)
 			status = a.status(obj.Type(), spec.Values[i], value)
 		default:

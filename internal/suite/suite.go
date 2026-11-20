@@ -285,6 +285,7 @@ import (
 	"lesiw.io/tools/analyzers/structtagdup"
 	"lesiw.io/tools/analyzers/switchtrue"
 	"lesiw.io/tools/analyzers/syncmaploaddelete"
+	"lesiw.io/tools/analyzers/taggedswitch"
 	"lesiw.io/tools/analyzers/templateparse"
 	"lesiw.io/tools/analyzers/testcmp"
 	"lesiw.io/tools/analyzers/testhelpers"
@@ -634,6 +635,7 @@ var (
 		structtagdup.Analyzer,
 		switchtrue.Analyzer,
 		syncmaploaddelete.Analyzer,
+		taggedswitch.Analyzer,
 		templateparse.Analyzer,
 		testcmp.Analyzer,
 		testhelpers.Analyzer,

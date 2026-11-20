@@ -314,9 +314,9 @@ func IsBool(t types.Type) bool {
 	return ok && b.Info()&types.IsBoolean != 0
 }
 
-// Composite reports whether e begins with a composite literal. A statement
-// header cannot begin with one, so a caller that prints e there must
-// parenthesize it.
+// Composite reports whether e holds a composite literal outside brackets and
+// parentheses, which a statement header cannot read: the literal's brace is
+// taken for the body's. A caller that prints e there must parenthesize it.
 func Composite(e ast.Expr) bool {
 	for {
 		switch n := e.(type) {
@@ -332,6 +332,10 @@ func Composite(e ast.Expr) bool {
 			e = n.X
 		case *ast.TypeAssertExpr:
 			e = n.X
+		case *ast.UnaryExpr:
+			e = n.X
+		case *ast.BinaryExpr:
+			return Composite(n.X) || Composite(n.Y)
 		case *ast.CompositeLit:
 			return true
 		default:

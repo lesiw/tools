@@ -3863,6 +3863,17 @@
 //		}
 //	}
 //
+// # taggedswitch
+//
+// Reports an untagged switch that compares one expression with a series of
+// values. The tag names the expression once.
+//
+// Adapted from staticcheck's QF1002.
+//
+//	switch {
+//	case n == 1 || n == 2:
+//	}
+//
 // # templateparse
 //
 // Reports a template that does not parse. A constant passed to Parse on a

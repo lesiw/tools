@@ -1,0 +1,205 @@
+package a
+
+type item struct{ n int }
+
+func fetch() int { return 0 }
+
+func single(n int) {
+	switch { // want `switch without a tag; write switch n`
+	case n == 3: // comment
+	case n == 1 || n == 2:
+	}
+}
+
+func chained(n int) {
+	switch { // want `switch without a tag; write switch n`
+	case n == 1 || n == 2, n == 3:
+	case n == 4:
+	default:
+	}
+}
+
+func byIndex(items []int) {
+	// want +1 `switch without a tag; write switch items\[0\]`
+	switch {
+	case items[0] == 1 || items[0] == 2:
+	}
+}
+
+func byBool(ok bool, a, b int) {
+	switch { // want `switch without a tag; write switch ok`
+	case ok == (a == b) || ok == (a != b):
+	}
+}
+
+func nilPointer(p, q *int) {
+	switch { // want `switch without a tag; write switch p`
+	case p == nil || p == q:
+	}
+}
+
+func nilMap(m map[string]int) {
+	switch { // want `switch without a tag; write switch m`
+	case m == nil:
+	}
+}
+
+type mode int
+
+const defaultMode mode = 0
+
+func constTag(m mode) {
+	switch {
+	case defaultMode == m:
+	}
+}
+
+func mixedKind(n int) {
+	switch { // want `switch without a tag`
+	case n == 1 || n == 1.0:
+	}
+}
+
+func unstableTag(n int) {
+	switch {
+	case fetch() == 1 || fetch() == 2:
+	}
+}
+
+func summedTag(n int) {
+	switch { // want `switch without a tag; write switch n \+ 1`
+	case n+1 == 2 || n+1 == 3:
+	}
+}
+
+func negatedTag() {
+	// want +1 `switch without a tag; write switch \(-item\{1\}\.n\)`
+	switch {
+	case -item{1}.n == -1 || -item{1}.n == -2:
+	}
+}
+
+func literalTag() {
+	// want +1 `switch without a tag; write switch \(item\{\}\.n\)`
+	switch {
+	case item{}.n == 1 || item{}.n == 2:
+	}
+}
+
+func rawString(s string) {
+	switch { // want `switch without a tag; write switch s`
+	case s == `alpha
+beta` || s == `gamma`:
+	}
+}
+
+func rounded(f float32) {
+	switch { // want `switch without a tag`
+	case f == 1 || f == 1.00000001:
+	}
+}
+
+func nilTag(p *int) {
+	switch {
+	case nil == p:
+	}
+}
+
+func calledTag(n int) {
+	switch {
+	case fetch() == n:
+	}
+}
+
+func lengthTag(s string) {
+	switch { // want `switch without a tag; write switch len\(s\)`
+	case len(s) == 1 || len(s) == 2:
+	}
+}
+
+func interfaceTag(v any) {
+	switch { // want `switch without a tag; write switch v`
+	case v == 1:
+	case v == int64(1):
+	case v == "alpha":
+	}
+}
+
+func rawTag(m map[string]int) {
+	switch { // want `switch without a tag`
+	case m[`alpha
+beta`] == 1 || m[`alpha
+beta`] == 2:
+	}
+}
+
+func withInit(n int) {
+	// want +1 `switch without a tag; write switch m := n; m`
+	switch m := n; {
+	case m == 0:
+	case m == 1:
+	default:
+		_ = m
+	}
+}
+
+func twoIndexes(items []int) {
+	switch {
+	case items[0] == 1 || items[1] == 2:
+	}
+}
+
+func mixedValues(n, m int) {
+	switch {
+	case n == 1 || n == 2, m == 3:
+	case n == 4:
+	default:
+	}
+}
+
+func twoTags(n, m int) {
+	switch {
+	case n == 1 || n == 2, n == 3:
+	case m == 4:
+	}
+}
+
+func effectfulValue(n int) {
+	switch {
+	case n == 1 || n == 2, n == fetch():
+	case n == 4:
+	default:
+	}
+}
+
+func conjunction(n int) {
+	switch {
+	case n == 1 && n == 2:
+	}
+}
+
+func tagged(n int) {
+	switch n {
+	case 1:
+	}
+}
+
+func onlyDefault(n int) {
+	switch {
+	default:
+		_ = n
+	}
+}
+
+func repeatedValue(n int) {
+	switch { // want `switch without a tag`
+	case n == 1, n == 1:
+	}
+}
+
+func commentedValue(n int) {
+	switch { // want `switch without a tag`
+	case n == 1 || // alpha
+		n == 2:
+	}
+}
