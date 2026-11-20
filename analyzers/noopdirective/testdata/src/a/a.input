@@ -1,0 +1,46 @@
+// go:build ignore // want "whitespace after // keeps go:build from being read as a directive"
+
+package a
+
+import _ "unsafe" // go:linkname
+
+// go:linkname spaced other.Spaced // want "whitespace after // keeps go:linkname from being read as a directive"
+func spaced() {}
+
+//	go:tabbed other.Tabbed // want "whitespace after // keeps go:tabbed from being read as a directive"
+func tabbed() {}
+
+//go:linkname joined other.Joined
+func joined() {}
+
+ //go:eta other.Eta
+func offset() {}
+
+/* go:delta 1234 */
+func block() {}
+
+// go:Build linux
+func uppercase() {}
+
+// go:1234 is the port it listens on
+func digit() {}
+
+// go: two words about Go
+func prose() {}
+
+// go:
+func truncated() {}
+
+var (
+	// go:embed note.txt // want "whitespace after // keeps go:embed from being read as a directive"
+	note string
+)
+
+// wrapped is documented in a sentence that runs on, and
+// go:lambda. It continues here. // want "whitespace after // keeps go:lambda from being read as a directive"
+func wrapped() {}
+
+func indented() {
+	// go:lambda
+	_ = 0
+}

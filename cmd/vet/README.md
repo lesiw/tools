@@ -2638,6 +2638,17 @@ func f(n int) int {
 }
 ```
 
+## noopdirective
+
+Reports a comment that reads as a //go: directive but for whitespace after the slashes. Go reads a directive only when the name follows // directly, so the directive has no effect.
+
+Adapted from staticcheck's SA9009.
+
+```
+// go:noinline
+func f() {}
+```
+
 ## nowsub
 
 Reports time.Now().Sub(t) or t.Sub(time.Now()). time.Since and time.Until are shorthand for these two calls. In the Since direction a call is reported only when the argument does no work, because the rewrite moves the clock read past the argument.
@@ -2837,7 +2848,7 @@ func f(n int) string {
 
 Reports a concrete error type that a package converts to error both as a value and as a pointer. A type assertion matches only the form the package converted to, so a package that writes both leaves the caller no form that always matches. A type that implements error both ways and is never converted in its own package is also reported.
 
-Vendored from gopls' ptrtoerror, which is internal.
+Vendored from gopls' ptrtoerror.
 
 ```
 type mixed struct{ error }
@@ -3501,7 +3512,7 @@ func f(names []string) {
 
 ## sprintfprint
 
-Reports a fmt.Sprintf call whose result a print call formats again. Its f form formats the operands in place of the message, so no string is built in between.
+Reports a fmt.Sprintf call whose result a print call formats again. The printf form takes the operands directly, so no string is built in between.
 
 Adapted from staticcheck's S1038.
 
@@ -3894,7 +3905,7 @@ func TestEvict(t *testing.T) {
 
 ## testmainexit
 
-Reports a TestMain function that runs the tests and returns, in a file checked against Go 1.14 or earlier. The go command's test wrapper passes the result of m.Run to os.Exit from Go 1.15 on, and an earlier one exits 0 whatever the tests did.
+Reports a TestMain function that runs the tests and returns, in a file checked against Go 1.14 or earlier. The go command's test wrapper passes the result of m.Run to os.Exit from Go 1.15 on, and the wrapper before it exits 0 whatever the tests did.
 
 Adapted from staticcheck's SA3000.
 
@@ -4366,7 +4377,7 @@ func read(ctx context.Context) any {
 
 Reports a package-level declaration that nothing in the package refers to. An exported name may be referred to from another package, and a method whose name matches one an interface in the package declares may be called through it.
 
-A mirror of gopls' unusedfunc, which is internal.
+Vendored from gopls' unusedfunc.
 
 ```
 func main() { live() }

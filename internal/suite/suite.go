@@ -218,6 +218,7 @@ import (
 	"lesiw.io/tools/analyzers/niltimer"
 	"lesiw.io/tools/analyzers/nilwrite"
 	"lesiw.io/tools/analyzers/noopbits"
+	"lesiw.io/tools/analyzers/noopdirective"
 	"lesiw.io/tools/analyzers/nowsub"
 	"lesiw.io/tools/analyzers/octal"
 	"lesiw.io/tools/analyzers/offbyone"
@@ -558,6 +559,7 @@ var (
 		niltimer.Analyzer,
 		nilwrite.Analyzer,
 		noopbits.Analyzer,
+		noopdirective.Analyzer,
 		nowsub.Analyzer,
 		octal.Analyzer,
 		offbyone.Analyzer,

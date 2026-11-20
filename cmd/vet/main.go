@@ -2694,6 +2694,17 @@
 //		return n | 0
 //	}
 //
+// # noopdirective
+//
+// Reports a comment that reads as a //go: directive but for whitespace after
+// the slashes. Go reads a directive only when the name follows // directly, so
+// the directive has no effect.
+//
+// Adapted from staticcheck's SA9009.
+//
+//	// go:noinline
+//	func f() {}
+//
 // # nowsub
 //
 // Reports time.Now().Sub(t) or t.Sub(time.Now()). time.Since and time.Until
