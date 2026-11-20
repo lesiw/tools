@@ -544,6 +544,18 @@
 //
 //	package p
 //
+// # builtinbound
+//
+// Reports a comparison of len or cap with zero that is always true or always
+// false. Neither builtin returns a negative number, so the answer does not
+// depend on the operand.
+//
+// Adapted from staticcheck's SA4024 and go-critic's sloppyLen.
+//
+//	func f(xs []int) bool {
+//		return len(xs) < 0
+//	}
+//
 // # builtinprint
 //
 // Reports a call to the predeclared print or println. The builtin package
@@ -2072,17 +2084,6 @@
 //
 //	func (i *item) MarshalJSON() ([]byte, error) {
 //		return nil, nil
-//	}
-//
-// # lenzero
-//
-// Reports a comparison of len with zero that is always true or always false.
-// len returns a count, and a count is never negative.
-//
-// Inspired by go-critic's sloppyLen.
-//
-//	func f(xs []int) bool {
-//		return len(xs) < 0
 //	}
 //
 // # linelen

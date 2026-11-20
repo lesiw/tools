@@ -23,8 +23,9 @@
 // The rule is inspired by go-critic's emptyStringTest, which matches the same
 // four comparisons with the length on the left.
 //
-// len(s) < 0 is always false and len(s) >= 0 is always true; lenzero reports
-// these comparisons in either order and replaces them with the constant.
+// len(s) < 0 is always false and len(s) >= 0 is always true; builtinbound
+// reports these comparisons in either order and replaces them with the
+// constant.
 package emptystring
 
 import (
@@ -61,7 +62,7 @@ func run(pass *analysis.Pass) (any, error) {
 
 // test returns the string operand and the operator to write when bin tests a
 // string's emptiness. len is never negative, so < is always false and >= is
-// always true; lenzero reports those two.
+// always true; builtinbound reports those two.
 func test(pass *analysis.Pass, bin *ast.BinaryExpr) (ast.Expr, token.Token, bool) {
 	var (
 		str, ok = stringOperand(pass, bin.X, bin.Y)
@@ -69,7 +70,7 @@ func test(pass *analysis.Pass, bin *ast.BinaryExpr) (ast.Expr, token.Token, bool
 	)
 	if !ok {
 		str, ok = stringOperand(pass, bin.Y, bin.X)
-		op = flip(op)
+		op = astexpr.Flip(op)
 	}
 	if !ok {
 		return nil, 0, false
@@ -110,21 +111,6 @@ func stringOperand(pass *analysis.Pass, call, other ast.Expr) (ast.Expr, bool) {
 	return expr.Args[0], true
 }
 
-// flip returns the operator that reads the same with its operands swapped.
-func flip(op token.Token) token.Token {
-	switch op {
-	case token.LSS:
-		return token.GTR
-	case token.GTR:
-		return token.LSS
-	case token.LEQ:
-		return token.GEQ
-	case token.GEQ:
-		return token.LEQ
-	}
-	return op
-}
-
 // report reports bin, with the rewrite as its suggested fix when one is
 // offered.
 func report(pass *analysis.Pass, file *ast.File, bin *ast.BinaryExpr, str ast.Expr, op token.Token) {
@@ -153,9 +139,12 @@ func report(pass *analysis.Pass, file *ast.File, bin *ast.BinaryExpr, str ast.Ex
 // would join lines, drop a comment, or reflow the operand.
 func rewrite(pass *analysis.Pass, file *ast.File, bin *ast.BinaryExpr, str ast.Expr, op token.Token) (string, bool) {
 	// Written positions, which a //line directive does not move.
-	start, end := pass.Fset.PositionFor(str.Pos(), false),
-		pass.Fset.PositionFor(str.End(), false)
-	if start.Line != end.Line || commented(file, bin.Pos(), bin.End()) {
+	var (
+		start, end = pass.Fset.PositionFor(str.Pos(), false),
+			pass.Fset.PositionFor(str.End(), false)
+		commented = astexpr.Commented(file, bin.Pos(), bin.End())
+	)
+	if start.Line != end.Line || commented {
 		return "", false
 	}
 	text, ok := astexpr.OneLine(str)
@@ -189,16 +178,6 @@ func composite(e ast.Expr) bool {
 		return composite(e.Fun)
 	case *ast.CompositeLit:
 		return true
-	}
-	return false
-}
-
-// commented reports whether a comment overlaps the text between lo and hi.
-func commented(file *ast.File, lo, hi token.Pos) bool {
-	for _, group := range file.Comments {
-		if group.Pos() < hi && group.End() > lo {
-			return true
-		}
 	}
 	return false
 }

@@ -31,8 +31,8 @@ The rule is inspired by go-critic's `emptyStringTest`, which matches the same
 four comparisons with the length on the left.
 
 `len(s) < 0` is always false and `len(s) >= 0` is always true.
-[`lenzero`](../../lenzero/docs) reports these comparisons in either order and
-replaces them with the constant.
+[`builtinbound`](../../builtinbound/docs) reports these comparisons in either
+order and replaces them with the constant.
 
 Fixable: the comparison becomes `s == ""` or `s != ""`. The fix is withheld
 when the operand's own text spans more than one line, since the printed form

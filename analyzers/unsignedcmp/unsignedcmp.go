@@ -281,7 +281,7 @@ func findingFor(pass *analysis.Pass, file *ast.File, bin *ast.BinaryExpr) (findi
 	// So that each case below has the operand on the left.
 	if constantOf(pass, value) != nil && constantOf(pass, bound) == nil {
 		value, bound = bound, value
-		op = reverse(op)
+		op = astexpr.Flip(op)
 	}
 	limit := constantOf(pass, bound)
 	// The compiler folds a comparison of two constants, so there is nothing to
@@ -875,21 +875,5 @@ func qualifier(pass *analysis.Pass, file *ast.File) types.Qualifier {
 			return name
 		}
 		return p.Name()
-	}
-}
-
-// reverse returns the operator with its operands swapped.
-func reverse(op token.Token) token.Token {
-	switch op {
-	case token.LSS:
-		return token.GTR
-	case token.LEQ:
-		return token.GEQ
-	case token.GTR:
-		return token.LSS
-	case token.GEQ:
-		return token.LEQ
-	default:
-		return op
 	}
 }

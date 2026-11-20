@@ -1,0 +1,181 @@
+package a
+
+func negativeLength(xs []int) bool {
+	return false // want `len is never negative; this is always false`
+}
+
+func negativeCapacity(xs []int) bool {
+	return false // want `cap is never negative; this is always false`
+}
+
+func zeroGreaterLength(xs []int) bool {
+	return false // want `len is never negative; this is always false`
+}
+
+func zeroGreaterCapacity(xs []int) bool {
+	return false // want `cap is never negative; this is always false`
+}
+
+func lengthAtLeastZero(xs []int) bool {
+	return true // want `len is never negative; this is always true`
+}
+
+func capacityAtLeastZero(xs []int) bool {
+	return true // want `cap is never negative; this is always true`
+}
+
+func zeroAtMostLength(xs []int) bool {
+	return true // want `len is never negative; this is always true`
+}
+
+func zeroAtMostCapacity(xs []int) bool {
+	return true // want `cap is never negative; this is always true`
+}
+
+func parenthesized(xs []int) bool {
+	return false // want `len is never negative; this is always false`
+}
+
+func inSwitch(xs []int) {
+	switch {
+	case false: // want `len is never negative; this is always false`
+	}
+}
+
+func inFor(xs []int) {
+	for false { // want `len is never negative; this is always false`
+	}
+}
+
+func inExpression(xs []int) {
+	_ = false // want `cap is never negative; this is always false`
+}
+
+func negativeString(s string) bool {
+	return false // want `len is never negative; this is always false`
+}
+
+func negativeMap(m map[string]int) bool {
+	return false // want `len is never negative; this is always false`
+}
+
+func negativeChannel(c chan int) bool {
+	return false // want `cap is never negative; this is always false`
+}
+
+func negativeParameter[T ~[]int](xs T) bool {
+	return false // want `len is never negative; this is always false`
+}
+
+const zero = 0
+
+func constantZero(xs []int) bool {
+	return len(xs) < zero
+}
+
+func lessThanOne(xs []int) bool {
+	return len(xs) < 1
+}
+
+func equalZero(xs []int) bool {
+	return len(xs) == 0
+}
+
+func greaterThanZero(xs []int) bool {
+	return len(xs) > 0
+}
+
+func atMostZero(xs []int) bool {
+	return len(xs) <= 0
+}
+
+func zeroLessLength(xs []int) bool {
+	return 0 < len(xs)
+}
+
+func zeroAtLeastLength(xs []int) bool {
+	return 0 >= len(xs)
+}
+
+func comparedWithVariable(xs []int, bound int) bool {
+	return len(xs) < bound
+}
+
+func shadowed(xs []int) bool {
+	len := func([]int) int { return -1 }
+	return len(xs) < 0
+}
+
+type holder struct{ items []int }
+
+func (h holder) check() bool {
+	return false // want `len is never negative; this is always false`
+}
+
+func closure() bool {
+	f := func(xs []int) bool {
+		return false // want `len is never negative; this is always false`
+	}
+	return f(nil)
+}
+
+func typeSwitchReadElsewhere(v any) bool {
+	switch s := v.(type) {
+	case []int:
+		return false // want `len is never negative; this is always false`
+	case map[string]int:
+		return len(s) > 0
+	}
+	return false
+}
+
+func typeSwitchUnread(v any) bool {
+	switch s := v.(type) {
+	case []int:
+		return len(s) < 0 // want `len is never negative; this is always false`
+	}
+	return false
+}
+
+func grow() []int { return nil }
+
+func effectful() bool {
+	return len(grow()) < 0 // want `len is never negative; this is always false`
+}
+
+func dereferenced(ptr *[]int) bool {
+	return len(*ptr) < 0 // want `len is never negative; this is always false`
+}
+
+func indexed(matrix [2][]int) bool {
+	return len(matrix[1]) < 0 // want `len is never negative; this is always false`
+}
+
+func commented(xs []int) bool {
+	return len(xs /* items */) < 0 // want `len is never negative; this is always false`
+}
+
+var packageItems []int
+
+func unreadPackageLevel() bool {
+	return false // want `len is never negative; this is always false`
+}
+
+func unreadLocal() bool {
+	var spare []int
+	return len(spare) < 0 // want `len is never negative; this is always false`
+}
+
+func rereadLocal() bool {
+	xs := make([]int, 0)
+	xs = append(xs, 0)
+	return false // want `len is never negative; this is always false`
+}
+
+func twoReads() bool {
+	xs := make([]int, 0)
+	if false { // want `len is never negative; this is always false`
+		return true
+	}
+	return 0 > len(xs) // want `len is never negative; this is always false`
+}

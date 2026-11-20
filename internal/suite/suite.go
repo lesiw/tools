@@ -84,6 +84,7 @@ import (
 	"lesiw.io/tools/analyzers/boolset"
 	"lesiw.io/tools/analyzers/breakinselect"
 	"lesiw.io/tools/analyzers/bufferbytes"
+	"lesiw.io/tools/analyzers/builtinbound"
 	"lesiw.io/tools/analyzers/builtinprint"
 	"lesiw.io/tools/analyzers/builtinshadow"
 	"lesiw.io/tools/analyzers/caseorder"
@@ -178,7 +179,6 @@ import (
 	"lesiw.io/tools/analyzers/isnilbool"
 	"lesiw.io/tools/analyzers/joinseparator"
 	"lesiw.io/tools/analyzers/jsonrecv"
-	"lesiw.io/tools/analyzers/lenzero"
 	"lesiw.io/tools/analyzers/linelen"
 	"lesiw.io/tools/analyzers/linewrap"
 	"lesiw.io/tools/analyzers/looponce"
@@ -398,6 +398,7 @@ var (
 		breakinselect.Analyzer,
 		bufferbytes.Analyzer,
 		buildtag.Analyzer,
+		builtinbound.Analyzer,
 		builtinprint.Analyzer,
 		builtinshadow.Analyzer,
 		caseorder.Analyzer,
@@ -507,7 +508,6 @@ var (
 		isnilbool.Analyzer,
 		joinseparator.Analyzer,
 		jsonrecv.Analyzer,
-		lenzero.Analyzer,
 		linelen.Analyzer,
 		linewrap.Analyzer,
 		loopclosure.Analyzer,

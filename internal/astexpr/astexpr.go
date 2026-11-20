@@ -649,3 +649,30 @@ func mayBeChan(t types.Type) bool {
 	_, ok := t.Underlying().(*types.Chan)
 	return ok
 }
+
+// Commented reports whether a comment sits inside the text between lo and hi,
+// which an edit over that range would delete.
+func Commented(file *ast.File, lo, hi token.Pos) bool {
+	for _, group := range file.Comments {
+		if group.Pos() < hi && group.End() > lo {
+			return true
+		}
+	}
+	return false
+}
+
+// Flip returns the operator that reads the same with its operands swapped. An
+// operator with no mirror is returned unchanged.
+func Flip(op token.Token) token.Token {
+	switch op {
+	case token.LSS:
+		return token.GTR
+	case token.GTR:
+		return token.LSS
+	case token.LEQ:
+		return token.GEQ
+	case token.GEQ:
+		return token.LEQ
+	}
+	return op
+}
