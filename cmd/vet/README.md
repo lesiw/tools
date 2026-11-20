@@ -2446,6 +2446,20 @@ func f(xs []int) bool {
 }
 ```
 
+## nilctx
+
+Reports a nil argument for a context.Context first parameter. The context package's doc says not to pass a nil Context, even if a function permits it.
+
+Adapted from staticcheck's SA1012.
+
+```
+func fetch(ctx context.Context) {}
+
+func run() {
+    fetch(nil)
+}
+```
+
 ## nilerrwrap
 
 Reports a fmt.Errorf call whose %w verb has no error to wrap: the argument is missing, is not an error, or is nil. The errors package documentation states that a nil error returned from Unwrap means the error wraps nothing.

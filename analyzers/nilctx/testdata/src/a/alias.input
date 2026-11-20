@@ -1,0 +1,9 @@
+package a
+
+import ctxpkg "context"
+
+func deliver(ctx ctxpkg.Context) {}
+
+func send() {
+	deliver(nil) // want `the context\.Context argument is nil; write ctxpkg\.TODO\(\)`
+}

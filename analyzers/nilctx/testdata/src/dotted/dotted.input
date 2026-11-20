@@ -1,0 +1,9 @@
+package dotted
+
+import . "context"
+
+func accept(ctx Context) {}
+
+func run() {
+	accept(nil) // want `the context\.Context argument is nil`
+}

@@ -1,0 +1,10 @@
+package width
+
+import "context"
+
+func fetch(ctx context.Context) {}
+
+func release(theWorkerIsShuttingDownAndHasNoDeadlineToPassAlong bool) {
+	// want +1 `the context\.Context argument is nil`
+	if theWorkerIsShuttingDownAndHasNoDeadlineToPassAlong { fetch(nil) }
+}

@@ -2503,6 +2503,20 @@
 //		return xs != nil && len(xs) > 0
 //	}
 //
+// # nilctx
+//
+// Reports a nil argument for a context.Context first parameter. The context
+// package's doc says not to pass a nil Context, even if a function permits
+// it.
+//
+// Adapted from staticcheck's SA1012.
+//
+//	func fetch(ctx context.Context) {}
+//
+//	func run() {
+//		fetch(nil)
+//	}
+//
 // # nilerrwrap
 //
 // Reports a fmt.Errorf call whose %w verb has no error to wrap: the argument

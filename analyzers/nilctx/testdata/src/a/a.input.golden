@@ -1,0 +1,58 @@
+package a
+
+import (
+	"context"
+
+	"apkg"
+)
+
+type trace = context.Context
+
+type local context.Context
+
+type store struct{}
+
+func (*store) write(ctx context.Context) {}
+
+func (*store) flush() {}
+
+func fetch(ctx context.Context) {}
+
+func annotate(note string, ctx context.Context) {}
+
+func pair[T any](ctx context.Context, x T) {}
+
+func variadic(ctxs ...context.Context) {}
+
+func traced(ctx trace) {}
+
+func localized(ctx local) {}
+
+func constrained[T context.Context](ctx T) {}
+
+var pending context.Context
+
+func run(s *store, ctx context.Context, handle func(context.Context)) {
+	fetch(context.TODO()) // want `the context\.Context argument is nil; write context\.TODO\(\)`
+	fetch(context.TODO())
+	fetch(pending)
+	annotate("", nil)
+	annotate("", ctx)
+	s.write(context.TODO())           // want `the context\.Context argument is nil; write context\.TODO\(\)`
+	(*store).write(s, context.TODO()) // want `the context\.Context argument is nil; write context\.TODO\(\)`
+	(*store).write(nil, ctx)
+	(*store).flush(nil)
+	pair[int](context.TODO(), 0) // want `the context\.Context argument is nil; write context\.TODO\(\)`
+	pair(context.TODO(), 0)      // want `the context\.Context argument is nil; write context\.TODO\(\)`
+	variadic(nil)
+	handle(nil)
+	traced(context.TODO()) // want `the context\.Context argument is nil; write context\.TODO\(\)`
+	localized(nil)
+	constrained[context.Context](nil)
+	apkg.Accept(nil)
+	_ = (func(context.Context))(nil)
+}
+
+func shadowed(context string) {
+	fetch(nil) // want `the context\.Context argument is nil`
+}

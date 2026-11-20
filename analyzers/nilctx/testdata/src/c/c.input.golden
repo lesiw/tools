@@ -1,0 +1,9 @@
+package c
+
+import "context"
+
+import "b"
+
+func run() {
+	b.Send(context.TODO()) // want `the context\.Context argument is nil; write context\.TODO\(\)`
+}

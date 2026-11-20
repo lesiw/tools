@@ -1,0 +1,8 @@
+package apkg
+
+// Context is another package's interface of this name.
+type Context interface {
+	Done() <-chan struct{}
+}
+
+func Accept(ctx Context) {}

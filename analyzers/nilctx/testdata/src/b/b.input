@@ -1,0 +1,5 @@
+package b
+
+import "context"
+
+func Send(ctx context.Context) {}

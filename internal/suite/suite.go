@@ -206,6 +206,7 @@ import (
 	"lesiw.io/tools/analyzers/newderef"
 	"lesiw.io/tools/analyzers/nilchansend"
 	"lesiw.io/tools/analyzers/nilchecklen"
+	"lesiw.io/tools/analyzers/nilctx"
 	"lesiw.io/tools/analyzers/nilerrwrap"
 	"lesiw.io/tools/analyzers/nilfuncall"
 	"lesiw.io/tools/analyzers/nilinterfacecmp"
@@ -534,6 +535,7 @@ var (
 		newderef.Analyzer,
 		nilchansend.Analyzer,
 		nilchecklen.Analyzer,
+		nilctx.Analyzer,
 		nilerrwrap.Analyzer,
 		nilfunc.Analyzer,
 		nilfuncall.Analyzer,
