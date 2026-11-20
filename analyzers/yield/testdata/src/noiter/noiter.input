@@ -1,0 +1,6 @@
+package noiter
+
+func pair(yield func(int) bool) {
+	yield(0)
+	yield(1)
+}

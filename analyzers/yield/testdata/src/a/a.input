@@ -1,0 +1,414 @@
+package a
+
+import (
+	"iter"
+	"runtime"
+)
+
+func chained(yield func(int) bool) {
+	_ = yield(0) && yield(1) && yield(2)
+}
+
+func either(yield func(int) bool) {
+	_ = yield(0) || // want `yield may be called again \(on L\d+\)`
+		yield(1) || // want `yield may be called again \(on L\d+\)`
+		yield(2)
+}
+
+func sequence(yield func(int) bool) {
+	// want +2 `yield may be called again \(on L\d+\)`
+	// want +2 `yield may be called again \(on L\d+\)`
+	yield(0)
+	yield(1)
+	yield(2)
+}
+
+func pair(yield func(int) bool) {
+	// want +1 `yield may be called again \(on L\d+\)`
+	yield(0)
+	yield(1)
+}
+
+func nested(yield func(int) bool, ok bool) {
+	if ok {
+		// want +1 `yield may be called again \(on L\d+\)`
+		yield(0)
+		yield(1)
+	}
+}
+
+func discarded(yield func(int) bool) {
+	// want +1 `yield may be called again \(on L\d+\)`
+	_ = yield(0)
+	_ = yield(1)
+}
+
+func bothBranches(yield func(int) bool) {
+	ok := yield(0) // want `yield may be called again \(on L\d+\)`
+	if !ok {
+		yield(1)
+	} else {
+		yield(2)
+	}
+}
+
+func broken(values []string) iter.Seq2[string, error] {
+	return func(yield func(string, error) bool) {
+		for _, v := range values {
+			if !yield(v, nil) { // want `yield may be called again \(on L\d+\)`
+				break
+			}
+		}
+		yield("", nil)
+	}
+}
+
+func spawned(yield func(int) bool) {
+	defer yield(0)
+	go yield(1)
+}
+
+func threeParameters(yield func(int, int, int) bool) {
+	_ = yield(0, 1, 2) || yield(3, 4, 5)
+}
+
+func twoResults(yield func(int) (bool, bool)) {
+	_, _ = yield(0)
+	_, _ = yield(1)
+}
+
+func otherResult(yield func(int) int) {
+	_ = yield(0) + yield(1)
+}
+
+func continued(yield func(int) bool) bool {
+	ok := true &&
+		yield(0) // want `yield may be called again \(on L\d+\)`
+	yield(1)
+	return ok
+}
+
+func exits(yield func(int) bool) {
+	for {
+		if !yield(0) {
+			runtime.Goexit()
+		}
+	}
+}
+
+func inline(yield func(int) bool) { yield(0); yield(1) } // want `yield may be called again \(on L\d+\)`
+
+func commented(yield func(int) bool) {
+	// want +1 `yield may be called again \(on L\d+\)`
+	yield(0)
+	// note
+	yield(1)
+}
+
+func trailing(yield func(int) bool) {
+	// want +1 `yield may be called again \(on L\d+\)`
+	yield(0)
+	yield(1) // note
+}
+
+type emitter struct{}
+
+func (emitter) yield(int) bool { return false }
+
+func renamed(fn func(int) bool) {
+	fn(0)
+	fn(1)
+}
+
+func method(e emitter) {
+	e.yield(0)
+	e.yield(1)
+}
+
+func wrapped(yield func(int) bool) {
+	// want +1 `yield may be called again \(on L\d+\)`
+	yield(0)
+	yield(
+		1,
+	)
+}
+
+func bare() {
+	// want +1 `yield may be called again \(on L\d+\)`
+	yield(0)
+	yield(1)
+}
+
+func yield(int) bool { return true }
+
+func spaced(yield func(int) bool) {
+	// want +1 `yield may be called again \(on L\d+\)`
+	yield(0)
+
+	yield(1)
+}
+
+func captured(yield func(int) bool) {
+	f := func() {
+		// want +1 `yield may be called again \(on L\d+\)`
+		yield(0)
+		yield(1)
+	}
+	f()
+}
+
+func cased(n int, yield func(int) bool) {
+	switch n {
+	case 0:
+		// want +1 `yield may be called again \(on L\d+\)`
+		yield(0)
+		yield(1)
+	}
+}
+
+func selected(ch chan int, yield func(int) bool) {
+	select {
+	case <-ch:
+		// want +1 `yield may be called again \(on L\d+\)`
+		yield(0)
+		yield(1)
+	}
+}
+
+func looping(yield func(int) bool) {
+	for {
+		yield(0) // want `yield may be called again after returning false`
+	}
+}
+
+func checkedLoop(yield func(int) bool) {
+	for {
+		if !yield(0) {
+			break
+		}
+	}
+}
+
+func singleton(yield func(int) bool) {
+	yield(0)
+}
+
+func twoArguments(yield func(int, int) bool) {
+	_ = yield(0, 1) || // want `yield may be called again \(on L\d+\)`
+		yield(2, 3)
+}
+
+func noArguments(yield func() bool) {
+	_ = yield() || // want `yield may be called again \(on L\d+\)`
+		yield()
+}
+
+func guarded(yield func(int) bool) {
+	ok := yield(0)
+	ok = ok && yield(1)
+	ok = ok && yield(2)
+}
+
+func stopped(yield func(int) bool) {
+	ok := yield(0)
+	stop := !ok || yield(1) // want `yield may be called again \(on L\d+\)`
+	if stop {
+		return
+	}
+	yield(2)
+}
+
+func unstopped(yield func(int) bool) {
+	ok := yield(0)
+	stop := !ok || !yield(1)
+	if stop {
+		return
+	}
+	yield(2)
+}
+
+func branches(values []int, cond bool) iter.Seq[int] {
+	return func(yield func(int) bool) {
+		for _, v := range values {
+			var ok bool
+			if cond {
+				ok = yield(v)
+			} else {
+				ok = yield(v)
+			}
+			if !ok {
+				return
+			}
+		}
+	}
+}
+
+func lateReturn(yield func(int) bool) {
+	ok := yield(0) // want `yield may be called again \(on L\d+\)`
+	if !ok {
+		println(1)
+	} else {
+		return
+	}
+	if ok {
+		println(2)
+	} else {
+		yield(1)
+	}
+}
+
+func guardedReturn(yield func(int) bool) {
+	ok := yield(0)
+	if !ok {
+		println(1)
+	} else {
+		return
+	}
+	if !ok {
+		println(2)
+	} else {
+		yield(1)
+	}
+}
+
+func earlyReturn(yield func(int) bool) {
+	ok := yield(0)
+	if ok {
+		return
+	}
+	if ok {
+		yield(1)
+	}
+}
+
+func constantPhi(yield func(int) bool, cond bool) {
+	b := false
+	if cond {
+		b = true
+	}
+	yield(0) // want `yield may be called again \(on L\d+\)`
+	if !b {
+		if cond {
+			yield(1)
+		}
+	}
+}
+
+func switchCase(values iter.Seq[int]) iter.Seq[int] {
+	return func(yield func(int) bool) {
+		for v := range values {
+			zero := v == 0
+			switch {
+			case !zero && !yield(v):
+				return
+			case !zero:
+				continue
+			case !yield(0):
+				return
+			}
+		}
+	}
+}
+
+func carriedFlag() iter.Seq[int] {
+	return func(yield func(int) bool) {
+		ok := true
+		for i := range 3 {
+			if ok {
+				ok = yield(i)
+			}
+		}
+	}
+}
+
+func joinOrder(yield func(int) bool, cond bool) {
+	ok := yield(0) // want `yield may be called again \(on L\d+\)`
+	if !cond {
+		ok = true
+	}
+	if ok {
+		yield(1)
+	}
+}
+
+func flipped(yield func(int) bool) {
+	ok := yield(0)
+	ok = !ok
+	if !ok {
+		yield(1)
+	}
+}
+
+func flippedTwice(yield func(int) bool) {
+	ok := yield(0) // want `yield may be called again \(on L\d+\)`
+	ok = !ok
+	if ok {
+		yield(1)
+	}
+}
+
+func deadBranch(yield func(int) bool) {
+	yield(0) // want `yield may be called again \(on L\d+\)`
+	if false {
+		yield(1)
+	}
+}
+
+func loopFlag(yield func(int) bool, cond bool) {
+	yield(0) // want `yield may be called again \(on L\d+\)`
+	b := true
+	for {
+		if !b {
+			yield(1) // want `yield may be called again after returning false`
+		}
+		b = cond
+	}
+}
+
+func flagNotResult(yield func(int) bool) {
+	ok := yield(0) // want `yield may be called again \(on L\d+\)`
+	b := false
+	if !ok {
+		b = true
+	}
+	if b {
+		yield(1)
+	}
+}
+
+func flagNotResultNegated(yield func(int) bool) {
+	ok := yield(0)
+	b := false
+	if !ok {
+		b = true
+	}
+	if !b {
+		yield(1)
+	}
+}
+
+func flagResult(yield func(int) bool) {
+	ok := yield(0)
+	b := false
+	if !ok {
+		b = false
+	} else {
+		b = ok
+	}
+	if b {
+		yield(1)
+	}
+}
+
+func flagAlwaysTrue(yield func(int) bool) {
+	ok := yield(0) // want `yield may be called again \(on L\d+\)`
+	b := false
+	if !ok {
+		b = true
+	} else {
+		b = ok
+	}
+	if b {
+		yield(1)
+	}
+}

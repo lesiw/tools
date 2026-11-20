@@ -4501,6 +4501,19 @@ func write(w sink, b []byte) {
 }
 ```
 
+## yield
+
+Reports a call to a yield function that may be reached after an earlier call returned false, in a package that imports iter. A range loop ends when yield returns false, so the iterator must not call it again.
+
+Adapted from gopls' yield, which is internal.
+
+```
+func sequence(yield func(int) bool) {
+    yield(0)
+    yield(1)
+}
+```
+
 ## yoda
 
 Reports an == or != comparison with a literal or nil on the left. Go code reads left to right as a sentence about the variable, and a mistyped assignment does not compile in Go.
