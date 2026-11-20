@@ -1,0 +1,139 @@
+package a
+
+import "iter"
+
+type list struct {
+	value int
+	next  *list
+}
+
+func (l *list) All() iter.Seq[int] {
+	return func(yield func(int) bool) {
+		for range l.next.All() { // want `iterator All ranges over a call to itself`
+		}
+	}
+}
+
+func Indexed(l *list) iter.Seq2[int, int] {
+	return func(yield func(int, int) bool) {
+		for range Indexed(l.next) { // want `iterator Indexed ranges over a call to itself`
+		}
+	}
+}
+
+type walkAlias = iter.Seq[int]
+
+func Aliased(l *list) walkAlias {
+	return func(yield func(int) bool) {
+		for range Aliased(l.next) { // want `iterator Aliased ranges over a call to itself`
+		}
+	}
+}
+
+type branch struct {
+	value       int
+	left, right *branch
+}
+
+func (b *branch) All() iter.Seq[int] {
+	return func(yield func(int) bool) {
+		for range b.left.All() { // want `iterator All ranges over a call to itself`
+		}
+		for range b.right.All() { // want `iterator All ranges over a call to itself`
+		}
+	}
+}
+
+type node[T any] struct {
+	value T
+	kids  []*node[T]
+}
+
+func (n *node[T]) All() iter.Seq[T] {
+	return func(yield func(T) bool) {
+		for _, kid := range n.kids {
+			for range kid.All() { // want `iterator All ranges over a call to itself`
+			}
+		}
+	}
+}
+
+func Nested(l *list) iter.Seq[int] {
+	return func(yield func(int) bool) {
+		_ = func() iter.Seq[int] {
+			return func(yield func(int) bool) {
+				for range Nested(l.next) { // want `iterator Nested ranges over a call to itself`
+				}
+			}
+		}
+	}
+}
+
+func Parens(l *list) iter.Seq[int] {
+	return (func(yield func(int) bool) {
+		for range (Parens(l.next)) { // want `iterator Parens ranges over a call to itself`
+		}
+	})
+}
+
+func LocalLiteral(l *list) iter.Seq[int] {
+	it := func() iter.Seq[int] {
+		return func(yield func(int) bool) {
+			for range LocalLiteral(l.next) { // want `iterator LocalLiteral ranges over a call to itself`
+			}
+		}
+	}
+	return it()
+}
+
+type wrapper struct {
+	inner *branch
+}
+
+func (w *wrapper) All() iter.Seq[int] {
+	return func(yield func(int) bool) {
+		for range w.inner.All() {
+		}
+	}
+}
+
+func (l *list) bare() func(func(int) bool) {
+	return func(yield func(int) bool) {
+		for range l.next.bare() {
+		}
+	}
+}
+
+type walk iter.Seq[int]
+
+func (l *list) Walk() walk {
+	return func(yield func(int) bool) {
+		for range l.next.Walk() {
+		}
+	}
+}
+
+func (b *branch) rangeOutside() iter.Seq[int] {
+	for range b.left.rangeOutside() {
+	}
+	return func(yield func(int) bool) {}
+}
+
+func ThroughValue(l *list, all func(*list) iter.Seq[int]) iter.Seq[int] {
+	return func(yield func(int) bool) {
+		for range all(l.next) {
+		}
+	}
+}
+
+func bodyless(b *branch) iter.Seq[int]
+
+func noResult() {}
+
+func bareReturn() iter.Seq[int] {
+	f := func() { return }
+	f()
+	return func(yield func(int) bool) {}
+}
+
+func errorResult() error { return nil }

@@ -230,6 +230,7 @@ import (
 	"lesiw.io/tools/analyzers/rangelast"
 	"lesiw.io/tools/analyzers/rangestring"
 	"lesiw.io/tools/analyzers/rangevaladdress"
+	"lesiw.io/tools/analyzers/recursiveiter"
 	"lesiw.io/tools/analyzers/recvname"
 	"lesiw.io/tools/analyzers/recvtype"
 	"lesiw.io/tools/analyzers/redundantalias"
@@ -551,6 +552,7 @@ var (
 		rangelast.Analyzer,
 		rangestring.Analyzer,
 		rangevaladdress.Analyzer,
+		recursiveiter.Analyzer,
 		recvname.Analyzer,
 		recvtype.Analyzer,
 		redundantalias.Analyzer,

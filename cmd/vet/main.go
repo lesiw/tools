@@ -2892,6 +2892,21 @@
 //		return out
 //	}
 //
+// # recursiveiter
+//
+// Reports an iterator that ranges over a call to itself. Each nested
+// range-over-func typically heap-allocates a variable, and each element passes
+// through a dynamic yield call per enclosing range.
+//
+// Vendored from gopls' recursiveiter, which is internal.
+//
+//	func (l *list) All() iter.Seq[int] {
+//		return func(yield func(int) bool) {
+//			for range l.next.All() {
+//			}
+//		}
+//	}
+//
 // # recvname
 //
 // Reports a method receiver whose name differs from the name another method of
