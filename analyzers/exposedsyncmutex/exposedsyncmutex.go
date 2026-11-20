@@ -28,6 +28,8 @@ import (
 	"strings"
 
 	"golang.org/x/tools/go/analysis"
+
+	"lesiw.io/tools/internal/typename"
 )
 
 var Analyzer = &analysis.Analyzer{
@@ -225,17 +227,6 @@ func syncMethod(obj types.Object) bool {
 	return obj != nil && obj.Pkg() != nil && obj.Pkg().Path() == "sync"
 }
 
-// qualifier names a type from another package by its package name, so a
-// message reads foreign.Base rather than the import path.
-func qualifier(pass *analysis.Pass) types.Qualifier {
-	return func(p *types.Package) string {
-		if p == pass.Pkg {
-			return ""
-		}
-		return p.Name()
-	}
-}
-
 // report writes a diagnostic on the field that embeds a lock. An instantiation
 // has fields of its own at the positions of the declaration, so a position is
 // reported once.
@@ -244,7 +235,7 @@ func (r *reacher) report(field *types.Var) {
 		return
 	}
 	r.reported[field.Pos()] = true
-	name := types.TypeString(field.Type(), qualifier(r.pass))
+	name := types.TypeString(field.Type(), typename.Of(r.pass))
 	r.pass.Report(analysis.Diagnostic{
 		Pos:     field.Pos(),
 		Message: "avoid embedding " + name + "; consider a named field",

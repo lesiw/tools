@@ -17,6 +17,8 @@ import (
 	"go/types"
 
 	"golang.org/x/tools/go/analysis"
+
+	"lesiw.io/tools/internal/typename"
 )
 
 var Analyzer = &analysis.Analyzer{
@@ -86,14 +88,7 @@ func checkKey(pass *analysis.Pass, key ast.Expr) {
 	if typ == nil || !unhashable(typ) {
 		return
 	}
-	// Names a type from another package by its package name, so a report says
-	// http.Header where the import path is net/http.
-	name := types.TypeString(typ, func(p *types.Package) string {
-		if p == pass.Pkg {
-			return ""
-		}
-		return p.Name()
-	})
+	name := types.TypeString(typ, typename.Of(pass))
 	pass.Reportf(key.Pos(), "map key of type %s is unhashable", name)
 }
 

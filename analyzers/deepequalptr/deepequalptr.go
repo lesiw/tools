@@ -100,6 +100,7 @@ import (
 	"golang.org/x/tools/go/types/typeutil"
 
 	"lesiw.io/tools/internal/astexpr"
+	"lesiw.io/tools/internal/typename"
 )
 
 var Analyzer = &analysis.Analyzer{
@@ -266,12 +267,7 @@ func equalDereferences(pass *analysis.Pass, fn *types.Func, name string) bool {
 // equalName returns the text that names the Equal method with receiver t.
 func equalName(pass *analysis.Pass, t types.Type) string {
 	t = types.Unalias(t)
-	name := types.TypeString(t, func(pkg *types.Package) string {
-		if pkg == pass.Pkg {
-			return ""
-		}
-		return pkg.Name()
-	})
+	name := types.TypeString(t, typename.Of(pass))
 	if _, ok := t.Underlying().(*types.Pointer); ok {
 		return "(" + name + ").Equal"
 	}

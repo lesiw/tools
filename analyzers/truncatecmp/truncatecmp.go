@@ -23,6 +23,8 @@ import (
 	"go/types"
 
 	"golang.org/x/tools/go/analysis"
+
+	"lesiw.io/tools/internal/typename"
 )
 
 var Analyzer = &analysis.Analyzer{
@@ -65,20 +67,9 @@ func check(pass *analysis.Pass, bin *ast.BinaryExpr) {
 	if !ok {
 		return
 	}
-	from := types.TypeString(t.from, qualifier(pass))
-	to := types.TypeString(t.to, qualifier(pass))
+	from := types.TypeString(t.from, typename.Of(pass))
+	to := types.TypeString(t.to, typename.Of(pass))
 	pass.Reportf(t.expr.Pos(), "comparison truncates %s to %s", from, to)
-}
-
-// qualifier names a type from another package by its package name, so a
-// message reads tracev2.ProcStatus rather than the import path.
-func qualifier(pass *analysis.Pass) types.Qualifier {
-	return func(p *types.Package) string {
-		if p == pass.Pkg {
-			return ""
-		}
-		return p.Name()
-	}
 }
 
 // truncationAt returns the conversion to a narrower integer type at the top of
