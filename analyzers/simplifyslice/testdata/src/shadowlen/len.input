@@ -1,0 +1,3 @@
+package shadowlen
+
+func len(zs []int) int { return 0 }

@@ -3298,6 +3298,18 @@ func f(xs []string) {
 }
 ```
 
+## simplifyslice
+
+Reports a slice expression whose high index is the length of the value. The spec's default for a missing high index is the same length, so the index is redundant.
+
+Vendored from gopls' simplifyslice.
+
+```
+func f(xs []int) {
+    _ = xs[2:len(xs)]
+}
+```
+
 ## singlefield
 
 Reports a struct of one field that the type could carry instead. A pointer, interface, embedded, or tagged field is left alone. The field and the type fold into a defined type, and for an exported one that changes every importer.

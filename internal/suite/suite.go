@@ -262,6 +262,7 @@ import (
 	"lesiw.io/tools/analyzers/shellcommand"
 	"lesiw.io/tools/analyzers/simplifycompositelit"
 	"lesiw.io/tools/analyzers/simplifyrange"
+	"lesiw.io/tools/analyzers/simplifyslice"
 	"lesiw.io/tools/analyzers/singlefield"
 	"lesiw.io/tools/analyzers/slenstr"
 	"lesiw.io/tools/analyzers/sliceclear"
@@ -607,6 +608,7 @@ var (
 		sigchanyzer.Analyzer,
 		simplifycompositelit.Analyzer,
 		simplifyrange.Analyzer,
+		simplifyslice.Analyzer,
 		singlefield.Analyzer,
 		slenstr.Analyzer,
 		sliceclear.Analyzer,

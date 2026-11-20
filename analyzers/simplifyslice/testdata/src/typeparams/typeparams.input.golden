@@ -1,0 +1,37 @@
+package typeparams
+
+type list[E any] []E
+
+var (
+	xs    [10]byte
+	ys    [20]float32
+	items list[int]
+
+	_ = items[0:]
+	_ = items[1:10]
+	_ = items[2:] // want `high index can be omitted; it is the length of the value`
+	_ = items[3:(len(items))]
+	_ = items[len(xs) : len(items)-1]
+	_ = items[0:len(ys)]
+	_ = items[2:len(items):len(items)]
+
+	_ = items[:]
+	_ = items[:10]
+	_ = items[:] // want `high index can be omitted; it is the length of the value`
+	_ = items[:(len(items))]
+	_ = items[:len(items)-1]
+	_ = items[:len(ys)]
+	_ = items[:len(items):len(items)]
+)
+
+func each[E any](items list[E]) {
+	_ = items[0:] // want `high index can be omitted; it is the length of the value`
+}
+
+func constraint[E any, S ~[]E](items S) {
+	_ = items[1:] // want `high index can be omitted; it is the length of the value`
+}
+
+func restriction[S ~string](text S) {
+	_ = text[:] // want `high index can be omitted; it is the length of the value`
+}

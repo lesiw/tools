@@ -1,0 +1,96 @@
+package a
+
+var (
+	xs   [10]byte
+	ys   [20]float32
+	zs   []int
+	text string
+	ptr  *[10]byte
+	box  struct{ bs []byte }
+
+	_ = xs[0:]
+	_ = xs[1:10]
+	_ = xs[2:len(xs)] // want `high index can be omitted; it is the length of the value`
+	_ = xs[3:(len(xs))]
+	_ = xs[len(xs)-1 : len(xs)] // want `high index can be omitted; it is the length of the value`
+	_ = xs[2:len(xs):len(xs)]
+
+	_ = xs[:]
+	_ = xs[:10]
+	_ = xs[:len(xs)] // want `high index can be omitted; it is the length of the value`
+	_ = xs[:(len(xs))]
+	_ = xs[:len(xs)-1]
+	_ = xs[:len(xs):len(xs)]
+
+	_ = zs[0:]
+	_ = zs[1:10]
+	_ = zs[2:len(zs)] // want `high index can be omitted; it is the length of the value`
+	_ = zs[3:(len(zs))]
+	_ = zs[len(xs) : len(zs)-1]
+	_ = zs[0:len(ys)]
+	_ = zs[2:len(zs):len(zs)]
+
+	_ = zs[:]
+	_ = zs[:10]
+	_ = zs[:len(zs)] // want `high index can be omitted; it is the length of the value`
+	_ = zs[:(len(zs))]
+	_ = zs[:len(zs)-1]
+	_ = zs[:len(ys)]
+	_ = zs[:len(zs):len(zs)]
+
+	_ = text[1:]
+	_ = text[1:len(text)] // want `high index can be omitted; it is the length of the value`
+	_ = text[:len(text)] // want `high index can be omitted; it is the length of the value`
+
+	_ = ptr[1:]
+	_ = ptr[1:len(ptr)] // want `high index can be omitted; it is the length of the value`
+	_ = ptr[:len(ptr)] // want `high index can be omitted; it is the length of the value`
+
+	_ = ws[2:len(ws)] // want `high index can be omitted; it is the length of the value`
+	_ = ws[:len(ws)] // want `high index can be omitted; it is the length of the value`
+
+	_ = box.bs[0:]
+	_ = box.bs[1:10]
+	_ = box.bs[2:len(box.bs)]
+	_ = box.bs[3:(len(box.bs))]
+	_ = box.bs[len(xs) : len(box.bs)-1]
+	_ = box.bs[0:len(ys)]
+	_ = box.bs[2:len(box.bs):len(box.bs)]
+
+	_ = box.bs[:]
+	_ = box.bs[:10]
+	_ = box.bs[:len(box.bs)]
+	_ = box.bs[:(len(box.bs))]
+	_ = box.bs[:len(box.bs)-1]
+	_ = box.bs[:len(ys)]
+	_ = box.bs[:len(box.bs):len(box.bs)]
+)
+
+func reassign() {
+	zs := zs[0:len(zs)] // want `high index can be omitted; it is the length of the value`
+	_ = zs
+}
+
+func literal() {
+	items := []int{}
+	_ = items[1:len(items)] // want `high index can be omitted; it is the length of the value`
+}
+
+func shadowed(zs []int) {
+	len := func(zs []int) int { return 0 }
+	_ = zs[0:len(zs)]
+}
+
+func operand(zs []int) {
+	_ = zs[0:len(zs[1:])]
+}
+
+func parentheses(zs []int) {
+	_ = (zs)[0:len(zs)]
+	_ = zs[0:len((zs))]
+}
+
+func annotated(zs []int) {
+	_ = zs[2:len(/* keep */ zs)] // want `high index can be omitted; it is the length of the value`
+	_ = zs[2 /* the low bound */ :len(zs)] // want `high index can be omitted; it is the length of the value`
+}

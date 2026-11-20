@@ -1,0 +1,8 @@
+package shadowlen
+
+var zs []int
+
+func f() {
+	_ = zs[2:len(zs)]
+	_ = zs[:len(zs)]
+}
