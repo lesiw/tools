@@ -1,0 +1,9 @@
+package shadowedos
+
+import "testing"
+
+func TestMain(m *testing.M) {
+	os := 1
+	_ = os
+	m.Run() // want `TestMain does not exit with the code from m\.Run`
+}

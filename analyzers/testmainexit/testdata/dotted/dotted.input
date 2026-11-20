@@ -1,0 +1,12 @@
+package dotted
+
+import (
+	. "os"
+	"testing"
+)
+
+var _ = Getpid
+
+func TestMain(m *testing.M) {
+	m.Run() // want `TestMain does not exit with the code from m\.Run`
+}

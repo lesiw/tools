@@ -283,6 +283,7 @@ import (
 	"lesiw.io/tools/analyzers/testcmp"
 	"lesiw.io/tools/analyzers/testhelpers"
 	"lesiw.io/tools/analyzers/testlabel"
+	"lesiw.io/tools/analyzers/testmainexit"
 	"lesiw.io/tools/analyzers/textblock"
 	"lesiw.io/tools/analyzers/tidytypes"
 	"lesiw.io/tools/analyzers/timeafter"
@@ -626,6 +627,7 @@ var (
 		testhelpers.Analyzer,
 		testinggoroutine.Analyzer,
 		testlabel.Analyzer,
+		testmainexit.Analyzer,
 		tests.Analyzer,
 		textblock.Analyzer,
 		tidytypes.Analyzer,

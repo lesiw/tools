@@ -1,0 +1,12 @@
+package deferredlit
+
+import "testing"
+
+func TestMain(m *testing.M) {
+	func() {
+		defer stop()
+	}()
+	m.Run() // want `TestMain does not exit with the code from m\.Run`
+}
+
+func stop() {}

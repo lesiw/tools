@@ -1,0 +1,10 @@
+package trailing
+
+import "testing"
+
+func TestMain(m *testing.M) {
+	m.Run() // want `TestMain does not exit with the code from m\.Run`
+	report()
+}
+
+func report() {}

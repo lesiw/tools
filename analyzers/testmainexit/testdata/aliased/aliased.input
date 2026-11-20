@@ -1,0 +1,11 @@
+package aliased
+
+import (
+	system "os"
+	"testing"
+)
+
+func TestMain(m *testing.M) {
+	system.Getenv("SOME_NAME")
+	m.Run() // want `TestMain does not exit with the code from m\.Run`
+}

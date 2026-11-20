@@ -1,0 +1,13 @@
+package helper
+
+import (
+	"os"
+	"testing"
+)
+
+func TestMain(m *testing.M) {
+	m.Run() // want `TestMain does not exit with the code from m\.Run`
+	finish()
+}
+
+func finish() { os.Exit(1) }

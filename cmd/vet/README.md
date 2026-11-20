@@ -3801,6 +3801,18 @@ func TestEvict(t *testing.T) {
 }
 ```
 
+## testmainexit
+
+Reports a TestMain function that runs the tests and returns, in a file checked against Go 1.14 or earlier. The go command's test wrapper passes the result of m.Run to os.Exit from Go 1.15 on, and an earlier one exits 0 whatever the tests did.
+
+Adapted from staticcheck's SA3000.
+
+```
+func TestMain(m *testing.M) {
+    m.Run()
+}
+```
+
 ## tests
 
 Reports a test function whose name or signature is wrong, and an example that documents an identifier the package does not have. The functions checked are Test, Benchmark, Fuzz, and Example.

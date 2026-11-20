@@ -1,0 +1,14 @@
+package signature
+
+import "testing"
+
+type runner struct{}
+
+func (r runner) TestMain(m *testing.M) {
+	m.Run()
+}
+
+func TestMain(t *testing.T) {
+	m := new(testing.M)
+	m.Run()
+}

@@ -1,0 +1,10 @@
+package kept
+
+import "testing"
+
+func TestMain(m *testing.M) {
+	code := m.Run() // want `TestMain does not exit with the code from m\.Run`
+	if code != 0 {
+		panic(code)
+	}
+}

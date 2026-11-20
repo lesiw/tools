@@ -1,0 +1,11 @@
+package closure
+
+import (
+	"os"
+	"testing"
+)
+
+func TestMain(m *testing.M) {
+	defer func() { os.Exit(1) }()
+	m.Run()
+}

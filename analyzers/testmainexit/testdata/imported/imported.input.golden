@@ -1,0 +1,11 @@
+package imported
+
+import (
+	"os"
+	"testing"
+)
+
+func TestMain(m *testing.M) {
+	os.Getenv("SOME_NAME")
+	os.Exit(m.Run()) // want `TestMain does not exit with the code from m\.Run`
+}
