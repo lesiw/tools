@@ -58,6 +58,8 @@ func newParser(pass *analysis.Pass) *comment.Parser {
 	// doc.NewFromFiles sets each test file aside as a source of examples, and
 	// a comment in one names declarations in that file. Keeping those files
 	// means doc.New, whose *ast.Package argument is deprecated.
+	//
+	//ignore:deprecated
 	pkg := doc.New(
 		&ast.Package{Name: pass.Pkg.Name(), Files: files},
 		pass.Pkg.Path(), doc.AllDecls|doc.PreserveAST,

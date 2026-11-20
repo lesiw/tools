@@ -1,0 +1,64 @@
+package a
+
+import (
+	"legacy"
+	"stale" // want `"stale" is deprecated: Use the fresh package instead\.$`
+)
+
+// Deprecated: Use Current instead.
+func Old() {} // want Old:"Deprecated: Use Current instead."
+
+func Current() {}
+
+type local struct{}
+
+// Deprecated: Use Current instead.
+func (local) Old() {} // want Old:"Deprecated: Use Current instead."
+
+func use() {
+	legacy.Old() // want `legacy\.Old is deprecated: Use Current instead\.$`
+	legacy.Current()
+	Old()
+	Current()
+
+	var v local
+	v.Old()
+
+	item := legacy.Item{} // want `legacy\.Item is deprecated: Use Value instead\.$`
+	_ = legacy.Value{}
+	_ = item.Name
+	_ = item.DocName  // want `item\.DocName is deprecated: Use Name instead\.$`
+	_ = item.LineName // want `item\.LineName is deprecated: Use Name instead\.$`
+	_ = item.BothName // want `item\.BothName is deprecated: Use Name instead\.$`
+	item.OldAccept(1)
+	item.OldLine(1)
+	item.Accept(1)
+
+	_ = legacy.Item{DocName: "x"} // want `legacy\.Item is deprecated: Use Value instead\.$`
+
+	var box legacy.Box[int]
+	box.Old() // want `box\.Old is deprecated: Use Fresh instead\.$`
+	box.Fresh()
+	_ = box.Stale // want `box\.Stale is deprecated: Use V instead\.$`
+
+	_ = legacy.Leftover{}  // want `legacy\.Leftover is deprecated: Use Value instead\.$`
+	_ = legacy.Alternate{} // want `legacy\.Alternate is deprecated: Use Item instead\.$`
+
+	_ = legacy.Limit // want `legacy\.Limit is deprecated: Use Cap instead\.$`
+	_ = legacy.Cap
+	_ = legacy.One // want `legacy\.One is deprecated: Use the value package instead\.$`
+	_ = legacy.Two // want `legacy\.Two is deprecated: Use the value package instead\.$`
+	_ = legacy.Row    // want `legacy\.Row is deprecated: Use Cell instead\.$`
+	_ = legacy.Column // want `legacy\.Column is deprecated: Use the value package instead\.$`
+	_ = legacy.Cell
+	_ = legacy.Wrapped // want `legacy\.Wrapped is deprecated: Use Cell instead\.$`
+
+	_ = stale.Value
+	stale.Older() // want `stale\.Older is deprecated: Use Value instead\.$`
+}
+
+func handle(handler legacy.Handler) {
+	handler.OldAccept(1) // want `handler\.OldAccept is deprecated: Use Accept instead\.$`
+	handler.OldLine(1)   // want `handler\.OldLine is deprecated: Use Accept instead\.$`
+	handler.Accept(1)
+}

@@ -970,6 +970,17 @@
 //		}
 //	}
 //
+// # deprecated
+//
+// Reports a use of an identifier or imported package whose doc comment
+// carries a deprecation note.
+//
+// A mirror of gopls' deprecated, which is internal.
+//
+//	func f() {
+//		legacy.Old()
+//	}
+//
 // # deprecatedform
 //
 // Reports a doc comment that marks something deprecated without the paragraph

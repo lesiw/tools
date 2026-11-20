@@ -1,0 +1,13 @@
+package testmain
+
+import (
+	"testing"
+
+	"stale"
+	"stale_test"
+)
+
+func TestOlder(t *testing.T) {
+	stale.Older()
+	stale_test.Older()
+}

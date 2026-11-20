@@ -1,0 +1,10 @@
+// Package stale holds the helpers that were replaced.
+//
+// Deprecated: Use the fresh package instead.
+package stale
+
+// Value is the replacement.
+var Value = 1
+
+// Deprecated: Use Value instead.
+func Older() {}

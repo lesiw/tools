@@ -1,0 +1,7 @@
+package a
+
+import . "stale" // want `"stale" is deprecated: Use the fresh package instead\.$`
+
+func dot() {
+	Older()
+}

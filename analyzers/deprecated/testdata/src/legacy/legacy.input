@@ -1,0 +1,86 @@
+// Package legacy holds declarations that still work.
+package legacy
+
+// Item is the old name for Value.
+//
+// Deprecated: Use Value instead.
+type Item struct {
+	// DocName is the field's old name.
+	//
+	// Deprecated: Use Name instead.
+	//
+	// The field still works.
+	DocName string
+
+	LineName string // Deprecated: Use Name instead.
+
+	// Deprecated: Use Name instead.
+	BothName string // Deprecated: Use Label instead.
+
+	Name string
+}
+
+type Value struct{}
+
+// Deprecated: Use Value instead.
+type (
+	Leftover struct{}
+
+	// Deprecated: Use Item instead.
+	Alternate struct{}
+)
+
+type Handler interface {
+	// Deprecated: Use Accept instead.
+	OldAccept(int) int
+	OldLine(int) int // Old method. Deprecated: Use Accept instead.
+
+	Accept(int) int
+}
+
+func (Item) OldAccept(int) int { return 1 }
+
+func (Item) OldLine(int) int { return 1 }
+
+func (Item) Accept(int) int { return 1 }
+
+type Box[T any] struct {
+	V T
+
+	// Deprecated: Use V instead.
+	Stale T
+}
+
+func (Box[T]) Fresh() {}
+
+// Deprecated: Use Fresh instead.
+func (Box[T]) Old() {}
+
+// Deprecated: Use Cap instead.
+const Limit = 10
+const Cap = 10
+
+// Deprecated: Use the value package instead.
+const (
+	One = 1
+	Two = 2
+)
+
+// Deprecated: Use the value package instead.
+var (
+	// Deprecated: Use Cell instead.
+	Row = 1
+
+	Column = 2
+)
+
+var Cell = 3
+
+// Deprecated: Use Cell
+// instead.
+var Wrapped = 1
+
+// Deprecated: Use Current instead.
+func Old() {}
+
+func Current() {}

@@ -1,0 +1,10 @@
+package stale_test
+
+import "stale"
+
+// Deprecated: Use Value instead.
+func Older() {} // want Older:"Deprecated: Use Value instead."
+
+func use() {
+	stale.Older()
+}

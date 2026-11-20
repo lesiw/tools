@@ -110,6 +110,7 @@ import (
 	"lesiw.io/tools/analyzers/deferunlambda"
 	"lesiw.io/tools/analyzers/deferunlock"
 	"lesiw.io/tools/analyzers/deleteguard"
+	"lesiw.io/tools/analyzers/deprecated"
 	"lesiw.io/tools/analyzers/deprecatedform"
 	"lesiw.io/tools/analyzers/deviatingelse"
 	"lesiw.io/tools/analyzers/discardedpure"
@@ -417,6 +418,7 @@ var (
 		deferunlambda.Analyzer,
 		deferunlock.Analyzer,
 		deleteguard.Analyzer,
+		deprecated.Analyzer,
 		deprecatedform.Analyzer,
 		deviatingelse.Analyzer,
 		directive.Analyzer,
