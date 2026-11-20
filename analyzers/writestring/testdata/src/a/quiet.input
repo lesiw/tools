@@ -1,0 +1,89 @@
+package a
+
+import (
+	"bytes"
+	"io"
+	"os"
+	"strings"
+)
+
+func single(out *bytes.Buffer, value string) {
+	out.WriteString(value)
+}
+
+func constant(out *bytes.Buffer) {
+	out.WriteString("alpha" + "beta")
+}
+
+func consume(int, error) {}
+
+func inCall(out *bytes.Buffer, first, second string) {
+	consume(out.WriteString(first + second))
+}
+
+func inAssignment(out *bytes.Buffer, first, second string) {
+	_, _ = out.WriteString(first + second)
+}
+
+func fresh() *bytes.Buffer { return &bytes.Buffer{} }
+
+func onCall(first, second string) {
+	fresh().WriteString(first + second)
+}
+
+func getIndex() int { return 0 }
+
+func onIndex(list []bytes.Buffer, first, second string) {
+	list[getIndex()].WriteString(first + second)
+}
+
+func delayed(out *bytes.Buffer, first, second string) {
+	defer out.WriteString(first + second)
+	go out.WriteString(first + second)
+}
+
+func file(handle *os.File, first, second string) {
+	handle.WriteString(first + second)
+}
+
+func unknown(out *strings.Builder, first, second string) {
+	io.WriteString(out, first+second)
+}
+
+type sink struct{}
+
+func (*sink) WriteString(s string) (int, error) { return len(s), nil }
+
+func own(out *sink, first, second string) {
+	out.WriteString(first + second)
+}
+
+func literal(first, second string) {
+	(&bytes.Buffer{}).WriteString(first + second)
+}
+
+type holder struct{ buffer bytes.Buffer }
+
+func addressedRead(held holder, first string) {
+	(&held.buffer).WriteString(first + held.buffer.String())
+}
+
+func reading(out *bytes.Buffer, first, second string) {
+	out.WriteString(first + out.String())
+}
+
+func receive(ch chan *bytes.Buffer, first, second string) {
+	(<-ch).WriteString(first + second)
+}
+
+func header(out *bytes.Buffer, first, second string) {
+	for i := 0; i < 2; out.WriteString(first + second) {
+		i++
+	}
+}
+
+func conditional(out *bytes.Buffer, first, second string, ready bool) {
+	if out.WriteString(first + second); ready {
+		return
+	}
+}

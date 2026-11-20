@@ -1,0 +1,104 @@
+package a
+
+import (
+	"bufio"
+	"bytes"
+	"hash/maphash"
+	"strings"
+)
+
+func build(first, second string) string {
+	var out strings.Builder
+	out.WriteString(first)
+	out.WriteString(second) // want `concatenation copied into the writer`
+	return out.String()
+}
+
+func buffered(out *bytes.Buffer, first, second string) {
+	out.WriteString(first)
+	out.WriteString(second) // want `concatenation copied into the writer`
+}
+
+func parenthesized(out *bytes.Buffer, first, second string) {
+	out.WriteString(first)
+	out.WriteString(second) // want `concatenation copied into the writer`
+}
+
+func nest(first string, rest *string) string {
+	var out strings.Builder
+	out.WriteString(first)
+	out.WriteString("second")
+	out.WriteString(*rest) // want `concatenation copied into the writer`
+	return out.String()
+}
+
+type pair struct{ buffer bytes.Buffer }
+
+func fillPair(held pair, first, second string) {
+	held.buffer.WriteString(first)
+	held.buffer.WriteString(second) // want `concatenation copied into the writer`
+}
+
+func send(out *bufio.Writer, kind string) {
+	out.WriteString("alpha")
+	out.WriteString(strings.ToUpper(kind))
+	out.WriteString("beta") // want `concatenation copied into the writer`
+}
+
+func join(out *bufio.Writer, value string) {
+	const lead = "alpha"
+	out.WriteString(lead + "beta")
+	out.WriteString(value)
+	out.WriteString("gamma") // want `concatenation copied into the writer`
+}
+
+func trailing(out *bytes.Buffer, value string) {
+	out.WriteString(value)
+	out.WriteString("beta")
+	out.WriteString("gamma") // want `concatenation copied into the writer`
+}
+
+func digest(fold *maphash.Hash, first, second string) {
+	fold.WriteString(first)
+	fold.WriteString(second) // want `concatenation copied into the writer`
+}
+
+func addressed(held pair, first, second string) {
+	(&held.buffer).WriteString(first)
+	(&held.buffer).WriteString(second) // want `concatenation copied into the writer`
+}
+
+func indexed(holders []bytes.Buffer, first, second string) {
+	holders[len(holders)-1].WriteString(first)
+	holders[len(holders)-1].WriteString(second) // want `concatenation copied into the writer`
+}
+
+func reread(out *bytes.Buffer, second string) {
+	out.WriteString(out.String())
+	out.WriteString(second) // want `concatenation copied into the writer`
+}
+
+func branch(out *bytes.Buffer, first, second string, kind int) {
+	switch kind {
+	case 1:
+		out.WriteString(first)
+		out.WriteString(second) // want `concatenation copied into the writer`
+	}
+}
+
+func selectOnly(out *bytes.Buffer, first, second string, done <-chan struct{}) {
+	select {
+	case <-done:
+		out.WriteString(first)
+		out.WriteString(second) // want `concatenation copied into the writer`
+	}
+}
+
+func labeled(out *bytes.Buffer, first, second string, again bool) {
+loop:
+	out.WriteString(first)
+	out.WriteString(second) // want `concatenation copied into the writer`
+	if again {
+		goto loop
+	}
+}

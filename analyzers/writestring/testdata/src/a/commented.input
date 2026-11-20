@@ -1,0 +1,7 @@
+package a
+
+import "bytes"
+
+func marked(out *bytes.Buffer, first, second string) {
+	out.WriteString(first + /* kept */ second) // want `concatenation copied into the writer`
+}

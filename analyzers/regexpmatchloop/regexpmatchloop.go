@@ -16,6 +16,7 @@
 package regexpmatchloop
 
 import (
+	"fmt"
 	"go/ast"
 	"go/constant"
 	"go/token"
@@ -247,8 +248,10 @@ func hoist(ms []match) analysis.SuggestedFix {
 			pattern = astexpr.Text(m.call.Args[0])
 			qual    = ast.Unparen(m.sel.X).(*ast.Ident).Name
 		)
-		decls.WriteString(m.name + " := " + qual + ".MustCompile(")
-		decls.WriteString(pattern + ")\n")
+		fmt.Fprintf(
+			&decls, "%s := %s.MustCompile(%s)\n",
+			m.name, qual, pattern,
+		)
 		edits = append(edits, analysis.TextEdit{
 			Pos:     m.sel.Pos(),
 			End:     m.sel.End(),

@@ -8,6 +8,7 @@
 package preferfprint
 
 import (
+	"fmt"
 	"go/ast"
 	"go/types"
 	"strings"
@@ -122,7 +123,7 @@ func formatted(pass *analysis.Pass, value ast.Expr) (*ast.CallExpr, bool) {
 func arguments(args []ast.Expr) string {
 	var b strings.Builder
 	for _, arg := range args {
-		b.WriteString(", " + types.ExprString(arg))
+		fmt.Fprintf(&b, ", %s", types.ExprString(arg))
 	}
 	return b.String()
 }

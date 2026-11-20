@@ -975,7 +975,7 @@
 // Reports a use of an identifier or imported package whose doc comment
 // carries a deprecation note.
 //
-// A mirror of gopls' deprecated, which is internal.
+// Vendored from gopls' deprecated.
 //
 //	func f() {
 //		legacy.Old()
@@ -1293,7 +1293,7 @@
 // of type string, []byte or embed.FS with no value. A slice whose byte type is
 // defined is reported too, though the compiler accepts it.
 //
-// Copied from gopls' embed, which is internal.
+// Vendored from gopls' embeddirective.
 //
 //	//go:embed static/index.html
 //	var pages []string
@@ -1547,7 +1547,7 @@
 // branch above it failed, so the value passed to the second call is the first
 // call's zero value, and its answer says nothing about the original error.
 //
-// Adapted from gopls' errorsastypeshadow, which is internal.
+// Vendored from gopls' errorsastypeshadow.
 //
 //	func f(err error) {
 //		if err, ok := errors.AsType[*alphaError](err); ok {
@@ -2287,7 +2287,7 @@
 // Reports a call to maps.Keys or maps.Values in a range. A range over a map
 // yields the key and the value, so the call is unnecessary.
 //
-// A mirror of gopls' maprange, which is internal.
+// Vendored from gopls' maprange.
 //
 //	func f(m map[string]int) {
 //		for name := range maps.Keys(m) {
@@ -2951,7 +2951,7 @@
 // range-over-func typically heap-allocates a variable, and each element passes
 // through a dynamic yield call per enclosing range.
 //
-// Vendored from gopls' recursiveiter, which is internal.
+// Vendored from gopls' recursiveiter.
 //
 //	func (l *list) All() iter.Seq[int] {
 //		return func(yield func(int) bool) {
@@ -4270,7 +4270,7 @@
 // exported function, a matching interface method, and a function used as a
 // value keep their names.
 //
-// A mirror of gopls' unusedparams, which is internal.
+// Vendored from gopls' unusedparams.
 //
 //	func unread(a int, b string) string {
 //		return b
@@ -4318,7 +4318,7 @@
 // and every write to the variable, keeping a value when evaluating it has an
 // effect.
 //
-// A mirror of gopls' unusedvariable, which is internal.
+// Vendored from gopls' unusedvariable.
 //
 //	func f() {
 //		v := "a"
@@ -4586,13 +4586,26 @@
 //		io.WriteString(w, string(b))
 //	}
 //
+// # writestring
+//
+// Reports a call to WriteString whose argument concatenates strings, so the
+// bytes are copied twice. The writer is a bufio.Writer, bytes.Buffer,
+// hash/maphash.Hash, or strings.Builder.
+//
+// Vendored from gopls' writestring.
+//
+//	func write(first, second string) {
+//		var out strings.Builder
+//		out.WriteString(first + second)
+//	}
+//
 // # yield
 //
 // Reports a call to a yield function that may be reached after an earlier call
 // returned false, in a package that imports iter. A range loop ends when yield
 // returns false, so the iterator must not call it again.
 //
-// Adapted from gopls' yield, which is internal.
+// Vendored from gopls' yield.
 //
 //	func sequence(yield func(int) bool) {
 //		yield(0)

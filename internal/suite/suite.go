@@ -332,6 +332,7 @@ import (
 	"lesiw.io/tools/analyzers/wrapperarg"
 	"lesiw.io/tools/analyzers/wrapperfunc"
 	"lesiw.io/tools/analyzers/writebytes"
+	"lesiw.io/tools/analyzers/writestring"
 	"lesiw.io/tools/analyzers/yield"
 	"lesiw.io/tools/analyzers/yoda"
 	"lesiw.io/tools/analyzers/zerorepeat"
@@ -678,6 +679,7 @@ var (
 		wrapperarg.Analyzer,
 		wrapperfunc.Analyzer,
 		writebytes.Analyzer,
+		writestring.Analyzer,
 		yield.Analyzer,
 		yoda.Analyzer,
 		zerorepeat.Analyzer,

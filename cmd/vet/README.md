@@ -948,7 +948,7 @@ func f(rows map[string]int, name string) {
 
 Reports a use of an identifier or imported package whose doc comment carries a Deprecated: paragraph.
 
-A mirror of gopls' deprecated, which is internal.
+Vendored from gopls' deprecated.
 
 ```
 func f() {
@@ -1253,7 +1253,7 @@ func f(n int) int {
 
 Reports a //go:embed directive in a file that does not import embed, or one that does not precede a single variable of type string, \[]byte or embed.FS with no value.
 
-Copied from gopls' embed, which is internal.
+Vendored from gopls' embeddirective.
 
 ```
 //go:embed static/index.html
@@ -1497,7 +1497,7 @@ func f(err error) {
 
 Reports an errors.AsType call that tests a zero value from an earlier call in the same if/else chain. An else branch runs only when the call in the branch above it failed. The value passed there is a zero value, so the answer says nothing about the original error.
 
-Adapted from gopls' errorsastypeshadow, which is internal.
+Vendored from gopls' errorsastypeshadow.
 
 ```
 func f(err error) {
@@ -2226,7 +2226,7 @@ func f(m map[string]int, keys []string) {
 
 Reports a call to maps.Keys or maps.Values in a range. A range over a map yields the key and the value, so the call is unnecessary.
 
-A mirror of gopls' maprange, which is internal.
+Vendored from gopls' maprange.
 
 ```
 func f(m map[string]int) {
@@ -2894,7 +2894,7 @@ func f(ns []int) (out []*int) {
 
 Reports an iterator that ranges over a call to itself. Each nested range-over-func typically heap-allocates a variable, and each element passes through a dynamic yield call per enclosing range.
 
-Vendored from gopls' recursiveiter, which is internal.
+Vendored from gopls' recursiveiter.
 
 ```
 func (l *list) All() iter.Seq[int] {
@@ -4224,7 +4224,7 @@ func read(ctx context.Context) any {
 
 Reports a parameter of a declared function that the body never reads. Renaming it to the blank identifier says the position is deliberate, and an exported function, a matching interface method, and a function used as a value keep their names.
 
-A mirror of gopls' unusedparams, which is internal.
+Vendored from gopls' unusedparams.
 
 ```
 func unread(a int, b string) string {
@@ -4272,7 +4272,7 @@ func f[T any](n int) int { return n }
 
 Reports a variable that is declared and never read. Go will not compile the package, so the fix is what the analysis is for: it removes the declaration and every write to the variable, keeping a value when evaluating it has an effect.
 
-A mirror of gopls' unusedvariable, which is internal.
+Vendored from gopls' unusedvariable.
 
 ```
 func f() {
@@ -4542,11 +4542,24 @@ func write(w sink, b []byte) {
 }
 ```
 
+## writestring
+
+Reports a call to WriteString whose argument concatenates strings, so the bytes are copied twice. The writer is a bufio.Writer, bytes.Buffer, hash/maphash.Hash, or strings.Builder.
+
+Vendored from gopls' writestring.
+
+```
+func write(first, second string) {
+    var out strings.Builder
+    out.WriteString(first + second)
+}
+```
+
 ## yield
 
 Reports a call to a yield function that may be reached after an earlier call returned false, in a package that imports iter. A range loop ends when yield returns false, so the iterator must not call it again.
 
-Adapted from gopls' yield, which is internal.
+Vendored from gopls' yield.
 
 ```
 func sequence(yield func(int) bool) {

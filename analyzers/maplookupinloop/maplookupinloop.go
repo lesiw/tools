@@ -17,6 +17,7 @@ package maplookupinloop
 
 import (
 	"bytes"
+	"fmt"
 	"go/ast"
 	"go/token"
 	"go/types"
@@ -1369,10 +1370,11 @@ func hoist(ls []*lookup) analysis.SuggestedFix {
 		if l.decl {
 			decls.WriteString(l.name)
 			if l.two {
-				decls.WriteString(", " + l.okName)
+				fmt.Fprintf(&decls, ", %s", l.okName)
 			}
-			decls.WriteString(" := " + astexpr.Text(l.mapx) + "[" +
-				astexpr.Text(l.key) + "]\n",
+			fmt.Fprintf(
+				&decls, " := %s[%s]\n",
+				astexpr.Text(l.mapx), astexpr.Text(l.key),
 			)
 		}
 		replacement := l.name
