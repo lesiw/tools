@@ -44,7 +44,7 @@ ends with the package that did not build.
 
 Other checks report what a removal leaves behind: `emptylines` a blank line at
 the edge of a block, `emptybranch` a branch with nothing in it, `discardedpure`
-a call whose result nobody reads, and `blankrange` a `for` clause left with a
+a call whose result nobody reads, and `simplifyrange` a `for` clause left with a
 blank key.
 
 This mirrors gopls' `unusedvariable`

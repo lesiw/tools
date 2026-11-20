@@ -1,0 +1,90 @@
+package a
+
+import "unsafe"
+
+func arrayValue(xs [3]int) {
+	for i := range xs { // want `can be written without the blank`
+		_ = i
+	}
+	for range xs { // want `can be written without the blank`
+	}
+	for range xs { // want `can be written without the blank`
+	}
+}
+
+func arrayPointer(p *[3]int) {
+	for i := range p { // want `can be written without the blank`
+		_ = i
+	}
+	for i, _ := range *p { // want `can be written without the blank`
+		_ = i
+	}
+	for _, _ = range *p { // want `can be written without the blank`
+	}
+	for range *p { // want `can be written without the blank`
+	}
+}
+
+func literal(n int) {
+	for i := range [3]int{n, n, n} { // want `can be written without the blank`
+		_ = i
+	}
+}
+
+type inner struct{ a [3]int }
+
+type outer struct{ *inner }
+
+func valueField(v inner) {
+	for i := range v.a { // want `can be written without the blank`
+		_ = i
+	}
+}
+
+func promoted(o outer) {
+	for i, _ := range o.a { // want `can be written without the blank`
+		_ = i
+	}
+}
+
+func converted(s []int) {
+	for i, _ := range [3]int(s) { // want `can be written without the blank`
+		_ = i
+	}
+}
+
+func sliceToArray(s []int) {
+	for i, _ := range [unsafe.Sizeof(s)]int{[3]int(s)[0]} { // want `can be written without the blank`
+		_ = i
+	}
+}
+
+func arrayCall() [3]int { return [3]int{} }
+
+func call() {
+	for i := range arrayCall() { // want `can be written without the blank`
+		_ = i
+	}
+	for range arrayCall() { // want `can be written without the blank`
+	}
+}
+
+func receive(ch chan [3]int) {
+	for i := range <-ch { // want `can be written without the blank`
+		_ = i
+	}
+}
+
+type caller interface{ M() }
+
+func methodValue(c caller) {
+	for i, _ := range [3]any{c.M} { // want `can be written without the blank`
+		_ = i
+	}
+}
+
+func mapLiteral() {
+	for i, _ := range [1]any{map[any]int{[]int{}: 1}} { // want `can be written without the blank`
+		_ = i
+	}
+}

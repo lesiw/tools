@@ -1,0 +1,16 @@
+package a
+
+import "iter"
+
+func sequence(one iter.Seq[int], two iter.Seq2[int, int]) {
+	for _ = range one { // want `can be written without the blank`
+	}
+	for _, _ = range two { // want `can be written without the blank`
+	}
+	for _, value := range two {
+		_ = value
+	}
+	for first := range two {
+		_ = first
+	}
+}

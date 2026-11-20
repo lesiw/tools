@@ -1,4 +1,4 @@
-package blankrange
+package simplifyrange
 
 import (
 	"embed"

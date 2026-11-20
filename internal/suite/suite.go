@@ -77,7 +77,6 @@ import (
 	"lesiw.io/tools/analyzers/bidicontrol"
 	"lesiw.io/tools/analyzers/blankassign"
 	"lesiw.io/tools/analyzers/blankimports"
-	"lesiw.io/tools/analyzers/blankrange"
 	"lesiw.io/tools/analyzers/bookends"
 	"lesiw.io/tools/analyzers/boolexprsimplify"
 	"lesiw.io/tools/analyzers/boolliteral"
@@ -261,6 +260,7 @@ import (
 	"lesiw.io/tools/analyzers/selfassert"
 	"lesiw.io/tools/analyzers/shellcommand"
 	"lesiw.io/tools/analyzers/simplifycompositelit"
+	"lesiw.io/tools/analyzers/simplifyrange"
 	"lesiw.io/tools/analyzers/singlefield"
 	"lesiw.io/tools/analyzers/slenstr"
 	"lesiw.io/tools/analyzers/sliceclear"
@@ -395,7 +395,6 @@ var (
 		bidicontrol.Analyzer,
 		blankassign.Analyzer,
 		blankimports.Analyzer,
-		blankrange.Analyzer,
 		bookends.Analyzer,
 		boolexprsimplify.Analyzer,
 		boolliteral.Analyzer,
@@ -604,6 +603,7 @@ var (
 		shift.Analyzer,
 		sigchanyzer.Analyzer,
 		simplifycompositelit.Analyzer,
+		simplifyrange.Analyzer,
 		singlefield.Analyzer,
 		slenstr.Analyzer,
 		sliceclear.Analyzer,

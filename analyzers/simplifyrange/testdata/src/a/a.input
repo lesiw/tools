@@ -1,0 +1,60 @@
+package a
+
+var (
+	index int
+	value string
+)
+
+func slice(xs []string) {
+	for name, _ := range xs { // want `can be written without the blank`
+		_ = name
+	}
+	for _ = range xs { // want `can be written without the blank`
+	}
+	for _, _ = range xs { // want `can be written without the blank`
+	}
+	for name, value := range xs {
+		_, _ = name, value
+	}
+	for range xs {
+	}
+	for _, item := range xs {
+		_ = item
+	}
+	for _, value = range xs {
+	}
+}
+
+func mapping(counts map[int]string) {
+	for _, _ = range counts { // want `can be written without the blank`
+	}
+	for index, _ := range counts { // want `can be written without the blank`
+		_ = index
+	}
+	for index, /* the value */ _ = range counts { // want `can be written without the blank`
+	}
+	for index = range counts {
+	}
+}
+
+func annotated(xs []string) {
+	for _ /* the key */ = range xs { // want `can be written without the blank`
+	}
+	for name, /* the value */ _ := range xs { // want `can be written without the blank`
+		_ = name
+	}
+}
+
+func text() {
+	for _ = range "some text" { // want `can be written without the blank`
+	}
+}
+
+func parentheses(xs []string) {
+	for (_) = range xs {
+	}
+	for _, (_) = range xs {
+	}
+	for (_), _ = range xs { // want `can be written without the blank`
+	}
+}

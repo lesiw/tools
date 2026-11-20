@@ -426,17 +426,6 @@
 //
 //	import _ "net/http/pprof"
 //
-// # blankrange
-//
-// Reports a range clause with an unnecessary blank identifier.
-//
-// Inspired by revive's range.
-//
-//	func f(xs []int) {
-//		for _ = range xs {
-//		}
-//	}
-//
 // # bookends
 //
 // Reports bracket layout that the printer would place differently, where a
@@ -3347,6 +3336,18 @@
 // Vendored from gopls' simplifycompositelit.
 //
 //	var _ = [][]int{[]int{1, 2}}
+//
+// # simplifyrange
+//
+// Reports a range clause that writes a blank iteration variable. The spec says
+// such a clause is equivalent to the same one without the blank.
+//
+// Vendored from gopls' simplifyrange.
+//
+//	func f(xs []string) {
+//		for _ = range xs {
+//		}
+//	}
 //
 // # singlefield
 //
