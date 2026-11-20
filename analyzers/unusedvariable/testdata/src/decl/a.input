@@ -1,0 +1,111 @@
+package decl
+
+func shared() {
+	var used, spare bool // want `variable spare is declared and never read`
+	panic(used)
+}
+
+func nested() {
+	if 1 == 1 {
+		var inner string // want `variable inner is declared and never read`
+	}
+}
+
+func commented() {
+	// note is a leftover
+	var note bool // want `variable note is declared and never read`
+}
+
+func grouped() {
+	var (
+		kept string
+
+		// spare is a leftover
+		spare bool // want `variable spare is declared and never read`
+	)
+
+	panic(kept)
+}
+
+func rewritten() {
+	var (
+		kept  string
+		spare bool // want `variable spare is declared and never read`
+	)
+
+	spare = true
+
+	panic(kept)
+}
+
+func commentedPair() {
+	var (
+		// spare and kept are both booleans
+		spare, kept bool // want `variable spare is declared and never read`
+	)
+	panic(kept)
+}
+
+func firstOfPair() {
+	var spare, kept bool // want `variable spare is declared and never read`
+	panic(kept)
+}
+
+func pairedValues() {
+	var spare, kept = 1, 2 // want `variable spare is declared and never read`
+	panic(kept)
+}
+
+func groupWithoutDoc() {
+	var (
+		spare = 1 // want `variable spare is declared and never read`
+		kept  = 2
+	)
+	panic(kept)
+}
+
+func specEffects() {
+	var (
+		first  = spareCall() // want `variable first is declared and never read`
+		second = 2           // want `variable second is declared and never read`
+	)
+}
+
+func ranged(xs []int) {
+	for index := range xs {
+	}
+}
+
+func spareCall() int { return 1 }
+
+func labeled() {
+	goto done
+done:
+	var spare = 1 // want `variable spare is declared and never read`
+}
+
+func emptiedGroup() {
+	var (
+		first  = 1 // want `variable first is declared and never read`
+		second = 2 // want `variable second is declared and never read`
+	)
+}
+
+func directed() {
+	//line other.go:10
+	first := 1; second := 2 // want `variable first is declared and never read`
+	_ = second
+}
+
+func blankSibling() {
+	var _, spare = 1, 2 // want `variable spare is declared and never read`
+}
+
+func groupDoc() {
+	var (
+		spare = 1 // want `variable spare is declared and never read`
+		// kept is documented
+		kept = 2
+	)
+	_ = kept
+}

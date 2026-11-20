@@ -38,12 +38,15 @@ type ignoreRange struct {
 	analyzers  map[string]struct{}
 }
 
-// ignore computes the ranges that //ignore directives cover. Every
-// filtered analyzer requires it, so it runs once per package.
+// ignore computes the ranges that //ignore directives cover. It runs on a
+// package that does not compile, since nothing here needs a type-checked one,
+// and every filtered analyzer requires it: a driver that skips it skips them
+// all.
 var ignore = &analysis.Analyzer{
-	Name:       "vetignore",
-	Doc:        "computes the ranges that //ignore directives cover",
-	ResultType: reflect.TypeFor[[]ignoreRange](),
+	Name:             "vetignore",
+	Doc:              "computes the ranges that //ignore directives cover",
+	ResultType:       reflect.TypeFor[[]ignoreRange](),
+	RunDespiteErrors: true,
 	Run: func(pass *analysis.Pass) (any, error) {
 		return ignoreRanges(pass), nil
 	},

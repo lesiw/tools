@@ -1,0 +1,234 @@
+package assign
+
+import (
+	"fmt"
+	"os"
+)
+
+type item struct {
+	field int
+}
+
+func single() {
+	name := "alpha" // want `variable name is declared and never read`
+
+	list := []int{ // want `variable list is declared and never read`
+		1,
+		2,
+	}
+
+	fn := func(s string) bool { // want `variable fn is declared and never read`
+		return false
+	}
+
+	if 1 == 1 {
+		inner := "beta" // want `variable inner is declared and never read`
+	}
+
+	panic("kept")
+}
+
+func onlyStatement() {
+	name := "alpha" // want `variable name is declared and never read`
+}
+
+func paired() {
+	f, err := os.Open("some-file") // want `variable f is declared and never read`
+	panic(err)
+}
+
+func effects(cBool chan bool, cInt chan int) {
+	b := <-cInt                     // want `variable b is declared and never read`
+	s := fmt.Sprint("alpha")        // want `variable s is declared and never read`
+	a := item{                      // want `variable a is declared and never read`
+		field: func() int {
+			return 1
+		}(),
+	}
+	c := item{<-cInt}              // want `variable c is declared and never read`
+	d := reading() + <-cInt        // want `variable d is declared and never read`
+	e := flag() && <-cBool         // want `variable e is declared and never read`
+	f := map[int]int{              // want `variable f is declared and never read`
+		reading(): <-cInt,
+	}
+	g := []int{<-cInt}             // want `variable g is declared and never read`
+	h := func(s string) {}         // want `variable h is declared and never read`
+	i := func() int { return 1 }() // want `variable i is declared and never read`
+}
+
+func commentAbove() {
+	// name is a variable
+	name := "alpha" // want `variable name is declared and never read`
+}
+
+func commentBelow() {
+	name := "alpha" // want `variable name is declared and never read`
+	// name is a variable
+}
+
+func commentSpaceBelow() {
+	name := "alpha" // want `variable name is declared and never read`
+
+	// name is a variable
+}
+
+func flag() bool { return true }
+
+func reading() int { return 1 }
+
+func rewritten() {
+	name := "alpha" // want `variable name is declared and never read`
+	name = "beta"
+}
+
+func guard(x any) {
+	switch v := x.(type) { // want `variable v is declared and never read`
+	case int:
+	}
+}
+
+func clause(ch chan int) {
+	select {
+	case v := <-ch: // want `variable v is declared and never read`
+	default:
+	}
+}
+
+func pairClause(ch chan int) {
+	select {
+	case v, ok := <-ch: // want `variable v is declared and never read`
+		_ = ok
+	default:
+	}
+}
+
+func pairValue() {
+	first, second := pair() // want `variable first is declared and never read` `variable second is declared and never read`
+}
+
+func drainClause(ch chan int) {
+	select {
+	case v, ok := <-ch: // want `variable v is declared and never read` `variable ok is declared and never read`
+	default:
+	}
+}
+
+func pair() (int, int) { return 1, 2 }
+
+func ifInit(cond bool) {
+	if held := 1; cond { // want `variable held is declared and never read`
+		panic("kept")
+	}
+}
+
+func switchInit() {
+	switch held := 1; { // want `variable held is declared and never read`
+	case true:
+		panic("kept")
+	}
+}
+
+func forInit() {
+	for held := 0; false; { // want `variable held is declared and never read`
+		panic("kept")
+	}
+}
+
+func beside() {
+	spare := 1; panic("kept") // want `variable spare is declared and never read`
+}
+
+func followed() {
+	panic("kept"); spare := 1 // want `variable spare is declared and never read`
+}
+
+func inCase(value int) {
+	switch value {
+	case 1:
+		spare := 1 // want `variable spare is declared and never read`
+	}
+}
+
+func writes() {
+	count := 1 // want `variable count is declared and never read`
+	count = 2
+	count = reading()
+}
+
+func nestedWrite(cond bool) {
+	spare := 1 // want `variable spare is declared and never read`
+	if cond {
+		spare = 2
+	}
+}
+
+func besideField(update *item) {
+	spare := 1 // want `variable spare is declared and never read`
+	spare, update.field = 2, 3
+}
+
+func mentioned(xs []int) {
+	var spare int // want `variable spare is declared and never read`
+	for spare = range xs {
+	}
+}
+
+func pairMentioned(m map[int]int) {
+	var spare int // want `variable spare is declared and never read`
+	for spare = range m {
+	}
+}
+
+func allocated() {
+	spare := new(int) // want `variable spare is declared and never read`
+	also := make([]int, 0) // want `variable also is declared and never read`
+}
+
+func indexed(list []int, pointer *int) {
+	first := list[0] // want `variable first is declared and never read`
+	second := *pointer // want `variable second is declared and never read`
+}
+
+func redeclared(value int) {
+	spare, value := 2, 3 // want `variable spare is declared and never read`
+	println(value)
+}
+
+func redeclaredLast(value int) {
+	value, spare := 3, 4 // want `variable spare is declared and never read`
+	println(value)
+}
+
+func pairedCut() {
+	first, kept := 1, 2 // want `variable first is declared and never read`
+	println(kept)
+}
+
+func pairedCutLast() {
+	kept, second := 1, 2 // want `variable second is declared and never read`
+	println(kept)
+}
+
+func blankShort(xs []int) {
+	_, spare := pair() // want `variable spare is declared and never read`
+}
+
+func leadComment() {
+	/* why */ spare := 1 // want `variable spare is declared and never read`
+}
+
+func parenWrite() {
+	spare := 1 // want `variable spare is declared and never read`
+	(spare) = 2
+}
+
+func parenBeside(update *item) {
+	spare := 1 // want `variable spare is declared and never read`
+	(spare), update.field = 2, 3
+}
+
+func labeledShort() {
+	goto done
+done:
+	spare := 1 // want `variable spare is declared and never read`
+}

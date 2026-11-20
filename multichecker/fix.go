@@ -84,18 +84,19 @@ func run(args []string, analyzers []*analysis.Analyzer) error {
 		return err
 	}
 	seen := make(map[string]struct{}, maxRounds)
-	var unloaded int
 	for round := 1; round <= maxRounds; round++ {
-		pending, bad, err := collect(opts)
+		pending, loaded, bad, err := collect(opts)
 		if err != nil {
 			return err
 		}
-		if bad > 0 {
-			unloaded = bad
-		}
 		if len(pending) == 0 {
-			if unloaded > 0 {
-				return unloadedError(unloaded)
+			// Only the last round's load decides: a fix applied
+			// earlier can repair the error that stopped a package
+			// from loading. The errors go out with the failure, so a
+			// run that repaired them says nothing.
+			if bad > 0 {
+				packages.PrintErrors(loaded)
+				return unbuiltError(bad)
 			}
 			if round == 1 {
 				fmt.Fprintln(os.Stderr, "fix: nothing to fix")
@@ -373,17 +374,17 @@ type fixes struct {
 
 // collect runs the suite and returns the edits it suggests, one analyzer's
 // worth at a time and in suite order.
-func collect(opts options) ([]fixes, int, error) {
+func collect(opts options) ([]fixes, []*packages.Package, int, error) {
 	if len(opts.analyzers) == 0 {
-		return nil, 0, nil
+		return nil, nil, 0, nil
 	}
 	loaded, bad, err := load(opts)
 	if err != nil {
-		return nil, 0, err
+		return nil, nil, 0, err
 	}
 	graph, err := checker.Analyze(ignore.Apply(opts.analyzers...), loaded, nil)
 	if err != nil {
-		return nil, bad, err
+		return nil, nil, 0, err
 	}
 	var out []fixes
 	for _, act := range graph.Roots {
@@ -418,7 +419,7 @@ func collect(opts options) ([]fixes, int, error) {
 			out = append(out, f)
 		}
 	}
-	return out, bad, nil
+	return out, loaded, bad, nil
 }
 
 // load reads the packages the analyzers will see.
@@ -443,12 +444,13 @@ func load(opts options) ([]*packages.Package, int, error) {
 			strings.Join(opts.patterns, " "),
 		)
 	}
-	// A package that will not load is left alone: cgo and assembly packages
-	// need a compiler that the run may not have. The go command prints
-	// why, and the run ends with a non-zero status, so a tree that does not
-	// build is never reported as fixed.
+	// A package that loads with errors is handed over anyway: cgo and
+	// assembly packages need a compiler the run may not have, and an
+	// analyzer that reads type errors has work to do in a package that does
+	// not build. A package the last round still loads with errors ends the
+	// run with a non-zero status, and the errors are printed then, so a tree
+	// that does not build is never reported as fixed.
 	loaded = roots(loaded)
-	packages.PrintErrors(loaded)
 	var bad int
 	for _, p := range loaded {
 		if len(p.Errors) > 0 {
@@ -645,12 +647,12 @@ func rounds(n int) string {
 	return fmt.Sprintf("%d rounds", n)
 }
 
-// unloadedError reports packages that did not load. The fixes that could be
-// applied were applied, but the loop did not reach a fixed point: a package in
-// the tree does not build.
-func unloadedError(n int) error {
+// unbuiltError reports what the last round loaded with errors. The fixes that
+// could be applied were applied, so what is left is a package that does not
+// build.
+func unbuiltError(n int) error {
 	if n == 1 {
-		return fmt.Errorf("1 package did not load")
+		return fmt.Errorf("1 package did not build")
 	}
-	return fmt.Errorf("%d packages did not load", n)
+	return fmt.Errorf("%d packages did not build", n)
 }

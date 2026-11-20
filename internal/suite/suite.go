@@ -311,6 +311,7 @@ import (
 	"lesiw.io/tools/analyzers/unusedparams"
 	"lesiw.io/tools/analyzers/unusedrecv"
 	"lesiw.io/tools/analyzers/unusedtypeparam"
+	"lesiw.io/tools/analyzers/unusedvariable"
 	"lesiw.io/tools/analyzers/unusefultag"
 	"lesiw.io/tools/analyzers/unwrap"
 	"lesiw.io/tools/analyzers/urlconst"
@@ -650,6 +651,7 @@ var (
 		unusedrecv.Analyzer,
 		unusedresult.Analyzer,
 		unusedtypeparam.Analyzer,
+		unusedvariable.Analyzer,
 		unusedwrite.Analyzer,
 		unusefultag.Analyzer,
 		unwrap.Analyzer,

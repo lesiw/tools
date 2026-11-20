@@ -4227,6 +4227,18 @@ The rule is original to this suite.
 func f[T any](n int) int { return n }
 ```
 
+## unusedvariable
+
+Reports a variable that is declared and never read. Go will not compile the package, so the fix is what the analysis is for: it removes the declaration and every write to the variable, keeping a value when evaluating it has an effect.
+
+A mirror of gopls' unusedvariable, which is internal.
+
+```
+func f() {
+    v := "a"
+}
+```
+
 ## unusedwrite
 
 Reports a write to a field or an element of a value that was copied, as the loop variable of a range over a slice of structs. The write reaches the copy and nothing reads it.

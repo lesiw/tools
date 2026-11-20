@@ -62,9 +62,13 @@ round that finds nothing is a fixed point. A fix is applied whole or not at
 all: when two analyzers would edit the same span, one of them waits for the
 next round.
 
-A package that does not load is left alone, and the run ends with a non-zero
-status naming it: the fixes that could be applied were applied, but a tree
-with a package that does not build is not fixed.
+An analyzer that sets `RunDespiteErrors` runs on a package that loads with
+errors; every other analyzer is skipped for that package. `unusedvariable` is
+the rule whose reports are wanted there, and the `//ignore` prerequisite runs
+too, since computing a range needs no type information. The last round's load
+decides the status, so a package a fix repaired no longer counts. A tree that
+still does not build ends the run with a non-zero status, after the loader has
+printed what is wrong with it.
 
 Analyzer flags mean what they mean to the analyzer: `-errfmt` runs one
 analyzer, `-errfmt=false` turns one off, and `-linelen.len=100` sets one of

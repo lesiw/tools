@@ -58,28 +58,29 @@ func smallest(xs []int) int {
 	}
 }
 
-// TestLoadReportsBuildErrors checks that a package which does not compile ends
-// the run with an error. A fix applied to a tree that does not build cannot be
-// checked by the next round, so reporting a fixed point would be a lie.
+// TestLoadReportsBuildErrors checks that a package which does not compile and
+// which no fix repairs ends the run with an error: the last round still sees
+// it, so there is no fixed point to report.
 func TestLoadReportsBuildErrors(t *testing.T) {
-	var (
-		dir = t.TempDir()
-		bad = `package p
-
-func f() { undefined() }
-`
-	)
-	err := os.WriteFile(filepath.Join(dir, "p.go"), []byte(bad), 0o666)
-	if err != nil {
-		t.Fatal(err)
-	}
-	mod := []byte("module p\n\ngo " + goDirective(t) + "\n")
-	modfile := filepath.Join(dir, "go.mod")
-	if err := os.WriteFile(modfile, mod, 0o666); err != nil {
-		t.Fatal(err)
-	}
+	dir := t.TempDir()
+	create(t, dir, "go.mod", goMod(t))
+	create(t, dir, "a.go", "package p\n\nfunc f() { undefined() }\n")
 	t.Chdir(dir)
 	if err := run([]string{"."}, suite.Analyzers()); err == nil {
 		t.Fatal("a package with a build error was reported as fixed")
+	}
+}
+
+// TestFixEndsWhenTheErrorIsGone checks the other outcome: a tree whose only
+// fault is the one a fix repairs. The round that repairs it still loads the
+// package with its error, so the run has to end on what the last round saw, or
+// a tree that builds again is reported as broken.
+func TestFixEndsWhenTheErrorIsGone(t *testing.T) {
+	dir := t.TempDir()
+	create(t, dir, "go.mod", goMod(t))
+	create(t, dir, "a.go", "package p\n\nfunc f() {\n\tv := 1\n}\n")
+	t.Chdir(dir)
+	if err := run([]string{"."}, suite.Analyzers()); err != nil {
+		t.Fatalf("fix: %v", err)
 	}
 }

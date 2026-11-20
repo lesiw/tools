@@ -18,6 +18,7 @@ import (
 	"golang.org/x/tools/go/analysis"
 	"golang.org/x/tools/go/analysis/checker"
 	"golang.org/x/tools/go/analysis/unitchecker"
+	"golang.org/x/tools/go/packages"
 
 	"lesiw.io/tools/internal/ignore"
 )
@@ -116,6 +117,7 @@ func vet(analyzers []*analysis.Analyzer, args []string) int {
 		fmt.Fprintf(os.Stderr, "vet: %v\n", err)
 		return exitUsage
 	}
+	packages.PrintErrors(loaded)
 	graph, err := checker.Analyze(ignore.Apply(opts.analyzers...), loaded, nil)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "vet: %v\n", err)

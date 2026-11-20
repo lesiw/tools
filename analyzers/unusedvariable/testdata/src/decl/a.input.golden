@@ -1,0 +1,95 @@
+package decl
+
+func shared() {
+	var used bool // want `variable spare is declared and never read`
+	panic(used)
+}
+
+func nested() {
+	if 1 == 1 {
+	}
+}
+
+func commented() {
+	// note is a leftover
+}
+
+func grouped() {
+	var (
+		kept string
+	)
+
+	panic(kept)
+}
+
+func rewritten() {
+	var (
+		kept string
+	)
+
+	panic(kept)
+}
+
+func commentedPair() {
+	var (
+		// spare and kept are both booleans
+		kept bool // want `variable spare is declared and never read`
+	)
+	panic(kept)
+}
+
+func firstOfPair() {
+	var kept bool // want `variable spare is declared and never read`
+	panic(kept)
+}
+
+func pairedValues() {
+	var kept = 2 // want `variable spare is declared and never read`
+	panic(kept)
+}
+
+func groupWithoutDoc() {
+	var (
+		kept = 2
+	)
+	panic(kept)
+}
+
+func specEffects() {
+	var (
+		_ = spareCall() // want `variable first is declared and never read`
+	)
+}
+
+func ranged(xs []int) {
+	for index := range xs {
+	}
+}
+
+func spareCall() int { return 1 }
+
+func labeled() {
+	goto done
+done:
+	var _ = 1 // want `variable spare is declared and never read`
+}
+
+func emptiedGroup() {
+}
+
+func directed() {
+	//line other.go:10
+	second := 2 // want `variable first is declared and never read`
+	_ = second
+}
+
+func blankSibling() {
+}
+
+func groupDoc() {
+	var (
+		// kept is documented
+		kept = 2
+	)
+	_ = kept
+}

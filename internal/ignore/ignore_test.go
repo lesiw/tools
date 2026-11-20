@@ -133,3 +133,28 @@ func TestFilterKeepsAnalyzers(t *testing.T) {
 		t.Errorf("len(a.Requires) = %d, want 1", len(a.Requires))
 	}
 }
+
+// typeErrorAnalyzer reports every type error, which is what an analyzer that
+// runs on a package that does not compile does.
+var typeErrorAnalyzer = &analysis.Analyzer{
+	Name:             "typeerrors",
+	Doc:              "reports type errors",
+	RunDespiteErrors: true,
+	Run: func(pass *analysis.Pass) (any, error) {
+		for _, err := range pass.TypeErrors {
+			pass.Reportf(err.Pos, "a type error reached the analyzer")
+		}
+		return nil, nil
+	},
+}
+
+// TestRunDespiteErrors holds the filter to a package that does not compile,
+// which a driver skips unless the analyzer asks for it. It stays out of
+// analysistestCases because combined runs analyzers itself, and so never asks
+// the driver anything.
+func TestRunDespiteErrors(t *testing.T) {
+	analysistest.Run(
+		t, analysistest.TestData(),
+		Apply(typeErrorAnalyzer)[0], "broken",
+	)
+}
