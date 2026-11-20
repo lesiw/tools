@@ -7,6 +7,7 @@ package switchtrue
 
 import (
 	"go/ast"
+	"go/types"
 
 	"golang.org/x/tools/go/analysis"
 )
@@ -21,7 +22,7 @@ func run(pass *analysis.Pass) (any, error) {
 	for _, file := range pass.Files {
 		ast.Inspect(file, func(n ast.Node) bool {
 			stmt, ok := n.(*ast.SwitchStmt)
-			if !ok || !isTrue(stmt.Tag) {
+			if !ok || !isTrue(pass, stmt.Tag) {
 				return true
 			}
 			pass.Report(analysis.Diagnostic{
@@ -55,8 +56,8 @@ func dropTag(stmt *ast.SwitchStmt) []analysis.TextEdit {
 	}}
 }
 
-// isTrue reports whether e is the literal true.
-func isTrue(e ast.Expr) bool {
+// isTrue reports whether e is the predeclared true.
+func isTrue(pass *analysis.Pass, e ast.Expr) bool {
 	id, ok := e.(*ast.Ident)
-	return ok && id.Name == "true" && id.Obj == nil
+	return ok && pass.TypesInfo.Uses[id] == types.Universe.Lookup("true")
 }

@@ -1,0 +1,3 @@
+package shadow
+
+var true = false

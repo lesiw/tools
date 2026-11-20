@@ -1,0 +1,5 @@
+package shadow
+
+func f(n int) bool {
+	return nil == n
+}

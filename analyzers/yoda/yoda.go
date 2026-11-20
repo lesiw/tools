@@ -37,7 +37,7 @@ func run(pass *analysis.Pass) (any, error) {
 			if _, known := comparisons[bin.Op]; !known {
 				return true
 			}
-			if !constant(bin.X) || constant(bin.Y) {
+			if !constant(pass, bin.X) || constant(pass, bin.Y) {
 				return true
 			}
 			left := types.ExprString(bin.Y)
@@ -62,11 +62,11 @@ func run(pass *analysis.Pass) (any, error) {
 	return nil, nil
 }
 
-// constant reports whether e is a literal or nil.
-func constant(e ast.Expr) bool {
+// constant reports whether e is a literal or the predeclared nil.
+func constant(pass *analysis.Pass, e ast.Expr) bool {
 	if _, ok := e.(*ast.BasicLit); ok {
 		return true
 	}
 	id, ok := e.(*ast.Ident)
-	return ok && id.Name == "nil" && id.Obj == nil
+	return ok && pass.TypesInfo.Uses[id] == types.Universe.Lookup("nil")
 }
