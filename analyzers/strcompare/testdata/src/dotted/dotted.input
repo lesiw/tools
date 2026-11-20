@@ -1,0 +1,7 @@
+package dotted
+
+import . "bytes"
+
+func same(x, y []byte) bool {
+	return Compare(x, y) == 0
+}

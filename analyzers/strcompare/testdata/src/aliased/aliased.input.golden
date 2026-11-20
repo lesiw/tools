@@ -1,0 +1,11 @@
+package aliased
+
+import b "bytes"
+
+func same(x, y []byte) bool {
+	return b.Equal(x, y) // want `use bytes.Equal$`
+}
+
+func differs(x, y []byte) bool {
+	return !b.Equal(x, y) // want `use !bytes.Equal$`
+}

@@ -3490,9 +3490,9 @@ func keys(m map[string]int) {
 
 ## strcompare
 
-Reports a comparison of a strings.Compare or bytes.Compare result with zero. The comparison operators express the same test, and strings.Compare documents them as clearer and faster. A bytes.Compare result is reported only against == and !=, since its ordering has no shorter form.
+Reports a comparison of a strings.Compare or bytes.Compare result with a constant. The comparison operators express the same test, and strings.Compare documents them as clearer and faster. A byte slice has no comparison operator, so only the zero test has a shorter form, and a comparison that answers the same whatever the strings are is left alone.
 
-Inspired by go-critic's stringsCompare.
+Inspired by go-critic's stringsCompare. The bytes.Compare arm is adapted from staticcheck's S1004.
 
 ```
 func f(a, b string) bool {

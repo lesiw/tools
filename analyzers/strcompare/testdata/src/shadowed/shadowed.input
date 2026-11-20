@@ -1,0 +1,14 @@
+package shadowed
+
+import "bytes"
+
+var _ = bytes.Compare
+
+type holder struct{}
+
+func (holder) Compare(x, y []byte) int { return 0 }
+
+func same(h holder, x, y []byte) bool {
+	bytes := h
+	return bytes.Compare(x, y) == 0
+}

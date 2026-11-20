@@ -1,0 +1,167 @@
+package a
+
+import (
+	"bytes"
+	"strings"
+)
+
+func textSame(a, b string) bool {
+	return a == b // want `comparison through Compare; compare directly`
+}
+
+func textDiffers(a, b string) bool {
+	return a != b // want `comparison through Compare`
+}
+
+func textLess(a, b string) bool {
+	return a < b // want `comparison through Compare`
+}
+
+func textAtMost(a, b string) bool {
+	return a <= b // want `comparison through Compare`
+}
+
+func textGreater(a, b string) bool {
+	return a > b // want `comparison through Compare`
+}
+
+func textAtLeast(a, b string) bool {
+	return a >= b // want `comparison through Compare`
+}
+
+func textIsLess(a, b string) bool {
+	return a < b // want `comparison through Compare`
+}
+
+func textIsNotLess(a, b string) bool {
+	return a >= b // want `comparison through Compare`
+}
+
+func textAboveMinusOne(a, b string) bool {
+	return a >= b // want `comparison through Compare`
+}
+
+func textAtMostMinusOne(a, b string) bool {
+	return a < b // want `comparison through Compare`
+}
+
+func textIsGreater(a, b string) bool {
+	return a > b // want `comparison through Compare`
+}
+
+func textBelowOne(a, b string) bool {
+	return a <= b // want `comparison through Compare`
+}
+
+func textAtLeastOne(a, b string) bool {
+	return a > b // want `comparison through Compare`
+}
+
+func textNotOne(a, b string) bool {
+	return a <= b // want `comparison through Compare`
+}
+
+func parenthesized(a, b string) bool {
+	return a == b // want `comparison through Compare`
+}
+
+func textMirroredSame(a, b string) bool {
+	return a == b // want `comparison through Compare`
+}
+
+func textMirroredGreater(a, b string) bool {
+	return a < b // want `comparison through Compare`
+}
+
+func textMirroredAtMost(a, b string) bool {
+	return a <= b // want `comparison through Compare`
+}
+
+func textMirroredAtLeast(a, b string) bool {
+	return a >= b // want `comparison through Compare`
+}
+
+func textMirroredAboveMinusOne(a, b string) bool {
+	return a >= b // want `comparison through Compare`
+}
+
+func textConstant(a, b string) bool {
+	return strings.Compare(a, b) == 5 || strings.Compare(a, b) > 1
+}
+
+func added(a, b string) int {
+	return strings.Compare(a, b) + 0
+}
+
+func textAlwaysTrue(a, b string) bool {
+	return strings.Compare(a, b) >= -1
+}
+
+func sameBytes(x, y []byte) bool {
+	return bytes.Equal(x, y) // want `use bytes.Equal`
+}
+
+func differsBytes(x, y []byte) bool {
+	return !bytes.Equal(x, y) // want `use !bytes.Equal`
+}
+
+func mirroredSame(x, y []byte) bool {
+	return bytes.Equal(x, y) // want `use bytes.Equal`
+}
+
+func mirroredDiffers(x, y []byte) bool {
+	return !bytes.Equal(x, y) // want `use !bytes.Equal`
+}
+
+func radix(x, y []byte) bool {
+	return bytes.Equal(x, y) // want `use bytes.Equal`
+}
+
+func signed(x, y []byte) bool {
+	return bytes.Equal(x, y) // want `use bytes.Equal`
+}
+
+func derived(x, y []byte) bool {
+	return bytes.Equal(x[1:], append(y, 0)) // want `use bytes.Equal`
+}
+
+func raw(x []byte) bool {
+	// want +1 `use bytes.Equal`
+	return bytes.Compare(x, []byte(`one
+two`)) == 0
+}
+
+func parenthesizedZero(x, y []byte) bool {
+	return bytes.Equal(x, y) // want `use bytes.Equal`
+}
+
+func annotated(x, y []byte) bool {
+	return bytes.Compare(x, y) == /* none */ 0 // want `use bytes.Equal`
+}
+
+func ordering(x, y []byte) bool {
+	return bytes.Compare(x, y) < 0
+}
+
+func magnitude(x, y []byte) bool {
+	return bytes.Compare(x, y) == 1 || bytes.Compare(x, y) == -1
+}
+
+const none = 0
+
+func named(x, y []byte) bool {
+	return bytes.Compare(x, y) == none
+}
+
+func stored(x, y []byte) bool {
+	n := bytes.Compare(x, y)
+	return n == 0
+}
+
+type s []string
+
+func (s) Compare(a, b string) int { return 0 }
+
+func lookalike(v s, a, b string) bool {
+	return v.Compare(a, b) == 0
+}
