@@ -3729,6 +3729,18 @@ func forget(m *sync.Map, key string) {
 }
 ```
 
+## templateparse
+
+Reports a template that does not parse. A constant passed to Parse on a template that New builds fails on every run.
+
+Adapted from staticcheck's SA1001.
+
+```
+func page() *template.Template {
+    return template.Must(template.New("page").Parse(`{{.Kind}`))
+}
+```
+
 ## testcmp
 
 Reports a reflect.DeepEqual call in a test file. DeepEqual compares unexported fields and says only that two values differ, where a comparator such as go-cmp can say where.

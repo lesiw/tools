@@ -1,0 +1,13 @@
+package a
+
+import . "text/template"
+
+const (
+	broken = `{{.Kind}} {{.Label}`
+	plain  = `{{.Kind}}`
+)
+
+func dotted() {
+	New("page").Parse(broken) // want `template does not parse: bad character U\+007D`
+	New("page").Parse(plain)
+}

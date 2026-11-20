@@ -1,0 +1,63 @@
+package a
+
+import (
+	ht "html/template"
+	tt "text/template"
+)
+
+const (
+	unclosed  = `{{.Kind}`
+	undefined = `{{render}}`
+	kind      = `{{.Kind}}`
+)
+
+func malformed() {
+	tt.New("page").Parse(unclosed)         // want `template does not parse: bad character U\+007D`
+	ht.New("page").Parse(unclosed)         // want `template does not parse: bad character U\+007D`
+	tt.New("page").Parse(`{{end}}`)        // want `template does not parse: unexpected \{\{end\}\}`
+	tt.New("page").Parse("alpha\n{{end}}") // want `template does not parse at line 2`
+}
+
+func undefinedFunction() {
+	tt.New("page").Parse(undefined) // want `template does not parse: function "render" not defined`
+	tt.New("page").Funcs(nil).Parse(undefined)
+	tt.New("page").Funcs(nil).Delims("[[", "]]").Parse(undefined)
+}
+
+func definedTwice() {
+	tt.New("page").Parse(`{{define "alpha"}}x{{end}}{{define "alpha"}}y{{end}}`) // want `multiple definition of template "alpha"`
+}
+
+func throughVariable() {
+	page := tt.New("page")
+	page.Parse(unclosed)
+}
+
+func throughField() {
+	var held struct{ page *tt.Template }
+	held.page.Parse(unclosed)
+}
+
+func customDelimiters() {
+	tt.New("page").Delims("[[", "]]").Parse(kind)
+	tt.New("page").Delims("[[", "]]").Parse(`[[.Kind]`) // want `bad character U\+005D`
+	tt.New("page").Delims("[[", "]]").Parse(unclosed)
+}
+
+func unknownDelimiters(left string) {
+	tt.New("page").Delims(left, "]]").Parse(`[[.Kind]`)
+}
+
+func notConstant(text string) {
+	tt.New("page").Parse(text)
+	tt.New("page").Parse(kind + text)
+}
+
+type page struct{}
+
+func (page) Parse(string) error { return nil }
+
+func anotherType() {
+	var p page
+	_ = p.Parse(unclosed)
+}
