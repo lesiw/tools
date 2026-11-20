@@ -146,6 +146,7 @@ import (
 	"lesiw.io/tools/analyzers/errisnil"
 	"lesiw.io/tools/analyzers/errnotlast"
 	"lesiw.io/tools/analyzers/errorlast"
+	"lesiw.io/tools/analyzers/errorsastypeshadow"
 	"lesiw.io/tools/analyzers/errorsisorder"
 	"lesiw.io/tools/analyzers/errshadow"
 	"lesiw.io/tools/analyzers/errstrings"
@@ -461,6 +462,7 @@ var (
 		errnotlast.Analyzer,
 		errorlast.Analyzer,
 		errorsas.Analyzer,
+		errorsastypeshadow.Analyzer,
 		errorsisorder.Analyzer,
 		errshadow.Analyzer,
 		errstrings.Analyzer,

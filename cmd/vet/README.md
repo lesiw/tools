@@ -1493,6 +1493,22 @@ func f(err error) {
 }
 ```
 
+## errorsastypeshadow
+
+Reports an errors.AsType call that tests a zero value from an earlier call in the same if/else chain. An else branch runs only when the call in the branch above it failed. The value passed there is a zero value, so the answer says nothing about the original error.
+
+Adapted from gopls' errorsastypeshadow, which is internal.
+
+```
+func f(err error) {
+    if err, ok := errors.AsType[*alphaError](err); ok {
+        use(err)
+    } else if err, ok := errors.AsType[*betaError](err); ok {
+        use(err)
+    }
+}
+```
+
 ## errorsisorder
 
 Reports a call to errors.Is whose first argument is a package-level error variable from another package. A leaf sentinel with no Is method in the first position makes the call match only the sentinel itself. The suggested fix swaps the arguments, which changes behavior.

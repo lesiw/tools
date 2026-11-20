@@ -1540,6 +1540,23 @@
 //		}
 //	}
 //
+// # errorsastypeshadow
+//
+// Reports an errors.AsType call that tests a zero value from an earlier call
+// in the same if/else chain. An else branch runs only when the call in the
+// branch above it failed, so the value passed to the second call is the first
+// call's zero value, and its answer says nothing about the original error.
+//
+// Adapted from gopls' errorsastypeshadow, which is internal.
+//
+//	func f(err error) {
+//		if err, ok := errors.AsType[*alphaError](err); ok {
+//			use(err)
+//		} else if err, ok := errors.AsType[*betaError](err); ok {
+//			use(err)
+//		}
+//	}
+//
 // # errorsisorder
 //
 // Reports a call to errors.Is whose first argument is a package-level error
