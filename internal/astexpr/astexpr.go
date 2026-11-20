@@ -5,7 +5,8 @@
 // interface in it, whether a selection goes through a pointer, whether a type
 // is the predeclared boolean, whether a type can hold a NaN, whether its type
 // set holds only arrays, whether its type set can be written through an index,
-// and whether a statement reads the value it writes.
+// what the parent of every node is, and whether a statement reads the value it
+// writes.
 package astexpr
 
 import (
@@ -343,6 +344,28 @@ func Composite(e ast.Expr) bool {
 func unrestricted(t types.Type) bool {
 	iface, ok := t.Underlying().(*types.Interface)
 	return ok && iface.NumEmbeddeds() == 0
+}
+
+// Parents returns the parent of every node in root. A node with no parent has
+// no entry in the map.
+func Parents(root ast.Node) map[ast.Node]ast.Node {
+	var (
+		parents = make(map[ast.Node]ast.Node)
+		stack   []ast.Node
+	)
+	// ast.Inspect calls f with nil after it has visited a node's children.
+	ast.Inspect(root, func(n ast.Node) bool {
+		if n == nil {
+			stack = stack[:len(stack)-1]
+			return true
+		}
+		if len(stack) > 0 {
+			parents[n] = stack[len(stack)-1]
+		}
+		stack = append(stack, n)
+		return true
+	})
+	return parents
 }
 
 // SelfReads reports whether a statement reads the value it writes, as an

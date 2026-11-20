@@ -71,7 +71,7 @@ func checkFile(pass *analysis.Pass, file *ast.File) error {
 	if err != nil {
 		return err
 	}
-	parent := parents(file)
+	parent := astexpr.Parents(file)
 	used := names(pass, file)
 	found := lookups(pass, parent, file)
 	order, groups := fixableGroups(pass, file, parent, found)
@@ -262,26 +262,6 @@ func resultCount(parent map[ast.Node]ast.Node, index *ast.IndexExpr) (two, direc
 		}
 		node = paren
 	}
-}
-
-// parents returns the parent of every node in file.
-func parents(file *ast.File) map[ast.Node]ast.Node {
-	var (
-		parent = make(map[ast.Node]ast.Node)
-		stack  []ast.Node
-	)
-	ast.Inspect(file, func(n ast.Node) bool {
-		if n == nil {
-			stack = stack[:len(stack)-1]
-			return true
-		}
-		if len(stack) > 0 {
-			parent[n] = stack[len(stack)-1]
-		}
-		stack = append(stack, n)
-		return true
-	})
-	return parent
 }
 
 // enclosingLoop returns the loop whose body holds node. It reports false for a

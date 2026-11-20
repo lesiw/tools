@@ -73,7 +73,7 @@ func run(pass *analysis.Pass) (any, error) {
 // checkFile reports the calls in one file, with a fix where one applies.
 func checkFile(pass *analysis.Pass, file *ast.File) error {
 	var (
-		parent = parents(file)
+		parent = astexpr.Parents(file)
 		found  = calls(pass, parent, file)
 	)
 	if len(found) == 0 {
@@ -751,26 +751,6 @@ func pairs(pass *analysis.Pass, targets, values []ast.Expr, root ast.Expr, typ t
 		}
 	}
 	return false
-}
-
-// parents returns the parent of every node in file.
-func parents(file *ast.File) map[ast.Node]ast.Node {
-	var (
-		parent = make(map[ast.Node]ast.Node)
-		stack  []ast.Node
-	)
-	ast.Inspect(file, func(n ast.Node) bool {
-		if n == nil {
-			stack = stack[:len(stack)-1]
-			return true
-		}
-		if len(stack) > 0 {
-			parent[n] = stack[len(stack)-1]
-		}
-		stack = append(stack, n)
-		return true
-	})
-	return parent
 }
 
 // within reports whether node lies inside body.

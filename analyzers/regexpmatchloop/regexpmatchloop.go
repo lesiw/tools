@@ -57,7 +57,7 @@ type match struct {
 func run(pass *analysis.Pass) (any, error) {
 	for _, file := range pass.Files {
 		var (
-			parent = parents(file)
+			parent = astexpr.Parents(file)
 			used   = names(pass, file)
 			found  []match
 		)
@@ -97,26 +97,6 @@ func run(pass *analysis.Pass) (any, error) {
 		}
 	}
 	return nil, nil
-}
-
-// parents returns the parent of every node in file.
-func parents(file *ast.File) map[ast.Node]ast.Node {
-	var (
-		parent = make(map[ast.Node]ast.Node)
-		stack  []ast.Node
-	)
-	ast.Inspect(file, func(n ast.Node) bool {
-		if n == nil {
-			stack = stack[:len(stack)-1]
-			return true
-		}
-		if len(stack) > 0 {
-			parent[n] = stack[len(stack)-1]
-		}
-		stack = append(stack, n)
-		return true
-	})
-	return parent
 }
 
 // names returns the names that a declaration in file would shadow: every

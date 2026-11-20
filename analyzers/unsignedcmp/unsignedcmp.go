@@ -70,7 +70,7 @@ func run(pass *analysis.Pass) (any, error) {
 			pass:     pass,
 			file:     file,
 			src:      src,
-			parents:  parentOf(file),
+			parents:  astexpr.Parents(file),
 			reads:    reads,
 			writes:   writes,
 			siblings: siblings,
@@ -264,28 +264,6 @@ func switchVars(pass *analysis.Pass) map[types.Object][]types.Object {
 		})
 	}
 	return groups
-}
-
-// parentOf returns the parent of every node in the tree, which a fix uses to
-// find the statement and the connective around a comparison.
-func parentOf(root ast.Node) map[ast.Node]ast.Node {
-	var (
-		parents = make(map[ast.Node]ast.Node)
-		stack   []ast.Node
-	)
-	// A nil node is the end of the node above it.
-	ast.Inspect(root, func(n ast.Node) bool {
-		if n == nil {
-			stack = stack[:len(stack)-1]
-			return true
-		}
-		if len(stack) > 0 {
-			parents[n] = stack[len(stack)-1]
-		}
-		stack = append(stack, n)
-		return true
-	})
-	return parents
 }
 
 // findingFor returns the finding for one comparison, when the bound is a limit

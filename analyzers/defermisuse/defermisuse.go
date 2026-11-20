@@ -30,6 +30,8 @@ import (
 	"strings"
 
 	"golang.org/x/tools/go/analysis"
+
+	"lesiw.io/tools/internal/astexpr"
 )
 
 var Analyzer = &analysis.Analyzer{
@@ -346,28 +348,9 @@ func collectMethods(pass *analysis.Pass, file *ast.File, methods map[string][]*t
 	})
 }
 
-// parentVisitor calls fn with each node and its parent.
-type parentVisitor struct {
-	parent ast.Node
-	fn     func(ast.Node, ast.Node)
-}
-
-func (v parentVisitor) Visit(node ast.Node) ast.Visitor {
-	if node == nil {
-		return nil
-	}
-	v.fn(node, v.parent)
-	return parentVisitor{parent: node, fn: v.fn}
-}
-
 // collectUses records how file refers to each function.
 func collectUses(pass *analysis.Pass, file *ast.File, out *deferrals) {
-	parents := make(map[ast.Node]ast.Node)
-	ast.Walk(parentVisitor{fn: func(n, parent ast.Node) {
-		if parent != nil {
-			parents[n] = parent
-		}
-	}}, file)
+	parents := astexpr.Parents(file)
 	ast.Inspect(file, func(n ast.Node) bool {
 		switch n := n.(type) {
 		case *ast.FuncLit:
