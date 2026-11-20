@@ -1,0 +1,5 @@
+package generic
+
+type Undecided[T any] struct { // want `both Undecided and \*Undecided implement the error interface, making the intent ambiguous`
+	error
+}

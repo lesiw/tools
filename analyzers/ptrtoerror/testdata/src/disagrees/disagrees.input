@@ -1,0 +1,30 @@
+package disagrees
+
+import "bothways"
+
+func mismatched() {
+	var v *bothways.Valued
+	var _ error = v // want `conversion of \*bothways.Valued to error, but package "bothways" uses Valued \(sans pointer\) as an error \(e.g. at bothways.go:26:15\)`
+
+	var p bothways.Pointed
+	var _ error = p // want `conversion of bothways.Pointed to error, but package "bothways" uses pointer \*Pointed as an error \(e.g. at bothways.go:32:15\)`
+}
+
+func consistent() {
+	var v bothways.Valued
+	var _ error = v
+
+	var p *bothways.Pointed
+	var _ error = p
+}
+
+func variadic(dst ...error) { _ = dst }
+
+func spread() {
+	variadic(nil, bothways.Valued{}, new(bothways.Valued)) // want `conversion of \*bothways.Valued to error, but package "bothways" uses Valued \(sans pointer\) as an error`
+}
+
+func generic() {
+	var b *bothways.Box[int]
+	var _ error = b // want `conversion of \*bothways.Box\[int\] to error, but package "bothways" uses Box \(sans pointer\) as an error`
+}

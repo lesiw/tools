@@ -1,0 +1,8 @@
+package renumbered
+
+import "linedirective"
+
+func mismatched() {
+	var p *linedirective.Marked
+	var _ error = p // want `conversion of \*linedirective.Marked to error, but package "linedirective" uses Marked \(sans pointer\) as an error \(e.g. at linedirective.go:6:15\)`
+}

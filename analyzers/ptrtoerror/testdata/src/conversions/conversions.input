@@ -1,0 +1,95 @@
+package conversions
+
+type mixed struct{ error }
+
+type wrapped struct{ err error }
+
+func valuePair() (mixed, error) { return mixed{}, nil }
+
+func assign() {
+	var err error
+	err = mixed{} // want "mixed is converted to error both as a value and as a pointer"
+	err = &mixed{} // want "mixed is converted to error both as a value and as a pointer"
+	_ = err
+}
+
+func spreadAssign() {
+	var first error
+	var second error
+	first, second = valuePair() // want "mixed is converted to error both as a value and as a pointer"
+	_, _ = first, second
+}
+
+func result() error {
+	return mixed{} // want "mixed is converted to error both as a value and as a pointer"
+}
+
+func pointerResult() error {
+	return &mixed{} // want "mixed is converted to error both as a value and as a pointer"
+}
+
+func spreadResult() (error, error) {
+	return valuePair() // want "mixed is converted to error both as a value and as a pointer"
+}
+
+func pair(a, b error) { _, _ = a, b }
+
+func spreadCall() {
+	pair(valuePair()) // want "mixed is converted to error both as a value and as a pointer"
+}
+
+func send(ch chan<- error) {
+	ch <- mixed{} // want "mixed is converted to error both as a value and as a pointer"
+	ch <- &mixed{} // want "mixed is converted to error both as a value and as a pointer"
+}
+
+func assertion(err error) {
+	_ = err.(mixed) // want "mixed is converted to error both as a value and as a pointer"
+	_ = err.(*mixed) // want "mixed is converted to error both as a value and as a pointer"
+}
+
+func variadic(errs ...error) { _ = errs }
+
+func variadicCall(items []error) {
+	variadic(mixed{}) // want "mixed is converted to error both as a value and as a pointer"
+	variadic(&mixed{}) // want "mixed is converted to error both as a value and as a pointer"
+	variadic(items...)
+}
+
+func lists() {
+	_ = []error{
+		mixed{}, // want "mixed is converted to error both as a value and as a pointer"
+		&mixed{}, // want "mixed is converted to error both as a value and as a pointer"
+	}
+	_ = [...]error{
+		mixed{}, // want "mixed is converted to error both as a value and as a pointer"
+		&mixed{}, // want "mixed is converted to error both as a value and as a pointer"
+	}
+}
+
+func maps() {
+	_ = map[error]bool{
+		mixed{}: true, // want "mixed is converted to error both as a value and as a pointer"
+	}
+	_ = map[bool]error{
+		true: &mixed{}, // want "mixed is converted to error both as a value and as a pointer"
+	}
+}
+
+func structs() {
+	_ = wrapped{mixed{}} // want "mixed is converted to error both as a value and as a pointer"
+	_ = wrapped{err: &mixed{}} // want "mixed is converted to error both as a value and as a pointer"
+}
+
+func explicit() {
+	_ = error(mixed{}) // want "mixed is converted to error both as a value and as a pointer"
+	_ = error(&mixed{}) // want "mixed is converted to error both as a value and as a pointer"
+}
+
+func literal() error {
+	f := func() error {
+		return mixed{} // want "mixed is converted to error both as a value and as a pointer"
+	}
+	_ = f
+	return &mixed{} // want "mixed is converted to error both as a value and as a pointer"
+}

@@ -2845,6 +2845,21 @@
 //		return fmt.Sprintf("%d", "one")
 //	}
 //
+// # ptrtoerror
+//
+// Reports a concrete error type that a package converts to error both as a
+// value and as a pointer. A caller's type assertion matches one form, so it
+// fails on the errors the package converted the other way. A type that
+// implements error both ways and is never converted in its own package is also
+// reported.
+//
+// Vendored from gopls' ptrtoerror.
+//
+//	type mixed struct{ error }
+//
+//	func first(m mixed) error   { return m }
+//	func second(m *mixed) error { return m }
+//
 // # queryadd
 //
 // Reports an Add call on the values returned by URL.Query. Query builds a

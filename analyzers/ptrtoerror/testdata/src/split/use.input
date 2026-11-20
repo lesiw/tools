@@ -1,0 +1,6 @@
+package split
+
+func use() {
+	var _ error = mixed{}  // want "mixed is converted to error both as a value and as a pointer"
+	var _ error = &mixed{} // want "mixed is converted to error both as a value and as a pointer"
+}

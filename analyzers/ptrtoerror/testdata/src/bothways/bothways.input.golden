@@ -1,0 +1,85 @@
+package bothways
+
+import "io/fs"
+
+type Mixed struct {
+	error
+}
+
+func useMixed(m Mixed) {
+	var _ error = m  // want `Mixed is converted to error both as a value and as a pointer`
+	var _ error = &m // want `Mixed is converted to error both as a value and as a pointer`
+}
+
+type Undecided struct { // want `both Undecided and \*Undecided implement the error interface, making the intent ambiguous`
+	error
+}
+
+var _ error = *new(Undecided)
+
+type undecided struct { // want `both undecided and \*undecided implement the error interface, making the intent ambiguous`
+	error
+}
+
+var _ error = *new(undecided)
+
+type Valued struct { // want Valued:`E`
+	error
+}
+
+var _ error = Valued{}
+
+type Pointed struct { // want Pointed:`\*E`
+	error
+}
+
+var _ error = (*Pointed)(nil)
+
+func useLocal() {
+	type local struct{ error } // want `both local and \*local implement the error interface, making the intent ambiguous`
+
+	var _ error = *new(local)
+}
+
+func useForeign() {
+	var pe fs.PathError
+	var _ error = &pe
+}
+
+func useUnnamed() {
+	var _ error = &struct{ error }{}
+}
+
+type alias = struct{ error }
+
+type iface interface{ error }
+
+type Box[T any] struct { // want Box:`E`
+	error
+}
+
+var _ error = Box[int]{}
+
+type named struct{ error }
+
+type namedAlias = named
+
+func throughAlias() {
+	var _ error = namedAlias{} // want `named is converted to error both as a value and as a pointer`
+	var _ error = &named{}     // want `named is converted to error both as a value and as a pointer`
+}
+
+type inner struct{}
+
+func (*inner) Error() string { return "" }
+
+type promoted struct { // want `both promoted and \*promoted implement the error interface, making the intent ambiguous`
+	*inner
+}
+
+var _ error = *new(promoted)
+
+func onOneLine() {
+	type inner struct{ error }
+	var _ error = *new(inner)
+} // want `both inner and \*inner implement the error interface, making the intent ambiguous`

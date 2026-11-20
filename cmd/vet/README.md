@@ -2789,6 +2789,19 @@ func f(n int) string {
 }
 ```
 
+## ptrtoerror
+
+Reports a concrete error type that a package converts to error both as a value and as a pointer. A type assertion matches only the form the package converted to, so a package that writes both leaves the caller no form that always matches. A type that implements error both ways and is never converted in its own package is also reported.
+
+Vendored from gopls' ptrtoerror, which is internal.
+
+```
+type mixed struct{ error }
+
+func first(m mixed) error   { return m }
+func second(m *mixed) error { return m }
+```
+
 ## queryadd
 
 Reports an Add call on the values returned by URL.Query. Query builds a separate map from RawQuery, so the added value is discarded and RawQuery is unchanged.

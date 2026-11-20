@@ -1,0 +1,43 @@
+package assertions
+
+import "errors"
+
+type Switched struct{}
+
+func (Switched) Error() string { return "" }
+
+func conflictedSwitch(err error) {
+	switch err.(type) {
+	case Switched: // want "Switched is converted to error both as a value and as a pointer"
+	}
+	var p *Switched
+	var _ error = p // want "Switched is converted to error both as a value and as a pointer"
+}
+
+type Matched struct{}
+
+func (Matched) Error() string { return "" }
+
+func conflictedMatch(err error) {
+	_, _ = errors.AsType[Matched](err) // want "Matched is converted to error both as a value and as a pointer"
+	var p *Matched
+	var _ error = p // want "Matched is converted to error both as a value and as a pointer"
+}
+
+type Valued struct{} // want Valued:`E`
+
+func (Valued) Error() string { return "" }
+
+func consistentSwitch(err error) {
+	switch err.(type) {
+	case Valued:
+	}
+}
+
+type Pointed struct{} // want Pointed:`\*E`
+
+func (Pointed) Error() string { return "" }
+
+func consistentMatch(err error) {
+	_, _ = errors.AsType[*Pointed](err)
+}

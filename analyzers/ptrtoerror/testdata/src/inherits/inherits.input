@@ -1,0 +1,11 @@
+package inherits
+
+import "assertions"
+
+func mismatched() {
+	var p *assertions.Valued
+	var _ error = p // want `conversion of \*assertions.Valued to error, but package "assertions" uses Valued \(sans pointer\) as an error`
+
+	var v assertions.Pointed
+	var _ error = v // want `conversion of assertions.Pointed to error, but package "assertions" uses pointer \*Pointed as an error`
+}

@@ -1,0 +1,6 @@
+package linedirective
+
+type Marked struct{ error } // want Marked:`E`
+
+//line other.go:100
+var _ error = Marked{}

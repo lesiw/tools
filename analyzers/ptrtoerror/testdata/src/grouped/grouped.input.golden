@@ -1,0 +1,13 @@
+package grouped
+
+type (
+	first struct{ error } // want `both first and \*first implement the error interface, making the intent ambiguous`
+)
+
+var _ error = *new(first)
+
+type (
+	second struct{ error } // want `both second and \*second implement the error interface, making the intent ambiguous`
+)
+
+var _ error = *new(second)
