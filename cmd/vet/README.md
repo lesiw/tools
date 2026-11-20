@@ -1263,6 +1263,23 @@ func f(n int) int {
 }
 ```
 
+## elseifswitch
+
+Reports an if-else chain that compares one expression with == on every branch. A switch names that expression once, where every condition of the chain repeats it.
+
+Adapted from staticcheck's QF1003.
+
+```
+func pick(kind string) int {
+    if kind == "alpha" {
+        return 1
+    } else if kind == "beta" {
+        return 2
+    }
+    return 0
+}
+```
+
 ## embeddirective
 
 Reports a //go:embed directive in a file that does not import embed, or one that does not precede a single variable of type string, \[]byte or embed.FS with no value.
@@ -1824,27 +1841,6 @@ Imported from the x/tools vet suite.
 ```
 func f(v interface{ Read() }) {
     _ = v.(io.Reader)
-}
-```
-
-## ifelsechain
-
-Reports an if-else chain of four or more branches. A switch puts each condition at one indent, where a reader looks for it.
-
-Inspired by go-critic's ifElseChain.
-
-```
-func f(n int) int {
-    if n == 0 {
-        return 0
-    } else if n == 1 {
-        return 1
-    } else if n == 2 {
-        return 2
-    } else if n == 3 {
-        return 3
-    }
-    return -1
 }
 ```
 

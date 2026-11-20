@@ -1,0 +1,524 @@
+package a
+
+func use(...any) {}
+
+type item struct {
+	Kind string
+}
+
+const (
+	first        = 1
+	second       = 2
+	zero         = 0
+	rate   int64 = 2
+)
+
+func next() int { return 0 }
+
+var limit int
+
+func pick(kind string) int {
+	switch kind {
+	case "alpha": // want `if-else chain on kind; write a switch`
+		return 1
+	case "beta":
+		return 2
+	}
+	return 0
+}
+
+func withElse(kind string) int {
+	switch kind {
+	case "alpha": // want `if-else chain on kind; write a switch`
+		return 1
+	case "beta":
+		return 2
+	default:
+		return 0
+	}
+}
+
+func merged(n int) int {
+	switch n {
+	case first, second: // want `if-else chain on n; write a switch`
+		return 1
+	case 3:
+		return 2
+	}
+	return 0
+}
+
+func nested(n int) {
+	for range 2 {
+		switch n {
+		case 1: // want `if-else chain on n; write a switch`
+			use(n)
+		case 2:
+			use(n)
+		}
+	}
+}
+
+func fieldTag(it item) int {
+	switch it.Kind {
+	case "alpha": // want `if-else chain on it.Kind; write a switch`
+		return 1
+	case "beta":
+		return 2
+	}
+	return 0
+}
+
+func indexTag(s []int) int {
+	switch s[0] {
+	case 1: // want `if-else chain on s\[0\]; write a switch`
+		return 1
+	case 2:
+		return 2
+	}
+	return 0
+}
+
+func callTag(v []int) int {
+	switch len(v) {
+	case 0: // want `if-else chain on len\(v\); write a switch`
+		return 1
+	case 1:
+		return 2
+	}
+	return 0
+}
+
+func compositeTag(x, y item) {
+	switch (item{Kind: "alpha"}) {
+	case x: // want `if-else chain on item\{Kind: "alpha"\}; write a switch`
+		use(x)
+	case y:
+		use(y)
+	}
+}
+
+func wrapped(n int) int {
+	// want +1 `if-else chain on n; write a switch`
+	switch n {
+	case 1, 2:
+		return 1
+	case 3:
+		return 2
+	}
+	return 0
+}
+
+func trailing(n int) int {
+	// want +1 `if-else chain on n; write a switch`
+	switch n {
+	case 1: // one
+		return 1
+	case 2: // two
+		return 2
+	}
+	return 0
+}
+
+func fourLinks(n int) int {
+	switch n {
+	case 1: // want `if-else chain on n; write a switch`
+		return 1
+	case 2:
+		return 2
+	case 3:
+		return 3
+	case 4:
+		return 4
+	default:
+		return 0
+	}
+}
+
+func labeled(n int) {
+loop:
+	for {
+		switch n {
+		case 1: // want `if-else chain on n; write a switch`
+			break loop
+		case 2:
+			use(n)
+		}
+	}
+}
+
+func breaksInside(n int) {
+	for {
+		switch n {
+		case 1: // want `if-else chain on n; write a switch`
+			for range 2 {
+				break
+			}
+		case 2:
+			continue
+		}
+	}
+}
+
+func breaksNested(n int, ch chan struct{}) {
+	for {
+		switch n {
+		case 1: // want `if-else chain on n; write a switch`
+			switch n {
+			case 2:
+				use(n)
+				break
+			}
+		case 3:
+			select {
+			case <-ch:
+				use(n)
+				break
+			}
+		case 4:
+			switch any(n).(type) {
+			case int:
+				use(n)
+				break
+			}
+		}
+	}
+}
+
+func elseWithMore(n int) {
+	if n > 0 {
+		use(n)
+	} else {
+		switch n {
+		case 1: // want `if-else chain on n; write a switch`
+			use(n)
+		case 2:
+			use(n)
+		}
+		use(n)
+	}
+}
+
+func inElseBlock(n int) {
+	if n > 0 {
+		use(n)
+	} else {
+		if n == 1 {
+			use(n)
+		} else if n == 2 {
+			use(n)
+		}
+	}
+}
+
+func headElseIf(n, m int) {
+	if n > 0 {
+		use(n)
+	} else if m == 2 {
+		use(m)
+	} else if m == 3 {
+		use(m)
+	}
+}
+
+func longValues(kind string) {
+	// want +1 `if-else chain on kind; write a switch`
+	switch kind {
+	case "alpha-one-with-a-long-name-for-the-probe",
+		"beta-two-with-a-long-name-for-the-probe":
+		use(kind)
+	case "gamma":
+		use(kind)
+	}
+}
+
+func twice(n int) {
+	if n == 1 {
+		use(n)
+	} else if n == 1 {
+		use(n)
+	}
+}
+
+func twiceInOne(n int) {
+	if n == 1 || n == 1 {
+		use(n)
+	} else if n == 2 {
+		use(n)
+	}
+}
+
+func twiceNamed(n int) {
+	if n == limit {
+		use(n)
+	} else if n == limit {
+		use(n)
+	}
+}
+
+func nilTag(err, other error) {
+	if nil == err {
+		use(err)
+	} else if nil == other {
+		use(other)
+	}
+}
+
+func unordered(n int) {
+	// want +1 `if-else chain on n; write a switch`
+	if n == 3 {
+		use(n)
+	} else if n == 1 {
+		use(n)
+	} else if n == 2 {
+		use(n)
+	}
+}
+
+func emptyElse(n int) {
+	switch n {
+	case 1: // want `if-else chain on n; write a switch`
+		use(n)
+	case 2:
+		use(n)
+	default:
+	}
+}
+
+func inCase(n, m int) {
+	switch n {
+	case 1:
+	default:
+		// want +1 `if-else chain on m; write a switch`
+		switch m {
+		case 1:
+			use(m)
+		case 2:
+			use(m)
+		}
+	}
+}
+
+func annotated(n int) {
+	// want +1 `if-else chain on n; write a switch`
+	if n == 1 {
+		use(n)
+	} else /* keep */ if n == 2 {
+		use(n)
+	}
+}
+
+func annotatedCond(n int) {
+	// want +1 `if-else chain on n; write a switch`
+	if n == 1 /* one */ || n == 2 {
+		use(n)
+	} else if n == 3 {
+		use(n)
+	}
+}
+
+func annotatedElse(n int) {
+	// want +1 `if-else chain on n; write a switch`
+	if n == 1 {
+		use(n)
+	} else if n == 2 {
+		use(n)
+	} else /* keep */ {
+		use(n)
+	}
+}
+
+func packed(n int) {
+	if n == 1 { use(n) } else if n == 2 { // want `if-else chain on n; write a switch`
+		use(n)
+	}
+}
+
+func caseLine(n int) {
+	switch n {
+	case 0:
+	default: if n == 1 { // want `if-else chain on n; write a switch`
+			use(n)
+		} else if n == 2 {
+			use(n)
+		}
+	}
+}
+
+func oneValue(n int) {
+	if n == 1 || n == 2 {
+		use(n)
+	}
+}
+
+func singleElse(n int) {
+	if n == 1 {
+		use(n)
+	} else {
+		use(n)
+	}
+}
+
+func differing(n, m int) {
+	if n == 1 {
+		use(n)
+	} else if m == 2 {
+		use(m)
+	}
+}
+
+func orDifferent(n, m int) {
+	if n == 1 || m == 2 {
+		use(n)
+	} else if n == 2 {
+		use(n)
+	}
+}
+
+func constantTag(n, m int) {
+	if 1 == n {
+		use(n)
+	} else if 1 == m {
+		use(m)
+	}
+	if zero == n {
+		use(n)
+	} else if zero == m {
+		use(m)
+	}
+}
+
+func typedConstant(f, g int64) {
+	switch rate {
+	case f: // want `if-else chain on rate; write a switch`
+		use(f)
+	case g:
+		use(g)
+	}
+}
+
+func doubledConstant(f, g int64) {
+	switch rate * 2 {
+	case f: // want `if-else chain on rate \* 2; write a switch`
+		use(f)
+	case g:
+		use(g)
+	}
+}
+
+func scattered(n int) {
+	switch n {
+	case 1: // want `if-else chain on n; write a switch`
+		use(n)
+	case 5:
+		use(n)
+	case 3:
+		use(n)
+	}
+}
+
+func conversionTag(n int) {
+	switch int64(n) {
+	case 1: // want `if-else chain on int64\(n\); write a switch`
+		use(n)
+	case 2:
+		use(n)
+	}
+}
+
+func channelLen(ch chan struct{}) {
+	if len(ch) == 0 {
+		use(ch)
+	} else if len(ch) == 1 {
+		use(ch)
+	}
+}
+
+func effectful() {
+	if next() == 1 {
+		use(1)
+	} else if next() == 2 {
+		use(2)
+	}
+}
+
+func effectfulValue(n int) {
+	if n == next() {
+		use(n)
+	} else if n == 2 {
+		use(n)
+	}
+}
+
+func withInit(n int) {
+	if m := n + 1; m == 1 {
+		use(m)
+	} else if m == 2 {
+		use(m)
+	}
+}
+
+func initLater(n int) {
+	if n == 1 {
+		use(n)
+	} else if m := n; m == 2 {
+		use(m)
+	}
+}
+
+func sharedBody(n int) int {
+	// want +1 `if-else chain on n; write a switch`
+	if n == 1 { return 1
+	} else if n == 2 { return 2
+	}
+	return 0
+}
+
+func charRuns(c byte) {
+	switch c {
+	case 'c': // want `if-else chain on c; write a switch`
+		use(c)
+	case 'a':
+		use(c)
+	case 'b':
+		use(c)
+	}
+}
+
+func realConstant(n int) {
+	if real(1) == n {
+		use(n)
+	} else if real(1) == n+1 {
+		use(n)
+	}
+}
+
+func unequal(n int) {
+	if n < 1 {
+		use(n)
+	} else if n < 2 {
+		use(n)
+	}
+}
+
+func breaks(n int) {
+	for {
+		if n == 1 {
+			use(n)
+		} else if n == 2 {
+			break
+		}
+	}
+}
+
+func breaksInElse(n int) {
+	for {
+		if n == 1 {
+			use(n)
+		} else if n == 2 {
+			use(n)
+		} else {
+			break
+		}
+	}
+}

@@ -133,6 +133,7 @@ import (
 	"lesiw.io/tools/analyzers/dynformat"
 	"lesiw.io/tools/analyzers/earlyreturn"
 	"lesiw.io/tools/analyzers/elseif"
+	"lesiw.io/tools/analyzers/elseifswitch"
 	"lesiw.io/tools/analyzers/embeddirective"
 	"lesiw.io/tools/analyzers/emptybranch"
 	"lesiw.io/tools/analyzers/emptycritical"
@@ -165,7 +166,6 @@ import (
 	"lesiw.io/tools/analyzers/headercanon"
 	"lesiw.io/tools/analyzers/hostportconst"
 	"lesiw.io/tools/analyzers/identicalconds"
-	"lesiw.io/tools/analyzers/ifelsechain"
 	"lesiw.io/tools/analyzers/ifreturn"
 	"lesiw.io/tools/analyzers/importgroup"
 	"lesiw.io/tools/analyzers/importshadow"
@@ -461,6 +461,7 @@ var (
 		dynformat.Analyzer,
 		earlyreturn.Analyzer,
 		elseif.Analyzer,
+		elseifswitch.Analyzer,
 		embeddirective.Analyzer,
 		emptybranch.Analyzer,
 		emptycritical.Analyzer,
@@ -502,7 +503,6 @@ var (
 		httpresponse.Analyzer,
 		identicalconds.Analyzer,
 		ifaceassert.Analyzer,
-		ifelsechain.Analyzer,
 		ifreturn.Analyzer,
 		importgroup.Analyzer,
 		importshadow.Analyzer,
