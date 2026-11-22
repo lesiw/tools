@@ -43,13 +43,14 @@ has no fix because deleting its last use would leave the import unused, and
 goimports does not remove a dot import.
 
 The fix is offered only in package main of the main module, where a
-`//go:debug` line is visible. It is withheld when the go directive in the main
-module's go.mod is below Go 1.24, when the module's go.mod or a loaded
-`//go:debug` line has a godebug setting that restores Seed's effect, when a
-go.work file is in effect, or when the driver supplies no module Go version. A
-`GODEBUG` setting in the environment is outside the analysis. The call is still
-reported. A `//go:debug` line in another package, or in a test file the driver
-does not load, is not seen.
+`//go:debug` line is visible. It is withheld when the file's Go version is
+below Go 1.24, when a loaded `//go:debug` line has a godebug setting that
+restores Seed's effect, and when the driver supplies no version for the file.
+The version is the one the type checker resolved, so a go.work file and a
+go1.x build line are already accounted for. A godebug setting in go.mod or in
+the `GODEBUG` environment variable is outside the analysis, because a pass is
+handed neither. The call is still reported. A `//go:debug` line in another
+package, or in a test file the driver does not load, is not seen.
 
 A local variable whose only reads are inside `Seed` calls is left without a
 fix, so a run of `Seed` calls that share one variable is reported without a

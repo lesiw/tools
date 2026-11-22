@@ -20,14 +20,15 @@
 // variable's only reads are inside Seed calls.
 //
 // The fix is offered only in package main of the main module, where a
-// //go:debug line is visible. It is withheld when the go directive in the main
-// module's go.mod is below Go 1.24, when the module's go.mod or a loaded
-// //go:debug line has a godebug setting that restores Seed's effect, when a
-// go.work file is in effect, or when the driver supplies no module Go version.
-// A GODEBUG setting in the environment is outside the analysis. The call is
-// still reported, and the report is made at every Go version. A //go:debug
-// line in another package, or in a test file the driver does not load, is not
-// seen.
+// //go:debug line is visible. It is withheld when the file's Go version is
+// below Go 1.24, when a loaded //go:debug line has a godebug setting that
+// restores Seed's effect, and when the driver supplies no version for the
+// file. The version is the one the type checker resolved, so a go.work file
+// and a go1.x build line are already accounted for. A godebug setting in
+// go.mod or in the environment is outside the analysis, because a pass is
+// handed neither. The call is still reported, and the report is made at every
+// Go version. A //go:debug line in another package, or in a test file the
+// driver does not load, is not seen.
 //
 // The rule is adapted from staticcheck's SA1019.
 package mathrandseed
@@ -38,8 +39,6 @@ import (
 	"go/token"
 	"go/types"
 	"go/version"
-	"os"
-	"path/filepath"
 	"slices"
 	"strings"
 
@@ -56,9 +55,16 @@ var Analyzer = &analysis.Analyzer{
 }
 
 func run(pass *analysis.Pass) (any, error) {
-	fixable := pass.Pkg.Name() == "main" &&
-		fixableModule(pass.Module) && !moduleGodebug(pass.Module) &&
-		!workspace(pass.Module) && !packageGodebug(pass.Files)
+	// The type checker resolved the version in effect for each file, which
+	// covers the module's directive, a go.work file, and go1.x build lines.
+	byFile := make(map[*ast.File]bool, len(pass.Files))
+	for _, f := range pass.Files {
+		byFile[f] = pass.Pkg.Name() == "main" && mainModule(pass) && atLeast(
+			f, pass.TypesInfo.FileVersions[f],
+			"go1.24",
+		)
+	}
+	noGodebug := !packageGodebug(pass.Files)
 	for _, file := range pass.Files {
 		name := pass.Fset.File(file.FileStart).Name()
 		src, err := pass.ReadFile(name)
@@ -76,15 +82,24 @@ func run(pass *analysis.Pass) (any, error) {
 			case *ast.ExprStmt:
 				call, ok := ast.Unparen(n.X).(*ast.CallExpr)
 				if ok && seed(pass, call) {
-					report(pass, src, file, n, call, stack, fixable)
+					report(
+						pass, src, file, n, call, stack,
+						byFile[file] && noGodebug,
+					)
 				}
 			case *ast.DeferStmt:
 				if seed(pass, n.Call) {
-					report(pass, src, file, n, n.Call, stack, fixable)
+					report(
+						pass, src, file, n, n.Call,
+						stack, byFile[file] && noGodebug,
+					)
 				}
 			case *ast.GoStmt:
 				if seed(pass, n.Call) {
-					report(pass, src, file, n, n.Call, stack, fixable)
+					report(
+						pass, src, file, n, n.Call,
+						stack, byFile[file] && noGodebug,
+					)
 				}
 			}
 			return true
@@ -312,64 +327,23 @@ func keepSemicolon(stack []ast.Node, stmt ast.Stmt) bool {
 	return ok && loop.Init == stmt
 }
 
-// fixableModule reports whether the fix can delete a Seed call, because Seed
-// is a no-op by default from Go 1.24. A module other than the main module does
-// not set the default; the main module's go directive does.
-func fixableModule(module *analysis.Module) bool {
-	if module == nil || !module.Main || module.GoVersion == "" {
-		return false
-	}
-	v := "go" + strings.TrimPrefix(module.GoVersion, "go")
-	return version.Compare(v, "go1.24") >= 0
+// mainModule reports whether the package belongs to the main module, which is
+// the module whose go directive sets the godebug default.
+func mainModule(pass *analysis.Pass) bool {
+	return pass.Module != nil && pass.Module.Main
 }
 
-// workspace reports whether a go.work file is in effect, where the main
-// module's defaults come from the file.
-func workspace(module *analysis.Module) bool {
-	if gowork := os.Getenv("GOWORK"); gowork != "" {
-		if gowork == "off" {
-			return false
-		}
-		if gowork != "auto" {
-			return true
-		}
-	}
-	var dirs []string
-	if dir, err := os.Getwd(); err == nil {
-		dirs = append(dirs, dir)
-	}
-	if module != nil && module.Dir != "" {
-		dirs = append(dirs, module.Dir)
-	}
-	return slices.ContainsFunc(dirs, findWork)
-}
-
-// findWork reports whether a go.work file is at or above dir.
-func findWork(dir string) bool {
-	for dir != "" {
-		if _, err := os.Stat(filepath.Join(dir, "go.work")); err == nil {
-			return true
-		}
-		parent := filepath.Dir(dir)
-		if parent == dir {
-			break
-		}
-		dir = parent
-	}
-	return false
-}
-
-// moduleGodebug reports whether the main module's go.mod restores Seed's
-// effect.
-func moduleGodebug(module *analysis.Module) bool {
-	if module == nil || module.GoMod == "" {
+// atLeast reports whether a file's Go version is at least want. A file whose
+// version the driver did not supply is treated as older, so no fix is offered
+// where the version is unknown.
+func atLeast(file *ast.File, v, want string) bool {
+	if v == "" {
 		return false
 	}
-	data, err := os.ReadFile(module.GoMod)
-	if err != nil {
-		return false
+	if !strings.HasPrefix(v, "go") {
+		v = "go" + v
 	}
-	return godebug(data)
+	return file != nil && version.Compare(v, want) >= 0
 }
 
 // outside reports whether id lies outside call.
@@ -433,37 +407,6 @@ func debugSetting(text string) string {
 		return ""
 	}
 	return strings.TrimLeft(rest, " \t")
-}
-
-// godebug reports whether a go.mod file sets a godebug value that restores
-// Seed's effect.
-func godebug(src []byte) bool {
-	var block bool
-	for line := range strings.SplitSeq(string(src), "\n") {
-		if i := strings.Index(line, "//"); i >= 0 {
-			line = line[:i]
-		}
-		line = strings.TrimSpace(line)
-		if block {
-			if line == ")" {
-				block = false
-			} else if unsafeGodebug(line) {
-				return true
-			}
-			continue
-		}
-		rest, ok := strings.CutPrefix(line, "godebug")
-		if !ok || rest == "" || (rest[0] != ' ' && rest[0] != '\t') {
-			continue
-		}
-		rest = strings.TrimSpace(rest)
-		if rest == "(" {
-			block = true
-		} else if unsafeGodebug(rest) {
-			return true
-		}
-	}
-	return false
 }
 
 // unsafeGodebug reports whether one key=value setting restores Seed's effect.
