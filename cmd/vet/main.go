@@ -3061,7 +3061,9 @@
 //
 // Reports a type whose methods mix pointer and value receivers. A value
 // receiver works on a copy, and one kind for the whole type settles which
-// methods a value has.
+// methods a value has. A pointer-receiver method with the signature of
+// UnmarshalJSON, UnmarshalText, UnmarshalBinary, UnmarshalXML, GobDecode or
+// Scan is exempt, since the interface forces the pointer.
 //
 // Inspired by golangci-lint's recvcheck.
 //

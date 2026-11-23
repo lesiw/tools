@@ -37,6 +37,21 @@ A value receiver works on a copy. A method that changes the value through one
 changes nothing the caller can see. One kind for the whole type also settles
 which methods a value has.
 
+A pointer-receiver method whose signature is one the standard decoding
+interfaces state is exempt: `UnmarshalJSON`, `UnmarshalText`, `UnmarshalBinary`,
+`UnmarshalXML`, `GobDecode` and `Scan` all write into the value, so the interface
+forces the pointer and the receiver says nothing about the rest of the type. The
+name and the signature are matched together, so neither a name that merely
+begins with `Unmarshal` nor the right name with another signature is exempt:
+
+```go
+type lookalike struct{}
+
+func (l lookalike) one() {}
+
+func (l *lookalike) UnmarshalJSON(s string) error { return nil } // methods of lookalike mix pointer and value receivers
+```
+
 The idea comes from the recvcheck linter.
 
 Report only.
