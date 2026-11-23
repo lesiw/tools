@@ -66,6 +66,27 @@ func (p *partly) UnmarshalJSON(b []byte) error { return nil }
 
 func (p *partly) two() {} // want `methods of partly mix pointer and value receivers`
 
+type pair[K comparable, V any] struct {
+	k K
+	v V
+}
+
+func (p pair[K, V]) one() {}
+
+func (p *pair[K, V]) two() {} // want `methods of pair mix pointer and value receivers`
+
+type triple[A any, B any, C any] struct{}
+
+func (t triple[A, B, C]) one() {}
+
+func (t *triple[A, B, C]) two() {} // want `methods of triple mix pointer and value receivers`
+
+type box[T any] struct{ v T }
+
+func (b box[T]) one() {}
+
+func (b *box[T]) two() {} // want `methods of box mix pointer and value receivers`
+
 // A generic type whose pointer methods are all decoders is not mixed.
 type wrapper[T any] struct{ v T }
 

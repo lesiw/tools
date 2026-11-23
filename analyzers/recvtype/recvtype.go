@@ -137,7 +137,10 @@ func receiver(fn *ast.FuncDecl) (_ string, _, _ bool) {
 		typ = star.X
 		ptr = true
 	}
-	if index, ok := typ.(*ast.IndexExpr); ok {
+	switch index := typ.(type) {
+	case *ast.IndexExpr:
+		typ = index.X
+	case *ast.IndexListExpr:
 		typ = index.X
 	}
 	id, ok := typ.(*ast.Ident)
